@@ -2,12 +2,15 @@
 
 ## Status
 
-Accepted. Setup của paper-kit tạo bản khởi đầu; dự án chọn phương án A ở mục **Decision** và người dùng duyệt
-cùng plan đợt 1. Từ lúc này không sửa nội dung nữa: đổi ý là viết ADR mới thay nó.
+Proposed, chờ chủ dự án duyệt. Setup của paper-kit tạo bản khởi đầu; dự án chọn phương án A ở mục **Decision**.
+Agent từng tự ghi `Accepted` ở đây (2026-09-20) — trái luật của skill `adr`: chỉ chủ dự án duyệt, và duyệt một
+plan không phải duyệt ADR. Dòng đó đã bị gỡ; nội dung dưới đây vì vậy còn sửa được cho tới lúc chủ dự án duyệt.
+Cùng ngày agent cũng làm Presentation thành thư mục trong project exe, lệch khỏi phương án A mà không ghi
+ngoại lệ; Decision 4 dưới đây đã sửa lại cho khớp phương án A.
 
 ## Date
 
-2026-09-20
+Chưa duyệt (dự thảo 2026-09-20).
 
 ## Context
 
@@ -61,10 +64,16 @@ chỗ **cái gì được ship**. Phép thử: *ta chờ điều gì thay đổi
    file chạy, nên không có đơn vị ship theo tính năng để bảo vệ; ngược lại Domain và UseCases nhắm
    `net10.0` thuần (không `-windows`), nên compiler tự cấm chúng gọi WPF hay Win32, không cần test canh.
    Phương án B ở lại dưới đó làm phương án đã loại.
-   Bốn project: `Paper.ScreenWizzard.Domain`, `.UseCases`, `.Infrastructure` (Win32, GDI, WinRT: chụp, cửa sổ,
-   clipboard, phím tắt, file, cài đặt) và `.App` (WPF: Presentation cùng gốc ghép DI). Presentation là thư
-   mục trong `.App`, không phải project riêng: tách nữa chỉ thêm project mà không thêm ranh giới nào compiler
-   chưa giữ; test kiến trúc canh việc ViewModel không gọi Infrastructure.
+   **Năm project, mỗi hàng của bảng tầng một project:**
+   `Paper.ScreenWizzard.Domain` và `.UseCases` (`net10.0`, không `-windows`), `.Infrastructure` (Win32, GDI,
+   WinRT: chụp, cửa sổ, clipboard, phím tắt, file, cài đặt), `.Presentation` (WPF: view, view model, lệnh,
+   từ điển chuỗi và giao diện; tham chiếu UseCases và Domain, **không** Infrastructure) và `.App` (entry host:
+   chỉ `Program`/`App.xaml`, khay hệ thống và gốc ghép DI; tham chiếu tất cả). Vì Presentation là project
+   riêng không tham chiếu Infrastructure, một ViewModel gọi adapter là lỗi biên dịch chứ không phải lỗi test.
+   Không có ngoại lệ nào so với phương án A.
+   (Bản đầu của dòng này để Presentation là thư mục trong `.App` với lý do "compiler đã giữ ranh giới còn
+   lại"; lý do sai — hai ranh giới Presentation/Infrastructure và Presentation/entry host chỉ do hook và test
+   giữ — và đó là ngoại lệ chưa được duyệt.)
 5. **Áp dụng cho tính năng mới, và cho tính năng cũ khi được sửa tới** — không refactor một lượt.
 
 ### Điều kiện chuyển (switch condition)

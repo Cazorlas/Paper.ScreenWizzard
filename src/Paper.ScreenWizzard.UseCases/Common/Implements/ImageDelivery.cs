@@ -5,8 +5,8 @@ using Paper.ScreenWizzard.UseCases.Common.Ports;
 namespace Paper.ScreenWizzard.UseCases.Common.Implements;
 
 /// <summary>
-/// SKELETON (plan T2): returns "did nothing" for every call so the tests written from SPEC capture and editor fail at
-/// their assertions, not at the build. The rules arrive with plan T8 and T12.
+/// Puts a finished image in a file or on the clipboard: the automatic file name that never overwrites, the white background
+/// of a JPG, and the reason of a failure (SPEC capture F4, F5). Shared by the capture dialog and the editor.
 /// </summary>
 public sealed class ImageDelivery : IImageDelivery
 {
@@ -23,12 +23,36 @@ public sealed class ImageDelivery : IImageDelivery
         _clipboard = clipboard;
     }
 
-    public DeliveryResult SaveToFolder(PixelImage image, string folder, ImageFormat format, int jpgQuality) =>
-        new(false, DeliveryIssue.None, null, null);
+    public DeliveryResult SaveToFolder(PixelImage image, string folder, ImageFormat format, int jpgQuality)
+    {
+        if (!_files.DirectoryExists(folder))
+        {
+            return new DeliveryResult(false, DeliveryIssue.FolderNotWritable, null, "The folder does not exist: " + folder);
+        }
+
+        var name = ScreenshotNaming.FileName(_clock.Now, format, taken => _files.FileExists(Path.Combine(folder, taken)));
+        return Write(image, Path.Combine(folder, name), format, jpgQuality);
+    }
 
     public DeliveryResult SaveToPath(PixelImage image, string path, int jpgQuality) =>
-        new(false, DeliveryIssue.None, null, null);
+        Write(image, path, ScreenshotNaming.FormatOfPath(path), jpgQuality);
 
-    public DeliveryResult CopyToClipboard(PixelImage image) =>
-        new(false, DeliveryIssue.None, null, null);
+    public DeliveryResult CopyToClipboard(PixelImage image)
+    {
+        var result = _clipboard.SetImage(image);
+        return result.Success
+            ? new DeliveryResult(true, DeliveryIssue.None, null, null)
+            : new DeliveryResult(false, DeliveryIssue.ClipboardBusy, null, result.Detail);
+    }
+
+    private DeliveryResult Write(PixelImage image, string path, ImageFormat format, int jpgQuality)
+    {
+        // A JPG has no transparency: lay the image on white first, on a copy, so a freeform capture is not black outside its outline.
+        var toEncode = format == ImageFormat.Jpg ? PixelImageOps.FlattenOnWhite(image) : image;
+        var bytes = _codec.Encode(toEncode, format, jpgQuality);
+        var written = _files.WriteAllBytes(path, bytes);
+        return written.Success
+            ? new DeliveryResult(true, DeliveryIssue.None, path, null)
+            : new DeliveryResult(false, DeliveryIssue.FolderNotWritable, null, written.Detail);
+    }
 }

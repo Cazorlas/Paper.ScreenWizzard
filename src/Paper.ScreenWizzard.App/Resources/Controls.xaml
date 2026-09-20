@@ -30,13 +30,20 @@
                               HorizontalAlignment="Center"
                               VerticalAlignment="Center"
                               RecognizesAccessKey="True" />
-            <!-- The focus ring, shown only while this button holds keyboard focus. -->
+            <!-- The focus ring, shown only while this button holds keyboard focus. It is two rings: the focus colour outside and a
+                 window-coloured line just inside it. Brush.Focus is the accent colour, so on the accent-filled default button
+                 (Save) the outer ring alone is the fill itself and Tab would be invisible; the inner line is what shows there. -->
             <Border x:Name="FocusRing"
                     BorderBrush="{DynamicResource Brush.Focus}"
                     BorderThickness="2"
                     CornerRadius="4"
                     IsHitTestVisible="False"
-                    Visibility="Collapsed" />
+                    Visibility="Collapsed">
+              <Border Margin="0"
+                      BorderBrush="{DynamicResource Brush.Window}"
+                      BorderThickness="2"
+                      CornerRadius="2" />
+            </Border>
           </Grid>
           <ControlTemplate.Triggers>
             <Trigger Property="IsKeyboardFocused" Value="True">

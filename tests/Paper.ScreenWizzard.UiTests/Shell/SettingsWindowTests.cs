@@ -70,6 +70,27 @@ public sealed class SettingsWindowTests : UiTestBase
         Assert.That(with, Is.GreaterThan(20), "the focused button must draw a ring in the theme's focus colour, or Tab is invisible");
     }
 
+    // Found by the main session reading the T10 report: Brush.Focus and Brush.Accent are the same colour, and the ring is drawn
+    // inside the button, so on the accent-filled Save button the ring was the fill itself: Tab was invisible there. The existing
+    // test above only measures the grey Cancel button. A ring on an accent button must carry a colour that is NOT the fill.
+    [TestCase(AppTheme.Light)]
+    [TestCase(AppTheme.Dark)]
+    public void Keyboard_FocusedAccentButton_ShowsARingThatIsNotTheFillColour(AppTheme theme)
+    {
+        using var rig = SettingsRig.Open(theme: theme);
+        var themeDictionary = ResourceFiles.Load($"Themes/{theme}.xaml");
+        var windowBrush = themeDictionary["Brush.Window"];
+        Assert.That(windowBrush, Is.InstanceOf<System.Windows.Media.SolidColorBrush>(), $"Brush.Window is missing from the {theme} theme");
+        var gap = ((System.Windows.Media.SolidColorBrush)windowBrush).Color;
+
+        rig.Session.Focus("BrowseFolderButton");
+        var without = rig.Session.CountPixels("SaveButton", gap);
+        rig.Session.Focus("SaveButton");
+        var with = rig.Session.CountPixels("SaveButton", gap);
+
+        Assert.That(with - without, Is.GreaterThan(20), "the focused accent button must draw a ring that differs from its fill, or Tab is invisible on it");
+    }
+
     [Test]
     public void Keyboard_EnterInSettings_SavesAndCloses()
     {

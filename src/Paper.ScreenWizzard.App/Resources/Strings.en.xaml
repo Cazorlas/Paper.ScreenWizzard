@@ -75,4 +75,24 @@
   <sys:String x:Key="Shell.HotkeyHeldByAnotherProgram">Could not register {0}: Windows or another program already holds it. The old hotkey is kept.</sys:String>
   <sys:String x:Key="Shell.HotkeyUnavailableAtStart">These hotkeys could not be registered: {0}. The other hotkeys still work.</sys:String>
   <sys:String x:Key="Shell.FolderMissing">The folder {0} does not exist.</sys:String>
+  <sys:String x:Key="Capture.Overlay.Title">Select what to capture</sys:String>
+  <sys:String x:Key="Capture.Overlay.CancelHint">Esc / right-click: cancel</sys:String>
+  <sys:String x:Key="Capture.Countdown.Title">Countdown</sys:String>
+  <sys:String x:Key="Capture.Done.Title">Captured</sys:String>
+  <sys:String x:Key="Capture.Done.Save">Save</sys:String>
+  <sys:String x:Key="Capture.Done.SaveAs">Save as…</sys:String>
+  <sys:String x:Key="Capture.Done.Copy">Copy</sys:String>
+  <sys:String x:Key="Capture.Done.Edit">Edit</sys:String>
+  <sys:String x:Key="Capture.Done.Discard">Discard</sys:String>
+  <sys:String x:Key="Capture.Done.Thumbnail">Thumbnail</sys:String>
+  <sys:String x:Key="Capture.Done.SaveAsBoxTitle">Save the image as</sys:String>
+  <sys:String x:Key="Capture.RegionTooSmall">The region is too small (at least 3 × 3 pixels). Drag again.</sys:String>
+  <sys:String x:Key="Capture.OutlineTooSmall">The outline is too small. Draw a larger one.</sys:String>
+  <sys:String x:Key="Capture.DisplayChanged">The display changed, please capture again.</sys:String>
+  <sys:String x:Key="Capture.ImageTooLarge">The image is too large. Choose a smaller region.</sys:String>
+  <sys:String x:Key="Capture.Failed">Could not capture the screen: {0}</sys:String>
+  <sys:String x:Key="Capture.SavedToFile">Saved the {1} × {2} image to {0}</sys:String>
+  <sys:String x:Key="Capture.CopiedToClipboard">Copied the {0} × {1} image to the clipboard</sys:String>
+  <sys:String x:Key="Capture.SaveFailed">Could not save to {0}: {1}. The image is still in the dialog: choose Save as…, Copy or Edit.</sys:String>
+  <sys:String x:Key="Capture.ClipboardFailed">Could not copy to the clipboard: {0}. The image is still in the dialog: choose Save, Save as… or Edit.</sys:String>
 </ResourceDictionary>

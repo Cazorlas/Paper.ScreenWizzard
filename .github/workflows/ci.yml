@@ -1,0 +1,27 @@
+name: ci
+
+# Build everything and run the unit tests on every push and pull request.
+#
+# The ui and e2e suites are NOT run here: they drive real windows with the mouse and keyboard and capture the real screen,
+# so they need an interactive desktop, which a hosted runner does not give. They run on the developer's machine through
+# the profile's ui and e2e verbs (plan group 2-5 evidence). Do not "fix" this by adding them to CI.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-unit-test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build (Release, warnings are errors)
+        run: dotnet build Paper.ScreenWizzard.slnx -c Release --nologo -v minimal
+
+      - name: Unit tests
+        run: dotnet test tests/Paper.ScreenWizzard.UnitTests -c Release --no-build --nologo -v minimal

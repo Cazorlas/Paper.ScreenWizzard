@@ -75,4 +75,24 @@
   <sys:String x:Key="Shell.HotkeyHeldByAnotherProgram">Không đăng ký được phím {0}: Windows hoặc ứng dụng khác đang giữ phím này. Phím cũ được giữ nguyên.</sys:String>
   <sys:String x:Key="Shell.HotkeyUnavailableAtStart">Không đăng ký được phím tắt: {0}. Các phím khác vẫn chạy.</sys:String>
   <sys:String x:Key="Shell.FolderMissing">Thư mục {0} chưa tồn tại.</sys:String>
+  <sys:String x:Key="Capture.Overlay.Title">Chọn vùng chụp</sys:String>
+  <sys:String x:Key="Capture.Overlay.CancelHint">Esc / chuột phải: huỷ</sys:String>
+  <sys:String x:Key="Capture.Countdown.Title">Đếm ngược</sys:String>
+  <sys:String x:Key="Capture.Done.Title">Đã chụp</sys:String>
+  <sys:String x:Key="Capture.Done.Save">Lưu</sys:String>
+  <sys:String x:Key="Capture.Done.SaveAs">Lưu thành…</sys:String>
+  <sys:String x:Key="Capture.Done.Copy">Sao chép</sys:String>
+  <sys:String x:Key="Capture.Done.Edit">Sửa</sys:String>
+  <sys:String x:Key="Capture.Done.Discard">Bỏ</sys:String>
+  <sys:String x:Key="Capture.Done.Thumbnail">Ảnh thu nhỏ</sys:String>
+  <sys:String x:Key="Capture.Done.SaveAsBoxTitle">Lưu ảnh thành</sys:String>
+  <sys:String x:Key="Capture.RegionTooSmall">Vùng quá nhỏ (cần ít nhất 3 × 3 pixel). Hãy kéo lại.</sys:String>
+  <sys:String x:Key="Capture.OutlineTooSmall">Đường bao quá nhỏ. Hãy vẽ lại vùng lớn hơn.</sys:String>
+  <sys:String x:Key="Capture.DisplayChanged">Màn hình đã thay đổi, hãy chụp lại.</sys:String>
+  <sys:String x:Key="Capture.ImageTooLarge">Ảnh quá lớn, hãy chọn vùng nhỏ hơn.</sys:String>
+  <sys:String x:Key="Capture.Failed">Không chụp được màn hình: {0}</sys:String>
+  <sys:String x:Key="Capture.SavedToFile">Đã lưu ảnh {1} × {2} vào {0}</sys:String>
+  <sys:String x:Key="Capture.CopiedToClipboard">Đã sao chép ảnh {0} × {1} vào clipboard</sys:String>
+  <sys:String x:Key="Capture.SaveFailed">Không lưu được vào {0}: {1}. Ảnh vẫn còn trong hộp thoại: chọn Lưu thành…, Sao chép hoặc Sửa.</sys:String>
+  <sys:String x:Key="Capture.ClipboardFailed">Không chép được vào clipboard: {0}. Ảnh vẫn còn trong hộp thoại: chọn Lưu, Lưu thành… hoặc Sửa.</sys:String>
 </ResourceDictionary>

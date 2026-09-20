@@ -32,4 +32,7 @@
   <!-- Toast: inverted against the window so a message that appears over any app stands out. -->
   <SolidColorBrush x:Key="Brush.ToastBackground" Color="#323232" />
   <SolidColorBrush x:Key="Brush.ToastText" Color="#FFFFFF" />
+
+  <!-- Selection overlay: the dim laid over the frozen screenshot (drawn at 40% opacity by the overlay). -->
+  <SolidColorBrush x:Key="Brush.OverlayDim" Color="#000000" />
 </ResourceDictionary>

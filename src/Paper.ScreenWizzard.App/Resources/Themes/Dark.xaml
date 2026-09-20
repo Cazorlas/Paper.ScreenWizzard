@@ -28,4 +28,7 @@
   <!-- Toast: light on the dark window, for the same reason as in Light.xaml. -->
   <SolidColorBrush x:Key="Brush.ToastBackground" Color="#F3F3F3" />
   <SolidColorBrush x:Key="Brush.ToastText" Color="#1B1B1B" />
+
+  <!-- Selection overlay: the dim laid over the frozen screenshot (drawn at 40% opacity by the overlay). -->
+  <SolidColorBrush x:Key="Brush.OverlayDim" Color="#000000" />
 </ResourceDictionary>
