@@ -78,6 +78,21 @@ public interface IEditorInteractor
     /// </summary>
     Guid? HitTest(IEditorSession session, PixelPoint point, int tolerance);
 
+    /// <summary>
+    /// The shape a drag makes with <paramref name="tool"/>, or null when it draws nothing (a click without a drag, a box with no width
+    /// or no height, a tool that draws no dragged shape).
+    /// </summary>
+    Annotation? CreateShape(ToolKind tool, DragShape drag, RgbaColor color, int thickness);
+
+    /// <summary>A pen or highlighter stroke; one click is a dot of two equal points.</summary>
+    StrokeAnnotation CreateStroke(IReadOnlyList<PixelPoint> points, RgbaColor color, int thickness, bool highlighter);
+
+    /// <summary>
+    /// Sets the text of the text annotation <paramref name="id"/>; a text of blanks is empty and an empty text deletes the annotation.
+    /// Returns whether anything changed (the same words change nothing and make no history step).
+    /// </summary>
+    bool EditText(IEditorSession session, Guid id, string text);
+
     /// <summary>Adds the text unless it is empty (SPEC editor F4); returns whether an annotation was created.</summary>
     bool AddText(IEditorSession session, PixelPoint origin, string text, RgbaColor color, int fontSize);
 

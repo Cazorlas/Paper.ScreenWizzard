@@ -48,7 +48,14 @@ public sealed class EditorSession : IEditorSession
 
     public void Add(Annotation annotation) => Push(Document with { Annotations = [.. Document.Annotations, annotation] });
 
-    public void Move(Guid id, int dx, int dy) => Replace(id, a => AnnotationOps.Translate(a, dx, dy));
+    public void Move(Guid id, int dx, int dy)
+    {
+        // A drag that ended where it began is not a change (SPEC editor: mỗi thao tác là một bước; không đổi gì thì không có bước).
+        if (dx != 0 || dy != 0)
+        {
+            Replace(id, a => AnnotationOps.Translate(a, dx, dy));
+        }
+    }
 
     public void Recolor(Guid id, RgbaColor color) => Replace(id, a => a with { Color = color });
 

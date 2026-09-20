@@ -19,6 +19,7 @@ public sealed class ShellInteractor : IShellInteractor
     private readonly IAutostartPort _autostart;
     private readonly IFileStorePort _files;
     private readonly ILogPort _log;
+    private bool _settingsUnreadable;
 
     public ShellInteractor(
         ISettingsStorePort settingsStore,
@@ -122,14 +123,14 @@ public sealed class ShellInteractor : IShellInteractor
         var hotkeys = new Dictionary<CaptureKind, HotkeyChord>(current.Hotkeys) { [kind] = proposed };
         var changed = current with { Hotkeys = hotkeys };
 
-        var saved = _settingsStore.Save(changed);
+        var saved = Persist(changed);
         NotificationMessage? message = saved.Success ? null : NotSaved(saved);
         return new HotkeyChangeResult(true, HotkeyIssue.None, null, changed, message);
     }
 
     public SettingsApplyResult Apply(AppSettings settings)
     {
-        var saved = _settingsStore.Save(settings);
+        var saved = Persist(settings);
         return saved.Success
             ? new SettingsApplyResult(true, settings, null)
             : new SettingsApplyResult(false, settings, NotSaved(saved));
@@ -197,6 +198,29 @@ public sealed class ShellInteractor : IShellInteractor
     private static HotkeyChangeResult Refuse(AppSettings current, HotkeyIssue issue, CaptureKind? conflicting, NotificationMessage message) =>
         new(false, issue, conflicting, current, message);
 
+    // A file that could not be read at start may be perfectly good, so the defaults the app runs on must not replace it. The file is
+    // looked at again at the moment of a save: still locked or now readable and good -> refuse; broken (the adapter kept a .bak) or
+    // gone -> nothing is lost by writing.
+    private PortResult Persist(AppSettings settings)
+    {
+        if (_settingsUnreadable)
+        {
+            var again = _settingsStore.Load();
+            switch (again.Status)
+            {
+                case SettingsLoadStatus.Loaded:
+                    return PortResult.Fail("the settings file could not be read when the app started and is kept as it is; restart the app to use it");
+                case SettingsLoadStatus.Unreadable:
+                    return PortResult.Fail(again.Detail ?? "the settings file is still unreadable");
+                default:
+                    _settingsUnreadable = false;
+                    break;
+            }
+        }
+
+        return _settingsStore.Save(settings);
+    }
+
     private static NotificationMessage NotSaved(PortResult result) =>
         NotificationMessage.Of("Shell.SettingsNotSaved", result.Detail ?? string.Empty);
 
@@ -262,6 +286,7 @@ public sealed class ShellInteractor : IShellInteractor
     private AppSettings LoadOrDefault(ShellStartInput input, List<NotificationMessage> notices)
     {
         var loaded = _settingsStore.Load();
+        _settingsUnreadable = loaded.Status == SettingsLoadStatus.Unreadable;
         if (loaded.Status == SettingsLoadStatus.Loaded && loaded.Settings is { } settings)
         {
             return settings;

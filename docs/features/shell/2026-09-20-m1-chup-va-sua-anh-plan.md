@@ -3,7 +3,7 @@
 **Trạng thái:** đã duyệt 2026-09-20 ("mình duyệt nha")
 **Loại việc:** code
 
-Dựng solution .NET 10 bốn tầng (ADR 0001, phương án A) và làm ba tính năng đầu: khung ứng dụng (khay, phím tắt, cài đặt),
+Dựng solution .NET 10 năm tầng (ADR 0001, phương án A; lúc đầu bốn, xem Decisions "Presentation là project riêng") và làm ba tính năng đầu: khung ứng dụng (khay, phím tắt, cài đặt),
 chụp màn hình bốn kiểu, trình sửa ảnh. Không host nào: thứ chạy thật là chính file exe trên desktop tương tác.
 Brief: [2026-09-20-m1-chup-va-sua-anh.md](2026-09-20-m1-chup-va-sua-anh.md) · Luật: [SPEC.md](SPEC.md) (shell),
 [../capture/SPEC.md](../capture/SPEC.md), [../editor/SPEC.md](../editor/SPEC.md)
@@ -14,7 +14,7 @@ Brief: [2026-09-20-m1-chup-va-sua-anh.md](2026-09-20-m1-chup-va-sua-anh.md) · L
 - Kho tham khảo: PaperTodo (WPF, một app nhỏ giữ cửa sổ nổi và lưu vị trí) chỉ để học cách bố cục; Fluent-Screen-Recorder
   dành cho đợt 2. Không chép mã của kho nào.
 - **`PaperLibrary` (RevitAPI-C) không dùng được:** nó là project trong solution Revit, không phải gói NuGet, và ràng buộc
-  "không tham chiếu mã nguồn dự án khác" của kho này cấm liên kết file. Vì vậy `.App/Mvvm/` tự giữ `BindableBase`,
+  "không tham chiếu mã nguồn dự án khác" của kho này cấm liên kết file. Vì vậy `Presentation/Mvvm/` (lúc T1 còn là `App/Mvvm/`) tự giữ `BindableBase`,
   `CommandBase`, `AsyncCommandBase` nhỏ, cùng tên và hình dạng như trong `paper-wpf-style`, để sau này đổi sang
   thư viện dùng chung nếu nó được tách thành gói.
 - **Dịch vụ dùng chung:**
@@ -40,7 +40,7 @@ Brief: [2026-09-20-m1-chup-va-sua-anh.md](2026-09-20-m1-chup-va-sua-anh.md) · L
 
 ## Decisions
 
-- **Solution `.slnx`, bốn project src và ba project test** — `Domain`, `UseCases` (`net10.0`), `Infrastructure`, `App`
+- **(Bị thay ở T23: xem "Presentation là project riêng" bên dưới; giữ lại làm lịch sử.) Solution `.slnx`, bốn project src và ba project test** — `Domain`, `UseCases` (`net10.0`), `Infrastructure`, `App`
   (`net10.0-windows10.0.19041.0`, WinExe); `UnitTests` (`net10.0`), `UiTests`, `E2eTests` (`-windows`). Rejected:
   Presentation thành project thứ năm, vì compiler đã giữ ranh giới còn lại (ADR 0001).
 - **Test bằng NUnit 4** — theo Paper.AutoCad, để một cách viết test cho mọi dự án Paper. Rejected: xUnit, không có lý do

@@ -657,9 +657,7 @@ public sealed class EditorViewModel : BindableBase, IDisposable
                     gesture.Points.Add(point);
                 }
 
-                // One click is a dot: the renderer draws a one-point stroke as a round dot, and a stroke needs at least two points to be a line.
-                List<PixelPoint> points = gesture.Points.Count == 1 ? [gesture.Points[0], gesture.Points[0]] : gesture.Points.ToList();
-                Session.Add(new StrokeAnnotation(Guid.NewGuid(), _color, _thickness, points, _tool == ToolKind.Highlighter));
+                Session.Add(_services.Interactor.CreateStroke(gesture.Points, _color, _thickness, _tool == ToolKind.Highlighter));
                 break;
             case GestureKind.Shape when _tool == ToolKind.Crop:
                 _cropRect = AnnotationGeometry.Normalize(gesture.Start, point);
@@ -675,9 +673,9 @@ public sealed class EditorViewModel : BindableBase, IDisposable
                 break;
             case GestureKind.Move:
                 var (dx, dy) = (point.X - gesture.Start.X, point.Y - gesture.Start.Y);
-                if ((dx != 0 || dy != 0) && gesture.Original is { } original)
+                if (gesture.Original is { } original)
                 {
-                    // One drag is one history step, however many times the mouse moved.
+                    // One drag is one history step, however many times the mouse moved; a drag back to where it began is none (the session decides).
                     Session.Move(original.Id, dx, dy);
                 }
 
@@ -729,11 +727,7 @@ public sealed class EditorViewModel : BindableBase, IDisposable
         RaiseTextDraftChanged();
         if (editedId is { } id)
         {
-            var newText = string.IsNullOrWhiteSpace(text) ? string.Empty : text;
-            if (edited is not null && edited.Text != newText)
-            {
-                Session.SetText(id, newText);
-            }
+            _services.Interactor.EditText(Session, id, text);
         }
         else
         {
@@ -1057,32 +1051,8 @@ public sealed class EditorViewModel : BindableBase, IDisposable
 
     private void Invalidate() => CanvasInvalidated?.Invoke(this, EventArgs.Empty);
 
-    // The shape a drag makes from the two ends the use case answered; nothing for a drag that has no size, so a plain click draws no shape.
-    private Annotation? BuildShape(DragShape shape)
-    {
-        switch (_tool)
-        {
-            case ToolKind.Line:
-                return shape.From == shape.To ? null : new LineAnnotation(Guid.NewGuid(), _color, _thickness, shape.From, shape.To);
-            case ToolKind.Arrow:
-                return shape.From == shape.To ? null : new ArrowAnnotation(Guid.NewGuid(), _color, _thickness, shape.From, shape.To);
-            case ToolKind.Rectangle or ToolKind.Ellipse or ToolKind.Blur:
-                var box = AnnotationGeometry.Normalize(shape.From, shape.To);
-                if (box.Width == 0 || box.Height == 0)
-                {
-                    return null;
-                }
-
-                return _tool switch
-                {
-                    ToolKind.Rectangle => new RectangleAnnotation(Guid.NewGuid(), _color, _thickness, box),
-                    ToolKind.Ellipse => new EllipseAnnotation(Guid.NewGuid(), _color, _thickness, box),
-                    _ => new BlurAnnotation(Guid.NewGuid(), _color, _thickness, box),
-                };
-            default:
-                return null;
-        }
-    }
+    // The shape a drag makes from the two ends the use case answered; the use case says which drags draw nothing.
+    private Annotation? BuildShape(DragShape shape) => _services.Interactor.CreateShape(_tool, shape, _color, _thickness);
 
     private enum GestureKind
     {

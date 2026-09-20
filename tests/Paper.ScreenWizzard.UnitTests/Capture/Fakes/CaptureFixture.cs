@@ -92,8 +92,9 @@ public static class CaptureData
         bool visible = true,
         bool minimized = false,
         bool cloaked = false,
-        bool overlay = false) =>
-        new(handle, title, frame, visible, minimized, cloaked, overlay, zOrder);
+        bool overlay = false,
+        bool desktop = false) =>
+        new(handle, title, frame, visible, minimized, cloaked, overlay, zOrder, desktop);
 
     public static CaptureRequest Request(
         CaptureKind kind,

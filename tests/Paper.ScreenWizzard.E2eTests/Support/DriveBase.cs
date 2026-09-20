@@ -19,6 +19,16 @@ public abstract class DriveBase
 
     protected ProbeWindow? Probe { get; set; }
 
+    [SetUp]
+    public void RefuseWhileAnotherCopyRuns()
+    {
+        var refusal = HarnessGuard.Refusal([]);
+        if (refusal is not null)
+        {
+            Assert.Inconclusive(refusal);
+        }
+    }
+
     [TearDown]
     public void TearDown()
     {

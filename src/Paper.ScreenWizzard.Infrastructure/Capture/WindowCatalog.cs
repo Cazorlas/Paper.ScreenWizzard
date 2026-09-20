@@ -40,6 +40,7 @@ public sealed class WindowCatalog : IWindowCatalogPort
                 continue;
             }
 
+
             windows.Add(new WindowInfo(
                 handle.ToInt64(),
                 title,
@@ -48,10 +49,19 @@ public sealed class WindowCatalog : IWindowCatalogPort
                 NativeMethods.IsIconic(handle),
                 IsCloaked(handle),
                 false,
-                windows.Count));
+                windows.Count,
+                IsDesktopWindow(handle)));
         }
 
         return windows;
+    }
+
+    private static bool IsDesktopWindow(IntPtr window)
+    {
+        var buffer = new char[64];
+        var copied = NativeMethods.GetClassNameW(window, buffer, buffer.Length);
+        var name = copied > 0 ? new string(buffer, 0, copied) : string.Empty;
+        return name is "Progman" or "WorkerW";
     }
 
     private static string TitleOf(IntPtr window)

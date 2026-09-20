@@ -181,6 +181,12 @@ public sealed class FakeEditorSession : IEditorSession
 
     public void Move(Guid id, int dx, int dy)
     {
+        // As the real session: a move by nothing is no step (the contract of IEditorSession.Move).
+        if (dx == 0 && dy == 0)
+        {
+            return;
+        }
+
         Calls.Add($"Move {dx},{dy}");
         Replace(id, annotation => Translate(annotation, dx, dy));
     }
@@ -435,6 +441,25 @@ public sealed class FakeEditorInteractor : IEditorInteractor
     {
         HitTests.Add((point, tolerance));
         return HitTestOverride is { } answer ? answer(session, point, tolerance) : EditorHitRules.Topmost(session.Document.Annotations, point, tolerance);
+    }
+
+    public Annotation? CreateShape(ToolKind tool, DragShape drag, RgbaColor color, int thickness) =>
+        AnnotationFactory.Shape(tool, drag.From, drag.To, color, thickness);
+
+    public StrokeAnnotation CreateStroke(IReadOnlyList<PixelPoint> points, RgbaColor color, int thickness, bool highlighter) =>
+        AnnotationFactory.Stroke(points, color, thickness, highlighter);
+
+    public bool EditText(IEditorSession session, Guid id, string text)
+    {
+        var edited = session.Document.Annotations.OfType<TextAnnotation>().FirstOrDefault(t => t.Id == id);
+        var newText = AnnotationFactory.NormalizeText(text);
+        if (edited is null || edited.Text == newText)
+        {
+            return false;
+        }
+
+        session.SetText(id, newText);
+        return true;
     }
 
     public bool AddText(IEditorSession session, PixelPoint origin, string text, RgbaColor color, int fontSize)

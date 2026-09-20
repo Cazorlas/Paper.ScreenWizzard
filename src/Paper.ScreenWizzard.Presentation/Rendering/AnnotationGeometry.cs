@@ -16,8 +16,7 @@ public static class AnnotationGeometry
     private const double MinimumTextBox = 6.0;
 
     /// <summary>The two corners as a normalized rectangle: the same whichever corner was pressed first (SPEC editor: kéo theo hướng nào cũng ra cùng hình).</summary>
-    public static PixelRect Normalize(PixelPoint a, PixelPoint b) =>
-        new(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y), Math.Abs(a.X - b.X), Math.Abs(a.Y - b.Y));
+    public static PixelRect Normalize(PixelPoint a, PixelPoint b) => Domain.Editor.AnnotationFactory.Normalize(a, b);
 
     /// <summary>The box the annotation covers, its stroke included.</summary>
     public static Rect BoundsOf(Annotation annotation)

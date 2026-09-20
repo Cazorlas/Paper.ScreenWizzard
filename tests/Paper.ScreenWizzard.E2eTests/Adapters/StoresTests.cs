@@ -217,7 +217,7 @@ public sealed class StoresTests
     }
 
     [Test]
-    public void Settings_AFileLockedByAnotherProgram_IsUnreadableNotCorrupt_AndAGoodFileIsNeverWrittenOver()
+    public void Settings_AFileLockedByAnotherProgram_IsUnreadableNotCorrupt_AndASaveWhileLockedFailsWithThePath()
     {
         var store = new SettingsStore(_scratch.Path);
         var good = EveryFieldChanged();
@@ -235,12 +235,10 @@ public sealed class StoresTests
 
         Assert.That(load.Status, Is.EqualTo(SettingsLoadStatus.Unreadable));
         Assert.That(File.Exists(file + ".bak"), Is.False, "a locked file is not a corrupt one, so no backup");
+        Assert.That(load.Detail, Does.StartWith(file + ": "));
 
-        // The lock is gone: the file that could not be read at start is good, and a save must not replace what the app never saw.
-        var afterUnlock = fresh.Save(good with { JpgQuality = 5 });
-
-        Assert.That(afterUnlock.Success, Is.False);
-        AssertSame(new SettingsStore(_scratch.Path).Load().Settings!, good);
+        // Whether a save may replace a file the app never saw is the use case's decision (ShellInteractor); the adapter just writes.
+        Assert.That(fresh.Save(good with { JpgQuality = 5 }).Success, Is.True);
     }
 
     [Test]

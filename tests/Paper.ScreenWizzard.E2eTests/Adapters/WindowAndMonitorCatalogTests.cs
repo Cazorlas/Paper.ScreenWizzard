@@ -38,6 +38,32 @@ public sealed class WindowAndMonitorCatalogTests
         return matches[0];
     }
 
+    [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+    private static extern int GetClassNameW(IntPtr window, [System.Runtime.InteropServices.Out] char[] name, int maxCount);
+
+    private static string ClassOf(long handle)
+    {
+        var buffer = new char[256];
+        var copied = GetClassNameW(new IntPtr(handle), buffer, buffer.Length);
+        return copied > 0 ? new string(buffer, 0, copied) : string.Empty;
+    }
+
+    [Test]
+    public void TheDesktopItself_ProgramManagerAndWorkerW_IsReportedWithTheDesktopFlagAndNothingElseIs()
+    {
+        // Progman and WorkerW are the desktop's own windows: as big as every monitor together, visible, and under every real window.
+        // The adapter only reports what they are (IsDesktop); the use case decides they are no target, so a click on the wallpaper
+        // captures the monitor under the pointer and not the whole desktop under the name "Program Manager".
+        var windows = new WindowCatalog().GetWindows();
+
+        var unflagged = windows.Where(w => ClassOf(w.Handle) is "Progman" or "WorkerW" && !w.IsDesktop).Select(w => $"{ClassOf(w.Handle)} '{w.Title}'").ToList();
+        var wronglyFlagged = windows.Where(w => w.IsDesktop && ClassOf(w.Handle) is not ("Progman" or "WorkerW")).Select(w => w.Title).ToList();
+
+        Assert.That(unflagged, Is.Empty, "every Progman / WorkerW is flagged");
+        Assert.That(wronglyFlagged, Is.Empty, "and nothing else is");
+        Assert.That(windows.Any(w => w.IsDesktop), Is.True, "control: this desktop has at least one, so the test looked at something");
+    }
+
     [Test]
     public void OverlappingWindows_BothListed_TheLaterActivatedOneIsNearerTheTop()
     {

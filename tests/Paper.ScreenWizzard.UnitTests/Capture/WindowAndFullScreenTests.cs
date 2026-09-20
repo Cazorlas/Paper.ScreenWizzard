@@ -102,6 +102,20 @@ public sealed class WindowAndFullScreenTests
     }
 
     [Test]
+    public async Task TheDesktopsOwnWindowIsNeverThePickedWindowSoTheWallpaperGivesTheMonitorUnderThePointer()
+    {
+        // Progman spans the whole virtual desktop and lies under every real window; it must not win over the monitor.
+        _fixture.UseMonitors(CaptureData.SideBySide);
+        _fixture.Windows.Windows.Add(CaptureData.Window(1, "Program Manager", new PixelRect(0, 0, 3840, 1080), 5, desktop: true));
+        var session = await _fixture.BeginAsync(WindowRequest);
+
+        var hit = session.HitTestWindow(new PixelPoint(2500, 500));
+
+        Assert.That(hit.IsWholeMonitor, Is.True);
+        Assert.That(hit.Frame, Is.EqualTo(new PixelRect(1920, 0, 1920, 1080)));
+    }
+
+    [Test]
     public async Task ThePointerOnNoMonitorFindsNothing()
     {
         var session = await _fixture.BeginAsync(WindowRequest);

@@ -30,7 +30,6 @@ public sealed class SettingsStore : ISettingsStorePort
 
     private readonly string _folder;
     private readonly string _file;
-    private bool _readFailedAtLoad;
 
     public SettingsStore(string dataRoot)
     {
@@ -48,18 +47,15 @@ public sealed class SettingsStore : ISettingsStorePort
         try
         {
             var settings = Read();
-            _readFailedAtLoad = false;
             return new SettingsLoadResult(settings, SettingsLoadStatus.Loaded, null);
         }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or NotSupportedException or System.Security.SecurityException)
         {
-            // Locked or denied: the file may be perfectly good, so it is not backed up as "corrupt" and Save will not replace it.
-            _readFailedAtLoad = true;
+            // Locked or denied: the file may be perfectly good, so it is not backed up as "corrupt"; the use case decides what a save may do.
             return new SettingsLoadResult(null, SettingsLoadStatus.Unreadable, _file + ": " + exception.Message);
         }
         catch (Exception exception) when (exception is JsonException or ArgumentException or InvalidDataException)
         {
-            _readFailedAtLoad = false;
             KeepAsBackup();
             return new SettingsLoadResult(null, SettingsLoadStatus.Corrupt, _file + ": " + exception.Message);
         }
@@ -80,26 +76,6 @@ public sealed class SettingsStore : ISettingsStorePort
         var temporary = _file + ".tmp";
         try
         {
-            if (_readFailedAtLoad && File.Exists(_file))
-            {
-                // The file could not be read at start, so what is in it was never seen: it is replaced only when it now turns out to be
-                // a broken document (kept as .bak first); a good file, or one that is still locked, stays as it is.
-                try
-                {
-                    Read();
-                    return PortResult.Fail(_file + ": the file could not be read when the app started and is kept as it is; restart the app to use it");
-                }
-                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-                {
-                    return PortResult.Fail(_file + ": " + exception.Message);
-                }
-                catch (Exception exception) when (exception is JsonException or ArgumentException or InvalidDataException)
-                {
-                    KeepAsBackup();
-                }
-            }
-
-            _readFailedAtLoad = false;
             Directory.CreateDirectory(_folder);
             var json = JsonSerializer.SerializeToUtf8Bytes(SettingsDocument.From(settings), _options);
             File.WriteAllBytes(temporary, json);

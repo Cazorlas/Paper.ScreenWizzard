@@ -120,6 +120,25 @@ public sealed class EditorInteractor : IEditorInteractor
         return null;
     }
 
+    public Annotation? CreateShape(ToolKind tool, DragShape drag, RgbaColor color, int thickness) =>
+        AnnotationFactory.Shape(tool, drag.From, drag.To, color, thickness);
+
+    public StrokeAnnotation CreateStroke(IReadOnlyList<PixelPoint> points, RgbaColor color, int thickness, bool highlighter) =>
+        AnnotationFactory.Stroke(points, color, thickness, highlighter);
+
+    public bool EditText(IEditorSession session, Guid id, string text)
+    {
+        var edited = session.Document.Annotations.OfType<TextAnnotation>().FirstOrDefault(t => t.Id == id);
+        var newText = AnnotationFactory.NormalizeText(text);
+        if (edited is null || edited.Text == newText)
+        {
+            return false;
+        }
+
+        session.SetText(id, newText);
+        return true;
+    }
+
     public bool AddText(IEditorSession session, PixelPoint origin, string text, RgbaColor color, int fontSize)
     {
         // An empty box is what the user meant (SPEC editor F4): nothing is created and nothing is said.
