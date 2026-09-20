@@ -1,4 +1,4 @@
-> Bản nháp chờ duyệt 2026-09-20. Đây là yêu cầu, viết trước khi có code. Việc làm và bằng chứng: [2026-09-20-m1-chup-va-sua-anh-plan.md](2026-09-20-m1-chup-va-sua-anh-plan.md)
+> Đợt 1 đã làm xong 2026-09-21 (SPEC được duyệt 2026-09-20). Việc làm và bằng chứng: [2026-09-20-m1-chup-va-sua-anh-plan.md](2026-09-20-m1-chup-va-sua-anh-plan.md)
 
 # Khung ứng dụng — SPEC
 
@@ -121,7 +121,7 @@ Biểu tượng khay, thanh chụp, cài đặt, phím tắt, phiên bản đang
 - Ngôn ngữ chỉ có tiếng Việt và tiếng Anh.
 - Phím tắt gồm chữ cái hay chữ số phải kèm ít nhất Ctrl, Alt hoặc phím Windows: Shift một mình không đủ, vì Shift cộng chữ chỉ là gõ chữ
   hoa. Phím chức năng (F1 tới F12) và PrintScreen được đứng riêng, riêng F12 Windows dành cho trình gỡ lỗi nên bị từ chối như phím do
-  ứng dụng khác giữ. (Mình chọn cách hiểu nhỏ nhất khi làm nhóm khung ứng dụng; chờ Hùng xem lại.)
+  ứng dụng khác giữ. (Mình chọn cách hiểu nhỏ nhất khi làm nhóm khung ứng dụng; Hùng chưa xem lại.)
 
 ## Clarifications
 
@@ -132,6 +132,10 @@ Biểu tượng khay, thanh chụp, cài đặt, phím tắt, phiên bản đang
 
 ## What it does not do yet
 
+- Phím tắt đang do chính ứng dụng giữ không ghi được vào ô phím của Cài đặt (Windows đưa phím cho ứng dụng, không cho ô); bấm nó khi Cài đặt mở không làm gì. Đề xuất: nhả các phím trong lúc Cài đặt mở. Chờ Hùng quyết.
+- Khởi động bằng `--autostart` mà một phím không đăng ký được: hiện hộp lỗi lúc đăng nhập. Đề xuất: chỉ báo một dòng nhỏ. Chờ Hùng quyết.
+- Một trường thiếu trong file cài đặt vẫn bị coi là file hỏng; phải đổi thành giá trị mặc định trước khi thêm cài đặt ở đợt 2.
+- Alt+PrintScreen và Ctrl+PrintScreen mặc định không đăng ký được trên máy đã thử (Windows hay chương trình khác giữ): người dùng đổi phím trong Cài đặt.
 - Cập nhật tự động, bộ cài, và ký số file chạy.
 - Đồng bộ cài đặt giữa các máy.
 - Chạy với quyền quản trị để chụp cửa sổ của ứng dụng chạy quyền cao.

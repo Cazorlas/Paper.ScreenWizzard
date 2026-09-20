@@ -1,4 +1,4 @@
-> Bản nháp chờ duyệt 2026-09-20. Đây là yêu cầu, viết trước khi có code. Việc làm và bằng chứng: [2026-09-20-m1-chup-va-sua-anh-plan.md](../shell/2026-09-20-m1-chup-va-sua-anh-plan.md)
+> Đợt 1 đã làm xong 2026-09-21 (SPEC được duyệt 2026-09-20). Việc làm và bằng chứng: [2026-09-20-m1-chup-va-sua-anh-plan.md](../shell/2026-09-20-m1-chup-va-sua-anh-plan.md)
 
 # Sửa ảnh — SPEC
 
@@ -148,6 +148,8 @@ khoản: làm mờ nhẹ mà còn đọc được lại là hỏng việc.
 
 ## What it does not do yet
 
+- Hộp của chữ, dùng để chọn và để giữ hay bỏ chữ khi cắt, là ước lượng (0,6 × cỡ chữ mỗi ký tự), không đo bằng phông: chữ toàn ký tự rộng có thể lòi ra ngoài hộp.
+- BMP chỉ đọc: "Lưu" một BMP đã mở hỏi "Lưu thành" và đề xuất tên PNG; tên lưu có đuôi lạ được thêm ".png".
 - Tẩy từng phần nét bút (chỉ xoá cả hình đã chọn).
 - Xoay, lật, đổi cỡ ảnh, đổ bóng, khung viền ảnh.
 - Hiệu ứng như chỉnh sáng tối, độ tương phản.

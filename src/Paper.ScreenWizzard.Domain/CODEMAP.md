@@ -14,6 +14,8 @@ UseCases call it, nothing else references it except Infrastructure/Presentation/
 | `Common/PixelImageOps.cs` | crop, freeform mask, flatten a transparent image onto white for JPG |
 | `Common/ScreenshotNaming.cs` | `Screenshot yyyy-MM-dd HH.mm.ss`, the (2) (3) suffix, format from an extension |
 | `Editor/EditorTypes.cs` | the annotation records (stroke, line, arrow, rectangle, ellipse, text, step, blur) and `EditorDocument` |
+| `Editor/AnnotationMetrics.cs` | how big a drawing really is: highlighter 3x width, step disc, text box estimate |
+| `Editor/AnnotationFactory.cs` | which drawing a finished gesture makes: no-size shapes, backwards box, the pen dot, blank text |
 | `Editor/AnnotationOps.cs` | move an annotation, the next step number, whether a crop keeps it |
 | `Editor/AnnotationHit.cs` | which annotation a click lands on (outline bands, boxes) |
 | `Editor/EditorGeometry.cs` | clamp a crop to the image, the Shift constraint of a drag |
@@ -25,5 +27,5 @@ UseCases call it, nothing else references it except Infrastructure/Presentation/
 ## Flow
 
 No flow of its own: `CaptureSession` (UseCases) calls `CaptureGeometry` and `PixelImageOps`; `ImageDelivery` calls `ScreenshotNaming`;
-`EditorSession` and `EditorInteractor` call `AnnotationOps`, `AnnotationHit`, `EditorGeometry` and `Mosaic`; `ShellInteractor` calls
+`EditorSession` and `EditorInteractor` call `AnnotationOps`, `AnnotationHit`, `AnnotationFactory`, `EditorGeometry` and `Mosaic`; the renderer in Presentation reads `AnnotationMetrics`; `ShellInteractor` calls
 `HotkeyRules` and `SettingsDefaults`.

@@ -1,4 +1,4 @@
-> Bản nháp chờ duyệt 2026-09-20. Đây là yêu cầu, viết trước khi có code. Việc làm và bằng chứng: [2026-09-20-m1-chup-va-sua-anh-plan.md](../shell/2026-09-20-m1-chup-va-sua-anh-plan.md)
+> Đợt 1 đã làm xong 2026-09-21 (SPEC được duyệt 2026-09-20). Việc làm và bằng chứng: [2026-09-20-m1-chup-va-sua-anh-plan.md](../shell/2026-09-20-m1-chup-va-sua-anh-plan.md)
 
 # Chụp màn hình — SPEC
 
@@ -186,6 +186,9 @@ nơi nhận ảnh (trình sửa, clipboard, file).
 
 ## What it does not do yet
 
+- Esc lúc đang đếm ngược: cửa sổ đếm không lấy bàn phím (để Esc của người dùng còn đóng được menu ở chương trình khác); huỷ bằng cách bấm vào con số. Chờ Hùng quyết có đổi không.
+- Ảnh không vào được file khi cài đặt là "tự vào file" (không có hộp thoại): hiện hộp lỗi và ảnh mất. Đề xuất: mở hộp "Đã chụp" để ảnh không mất. Chờ Hùng quyết.
+- PNG của vùng tự do giữ màu gốc dưới điểm trong suốt (alpha 0). Đề xuất: đặt luôn màu bằng 0. Chờ Hùng quyết.
 - Chụp cửa sổ dài phải cuộn (chụp cuộn).
 - Kính lúp và toạ độ điểm ảnh khi kéo vùng.
 - Chỉnh lại vùng (kéo cạnh, kéo góc) trước khi xác nhận: thả chuột là chụp luôn.
