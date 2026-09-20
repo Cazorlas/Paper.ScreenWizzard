@@ -170,7 +170,21 @@ public sealed class CaptureFlow
     private CountdownRun OpenCountdown(int firstSecond)
     {
         var viewModel = new CountdownViewModel { SecondsLeft = firstSecond };
-        return new CountdownRun(viewModel, _views.OpenCountdown(viewModel));
+        var run = new CountdownRun(viewModel, _views.OpenCountdown(viewModel));
+        viewModel.CancelRequested += (_, _) => CancelCountdown(run);
+        return run;
+    }
+
+    // The user gave up while the number was counting (SPEC capture, "Cách dùng" step 5): the use case stops waiting, so no snapshot is
+    // taken and no overlay follows, and the number goes at once rather than when the cancelled task unwinds.
+    private void CancelCountdown(CountdownRun run)
+    {
+        _current?.Cancel();
+        run.Close();
+        if (ReferenceEquals(_countdown, run))
+        {
+            _countdown = null;
+        }
     }
 
     private void Continue(ICaptureSession session)

@@ -152,6 +152,28 @@ public sealed class CaptureFlowTests : UiTestBase
     }
 
     [Test]
+    public void Countdown_AskingToCancelItStopsTheRunClosesTheNumberAndNothingIsCaptured()
+    {
+        // SPEC capture, "Cách dùng" step 5: cancelling at any step captures nothing and the screen returns to normal.
+        var rig = new Rig();
+        rig.Interactor.CountdownToReport = [5];
+        var gate = new TaskCompletionSource<CaptureBeginResult>();
+        rig.Interactor.BeginGate = gate;
+        rig.StartWithoutWaiting(CaptureKind.Rectangle, expectedBegins: 1);
+        WpfHost.Instance.Settle();
+        Assert.That(rig.Fake.Countdowns, Has.Count.EqualTo(1), "the number is up");
+
+        rig.Fake.Countdowns[0].ViewModel.Cancel();
+
+        Assert.That(rig.Interactor.LastToken.IsCancellationRequested, Is.True, "the use case is told to stop waiting");
+        Assert.That(rig.Fake.Countdowns[0].IsClosed, Is.True, "the number is gone at once");
+        gate.SetCanceled();
+        WpfHost.Instance.Settle();
+        Assert.That(rig.Fake.Selections, Is.Empty, "no overlay comes after a cancelled countdown");
+        Assert.That(rig.Interactor.Deliveries, Is.Empty);
+    }
+
+    [Test]
     public void Countdown_WithNoDelay_OpensNoCountdownWindow()
     {
         var rig = new Rig();

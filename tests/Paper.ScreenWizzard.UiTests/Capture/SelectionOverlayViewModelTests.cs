@@ -34,6 +34,49 @@ public sealed class SelectionOverlayViewModelTests
     }
 
     [Test]
+    public void ALostMouseCaptureAbortsTheDragInsteadOfLeavingItHalfDone()
+    {
+        // Alt+Tab, a system dialog or another window taking the mouse mid-drag: no button-up will ever arrive.
+        var (viewModel, session, _, finished) = Create(CaptureKind.Rectangle);
+        viewModel.PointerDown(new PixelPoint(150, 150));
+        viewModel.PointerMoved(new PixelPoint(450, 350));
+
+        viewModel.PointerCaptureLost();
+
+        Assert.That(viewModel.IsDragging, Is.False);
+        Assert.That(viewModel.SelectionRect, Is.Null, "no half-drawn frame is left on the frozen screen");
+        Assert.That(finished, Is.Empty, "the overlay stays: the user may drag again");
+        Assert.That(session.IsActive, Is.True);
+    }
+
+    [Test]
+    public void TheDisplayChangingWhileTheOverlayIsUpEndsItAtOnceWithTheMessageNotOnlyWhenTheDragEnds()
+    {
+        // SPEC capture F6: the pixels no longer match the screen. The user who unplugs a monitor and does nothing must still be told.
+        var (viewModel, session, notes, finished) = Create(CaptureKind.Rectangle);
+        session.DisplayAnswer = CaptureIssue.DisplayChanged;
+
+        viewModel.DisplayChanged();
+
+        Assert.That(notes.Errors.Select(m => m.Key), Is.EqualTo(new[] { "Capture.DisplayChanged" }));
+        Assert.That(finished, Has.Count.EqualTo(1));
+        Assert.That(finished[0].End, Is.EqualTo(SelectionEnd.Failed));
+        Assert.That(session.IsActive, Is.False);
+    }
+
+    [Test]
+    public void ADisplayEventWhenTheLayoutIsTheSameChangesNothing()
+    {
+        var (viewModel, session, notes, finished) = Create(CaptureKind.Rectangle);
+
+        viewModel.DisplayChanged();
+
+        Assert.That(notes.Errors, Is.Empty);
+        Assert.That(finished, Is.Empty);
+        Assert.That(session.IsActive, Is.True);
+    }
+
+    [Test]
     public void Rectangle_WhileDragging_ShowsTheRegionTheSessionSaysAndItsWidthByHeight()
     {
         var (viewModel, _, _, _) = Create(CaptureKind.Rectangle);

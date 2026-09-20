@@ -23,6 +23,7 @@ public sealed class EditorStringsTests : UiTestBase
         NotificationMessage.Of("Editor.NotAnImage", @"C:\Docs\notes.txt"),
         NotificationMessage.Of("Editor.ImageTooLarge", @"C:\Pics\huge.png"),
         NotificationMessage.Of("Editor.ClipboardHasNoImage"),
+        NotificationMessage.Of("Editor.ClipboardReadFailed", "the clipboard is held by another program"),
         NotificationMessage.Of("Editor.SaveFailed", @"D:\ReadOnly\shot.png", "access is denied"),
         NotificationMessage.Of("Editor.CopyFailed", "the clipboard is held by another program"),
         NotificationMessage.Of("Editor.CropInvalid"),

@@ -50,6 +50,8 @@ public sealed class LanguageAndThemeTests : UiTestBase
     private static readonly string[] _requiredStringKeys =
     [
         "Shell.SettingsCorrupt",
+        "Shell.SettingsUnreadable",
+        "Shell.HotkeyUnsafeAtStart",
         "Shell.SettingsNotSaved",
         "Shell.AutostartFailed",
         "Shell.HotkeyNeedsModifier",

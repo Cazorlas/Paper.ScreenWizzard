@@ -237,9 +237,13 @@ public sealed class FakeCaptureInteractor : ICaptureInteractor
     /// <summary>Runs first thing in BeginAsync: the moment the real use case would go on to take the snapshot when there is no delay.</summary>
     public Action? BeforeBegin { get; set; }
 
+    /// <summary>The token of the latest BeginAsync: a test cancels the run through the window and reads it here.</summary>
+    public CancellationToken LastToken { get; private set; }
+
     public Task<CaptureBeginResult> BeginAsync(CaptureRequest request, IProgress<int>? countdown, CancellationToken cancellationToken)
     {
         BeforeBegin?.Invoke();
+        LastToken = cancellationToken;
         Begun.Add(request);
         RunningSession?.Cancel();
         foreach (var second in CountdownToReport)

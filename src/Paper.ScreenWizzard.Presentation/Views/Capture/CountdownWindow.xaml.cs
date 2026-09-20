@@ -22,6 +22,18 @@ public partial class CountdownWindow : Window
         DataContext = viewModel;
         viewModel.PropertyChanged += OnViewModelChanged;
         Closed += (_, _) => viewModel.PropertyChanged -= OnViewModelChanged;
+
+        // The window never takes focus (the user is holding a menu open in another program, and Esc there would close that menu), so
+        // Esc reaches it only when the user clicked it first; a click on the number is the way to give up.
+        MouseLeftButtonUp += (_, _) => viewModel.Cancel();
+        MouseRightButtonUp += (_, _) => viewModel.Cancel();
+        KeyDown += (_, e) =>
+        {
+            if (e.Key == System.Windows.Input.Key.Escape)
+            {
+                viewModel.Cancel();
+            }
+        };
     }
 
     private void OnViewModelChanged(object? sender, PropertyChangedEventArgs e)

@@ -19,6 +19,8 @@ public sealed class NotificationTests : UiTestBase
     private static readonly NotificationMessage[] _catalogue =
     [
         NotificationMessage.Of("Shell.SettingsCorrupt"),
+        NotificationMessage.Of("Shell.SettingsUnreadable", @"C:\Data\settings.json: used by another process"),
+        NotificationMessage.Of("Shell.HotkeyUnsafeAtStart", "A"),
         NotificationMessage.Of("Shell.SettingsNotSaved", "the file is read-only"),
         NotificationMessage.Of("Shell.AutostartFailed", "access denied"),
         NotificationMessage.Of("Shell.HotkeyNeedsModifier", "A"),
@@ -61,6 +63,15 @@ public sealed class NotificationTests : UiTestBase
         var text = host.Invoke(() => host.Language.Format(NotificationMessage.Of("Shell.HotkeyUsedByOtherKind", "Freeform")));
 
         Assert.That(text, Does.Contain(kindName));
+    }
+
+    [Test]
+    public void TheErrorDialogHasNoTaskbarButtonBecauseTheAppLivesInTheTrayOnly()
+    {
+        // SPEC shell: the app never shows on the taskbar unless the editor or Settings is open; an error box is neither.
+        var shown = WpfHost.Instance.Invoke(() => new Paper.ScreenWizzard.Presentation.Views.Shell.ErrorDialogWindow("title", "text").ShowInTaskbar);
+
+        Assert.That(shown, Is.False);
     }
 
     [Test]

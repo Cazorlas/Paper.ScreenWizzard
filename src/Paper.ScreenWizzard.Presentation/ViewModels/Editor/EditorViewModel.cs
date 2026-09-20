@@ -848,6 +848,7 @@ public sealed class EditorViewModel : BindableBase, IDisposable
     {
         CommitPending();
         Session.Undo();
+        RefitIfNeeded();
         NotifySessionChanged();
     }
 
@@ -855,6 +856,7 @@ public sealed class EditorViewModel : BindableBase, IDisposable
     {
         CommitPending();
         Session.Redo();
+        RefitIfNeeded();
         NotifySessionChanged();
     }
 

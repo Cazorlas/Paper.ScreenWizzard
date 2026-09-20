@@ -171,6 +171,35 @@ public sealed class SelectionOverlayViewModel : BindableBase, IDisposable
         }
     }
 
+    /// <summary>The window lost the mouse without a button-up (Alt+Tab, a system box): the drag is abandoned, the overlay stays.</summary>
+    public void PointerCaptureLost()
+    {
+        if (_isFinished || !IsDragging)
+        {
+            return;
+        }
+
+        ClearSelection();
+    }
+
+    /// <summary>
+    /// The screen layout may have changed (a monitor plugged or unplugged, a resolution or scale change): the frozen picture no
+    /// longer matches what the user sees, so it ends now with the message of F6 rather than waiting for the drag to end.
+    /// </summary>
+    public void DisplayChanged()
+    {
+        if (_isFinished)
+        {
+            return;
+        }
+
+        var display = Session.CheckDisplayUnchanged();
+        if (display != CaptureIssue.None)
+        {
+            Fail(CaptureMessages.For(display, null), null);
+        }
+    }
+
     public void PointerUp(PixelPoint point)
     {
         if (_isFinished || !IsDragging)

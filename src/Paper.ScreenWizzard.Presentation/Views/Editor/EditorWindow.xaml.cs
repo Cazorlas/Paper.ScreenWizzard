@@ -128,7 +128,17 @@ public partial class EditorWindow : Window
 
     private void OnPictureMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
+        // Taking the keyboard for the picture makes the open text box lose it, and losing it commits the text: ask BEFORE that, or this
+        // press would look like a click with no box open and start a second one (SPEC editor: a click elsewhere only finishes the text).
+        var endsTheText = _viewModel.IsEditingText;
         Picture.Focus();
+        if (endsTheText)
+        {
+            _viewModel.CommitText();
+            e.Handled = true;
+            return;
+        }
+
         Picture.CaptureMouse();
 
         // The second press of a double-click is its own question to the view model (it may open a text for editing); every other press is a press.
@@ -264,6 +274,9 @@ public partial class EditorWindow : Window
         if (e.Key == Key.Return)
         {
             _viewModel.CommitFontSize();
+
+            // Return is also the window's key for "cut the crop region": here it only means "apply this size".
+            e.Handled = true;
         }
     }
 

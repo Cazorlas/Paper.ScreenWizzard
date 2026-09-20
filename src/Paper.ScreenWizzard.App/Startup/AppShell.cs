@@ -121,7 +121,7 @@ public sealed class AppShell : IDisposable
         _appearance.ApplyLanguage(started.Language);
         _appearance.ApplyTheme(started.Settings.Theme);
         _singleInstance.SecondInstanceLaunched += OnSecondInstanceLaunched;
-        _hotkeys.Pressed += StartCapture;
+        _hotkeys.Pressed += OnHotkeyPressed;
         _captureFlow.EditRequested += image => _editorFlow.Open(image, null);
 
         _trayMenu = new TrayMenuViewModel(started.Settings.Hotkeys, false);
@@ -318,6 +318,18 @@ public sealed class AppShell : IDisposable
     }
 
     // ---- capture ----
+
+    // While Settings is open a press of a chord this app holds is most likely someone typing it into a hotkey box: Windows hands it to the
+    // app instead of the box, and starting a capture under the window would be the wrong answer.
+    private void OnHotkeyPressed(CaptureKind kind)
+    {
+        if (_settingsWindow is not null)
+        {
+            return;
+        }
+
+        StartCapture(kind);
+    }
 
     private async void StartCapture(CaptureKind kind)
     {

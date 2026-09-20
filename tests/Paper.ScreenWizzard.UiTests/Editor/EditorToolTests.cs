@@ -642,6 +642,28 @@ public sealed class EditorToolTests : UiTestBase
     }
 
     [Test]
+    public void Zoom_UndoingACropInFitMode_FitsTheRestoredBiggerImageAgainAndRedoFitsTheSmallerOne()
+    {
+        // A 3000 x 2000 image is fitted to about 0.25; cutting it to 400 x 300 shows it at 100%; Ctrl+Z brings the big image back,
+        // and it must be fitted again, not shown at 100% behind scrollbars.
+        var rig = EditorRig.Create(EditorTestData.White(3000, 2000));
+        rig.ViewModel.SetViewport(800, 600, 1.0);
+        var fitted = rig.ViewModel.Zoom;
+        rig.ViewModel.SelectTool(ToolKind.Crop);
+        rig.Drag(P(100, 100), P(500, 400));
+        rig.ViewModel.ConfirmCommand.Execute(null);
+        Assert.That(rig.ViewModel.Zoom, Is.EqualTo(1.0).Within(1e-9), "the small cut is shown at its own size");
+
+        rig.ViewModel.UndoCommand.Execute(null);
+
+        Assert.That(rig.ViewModel.Zoom, Is.EqualTo(fitted).Within(1e-9), "the restored 3000 x 2000 image is fitted again");
+
+        rig.ViewModel.RedoCommand.Execute(null);
+
+        Assert.That(rig.ViewModel.Zoom, Is.EqualTo(1.0).Within(1e-9), "and the redone small cut is back at 100%");
+    }
+
+    [Test]
     public void Zoom_WhileInFitMode_FollowsTheViewportUntilTheUserZooms()
     {
         var rig = EditorRig.Create(EditorTestData.White(1600, 1200));

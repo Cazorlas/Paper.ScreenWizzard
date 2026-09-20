@@ -19,5 +19,10 @@ public sealed class CountdownViewModel : BindableBase
         }
     }
 
+    /// <summary>Raised when the user asks to give up the delayed capture (a click on the number, or Esc while it has the keyboard).</summary>
+    public event EventHandler? CancelRequested;
+
     public string Text => _secondsLeft.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    public void Cancel() => CancelRequested?.Invoke(this, EventArgs.Empty);
 }

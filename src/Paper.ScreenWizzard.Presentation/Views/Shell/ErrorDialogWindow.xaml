@@ -11,6 +11,7 @@
         MaxWidth="480"
         MinWidth="320"
         ResizeMode="NoResize"
+        ShowInTaskbar="False"
         SizeToContent="WidthAndHeight"
         Topmost="True"
         UseLayoutRounding="True"

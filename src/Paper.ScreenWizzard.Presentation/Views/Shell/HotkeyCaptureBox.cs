@@ -63,6 +63,20 @@ public class HotkeyCaptureBox : TextBox
         e.Handled = true;
     }
 
+    // Windows delivers no key-down for PrintScreen to a program that has not registered it, only the key-up: the default chords of
+    // this very app are PrintScreen ones, so the box takes the chord on the key-up of that one key.
+    protected override void OnPreviewKeyUp(KeyEventArgs e)
+    {
+        if (e.Key != Key.Snapshot)
+        {
+            base.OnPreviewKeyUp(e);
+            return;
+        }
+
+        Chord = new HotkeyChord(ToModifiers(Keyboard.Modifiers), NameOf(e.Key));
+        e.Handled = true;
+    }
+
     private static void OnChordChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e) =>
         ((HotkeyCaptureBox)sender).Text = HotkeyChordFormatter.Format((HotkeyChord)e.NewValue);
 

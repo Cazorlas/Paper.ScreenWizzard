@@ -382,6 +382,40 @@ public sealed class EditorWindowTests : UiTestBase
         Assert.That(rig.Window.TextOf("SizeText"), Is.EqualTo("200 × 150"));
     }
 
+    [Test]
+    public void Keyboard_EnterInTheSizeBoxAppliesTheSizeAndDoesNotAlsoCutTheImage()
+    {
+        // Enter is the window's key for "cut the region"; typed in the size box it only means "apply this size".
+        using var rig = EditorWindowRig.Open(image: EditorTestData.White(400, 300));
+        rig.ChooseTool(ToolKind.Crop);
+        rig.MouseDrag(P(50, 40), P(250, 190));
+        rig.Window.EnsureForeground();
+        rig.Window.Focus("FontSizeBox");
+
+        rig.Window.Press(VirtualKeyShort.RETURN);
+
+        Assert.That(rig.Rig.Session.Document.Source.Width, Is.EqualTo(400), "the image is not cut");
+        Assert.That(rig.ViewModel.CropRect, Is.Not.Null, "the region is still there to be confirmed from the picture");
+    }
+
+    [Test]
+    public void Text_ClickingElsewhereOnThePictureWhileTheBoxIsOpenOnlyCommitsAndOpensNoSecondBox()
+    {
+        // SPEC editor: a click elsewhere finishes the text, it does not also start another box. The window's own focus step
+        // (the picture takes the keyboard) used to commit first, so the click then looked like a click with no box open.
+        using var rig = EditorWindowRig.Open(image: EditorTestData.White(400, 200));
+        rig.ChooseTool(ToolKind.Text);
+        rig.MouseClick(P(30, 40));
+        Assert.That(rig.ViewModel.IsEditingText, Is.True);
+        rig.Window.SetText("TextDraftBox", "Van");
+
+        rig.MouseClick(P(250, 150));
+
+        Assert.That(rig.ViewModel.IsEditingText, Is.False, "no second box is open");
+        Assert.That(rig.Rig.Session.Document.Annotations.OfType<TextAnnotation>().Select(t => t.Text), Is.EqualTo(new[] { "Van" }));
+        Assert.That(rig.Window.Exists("TextDraftBox"), Is.False);
+    }
+
     // ---- F rows ----
 
     [Test]

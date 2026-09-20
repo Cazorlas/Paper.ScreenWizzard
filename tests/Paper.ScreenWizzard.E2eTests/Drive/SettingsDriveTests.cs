@@ -62,6 +62,23 @@ public sealed class SettingsDriveTests : DriveBase
     }
 
     [Test]
+    public void ARegisteredHotkey_PressedWhileSettingsIsOpen_StartsNoCapture()
+    {
+        // The chord a user wants to type into a hotkey box is often one the app itself holds; Windows hands it to the app, not to the box,
+        // and a capture must not start under the Settings window because of it.
+        NewApp();
+        var bar = StartAndWaitForBar();
+        var settings = OpenSettings(bar);
+        Assert.That(settings, Is.Not.Null, "set-up: Settings is open");
+
+        AppRun.PressHotkey(CaptureKind.Rectangle);
+        Thread.Sleep(1500);
+
+        Assert.That(App.FindWindow("SelectionOverlay"), Is.Null, "no overlay opened over the Settings window");
+        Assert.That(App.FindWindow("SettingsWindow"), Is.Not.Null, "Settings is still there");
+    }
+
+    [Test]
     public void Language_English_ChangesTheOpenWindowsAtOnce_AndIsWrittenToTheFile()
     {
         NewApp();

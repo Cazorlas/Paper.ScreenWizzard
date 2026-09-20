@@ -49,7 +49,13 @@ public partial class SelectionOverlayWindow : Window
             ApplyScale();
         };
         Closed += OnClosed;
+
+        // Mouse capture can be taken from the stage without a button-up (Alt+Tab, a system dialog); a display change does not need a mouse at all.
+        Stage.LostMouseCapture += (_, _) => _viewModel.PointerCaptureLost();
+        Microsoft.Win32.SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
     }
+
+    private void OnDisplaySettingsChanged(object? sender, EventArgs e) => Dispatcher.BeginInvoke(_viewModel.DisplayChanged);
 
     protected override void OnDpiChanged(DpiScale oldDpi, DpiScale newDpi)
     {
@@ -88,6 +94,7 @@ public partial class SelectionOverlayWindow : Window
     private void OnClosed(object? sender, EventArgs e)
     {
         _closed = true;
+        Microsoft.Win32.SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged;
         _viewModel.PropertyChanged -= OnViewModelChanged;
         _viewModel.Finished -= OnFinished;
 
@@ -113,8 +120,9 @@ public partial class SelectionOverlayWindow : Window
 
     private void OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
-        Stage.ReleaseMouseCapture();
+        // The button-up is handed on BEFORE the capture is released: releasing raises LostMouseCapture, which abandons a drag in progress.
         _viewModel.PointerUp(DesktopPointOf(e));
+        Stage.ReleaseMouseCapture();
         e.Handled = true;
     }
 

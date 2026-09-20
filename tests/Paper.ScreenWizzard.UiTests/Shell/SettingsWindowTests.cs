@@ -42,6 +42,34 @@ public sealed class SettingsWindowTests : UiTestBase
     ];
 
     [Test]
+    public void APrintScreenKeyUpIsRecordedInTheHotkeyBoxBecauseWindowsSendsNoKeyDownForIt()
+    {
+        // The harness never sends the real PrintScreen key (it would capture the desktop), so the key-up event is raised on the box.
+        var recorded = WpfHost.Instance.Invoke(() =>
+        {
+            var box = new Paper.ScreenWizzard.Presentation.Views.Shell.HotkeyCaptureBox();
+            var window = new System.Windows.Window { Content = box, ShowActivated = false, ShowInTaskbar = false, Width = 200, Height = 100 };
+            window.Show();
+            try
+            {
+                var source = System.Windows.PresentationSource.FromVisual(box);
+                var args = new System.Windows.Input.KeyEventArgs(System.Windows.Input.Keyboard.PrimaryDevice, source!, 0, System.Windows.Input.Key.Snapshot)
+                {
+                    RoutedEvent = System.Windows.Input.Keyboard.PreviewKeyUpEvent,
+                };
+                box.RaiseEvent(args);
+                return box.Chord;
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+
+        Assert.That(recorded.Key, Is.EqualTo("PrintScreen"));
+    }
+
+    [Test]
     public void Keyboard_TabThroughSettings_FollowsTheVisibleOrder()
     {
         using var rig = SettingsRig.Open();
