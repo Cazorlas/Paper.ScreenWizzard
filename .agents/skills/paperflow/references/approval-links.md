@@ -36,3 +36,29 @@ Cùng dạng liên kết, nhẹ hơn một bậc: **một dòng cho mỗi file �
   để người dùng tự đoán nó nằm đâu.
 
 Không áp cho: file chỉ đọc để hiểu mà người dùng không cần mở, và code đã hiện nguyên trong lượt.
+
+## Bấm được là điều kiện, không phải mong muốn
+
+Một liên kết đúng dạng mà **bấm không mở** thì không tính là đã tuân luật này. Nó còn tệ hơn nêu tên
+suông: nêu tên suông thì người dùng biết phải tự tìm, còn một liên kết hỏng trông y hệt một liên kết
+tốt, và người duyệt chỉ phát hiện lúc đã bấm.
+
+**Đã đo, 2026-09-20.** Một kho có **dấu cách trong đường dẫn**. Liên kết được gửi với dấu cách mã hoá
+thành `%20` — người dùng bấm, **không mở**. Suốt một phiên dài mọi liên kết đều mang lỗi đó và không có
+gì báo cho tới khi người dùng lên tiếng.
+
+Nên:
+
+- **Đường dẫn có dấu cách thì bọc destination trong dấu ngoặc nhọn**, đúng chuẩn markdown:
+  `[tên](<thu muc co dau cach/docs/SPEC.md#L180>)`. Mã hoá `%20` **đã đo là hỏng** trên client đó.
+- **Đường dẫn tính từ gốc thư mục làm việc của phiên** — không phải từ thư mục con đang đứng, không
+  phải đường dẫn tuyệt đối.
+- **Lần đầu gửi liên kết trong một kho có dấu cách hay ký tự lạ trong đường dẫn, hỏi một câu** "bấm mở
+  được không?", rồi ghi câu trả lời vào `REFERENCE.md` của kho đó. Một câu hỏi rẻ hơn cả một phiên gửi
+  liên kết hỏng.
+- **Số dòng phải đo, đừng nhớ.** `#L<dòng>` lấy bằng `grep -n` ngay trước khi gửi; file vừa sửa trong
+  cùng lượt thì số dòng cũ đã sai.
+
+Hai điều trên được viết ra vì `payload-contract` bắt được chính đoạn này: bản nháp đầu của nó **chứa một
+liên kết hỏng làm ví dụ**, và luật F14 ("mọi đường dẫn trong payload phải resolve") chặn lại. Ví dụ trong
+tài liệu phải để trong dấu nháy ngược, không để thành liên kết thật.
