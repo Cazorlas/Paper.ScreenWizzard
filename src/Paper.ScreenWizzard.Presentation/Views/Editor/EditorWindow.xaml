@@ -248,6 +248,8 @@
                    MaxLength="3"
                    MinHeight="30"
                    Padding="6,4"
+                   KeyDown="OnFontSizeBoxKeyDown"
+                   LostKeyboardFocus="OnFontSizeBoxLostKeyboardFocus"
                    Text="{Binding FontSizeText, UpdateSourceTrigger=PropertyChanged}"
                    ToolTip="{DynamicResource Editor.FontSize}"
                    VerticalAlignment="Center"

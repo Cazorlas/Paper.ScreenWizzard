@@ -31,8 +31,8 @@ public sealed class EditorViewModel : BindableBase, IDisposable
     // The space around the image inside the scroll area, both sides together, in display units (the stage's margin in the window).
     private const double StageMargin = 24.0;
 
-    // A click may miss a thin line by this many display units and still select it.
-    private const double HitToleranceInViewUnits = 6.0;
+    // A click may miss a thin line by this many display units and still select it; the use case is asked in image pixels (this over the zoom).
+    private const double HitToleranceInViewUnits = 4.0;
 
     private readonly EditorServices _services;
     private readonly EditorFlow _flow;
@@ -58,6 +58,10 @@ public sealed class EditorViewModel : BindableBase, IDisposable
     private PixelRect? _cropRect;
     private PixelPoint? _textOrigin;
     private string _textDraftText = string.Empty;
+    private Guid? _editingTextId;
+    private int? _pendingFontSize;
+    private bool _thicknessDragging;
+    private int? _thicknessDragValue;
     private EditorDocument? _baseFor;
     private PixelImage? _basePixels;
 
@@ -111,18 +115,28 @@ public sealed class EditorViewModel : BindableBase, IDisposable
 
     /// <summary>
     /// The thickness shown by the slider: the selected shape's, else the next shapes'. Setting it changes the selected shape (one history
-    /// step, and none when the value is the one it already has) or, with nothing selected, the next shapes.
+    /// step, and none when the value is the one it already has) or, with nothing selected, the next shapes. While the slider's thumb is held
+    /// (<see cref="BeginThicknessChange"/> to <see cref="EndThicknessChange"/>) a selected shape is only previewed, and the whole drag is ONE step.
     /// </summary>
     public int Thickness
     {
-        get => SelectedAnnotation?.Thickness ?? _thickness;
+        get => _thicknessDragValue ?? SelectedAnnotation?.Thickness ?? _thickness;
         set
         {
             var clamped = Math.Clamp(value, MinimumThickness, MaximumThickness);
             if (SelectedAnnotation is { } selected)
             {
-                if (selected.Thickness != clamped)
+                if (_thicknessDragging)
                 {
+                    _thicknessDragValue = clamped;
+                    _draft = selected with { Thickness = clamped };
+                    _draftReplaces = selected.Id;
+                    RaisePropertyChanged();
+                    Invalidate();
+                }
+                else if (selected.Thickness != clamped)
+                {
+                    CommitPending();
                     Session.SetThickness(selected.Id, clamped);
                     NotifySessionChanged();
                 }
@@ -143,12 +157,28 @@ public sealed class EditorViewModel : BindableBase, IDisposable
         }
     }
 
+    /// <summary>
+    /// The size shown by the size box: the selected text's or step marker's, else the size of the NEXT text and step markers. Setting it
+    /// changes the selected one (one history step, none when it already has that size) or, with none selected, the next ones.
+    /// </summary>
     public int FontSize
     {
-        get => _fontSize;
+        get => SelectedSizedAnnotation?.Size ?? _fontSize;
         set
         {
             var clamped = Math.Clamp(value, MinimumFontSize, MaximumFontSize);
+            if (SelectedSizedAnnotation is { } selected)
+            {
+                _pendingFontSize = null;
+                if (selected.Size != clamped)
+                {
+                    Session.SetFontSize(selected.Id, clamped);
+                    NotifySessionChanged();
+                }
+
+                return;
+            }
+
             if (SetProperty(ref _fontSize, clamped))
             {
                 _fontSizeText = clamped.ToString(CultureInfo.InvariantCulture);
@@ -157,7 +187,11 @@ public sealed class EditorViewModel : BindableBase, IDisposable
         }
     }
 
-    /// <summary>The font-size box's text. Only a whole number in range is taken; anything else leaves the size and the text alone while typing.</summary>
+    /// <summary>
+    /// The font-size box's text. Only a whole number in range is taken; anything else leaves the size and the text alone while typing. With
+    /// nothing selected a valid number is the next size at once; with a text or step marker selected it waits, however many keys it takes,
+    /// until <see cref="CommitFontSize"/> (Enter, or the box losing the keyboard), and is then ONE change of that annotation.
+    /// </summary>
     public string FontSizeText
     {
         get => _fontSizeText;
@@ -166,7 +200,14 @@ public sealed class EditorViewModel : BindableBase, IDisposable
             _fontSizeText = value;
             if (int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var parsed) && parsed is >= MinimumFontSize and <= MaximumFontSize)
             {
-                SetProperty(ref _fontSize, parsed, nameof(FontSize));
+                if (SelectedSizedAnnotation is not null)
+                {
+                    _pendingFontSize = parsed;
+                }
+                else
+                {
+                    SetProperty(ref _fontSize, parsed, nameof(FontSize));
+                }
             }
 
             RaisePropertyChanged();
@@ -249,6 +290,12 @@ public sealed class EditorViewModel : BindableBase, IDisposable
 
     public bool IsEditingText => _textOrigin is not null;
 
+    /// <summary>The colour of the text in the box: the edited text's own, else the colour of the next shapes.</summary>
+    public RgbaColor TextDraftColor => EditedText?.Color ?? _color;
+
+    /// <summary>The size of the text in the box: the edited text's own, else the size of the next text.</summary>
+    public int TextDraftFontSize => EditedText?.FontSize ?? _fontSize;
+
     /// <summary>The image with its mosaic, as the use case renders it; recomputed only when the document changes.</summary>
     public PixelImage BasePixels
     {
@@ -304,12 +351,24 @@ public sealed class EditorViewModel : BindableBase, IDisposable
     private Annotation? SelectedAnnotation =>
         Session.SelectedId is { } id ? Session.Document.Annotations.FirstOrDefault(a => a.Id == id) : null;
 
+    // The selected annotation when it has a font size (a text or a step marker), with that size.
+    private (Guid Id, int Size)? SelectedSizedAnnotation => SelectedAnnotation switch
+    {
+        TextAnnotation text => (text.Id, text.FontSize),
+        StepAnnotation step => (step.Id, step.FontSize),
+        _ => null,
+    };
+
+    // The committed text a double-click reopened, while its box is open.
+    private TextAnnotation? EditedText =>
+        _editingTextId is { } id ? Session.Document.Annotations.FirstOrDefault(a => a.Id == id) as TextAnnotation : null;
+
     // ---- tools, colour, thickness ----
 
     /// <summary>Chooses the tool. Leaving Select lets go of the selection, so a colour chosen next sets the next shapes and not the old one.</summary>
     public void SelectTool(ToolKind tool)
     {
-        CommitText();
+        CommitPending();
         _gesture = null;
         _draft = null;
         _draftReplaces = null;
@@ -335,6 +394,7 @@ public sealed class EditorViewModel : BindableBase, IDisposable
     /// <summary>A swatch was chosen: the selected shape takes the colour (one history step), else the next shapes will.</summary>
     public void SetColor(RgbaColor color)
     {
+        CommitPending();
         if (Session.SelectedId is { } id)
         {
             if (SelectedAnnotation?.Color != color)
@@ -455,6 +515,7 @@ public sealed class EditorViewModel : BindableBase, IDisposable
 
     public void PointerDown(PixelPoint point, bool shiftHeld)
     {
+        CommitFontSize();
         if (IsEditingText)
         {
             // A click elsewhere finishes the text; it does not also start another box (SPEC editor: bấm ra ngoài chốt chữ).
@@ -465,11 +526,7 @@ public sealed class EditorViewModel : BindableBase, IDisposable
         switch (_tool)
         {
             case ToolKind.Select:
-                var tolerance = HitToleranceInViewUnits / Math.Max(ViewScale, 0.01);
-                var hit = AnnotationGeometry.HitTest(Annotations, point.X, point.Y, tolerance);
-                Session.Select(hit?.Id);
-                _gesture = hit is null ? null : new Gesture(GestureKind.Move, point, hit, [point]);
-                NotifySessionChanged();
+                SelectAt(point, HitAt(point));
                 break;
             case ToolKind.Pen or ToolKind.Highlighter:
                 _gesture = new Gesture(GestureKind.Stroke, point, null, [point]);
@@ -496,6 +553,60 @@ public sealed class EditorViewModel : BindableBase, IDisposable
                 NotifySessionChanged();
                 break;
         }
+    }
+
+    /// <summary>
+    /// The second press of a double-click (the window says so by the click count). With the Select tool on a committed text it opens the text
+    /// box on that text, at its place, to edit it again (SPEC editor "Chữ"); anywhere else it is an ordinary press, so a fast second click of
+    /// any other tool still draws and a double-click on another kind of shape selects it and does nothing more.
+    /// </summary>
+    public void PointerDoubleClicked(PixelPoint point, bool shiftHeld)
+    {
+        if (_tool != ToolKind.Select || IsEditingText)
+        {
+            PointerDown(point, shiftHeld);
+            return;
+        }
+
+        CommitFontSize();
+        var hit = HitAt(point);
+        if (hit is { } id && Annotations.FirstOrDefault(a => a.Id == id) is TextAnnotation text)
+        {
+            BeginEditText(text);
+            return;
+        }
+
+        SelectAt(point, hit);
+    }
+
+    // What is under the point: the use case decides (IEditorInteractor.HitTest), the window only says how far a click may miss, in image pixels.
+    private Guid? HitAt(PixelPoint point)
+    {
+        var tolerance = Math.Max(1, (int)Math.Ceiling(HitToleranceInViewUnits / Math.Max(ViewScale, 0.01)));
+        return _services.Interactor.HitTest(Session, point, tolerance);
+    }
+
+    private void SelectAt(PixelPoint point, Guid? hit)
+    {
+        var target = hit is { } id ? Annotations.FirstOrDefault(a => a.Id == id) : null;
+        Session.Select(target?.Id);
+        _gesture = target is null ? null : new Gesture(GestureKind.Move, point, target, [point]);
+        NotifySessionChanged();
+    }
+
+    // Opens the one text box on a committed text: its text, its place, its colour and size; the text itself is left out of the picture while
+    // the box shows it, and nothing changes in the history until the box is committed.
+    private void BeginEditText(TextAnnotation text)
+    {
+        Session.Select(text.Id);
+        _gesture = null;
+        _draft = null;
+        _draftReplaces = text.Id;
+        _editingTextId = text.Id;
+        _textOrigin = text.Origin;
+        _textDraftText = text.Text;
+        RaiseTextDraftChanged();
+        NotifySessionChanged();
     }
 
     public void PointerMoved(PixelPoint point, bool shiftHeld)
@@ -592,7 +703,11 @@ public sealed class EditorViewModel : BindableBase, IDisposable
 
     // ---- text, crop, keys ----
 
-    /// <summary>Commits the text being typed through the use case (an empty text creates nothing and says nothing, SPEC editor F4).</summary>
+    /// <summary>
+    /// Commits the text being typed. A new text goes through the use case (an empty one creates nothing and says nothing, SPEC editor F4); a text
+    /// that was reopened goes through <see cref="IEditorSession.SetText"/> (one history step; an emptied box deletes it; a text left as it was
+    /// is no step at all).
+    /// </summary>
     public void CommitText()
     {
         if (_textOrigin is not { } origin)
@@ -601,11 +716,83 @@ public sealed class EditorViewModel : BindableBase, IDisposable
         }
 
         var text = _textDraftText.Replace("\r\n", "\n", StringComparison.Ordinal).Replace('\r', '\n');
+        var edited = EditedText;
+        var editedId = _editingTextId;
         _textOrigin = null;
         _textDraftText = string.Empty;
+        _editingTextId = null;
+        if (editedId is not null)
+        {
+            _draftReplaces = null;
+        }
+
         RaiseTextDraftChanged();
-        _services.Interactor.AddText(Session, origin, text, _color, _fontSize);
+        if (editedId is { } id)
+        {
+            var newText = string.IsNullOrWhiteSpace(text) ? string.Empty : text;
+            if (edited is not null && edited.Text != newText)
+            {
+                Session.SetText(id, newText);
+            }
+        }
+        else
+        {
+            _services.Interactor.AddText(Session, origin, text, _color, _fontSize);
+        }
+
         NotifySessionChanged();
+    }
+
+    /// <summary>
+    /// Applies the size typed in the size box to the selected text or step marker: one <see cref="IEditorSession.SetFontSize"/> however many
+    /// keys it took, and none when nothing was typed or the size is the one it has. The window calls it on Enter and when the box loses the
+    /// keyboard; it also puts the box back to the real size when what was typed was not a size. With nothing selected there is nothing to apply.
+    /// </summary>
+    public void CommitFontSize()
+    {
+        if (_pendingFontSize is { } pending)
+        {
+            _pendingFontSize = null;
+            if (SelectedSizedAnnotation is { } selected && selected.Size != pending)
+            {
+                Session.SetFontSize(selected.Id, pending);
+                NotifySessionChanged();
+                return;
+            }
+        }
+
+        SyncFontSizeText();
+    }
+
+    /// <summary>The slider's thumb was pressed: a selected shape is only previewed from now until <see cref="EndThicknessChange"/>.</summary>
+    public void BeginThicknessChange() => _thicknessDragging = SelectedAnnotation is not null;
+
+    /// <summary>The thumb was released: the shape takes the thickness the drag ended on, in ONE history step (none if it ended where it began).</summary>
+    public void EndThicknessChange()
+    {
+        if (!_thicknessDragging)
+        {
+            return;
+        }
+
+        var value = _thicknessDragValue;
+        _thicknessDragging = false;
+        _thicknessDragValue = null;
+        _draft = null;
+        _draftReplaces = null;
+        if (value is { } thickness && SelectedAnnotation is { } selected && selected.Thickness != thickness)
+        {
+            Session.SetThickness(selected.Id, thickness);
+        }
+
+        NotifySessionChanged();
+    }
+
+    // Everything typed or half-done that a new action must not leave behind: the text in the box, the size in the size box.
+    private void CommitPending()
+    {
+        CommitFontSize();
+        CommitText();
     }
 
     /// <summary>Enter: cuts the chosen region. A region the session refuses shows its message and changes nothing (SPEC editor F5).</summary>
@@ -634,7 +821,13 @@ public sealed class EditorViewModel : BindableBase, IDisposable
     /// <summary>Esc: finishes the text (SPEC: Esc chốt chữ), else drops the crop region, else drops the selection.</summary>
     internal void Cancel()
     {
-        if (IsEditingText)
+        if (_pendingFontSize is not null)
+        {
+            // Esc in the size box takes back what was typed there.
+            _pendingFontSize = null;
+            SyncFontSizeText();
+        }
+        else if (IsEditingText)
         {
             CommitText();
         }
@@ -653,20 +846,21 @@ public sealed class EditorViewModel : BindableBase, IDisposable
 
     internal void Undo()
     {
-        CommitText();
+        CommitPending();
         Session.Undo();
         NotifySessionChanged();
     }
 
     internal void Redo()
     {
-        CommitText();
+        CommitPending();
         Session.Redo();
         NotifySessionChanged();
     }
 
     internal void DeleteSelection()
     {
+        CommitFontSize();
         if (Session.SelectedId is { } id)
         {
             Session.Delete(id);
@@ -685,7 +879,7 @@ public sealed class EditorViewModel : BindableBase, IDisposable
     /// <summary>Ctrl+C: the flattened image (its own size, whatever the zoom) to the clipboard.</summary>
     internal void Copy()
     {
-        CommitText();
+        CommitPending();
         var result = _services.Interactor.Copy(_services.Flattener.Flatten(Session));
         if (result.Saved)
         {
@@ -712,7 +906,7 @@ public sealed class EditorViewModel : BindableBase, IDisposable
     /// </summary>
     public bool ConfirmClose()
     {
-        CommitText();
+        CommitPending();
         if (_services.Interactor.DecideClose(Session) == CloseAction.Close)
         {
             return true;
@@ -730,7 +924,7 @@ public sealed class EditorViewModel : BindableBase, IDisposable
 
     private bool RunSave(bool forceSaveAs)
     {
-        CommitText();
+        CommitPending();
         var decision = _services.Interactor.DecideSave(Session, _services.Settings());
         if (forceSaveAs)
         {
@@ -807,6 +1001,7 @@ public sealed class EditorViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(Thickness));
         RaisePropertyChanged(nameof(HintText));
         RaisePropertyChanged(nameof(CropRect));
+        SyncFontSizeText();
         foreach (var swatch in Palette)
         {
             swatch.Refresh();
@@ -823,9 +1018,29 @@ public sealed class EditorViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(IsEditingText));
         RaisePropertyChanged(nameof(TextDraftOrigin));
         RaisePropertyChanged(nameof(TextDraftText));
+        RaisePropertyChanged(nameof(TextDraftColor));
+        RaisePropertyChanged(nameof(TextDraftFontSize));
         RaisePropertyChanged(nameof(HintText));
         _deleteCommand.RaiseCanExecuteChanged();
         Invalidate();
+    }
+
+    // The size box shows the selected text's or marker's size, else the next size; not while a typed size is still waiting to be applied.
+    private void SyncFontSizeText()
+    {
+        if (_pendingFontSize is not null)
+        {
+            return;
+        }
+
+        var shown = FontSize.ToString(CultureInfo.InvariantCulture);
+        if (_fontSizeText != shown)
+        {
+            _fontSizeText = shown;
+            RaisePropertyChanged(nameof(FontSizeText));
+        }
+
+        RaisePropertyChanged(nameof(FontSize));
     }
 
     private void OnLanguageChanged(object? sender, EventArgs e)

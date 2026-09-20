@@ -197,10 +197,51 @@ public sealed class FakeEditorSession : IEditorSession
         Replace(id, annotation => annotation with { Thickness = thickness });
     }
 
-    // Plan T24 stubs so the fake still implements the contract; T27 gives them the behaviour the window is tested against.
-    public void SetText(Guid id, string text) => Calls.Add("SetText");
+    /// <summary>Every SetText the window made, with the id and the text it sent, in order (a same-text or unknown-id call is recorded too).</summary>
+    public List<(Guid Id, string Text)> TextSets { get; } = [];
 
-    public void SetFontSize(Guid id, int fontSize) => Calls.Add("SetFontSize");
+    /// <summary>Every SetFontSize the window made, with the id and the size it asked for, in order.</summary>
+    public List<(Guid Id, int FontSize)> FontSizeSets { get; } = [];
+
+    // The rules of the contract (IEditorSession.SetText): a text annotation takes the new text in one history step; an empty text deletes the
+    // annotation (one step); an unknown id, or an annotation that is not a text, changes nothing and adds no step; the same text is a no-op.
+    public void SetText(Guid id, string text)
+    {
+        Calls.Add("SetText");
+        TextSets.Add((id, text));
+        if (_document.Annotations.FirstOrDefault(a => a.Id == id) is not TextAnnotation existing)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            Push(_document with { Annotations = _document.Annotations.Where(a => a.Id != id).ToList() });
+            return;
+        }
+
+        if (existing.Text != text)
+        {
+            Replace(id, annotation => ((TextAnnotation)annotation) with { Text = text });
+        }
+    }
+
+    // IEditorSession.SetFontSize: text and step annotations only, clamped to 6..200, one step; the same size (after clamping) is a no-op.
+    public void SetFontSize(Guid id, int fontSize)
+    {
+        Calls.Add("SetFontSize");
+        FontSizeSets.Add((id, fontSize));
+        var clamped = Math.Clamp(fontSize, 6, 200);
+        switch (_document.Annotations.FirstOrDefault(a => a.Id == id))
+        {
+            case TextAnnotation text when text.FontSize != clamped:
+                Replace(id, _ => text with { FontSize = clamped });
+                break;
+            case StepAnnotation step when step.FontSize != clamped:
+                Replace(id, _ => step with { FontSize = clamped });
+                break;
+        }
+    }
 
     public void Delete(Guid id)
     {
@@ -384,8 +425,17 @@ public sealed class FakeEditorInteractor : IEditorInteractor
         };
     }
 
-    // Plan T24 stub: nothing hit until T27 makes the fake answer like the real rule.
-    public Guid? HitTest(IEditorSession session, PixelPoint point, int tolerance) => null;
+    /// <summary>Every HitTest the window asked, with the image pixel and the tolerance it gave, in order.</summary>
+    public List<(PixelPoint Point, int Tolerance)> HitTests { get; } = [];
+
+    /// <summary>When set, this is the answer (even a null one) instead of the rule below: a test uses it to prove the window believes the use case.</summary>
+    public Func<IEditorSession, PixelPoint, int, Guid?>? HitTestOverride { get; set; }
+
+    public Guid? HitTest(IEditorSession session, PixelPoint point, int tolerance)
+    {
+        HitTests.Add((point, tolerance));
+        return HitTestOverride is { } answer ? answer(session, point, tolerance) : EditorHitRules.Topmost(session.Document.Annotations, point, tolerance);
+    }
 
     public bool AddText(IEditorSession session, PixelPoint origin, string text, RgbaColor color, int fontSize)
     {
@@ -550,6 +600,36 @@ public sealed class EditorRig
         ViewModel.PointerUp(new PixelPoint(x, y), shift);
     }
 
+    /// <summary>A double-click as the window sends it: a click, then the second press (which asks about a double-click) and its release.</summary>
+    public void DoubleClick(int x, int y)
+    {
+        var point = new PixelPoint(x, y);
+        ViewModel.PointerDown(point, false);
+        ViewModel.PointerUp(point, false);
+        ViewModel.PointerDoubleClicked(point, false);
+        ViewModel.PointerUp(point, false);
+    }
+
+    /// <summary>A text committed through the Text tool, then back to the Select tool: the fake session then holds a TextAnnotation to edit.</summary>
+    public TextAnnotation AddText(int x, int y, string text)
+    {
+        ViewModel.SelectTool(ToolKind.Text);
+        Click(x, y);
+        ViewModel.TextDraftText = text;
+        ViewModel.CommitText();
+        ViewModel.SelectTool(ToolKind.Select);
+        return Session.Document.Annotations.OfType<TextAnnotation>().Last();
+    }
+
+    /// <summary>A step marker placed with the StepNumber tool, then back to the Select tool.</summary>
+    public StepAnnotation AddStep(int x, int y)
+    {
+        ViewModel.SelectTool(ToolKind.StepNumber);
+        Click(x, y);
+        ViewModel.SelectTool(ToolKind.Select);
+        return Session.Document.Annotations.OfType<StepAnnotation>().Last();
+    }
+
     /// <summary>Press at <paramref name="from"/>, move through <paramref name="via"/>, release at <paramref name="to"/>.</summary>
     public void Drag(PixelPoint from, PixelPoint to, bool shift = false, params PixelPoint[] via)
     {
@@ -567,5 +647,103 @@ public sealed class EditorRig
     {
         ViewModel.SelectTool(tool);
         Drag(from, to, shift);
+    }
+}
+
+/// <summary>
+/// The rule of IEditorInteractor.HitTest as the contract states it, small and plain, so the window tests exercise the flow with the answer
+/// the real use case gives: the topmost (last drawn) annotation wins; lines, arrows, strokes and the OUTLINES of a rectangle and an ellipse
+/// count within tolerance + thickness / 2 of the line; a blur area, a text box and a step circle count anywhere inside the box grown by the
+/// tolerance. The text box is an estimate (this fake has no font), generous on purpose.
+/// </summary>
+public static class EditorHitRules
+{
+    public static Guid? Topmost(IReadOnlyList<Annotation> annotations, PixelPoint point, int tolerance)
+    {
+        for (var i = annotations.Count - 1; i >= 0; i--)
+        {
+            if (Hits(annotations[i], point.X, point.Y, tolerance))
+            {
+                return annotations[i].Id;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool Hits(Annotation annotation, double x, double y, double tolerance)
+    {
+        var width = annotation is StrokeAnnotation { IsHighlighter: true } ? annotation.Thickness * 3.0 : annotation.Thickness;
+        var reach = (width / 2.0) + tolerance;
+        switch (annotation)
+        {
+            case StrokeAnnotation stroke:
+                return stroke.Points.Count switch
+                {
+                    0 => false,
+                    1 => Distance(x, y, stroke.Points[0].X, stroke.Points[0].Y) <= reach,
+                    _ => Enumerable.Range(1, stroke.Points.Count - 1).Any(i => DistanceToSegment(x, y, stroke.Points[i - 1], stroke.Points[i]) <= reach),
+                };
+            case LineAnnotation line:
+                return DistanceToSegment(x, y, line.From, line.To) <= reach;
+            case ArrowAnnotation arrow:
+                return DistanceToSegment(x, y, arrow.From, arrow.To) <= reach;
+            case RectangleAnnotation rectangle:
+                return DistanceToRectangleOutline(x, y, rectangle.Bounds) <= reach;
+            case EllipseAnnotation ellipse:
+                var rx = ellipse.Bounds.Width / 2.0;
+                var ry = ellipse.Bounds.Height / 2.0;
+                if (rx < 0.5 || ry < 0.5)
+                {
+                    return InsideGrown(ellipse.Bounds.X, ellipse.Bounds.Y, ellipse.Bounds.Width, ellipse.Bounds.Height, reach, x, y);
+                }
+
+                var normalized = Math.Sqrt(Math.Pow((x - (ellipse.Bounds.X + rx)) / rx, 2) + Math.Pow((y - (ellipse.Bounds.Y + ry)) / ry, 2));
+                return Math.Abs(normalized - 1.0) * Math.Min(rx, ry) <= reach;
+            case BlurAnnotation blur:
+                return InsideGrown(blur.Area.X, blur.Area.Y, blur.Area.Width, blur.Area.Height, tolerance, x, y);
+            case TextAnnotation text:
+                var lines = text.Text.Split('\n');
+                var boxWidth = Math.Max(text.FontSize, lines.Max(l => l.Length) * text.FontSize * 0.6);
+                var boxHeight = lines.Length * text.FontSize * 1.3;
+                return InsideGrown(text.Origin.X, text.Origin.Y, boxWidth, boxHeight, tolerance, x, y);
+            case StepAnnotation step:
+                var diameter = Math.Max(20.0, step.FontSize * 1.8);
+                return InsideGrown(step.Center.X - (diameter / 2), step.Center.Y - (diameter / 2), diameter, diameter, tolerance, x, y);
+            default:
+                return false;
+        }
+    }
+
+    private static bool InsideGrown(double left, double top, double width, double height, double grow, double x, double y) =>
+        x >= left - grow && x <= left + width + grow && y >= top - grow && y <= top + height + grow;
+
+    private static double Distance(double ax, double ay, double bx, double by) => Math.Sqrt(((ax - bx) * (ax - bx)) + ((ay - by) * (ay - by)));
+
+    private static double DistanceToSegment(double x, double y, PixelPoint a, PixelPoint b)
+    {
+        var (sx, sy) = ((double)b.X - a.X, (double)b.Y - a.Y);
+        var lengthSquared = (sx * sx) + (sy * sy);
+        if (lengthSquared < 1e-9)
+        {
+            return Distance(x, y, a.X, a.Y);
+        }
+
+        var t = Math.Clamp((((x - a.X) * sx) + ((y - a.Y) * sy)) / lengthSquared, 0.0, 1.0);
+        return Distance(x, y, a.X + (sx * t), a.Y + (sy * t));
+    }
+
+    // Outside the rectangle: the distance to it. Inside: the distance to the nearest edge. Either way, the distance to the OUTLINE.
+    private static double DistanceToRectangleOutline(double x, double y, PixelRect rectangle)
+    {
+        var (right, bottom) = ((double)rectangle.X + rectangle.Width, (double)rectangle.Y + rectangle.Height);
+        var dx = Math.Max(Math.Max(rectangle.X - x, x - right), 0.0);
+        var dy = Math.Max(Math.Max(rectangle.Y - y, y - bottom), 0.0);
+        if (dx > 0 || dy > 0)
+        {
+            return Math.Sqrt((dx * dx) + (dy * dy));
+        }
+
+        return Math.Min(Math.Min(x - rectangle.X, right - x), Math.Min(y - rectangle.Y, bottom - y));
     }
 }

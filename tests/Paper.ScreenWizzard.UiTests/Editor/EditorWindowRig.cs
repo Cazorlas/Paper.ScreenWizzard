@@ -110,6 +110,36 @@ public sealed class EditorWindowRig : IDisposable
         Window.Host.Settle();
     }
 
+    /// <summary>Two quick presses of the left button on an image pixel: what the user does to edit a text.</summary>
+    public void MouseDoubleClick(PixelPoint at)
+    {
+        Mouse.MoveTo(ScreenPointOf(at.X, at.Y));
+        Mouse.DoubleClick(MouseButton.Left);
+        Window.Host.Settle();
+    }
+
+    /// <summary>
+    /// Drags the thumb of the thickness slider <paramref name="pixels"/> to the right (screen pixels) with the real mouse, in small steps so the
+    /// slider passes through every notch on the way.
+    /// </summary>
+    public void DragThicknessThumb(int pixels)
+    {
+        var thumb = Window.Require("ThicknessSlider").FindFirstDescendant(conditions => conditions.ByControlType(FlaUI.Core.Definitions.ControlType.Thumb));
+        NUnit.Framework.Assert.That(thumb, NUnit.Framework.Is.Not.Null, "the slider's thumb is not in the UI Automation tree");
+        var rectangle = thumb!.BoundingRectangle;
+        var start = new System.Drawing.Point(rectangle.Left + (rectangle.Width / 2), rectangle.Top + (rectangle.Height / 2));
+        Mouse.MoveTo(start);
+        Mouse.Down(MouseButton.Left);
+        for (var moved = 4; moved <= pixels; moved += 4)
+        {
+            Mouse.MoveTo(new System.Drawing.Point(start.X + moved, start.Y));
+        }
+
+        Window.Host.Settle();
+        Mouse.Up(MouseButton.Left);
+        Window.Host.Settle();
+    }
+
     public void ChooseTool(ToolKind tool) => Window.Click("ToolButton." + tool);
 
     /// <summary>Asks the window to close from the UI thread and returns at once, so a question the close raises never blocks the test thread.</summary>

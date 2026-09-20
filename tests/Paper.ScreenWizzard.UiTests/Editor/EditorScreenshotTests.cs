@@ -3,6 +3,7 @@ using Paper.ScreenWizzard.Domain.Editor;
 using Paper.ScreenWizzard.Domain.Geometry;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.Presentation.ViewModels.Editor;
+using Paper.ScreenWizzard.UiTests.ScreenCapture;
 using Paper.ScreenWizzard.UiTests.Support;
 using Paper.ScreenWizzard.UseCases.Shell.Models;
 
@@ -106,6 +107,44 @@ public sealed class EditorScreenshotTests : UiTestBase
 
         Assert.That(rig.ViewModel.IsEditingText, Is.True);
         Assert.That(rig.Window.Exists("TextDraftBox"), Is.True, "the text box is on the canvas");
+        Assert.That(new System.IO.FileInfo(path).Length, Is.GreaterThan(20_000));
+    }
+
+    [TestCase(AppTheme.Light, "light")]
+    [TestCase(AppTheme.Dark, "dark")]
+    public void Screenshot_TextBeingEditedAfterADoubleClick_ShowsTheBoxWithTheOldTextInPlace(AppTheme theme, string suffix)
+    {
+        var image = EditorWindowRig.MockScreenshot();
+        using var rig = EditorWindowRig.Open(ResolvedLanguage.Vietnamese, theme, image);
+        DrawSampleMarkup(rig);
+
+        rig.MouseDoubleClick(P(520, 266));
+        var path = rig.Window.Screenshot($"editor-text-edit-vi-{suffix}");
+
+        Assert.That(rig.ViewModel.IsEditingText, Is.True, "the double-click opened the box on the note");
+        Assert.That(rig.Window.TextOf("TextDraftBox"), Is.EqualTo("Đường ống 45° — thử nghiệm"));
+        Assert.That(new System.IO.FileInfo(path).Length, Is.GreaterThan(20_000));
+    }
+
+    [Test]
+    public void Screenshot_TextEditedAndItsSizeChanged_ShowsTheNewTextBigger()
+    {
+        var image = EditorWindowRig.MockScreenshot();
+        using var rig = EditorWindowRig.Open(ResolvedLanguage.Vietnamese, AppTheme.Light, image);
+        DrawSampleMarkup(rig);
+        rig.MouseDoubleClick(P(520, 266));
+        rig.Window.SetText("TextDraftBox", "Ống thoát — đã sửa");
+        rig.Window.EnsureForeground();
+        rig.Window.Focus("TextDraftBox");
+        rig.Window.PressChord(FlaUI.Core.WindowsAPI.VirtualKeyShort.CONTROL, FlaUI.Core.WindowsAPI.VirtualKeyShort.RETURN);
+        rig.Window.SetText("FontSizeBox", "28");
+        rig.Window.Focus("FontSizeBox");
+        rig.Window.Press(FlaUI.Core.WindowsAPI.VirtualKeyShort.RETURN);
+
+        var path = rig.Window.Screenshot("editor-text-edited-vi-light");
+
+        var text = rig.Rig.Session.Document.Annotations.OfType<TextAnnotation>().Only("text");
+        Assert.That((text.Text, text.FontSize), Is.EqualTo(("Ống thoát — đã sửa", 28)));
         Assert.That(new System.IO.FileInfo(path).Length, Is.GreaterThan(20_000));
     }
 }

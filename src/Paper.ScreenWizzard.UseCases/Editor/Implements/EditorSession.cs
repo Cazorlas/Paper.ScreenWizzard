@@ -15,6 +15,9 @@ namespace Paper.ScreenWizzard.UseCases.Editor.Implements;
 /// </summary>
 public sealed class EditorSession : IEditorSession
 {
+    private const int MinFontSize = 6;
+    private const int MaxFontSize = 200;
+
     private readonly List<EditorDocument> _history;
     private int _index;
     private int _savedIndex;
@@ -61,13 +64,39 @@ public sealed class EditorSession : IEditorSession
         Push(Document with { Annotations = Document.Annotations.Where(a => a.Id != id).ToArray() });
     }
 
-    // SKELETONS (plan T24): the contract exists so tests can be written; the rules arrive with T26.
+    /// <summary>
+    /// Only a text changes (SPEC editor, "Chữ"): a new text is one step, and a text emptied to nothing or spaces is deleted, also
+    /// one step, so Undo brings it back with its old words. Any other kind of drawing, or an id that is not there, is left alone.
+    /// </summary>
     public void SetText(Guid id, string text)
     {
+        if (Find(id) is not TextAnnotation)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            Delete(id);
+            return;
+        }
+
+        Replace(id, a => ((TextAnnotation)a) with { Text = text });
     }
 
+    /// <summary>The size of a text or a step number (SPEC editor, "Số bước"), kept between 6 and 200; the same size again is not a step.</summary>
     public void SetFontSize(Guid id, int fontSize)
     {
+        var size = Math.Clamp(fontSize, MinFontSize, MaxFontSize);
+        switch (Find(id))
+        {
+            case TextAnnotation t when t.FontSize != size:
+                Replace(id, a => ((TextAnnotation)a) with { FontSize = size });
+                break;
+            case StepAnnotation n when n.FontSize != size:
+                Replace(id, a => ((StepAnnotation)a) with { FontSize = size });
+                break;
+        }
     }
 
     public void Select(Guid? id) => _selectedId = id is not null && Document.Annotations.Any(a => a.Id == id) ? id : null;
@@ -134,6 +163,8 @@ public sealed class EditorSession : IEditorSession
         _savedIndex = _index;
         SourcePath = path;
     }
+
+    private Annotation? Find(Guid id) => Document.Annotations.FirstOrDefault(a => a.Id == id);
 
     private void Replace(Guid id, Func<Annotation, Annotation> change)
     {

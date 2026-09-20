@@ -94,8 +94,25 @@ public sealed class EditorInteractor : IEditorInteractor
     public DragShape ConstrainDrag(ToolKind tool, PixelPoint start, PixelPoint current, bool shiftHeld) =>
         new(start, EditorGeometry.ConstrainEnd(tool, start, current, shiftHeld));
 
-    // SKELETON (plan T24): returns "nothing hit" until T26.
-    public Guid? HitTest(IEditorSession session, PixelPoint point, int tolerance) => null;
+    /// <summary>
+    /// Which drawing a click lands on: the last drawn one that is hit, else null. A linear scan from the top of the drawing order,
+    /// each drawing costing O(its points) with no allocation but a text's line split, so a click costs O(all points on the
+    /// screenshot), which is hundreds; it stops at the first hit, so a busy image is not scanned in full when the click is on top.
+    /// </summary>
+    public Guid? HitTest(IEditorSession session, PixelPoint point, int tolerance)
+    {
+        var reach = Math.Max(tolerance, 0);
+        var annotations = session.Document.Annotations;
+        for (var i = annotations.Count - 1; i >= 0; i--)
+        {
+            if (AnnotationHit.IsHit(annotations[i], point, reach))
+            {
+                return annotations[i].Id;
+            }
+        }
+
+        return null;
+    }
 
     public bool AddText(IEditorSession session, PixelPoint origin, string text, RgbaColor color, int fontSize)
     {

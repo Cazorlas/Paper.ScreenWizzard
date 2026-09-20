@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -37,6 +38,11 @@ public partial class EditorWindow : Window
             ReportViewport();
             PlaceTextBox();
         };
+
+        // The slider's thumb, held and released: a selected shape is previewed while it is held and takes the thickness once, on release
+        // (the slider may already have handled these events itself, hence handledEventsToo).
+        ThicknessSlider.AddHandler(Thumb.DragStartedEvent, new DragStartedEventHandler(OnThicknessDragStarted), true);
+        ThicknessSlider.AddHandler(Thumb.DragCompletedEvent, new DragCompletedEventHandler(OnThicknessDragCompleted), true);
         Closing += OnClosing;
         Closed += (_, _) => viewModel.PropertyChanged -= OnViewModelChanged;
     }
@@ -94,7 +100,17 @@ public partial class EditorWindow : Window
     {
         Picture.Focus();
         Picture.CaptureMouse();
-        _viewModel.PointerDown(ImagePointOf(e), ShiftIsDown);
+
+        // The second press of a double-click is its own question to the view model (it may open a text for editing); every other press is a press.
+        if (e.ClickCount == 2)
+        {
+            _viewModel.PointerDoubleClicked(ImagePointOf(e), ShiftIsDown);
+        }
+        else
+        {
+            _viewModel.PointerDown(ImagePointOf(e), ShiftIsDown);
+        }
+
         e.Handled = true;
     }
 
@@ -163,13 +179,15 @@ public partial class EditorWindow : Window
     private void OnViewModelChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName is nameof(EditorViewModel.IsEditingText) or nameof(EditorViewModel.TextDraftOrigin)
-            or nameof(EditorViewModel.ViewScale) or nameof(EditorViewModel.FontSize) or nameof(EditorViewModel.Color))
+            or nameof(EditorViewModel.ViewScale) or nameof(EditorViewModel.FontSize) or nameof(EditorViewModel.Color)
+            or nameof(EditorViewModel.TextDraftFontSize) or nameof(EditorViewModel.TextDraftColor))
         {
             PlaceTextBox();
         }
     }
 
-    // The box sits at the image pixel that was clicked, at the size the text will have once committed, in the colour it will have.
+    // The box sits at the image pixel that was clicked (or where the text being edited is), at the size the text will have once committed, in
+    // the colour it will have.
     private void PlaceTextBox()
     {
         if (_viewModel.TextDraftOrigin is not { } origin)
@@ -188,8 +206,8 @@ public partial class EditorWindow : Window
         var scale = _viewModel.ViewScale;
         Canvas.SetLeft(TextDraftBox, origin.X * scale);
         Canvas.SetTop(TextDraftBox, origin.Y * scale);
-        TextDraftBox.FontSize = Math.Max(6.0, _viewModel.FontSize * scale);
-        TextDraftBox.Foreground = AnnotationRenderer.BrushOf(_viewModel.Color);
+        TextDraftBox.FontSize = Math.Max(6.0, _viewModel.TextDraftFontSize * scale);
+        TextDraftBox.Foreground = AnnotationRenderer.BrushOf(_viewModel.TextDraftColor);
         if (TextDraftBox.Visibility != Visibility.Visible)
         {
             TextDraftBox.Visibility = Visibility.Visible;
@@ -201,9 +219,29 @@ public partial class EditorWindow : Window
                 {
                     TextDraftBox.Focus();
                     Keyboard.Focus(TextDraftBox);
+
+                    // A text reopened for editing starts with its old text: the caret goes after it, ready to add to it.
+                    TextDraftBox.CaretIndex = TextDraftBox.Text.Length;
                 }));
         }
     }
+
+    // ---- the size box and the thickness slider ----
+
+    // The size typed in the box is applied to the selected text or step marker when Enter is pressed or the box loses the keyboard.
+    private void OnFontSizeBoxKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Return)
+        {
+            _viewModel.CommitFontSize();
+        }
+    }
+
+    private void OnFontSizeBoxLostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e) => _viewModel.CommitFontSize();
+
+    private void OnThicknessDragStarted(object sender, DragStartedEventArgs e) => _viewModel.BeginThicknessChange();
+
+    private void OnThicknessDragCompleted(object sender, DragCompletedEventArgs e) => _viewModel.EndThicknessChange();
 
     // A click on another control finishes the text. Losing the keyboard to nothing (another program in front) does not: the user is not done.
     private void OnTextDraftLostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)

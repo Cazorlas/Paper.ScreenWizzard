@@ -46,7 +46,7 @@ public static class AnnotationOps
         return right > area.X && left < area.X + area.Width && bottom > area.Y && top < area.Y + area.Height;
     }
 
-    private static (int Left, int Top, int Right, int Bottom) Box(Annotation annotation)
+    internal static (int Left, int Top, int Right, int Bottom) Box(Annotation annotation)
     {
         var pad = annotation.Thickness;
         switch (annotation)

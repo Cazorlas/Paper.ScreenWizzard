@@ -129,8 +129,9 @@ public sealed class EditorCanvas : FrameworkElement
     // line under it so it shows on both dark and light parts of the picture.
     private void DrawSelection(DrawingContext context, EditorViewModel viewModel, double scale)
     {
-        if (viewModel.SelectedId is not { } id)
+        if (viewModel.SelectedId is not { } id || viewModel.IsEditingText)
         {
+            // While a text is typed the box is its own frame.
             return;
         }
 
