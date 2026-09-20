@@ -1,0 +1,10 @@
+<!-- Chữ tiếng Việt của tầng khởi động (chỉ những gì gốc ghép tự nói: hộp lỗi bất ngờ và hộp chọn ảnh để mở). Cùng khoá với
+     AppStrings.en.xaml; chữ của cửa sổ ba tính năng nằm ở Strings.vi.xaml của project Presentation. {0} là chỗ điền từ
+     NotificationMessage.Arguments. -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+  <sys:String x:Key="App.UnhandledError">Có lỗi bất ngờ: {0}. Ứng dụng vẫn chạy; chi tiết nằm trong tập tin nhật ký ở %AppData%\Paper\ScreenWizzard\logs.</sys:String>
+  <sys:String x:Key="App.OpenImage.Title">Mở ảnh</sys:String>
+  <sys:String x:Key="App.OpenImage.Filter">Ảnh (*.png;*.jpg;*.jpeg;*.bmp)|*.png;*.jpg;*.jpeg;*.bmp|Mọi tập tin (*.*)|*.*</sys:String>
+</ResourceDictionary>

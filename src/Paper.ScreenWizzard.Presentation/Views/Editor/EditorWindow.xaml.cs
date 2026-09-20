@@ -8,7 +8,9 @@ using System.Windows.Threading;
 using Paper.ScreenWizzard.Domain.Geometry;
 using Paper.ScreenWizzard.Presentation.Rendering;
 using Paper.ScreenWizzard.Presentation.ViewModels.Editor;
+using Paper.ScreenWizzard.Presentation.Views.Capture;
 using Paper.ScreenWizzard.Presentation.Views.Shell.Services;
+using Paper.ScreenWizzard.UseCases.Shell.Ports;
 
 namespace Paper.ScreenWizzard.Presentation.Views.Editor;
 
@@ -25,7 +27,12 @@ public partial class EditorWindow : Window
 
     private readonly EditorViewModel _viewModel;
 
-    public EditorWindow(EditorViewModel viewModel)
+    /// <param name="viewModel">What the window shows.</param>
+    /// <param name="monitors">
+    /// When given, the window opens inside the monitor that holds the pointer (<see cref="EditorWindowPlacement"/>) instead of where WPF
+    /// centres it, which is wrong on a monitor whose scale differs from the primary's. Tests that pin the window themselves pass none.
+    /// </param>
+    public EditorWindow(EditorViewModel viewModel, IMonitorCatalogPort? monitors = null)
     {
         InitializeComponent();
         _viewModel = viewModel;
@@ -45,6 +52,29 @@ public partial class EditorWindow : Window
         ThicknessSlider.AddHandler(Thumb.DragCompletedEvent, new DragCompletedEventHandler(OnThicknessDragCompleted), true);
         Closing += OnClosing;
         Closed += (_, _) => viewModel.PropertyChanged -= OnViewModelChanged;
+        if (monitors is not null)
+        {
+            PlaceOnThePointersMonitor(monitors);
+        }
+    }
+
+    // In two steps, like the "Đã chụp" dialog: first the window is put on that monitor so WPF lays it out at that monitor's scale, then, once
+    // it has its real size in physical pixels, it is centred there and pulled inside if it is too big for the screen.
+    private void PlaceOnThePointersMonitor(IMonitorCatalogPort monitors)
+    {
+        var all = monitors.GetMonitors();
+        if (EditorWindowPlacement.MonitorFor(all, monitors.GetCursorPosition()) is not { } monitor)
+        {
+            return;
+        }
+
+        WindowStartupLocation = WindowStartupLocation.Manual;
+        SourceInitialized += (_, _) => PhysicalWindowPlacer.MoveTo(this, monitor.Bounds.X + 48, monitor.Bounds.Y + 48);
+        ContentRendered += (_, _) =>
+        {
+            var actual = PhysicalWindowPlacer.BoundsOf(this);
+            PhysicalWindowPlacer.Place(this, EditorWindowPlacement.Place(monitor, new PixelSize(actual.Width, actual.Height)));
+        };
     }
 
     protected override void OnDpiChanged(DpiScale oldDpi, DpiScale newDpi)

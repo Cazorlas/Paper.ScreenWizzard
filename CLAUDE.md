@@ -63,7 +63,7 @@ Khai ở `.claude/paper.profile.json` mục `verbs`; đi qua `.claude/paperflow/
 | `build` | `dotnet build` cả solution, Debug | 0 cảnh báo (cảnh báo là lỗi) |
 | `test` | project `UnitTests` (Domain, UseCases, kiến trúc) | không cần Windows tương tác |
 | `ui` | project `UiTests`: view dựng trong tiến trình test trên dữ liệu giả, FlaUI lái | **cần màn hình rảnh**, không chạy cùng lúc với `e2e` |
-| `e2e` | project `E2eTests`: adapter thật và chính file exe | như `ui`; task nhóm 5 của plan, thẻ lane `ui` |
+| *(không có verb)* | project `E2eTests`: adapter thật và chính file exe, chạy bằng `dotnet test tests/Paper.ScreenWizzard.E2eTests -c Debug` | paperflow chỉ cấp verb cho lane mà host chứng minh được (`unit`, `ui`), nên không có verb `e2e`; cần màn hình rảnh, gửi phím tắt toàn cục thật, không chạy cùng lúc với `ui` |
 
 ## Deploy (CI, gói, phát hành)
 

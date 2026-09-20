@@ -17,6 +17,12 @@
     <!-- With both UseWPF and UseWindowsForms the two implicit usings make Application, Clipboard, Button ... ambiguous. -->
     <Using Remove="System.Windows.Forms" />
     <Using Remove="System.Drawing" />
+    <!-- The WPF SDK also removes System.IO (Path clashes with System.Windows.Shapes.Path); this project uses no WPF shape. -->
+    <Using Include="System.IO" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The composition root: 10.0.12 is the newest release for net10.0 (checked on nuget.org 2026-09-20). -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Paper.ScreenWizzard.Presentation\Paper.ScreenWizzard.Presentation.csproj" />

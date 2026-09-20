@@ -2,8 +2,18 @@
   <!-- Infrastructure: the adapters behind the ports - Win32, GDI, clipboard, hotkeys, files, settings. No decisions here. -->
   <PropertyGroup>
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <!-- WPF for the clipboard, the image codecs and the message-only window of the hotkeys. Windows Forms is NOT used here. -->
+    <UseWPF>true</UseWPF>
     <RootNamespace>Paper.ScreenWizzard.Infrastructure</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <!-- The WPF SDK removes the System.IO implicit using (its Path clashes with System.Windows.Shapes.Path); no WPF shape is used here. -->
+    <Using Include="System.IO" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The key-name table of the hotkeys is internal; the E2E tests read it without pressing anything. -->
+    <InternalsVisibleTo Include="Paper.ScreenWizzard.E2eTests" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Paper.ScreenWizzard.UseCases\Paper.ScreenWizzard.UseCases.csproj" />
     <ProjectReference Include="..\Paper.ScreenWizzard.Domain\Paper.ScreenWizzard.Domain.csproj" />

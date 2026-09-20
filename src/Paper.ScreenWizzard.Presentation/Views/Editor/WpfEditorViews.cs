@@ -1,15 +1,24 @@
 using System.Windows;
 using Paper.ScreenWizzard.Presentation.ViewModels.Capture;
 using Paper.ScreenWizzard.Presentation.ViewModels.Editor;
+using Paper.ScreenWizzard.UseCases.Shell.Ports;
 
 namespace Paper.ScreenWizzard.Presentation.Views.Editor;
 
 /// <summary>Opens the real editor windows for <see cref="EditorFlow"/>. Call it on the UI thread.</summary>
 public sealed class WpfEditorViews : IEditorViews
 {
+    private readonly IMonitorCatalogPort? _monitors;
+
+    /// <param name="monitors">The monitors and the pointer, so each window opens on the monitor that holds the pointer; none keeps WPF's own centring.</param>
+    public WpfEditorViews(IMonitorCatalogPort? monitors = null)
+    {
+        _monitors = monitors;
+    }
+
     public IViewHandle OpenEditor(EditorViewModel viewModel)
     {
-        var window = new EditorWindow(viewModel);
+        var window = new EditorWindow(viewModel, _monitors);
         window.Show();
         window.Activate();
         return new WindowHandle(window);
