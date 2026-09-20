@@ -28,7 +28,7 @@ hỏi "có làm tiếp không", không dừng vì một nhóm task vừa xong. H
 
 ## Luật vận hành
 
-Chín luật này đúng cho mọi chặng dưới đây, và mỗi luật có một điều kiện xong riêng — một luật không nói
+Mười luật này đúng cho mọi chặng dưới đây, và mỗi luật có một điều kiện xong riêng — một luật không nói
 được lúc nào nó xong thì nó là lời khuyên, không phải luật.
 
 1. **Hồi phục trước đã.** Trước bất cứ việc gì, tìm plan của tính năng này. Có plan thì **đọc nó và mọi
@@ -53,6 +53,12 @@ Chín luật này đúng cho mọi chặng dưới đây, và mỗi luật có m
 9. **Mời người dùng đọc gì thì đưa liên kết bấm được tới đúng chỗ đó** — không chỉ lúc xin duyệt, mà
    mọi lần mời xem, kiểm hay chốt: mỗi tài liệu một dòng `[tên](đường dẫn)`, thêm `#L<dòng>` khi trỏ vào
    một dòng. Luật đủ: `references/approval-links.md`. *Xong khi:* mỗi tài liệu được nhắc có một liên kết.
+10. **Model mạnh để nghĩ, model đang set để làm.** Phần *nghĩ* (suy luận, `SPEC.md`, plan, chia task, rà
+   soát) chạy trên model mạnh nhất; phần *làm* (code, task, build, test, lái host) chạy trên model người
+   dùng đang set. Hai cổng, và mặc định nghiêng về **không đổi**: tài khoản phải khớp
+   `models.strongOnAccount` của profile (máy có thể đang ở tài khoản công ty — hạn mức đó là tiền người
+   khác trả), rồi mới tới hạn mức của model mạnh. Luật đủ: `references/model-switch.md`. *Xong khi:* báo
+   cáo nói model nào cho phần nghĩ và phần làm, hay `mặc định — sai tài khoản` / `— không khả dụng`.
 
 ## 0. Loại việc — trước mọi thứ
 
@@ -90,11 +96,11 @@ dòng luật mới hay đổi, task theo nhóm, và câu nào còn cần trả l
 `**Trạng thái:** đã duyệt <ngày> ("lời họ nói")` vào plan. **Cổng:** exit không còn là 4 vì người dùng đã
 duyệt, không bao giờ vì agent tự sửa dòng trạng thái.
 
-## 3. Worktree — tuỳ chọn
-Dùng skill `task-worktree` khi người dùng bảo, khi có phiên khác đang làm ở bản checkout chính, hay khi
-build và test đỏ của việc sẽ chặn người khác: `create` → `carry` nếu việc cần thay đổi chưa commit →
-`baseline` (ghi test đỏ sẵn có vào plan). Mọi chặng sau chạy trong thư mục worktree; lane agent cũng chạy ở
-đó, không bao giờ trong worktree tích hợp của công cụ.
+## 3. Worktree
+Lane `unit` và lane `ui` **luôn** chạy trong worktree riêng của chúng (`isolation: worktree`) và trả việc
+về bằng một nhánh; `/task-do` mục 3 giữ luật gộp. Lane `live` và lane `model` ở lại cây chính, vì host chỉ
+có một. Thêm một worktree cho **cả việc** (skill `task-worktree`: `create` → `carry` → `baseline`) khi
+người dùng bảo, khi phiên khác đang làm ở cây chính, hay khi build và test đỏ của việc sẽ chặn người khác.
 
 ## 4. Làm — `/task-do <plan>`
 
@@ -173,28 +179,6 @@ lần không tiến triển → đổi giả thuyết, không đổi tham số (
 
 ## Mẫu dự án mới dùng lệnh này thế nào
 
-Không sửa skill này. Một mẫu dự án mới dùng được sau hai việc:
-
-1. **Setup của kit** với host của dự án: chép skill này, `task-*`, `model-task`, lane agent, runner
-   `paperflow`, hook, và các skill của gói host (skill live, skill model nếu có).
-2. **Một file cấu hình** `.claude/paper.profile.json`:
-
-```json
-{
-  "hosts": ["<host>"],
-  "lanes": ["unit", "ui", "live", "model"],
-  "verbs": { "build": "<lệnh build>", "test": "<lệnh test>", "ui": "<lệnh test UI>", "publish": "<lệnh đưa build vào host đang mở>" },
-  "knownFailures": "<đường dẫn danh sách đỏ đã biết, có thể chứa {config}>",
-  "docsSource": "<mcp:server | url | xmldoc:thư mục>",
-  "workTypes": {
-    "code":  { "lanes": ["unit", "ui", "live"] },
-    "model": { "lanes": ["model"], "rules": "docs/features/**/RULE.md", "samples": "docs/features/**/SAMPLE", "references": "docs/features/**/REFERENCE.md" }
-  },
-  "laneAliases": { "<tag lane cũ>": "live" },
-  "worktree": { "copyFiles": ["<file cục bộ ngoài git>"] }
-}
-```
-
-Verb không khai → exit 5, lane đó báo `không áp dụng`; dự án không sửa model thì bỏ `model` khỏi `lanes` và
-`workTypes`. Muốn đổi quy trình cho mọi dự án: sửa trong kit, chạy test của kit, nâng phiên bản, chạy lại
-setup ở từng dự án.
+Không sửa skill này: chạy setup của kit với host của dự án, rồi viết một
+`.claude/paper.profile.json`. Khuôn đầy đủ, từng khoá và cách đổi quy trình cho mọi dự án:
+`references/new-project.md`.

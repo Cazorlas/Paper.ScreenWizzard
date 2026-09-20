@@ -51,6 +51,16 @@ decision that needs the user: starting, closing or restarting a host, saving the
    an unchanged attempt. Three failures on the same hypothesis: `đổi giả thuyết: <old> -> <new>`.
 6. **Clean up** what the run created. Leave nothing unsaved-but-changed behind without naming it.
 
+## Why you are not in a worktree
+
+The logic and UI lanes each get their own git worktree, because they only write files and two of them
+writing one folder is a real collision. You do not, and that is deliberate: you publish into the host
+session that is **already open**, and that host is bound to one deployed build and to the user's real
+document. Publishing out of a second checkout would put a build the user never asked for in front of the
+model they have open, and reading the result back would no longer say which tree produced it.
+
+So you work in the main checkout, and you are the reason the UI lane never runs beside you.
+
 ## Never
 
 - Start, close or restart a host application, a disposable copy included.

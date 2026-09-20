@@ -76,8 +76,13 @@ try {
             })
     }
 
+    # Lanes and workTypes are what the GATE needs: the reminder now runs it on the plans this session
+    # is working in, so a plan whose shape /task-do would refuse is said out loud rather than waiting
+    # for somebody to type the gate themselves.
     $verdict = Get-PaperPlanNagVerdict -ChangedFiles $changed.ToArray() -LastCodeWrite $lastCode `
-        -Plans $plans.ToArray() -DocsRel $docsRel -LaneAliases (Get-PaperProfileValue $profileMap @('laneAliases'))
+        -Plans $plans.ToArray() -DocsRel $docsRel -LaneAliases (Get-PaperProfileValue $profileMap @('laneAliases')) `
+        -Lanes ([string[]] @(Get-PaperProfileValue $profileMap @('lanes'))) `
+        -WorkTypes (Get-PaperProfileValue $profileMap @('workTypes'))
     if ($null -eq $verdict -or $verdict.ExitCode -eq 0) { exit 0 }
 
     # The newest code write is part of the key: more code with the same task still unticked is news, a bare

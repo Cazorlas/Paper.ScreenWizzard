@@ -41,9 +41,39 @@ function Get-PaperRelativePath([string] $ProjectDir, [string] $Path) {
     return $null
 }
 
-# The project the hook works on: Claude Code's CLAUDE_PROJECT_DIR first, the payload's cwd when a host
-# runs the hook without it. $null when neither is a folder.
+# The checkout the hook works on.
+#
+# Claude Code hands a hook two different places, and when the session is isolated in a git worktree they
+# are different ON PURPOSE (docs: "Run parallel sessions with worktrees"):
+#
+#   CLAUDE_PROJECT_DIR  stays at the checkout the session was LAUNCHED from, so a hook command written as
+#                       $CLAUDE_PROJECT_DIR/.claude/hooks/x.ps1 still finds its script.
+#   payload.cwd         follows the session into the worktree, and moves again when Claude runs cd.
+#
+# Reading the variable first pointed every hook at the main checkout while the session worked in a
+# worktree: the tick reminder read the plans of whoever was working THERE, the Stop verb built that
+# checkout and took its run lock, and session state was written across it. Two sessions on one repository
+# reading each other's work is the thing a worktree exists to prevent.
+#
+# cwd alone is no better, because a cd makes a subfolder look like the project. The checkout is the
+# nearest folder at or above cwd holding .claude/paper.profile.json - the file that says a project starts
+# here - and only when cwd offers none does the launch directory answer.
 function Get-PaperHookProjectDir($Payload) {
+    if ($null -ne $Payload) {
+        $cwd = [string] $Payload.cwd
+        if (-not [string]::IsNullOrWhiteSpace($cwd)) {
+            try {
+                $dir = [System.IO.Path]::GetFullPath($cwd).TrimEnd('\', '/')
+                while ($dir) {
+                    if (Test-Path -LiteralPath (Join-Path $dir '.claude\paper.profile.json') -PathType Leaf) { return $dir }
+                    $parent = [System.IO.Path]::GetDirectoryName($dir)
+                    if ($parent -eq $dir) { break }
+                    $dir = $parent
+                }
+            }
+            catch { }
+        }
+    }
     $candidates = @($env:CLAUDE_PROJECT_DIR)
     if ($null -ne $Payload) { $candidates += [string] $Payload.cwd }
     foreach ($c in $candidates) {

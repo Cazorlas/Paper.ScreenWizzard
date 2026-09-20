@@ -72,6 +72,23 @@
       "type": "object",
       "additionalProperties": { "enum": ["unit", "ui", "e2e", "live", "model"] }
     },
+    "models": {
+      "description": "Which model the flow's reasoning stages may switch up to, and the one account that is allowed to (paperflow rule 10). Left out, or running under any other account, means no switch at all - the default leans to 'do not', because a machine can be signed in to a company account and spending its quota on this session's reasoning is a cost somebody else pays.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "strong": {
+          "description": "The strongest model to use for reasoning, spec, plan and review when it is available. Its own quota runs out separately: when it does, the default model does both halves and the report says so.",
+          "type": "string",
+          "minLength": 1
+        },
+        "strongOnAccount": {
+          "description": "The account email that may switch up. Any other signed-in account, or not knowing which is signed in, means the default model.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
     "verbs": {
       "description": "Verb -> the project's own command line, run from the project root. A verb left out is NOT APPLICABLE (exit 5), which is a valid verdict; do not declare a fake command to keep a gate green.",
       "type": "object",

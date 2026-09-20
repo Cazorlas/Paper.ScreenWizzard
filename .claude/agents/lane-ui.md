@@ -2,6 +2,7 @@
 name: lane-ui
 description: Worker for the UI lane of an approved plan - only the ui or e2e task ids it is handed, only files inside their files globs, windows, dialogs, pages and view models built on MOCK data, red first, every screenshot opened and judged against the plan's wireframe, with no host running. Runs beside the logic lane but never beside lane-live, because both need the desktop. Returns one evidence row per task and never ticks the plan, commits or pushes.
 model: inherit
+isolation: worktree
 tools: Read, Grep, Glob, Edit, Write, Bash, PowerShell
 ---
 
@@ -52,8 +53,25 @@ driver; if you find one running, stop and report instead of starting yours.
 
 - Start or drive a host application, or wire the window to a real adapter — that is lane `live`.
 - Edit use case, domain or adapter code; if the interface is missing something, report it.
-- Commit, push, merge, stash or switch branches.
+- Push, merge, stash, or switch to a branch that is not your own. Commit **only** the hand-back below.
 - Edit the plan, the brief, `SPEC.md`, or a file outside your tasks' `{files:}`.
+
+## Hand the work back
+
+You run in **your own git worktree** (`isolation: worktree`), so your edits are not in the checkout the
+main session builds. You and the logic lane used to write the same folder at the same time — the thing the
+task gate's F3 rule exists to catch — and two builds shared one `obj/` tree. Now they cannot.
+
+The price is that nothing comes back on its own. **When your last task is green and every screenshot has
+been looked at, commit everything you changed on your worktree's branch and report the branch name and the
+commit.** One commit is enough; the message names the task ids. Then the main session merges your branch
+before it runs the one full build and suite of the group.
+
+Screenshots are part of the work: commit them too, and give their paths in your report so the main session
+can open the ones you judged.
+
+Nothing leaves your worktree any other way: no push, no merge, no writing into the main checkout (Claude
+Code refuses those anyway, and the refusal is not a bug to work around).
 
 ## Report back
 

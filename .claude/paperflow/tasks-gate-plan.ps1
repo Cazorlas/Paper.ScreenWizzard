@@ -124,7 +124,10 @@ function Test-PaperGlobOverlap([string] $A, [string] $B) {
 # the next leak starts. A line knows neither which section nor which group it sits in, so the caller keeps
 # both and adds Group itself.
 function Get-PaperPlanTaskEntry([string] $Line, $LaneAliases) {
-    if ($Line -notmatch '^\s*[-*]\s*\[( |x|X)\]\s*(T\d+)\s*(.*)$') { return $null }
+    # T8a is a sub-task, not a second T8: /task-do adds a repair task below the one it repairs and the
+    # field numbers it off the parent so the pair reads together. Without the suffix here, a group of six
+    # sub-tasks read as six duplicates of the parent and the gate answered 2 for every plan that had one.
+    if ($Line -notmatch '^\s*[-*]\s*\[( |x|X)\]\s*(T\d+[a-z]?)\s*(.*)$') { return $null }
     $ticked = $Matches[1] -ne ' '
     $id = $Matches[2]
     $rest = $Matches[3]
@@ -135,7 +138,16 @@ function Get-PaperPlanTaskEntry([string] $Line, $LaneAliases) {
         $files = @($Matches[1] -split ',' | ForEach-Object { $_.Trim().Trim('`').Trim() } | Where-Object { $_ })
         $tagText = $rest.Substring(0, $rest.LastIndexOf('{files:'))
     }
-    $tags = @([regex]::Matches($tagText, '\[([a-zA-Z0-9-]+)\]') | ForEach-Object { $_.Groups[1].Value.ToLowerInvariant() })
+    # The tags are the leading run of [..] straight after the id, and nothing later on the line is one.
+    # Matching them anywhere and letting the LAST one win put a task quoting `new string[0]` into a lane
+    # called "0", and a task mentioning `byte[16]` into "16" - both rejected as lanes the project does not
+    # run, with the real lane sitting in plain sight two words earlier.
+    $tags = @()
+    $prefix = $tagText
+    while ($prefix -match '^\s*\[([a-zA-Z0-9-]+)\]') {
+        $tags += $Matches[1].ToLowerInvariant()
+        $prefix = $prefix.Substring($prefix.IndexOf(']') + 1)
+    }
     $lane = ''
     foreach ($tag in $tags) { if ($tag -ne 'red') { $lane = $tag } }
     $alias = Get-PaperMapValue $LaneAliases $lane
@@ -365,7 +377,8 @@ function Get-PaperTaskGateVerdict {
             continue
         }
 
-        if ($section -eq 'evidence' -and $line -match '^\s*\|\s*(T\d+)\s*\|') {
+        # Same suffix as the task line: an evidence row for T8a belongs to T8a, not to T8.
+        if ($section -eq 'evidence' -and $line -match '^\s*\|\s*(T\d+[a-z]?)\s*\|') {
             $evidenceIds.Add($Matches[1])
         }
     }
@@ -475,6 +488,12 @@ function Get-PaperTaskGateVerdict {
                 return (New-Verdict 2 "lane '$lane' has an acceptance case but no task" @())
             }
         }
+        # Per plan, not per group, and that is a known limit rather than an oversight: a group that codes
+        # until an EARLIER group's red test goes green has no red step of its own and should not need one.
+        # The gate cannot tell that task from one introducing new behaviour with no test at all, which is
+        # what group 4b of the export plan turned out to be (measured 2026-09-21). Telling them apart needs
+        # the acceptance case each task proves, and the plans in this project keep their cases in SPEC.md,
+        # where this file - markdown, no project, no host - cannot follow. Reviewed and left as is.
         foreach ($lane in @($tasks | ForEach-Object { $_.Lane } | Select-Object -Unique)) {
             if ($script:PaperRedFirstLanes -notcontains $lane) { continue }
             $first = @($tasks | Where-Object { $_.Lane -eq $lane })[0]

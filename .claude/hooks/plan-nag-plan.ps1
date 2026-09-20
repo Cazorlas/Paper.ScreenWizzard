@@ -59,10 +59,13 @@ function Get-PaperPlanNagVerdict {
         [datetime] $LastCodeWrite,
         $Plans = @(),
         [string] $DocsRel = 'docs/features',
-        $LaneAliases
+        $LaneAliases,
+        [string[]] $Lanes = @(),
+        $WorkTypes
     )
 
     $hits = New-Object System.Collections.Generic.List[psobject]
+    $broken = New-Object System.Collections.Generic.List[psobject]
     $pending = New-Object System.Collections.Generic.List[string]
     $anyApproved = $false
 
@@ -81,6 +84,29 @@ function Get-PaperPlanNagVerdict {
         # as an example in Decisions is text to the gate, and was a false reminder here.
         $entries = @(Get-PaperPlanTasks ([string[]] @($plan.Lines)) $LaneAliases)
         $bareCoversAll = @($entries | Where-Object { @($_.Files).Count -gt 0 }).Count -eq 0
+
+        # The gate, run where nobody has to remember to ask for it.
+        #
+        # /task-do opens with the gate and stops on exit 2, but nothing ever RAN it between the
+        # approval and the report, so a plan could sit malformed for days while lanes were
+        # dispatched against it - measured on two plans of one feature, both at exit 2 from the day
+        # a sub-task was added. The gate answers with the first thing it finds wrong, so a
+        # malformed plan also switches off every check behind that one.
+        #
+        # Scoped to the plans THIS session touched, ticked tasks included: a stale malformed plan
+        # in another corner of the repository is not this session's business, and a reminder that
+        # fires on every stop forever is a reminder somebody turns off.
+        $touches = $bareCoversAll
+        foreach ($entry in $entries) {
+            if (Test-PaperTaskCoversChange $ChangedFiles $entry.Files $bareCoversAll) { $touches = $true; break }
+        }
+        if ($touches) {
+            $gate = Get-PaperTaskGateVerdict -Lines ([string[]] @($plan.Lines)) -Lanes $Lanes `
+                -WorkTypes $WorkTypes -LaneAliases $LaneAliases
+            if ($null -ne $gate -and $gate.ExitCode -eq 2) {
+                $broken.Add([pscustomobject]@{ Path = [string] $plan.Path; Reason = [string] $gate.Reason })
+            }
+        }
         $ids = New-Object System.Collections.Generic.List[string]
         foreach ($entry in $entries) {
             if ($entry.Ticked -or $ids.Contains($entry.Id)) { continue }
@@ -89,6 +115,23 @@ function Get-PaperPlanNagVerdict {
         if ($ids.Count -eq 0) { continue }
         if ($plan.Written -ge $LastCodeWrite) { continue }
         $hits.Add([pscustomobject]@{ Path = [string] $plan.Path; Ids = @($ids) })
+    }
+
+    # Ahead of the tick reminder on purpose: the reminder reads that plan with the same reader the
+    # gate just rejected, so naming a task to tick out of a file that does not parse is advice built
+    # on sand.
+    if ($broken.Count -gt 0) {
+        $rows = @($broken | Sort-Object Path | ForEach-Object { '    ' + $_.Path + ' - ' + $_.Reason })
+        $first = @($broken | Sort-Object Path)[0].Path
+        $text = "The task gate rejects a plan this session is working in:`n`n" + ($rows -join "`n") + @"
+
+
+Reproduce it: .claude/paperflow/paperflow.ps1 tasks -Path $first
+Exit 2 is the plan's SHAPE, not its work - and the gate stops at the first thing it finds, so every
+check behind it (red-first, approval, F3) has not run. Fix the plan's shape, not SPEC.md, then run
+the gate again before handing any task to a lane.
+"@
+        return [pscustomobject]@{ ExitCode = 2; Text = $text }
     }
 
     if ($hits.Count -gt 0) {

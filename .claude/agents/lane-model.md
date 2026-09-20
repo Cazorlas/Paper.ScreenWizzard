@@ -66,6 +66,13 @@ synchronizing, starting or restarting a host.
 - Temporary check views, layers or markers are named the way the project's rules name them, and deleted
   when done. Any left behind: report each by name.
 
+## Why you are not in a worktree
+
+The logic and UI lanes each get their own git worktree, because they only write files. You change the
+user's real model through the host, which no checkout can isolate, and the only files you write are the
+harness scripts that prove what you did. Hiding those in a second checkout would cost the main session the
+one artifact it needs from you and buy nothing.
+
 ## Never
 
 - Start, close or restart a host application, a copy included; save, synchronize or close the user's model

@@ -108,7 +108,8 @@ trước trả hết.
 
 1. Với nhóm đầu còn task mở, gom task theo lane. Trong **một** lượt, gọi mỗi lane một `Agent` chạy nền, tên
    theo bảng trên, và đưa cho nó: các mã task của lane đó, đường dẫn plan và `SPEC.md`, và `{files:}` của
-   từng task. Lane agent chỉ sửa file trong các glob đó, không commit, không push, không mở hay tắt host.
+   từng task. Lane agent chỉ sửa file trong các glob đó, không push, không mở hay tắt host; lane `unit` và
+   lane `ui` commit **một lần** trên nhánh worktree của chúng để trả việc về (bước 4).
 2. **Nối tiếp, không song song:** task ghi `(sau T<n>)` chờ `T<n>` trả về; lane `ui` và lane `live` không
    bao giờ chạy cùng lúc (driver UI giữ chuột và bàn phím, ảnh chụp host cần cửa sổ host ở trước); `live`
    chỉ chạy sau khi `unit` của cùng việc đã xanh. Một nhóm chỉ có một lane thì giao một agent, vẫn chạy nền.
@@ -116,11 +117,18 @@ trước trả hết.
 3. **Chờ** mọi agent của nhóm trả về. Session chính **giữ** plan, `SPEC.md`, dấu tick, bảng API, mọi câu
    hỏi cho người dùng và mọi bước cần công cụ host mà agent không có (agent trả `not verifiable: cần session
    chính` thì session chính tự chạy bước đó).
-4. **Gộp bằng chứng:** mỗi dòng `| T<n> | … | verdict |` agent trả về thành một dòng dưới `## Bằng chứng`,
+4. **Gộp code của lane về trước khi gộp bằng chứng.** Lane `unit` và lane `ui` chạy trong **worktree
+   riêng** (`isolation: worktree`), nên code của chúng **không nằm trong** cây session chính đang build.
+   Mỗi lane trả về một tên nhánh và một commit: `git merge --no-ff <nhánh>` từng cái, theo đúng thứ tự
+   lane trong nhóm. Xung đột ở đây nghĩa là hai lane đã ghi cùng một file mà plan không nói — đó là F3, và
+   nó là lỗi của plan: ghi vào Decisions, thêm `(sau T<n>)` hay tách `{files:}`, đừng gỡ xung đột bằng tay
+   rồi đi tiếp. Lane `live` và lane `model` làm việc ngay trong cây chính (host chỉ có một, và nó gắn với
+   một bản build đã publish), nên không có gì để gộp.
+5. **Gộp bằng chứng:** mỗi dòng `| T<n> | … | verdict |` agent trả về thành một dòng dưới `## Bằng chứng`,
    tick task `pass`; dòng API vào bảng API; file agent báo đã sửa phải nằm trong glob của task — một file
    ngoài glob là fail của task đó. Task `fail` hay `not verifiable` không tick: xử lý theo phần 4 (vòng test).
-5. Sang nhóm kế. Nhóm không lane (Close) để cho `/task-verify`.
-6. **Hết mọi lane: session chính chạy một lần** verb `build` rồi verb `test` **đầy đủ** — lane agent chỉ
+6. Sang nhóm kế. Nhóm không lane (Close) để cho `/task-verify`.
+7. **Hết mọi lane: session chính chạy một lần** verb `build` rồi verb `test` **đầy đủ** — lane agent chỉ
    chạy phần của mình, nên đây là lần duy nhất mọi thay đổi gặp nhau. Pass cần exit 0 **và** số test đã
    chạy > 0; fail ngoài `knownFailures` là fail, bất kể lane nào gây ra. Ghi dòng số test vào bằng chứng
    của task lane cuối cùng. Plan model không đổi code nào: bước này là `không áp dụng`, ghi rõ như vậy.
