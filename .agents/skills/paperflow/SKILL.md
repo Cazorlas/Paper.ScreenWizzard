@@ -28,7 +28,7 @@ hỏi "có làm tiếp không", không dừng vì một nhóm task vừa xong. H
 
 ## Luật vận hành
 
-Tám luật này đúng cho mọi chặng dưới đây, và mỗi luật có một điều kiện xong riêng — một luật không nói
+Chín luật này đúng cho mọi chặng dưới đây, và mỗi luật có một điều kiện xong riêng — một luật không nói
 được lúc nào nó xong thì nó là lời khuyên, không phải luật.
 
 1. **Hồi phục trước đã.** Trước bất cứ việc gì, tìm plan của tính năng này. Có plan thì **đọc nó và mọi
@@ -50,6 +50,9 @@ Tám luật này đúng cho mọi chặng dưới đây, và mỗi luật có m�
 8. **Chỉ dừng ở một dòng của bảng "Khi nào dừng".** Một plan đã duyệt là uỷ quyền chạy **tới cổng kế
    tiếp**, không phải tới task kế tiếp rồi xin phép lại. *Xong khi:* lần dừng gần nhất khớp một dòng của
    bảng đó, và nói được nó là dòng nào.
+9. **Mời người dùng đọc gì thì đưa liên kết bấm được tới đúng chỗ đó** — không chỉ lúc xin duyệt, mà
+   mọi lần mời xem, kiểm hay chốt: mỗi tài liệu một dòng `[tên](đường dẫn)`, thêm `#L<dòng>` khi trỏ vào
+   một dòng. Luật đủ: `references/approval-links.md`. *Xong khi:* mỗi tài liệu được nhắc có một liên kết.
 
 ## 0. Loại việc — trước mọi thứ
 
@@ -82,13 +85,12 @@ chạy song song. **Cổng:** `.claude/paperflow/paperflow.ps1 tasks -Path <plan
 F3, F12, lane ngoài loại việc: sửa plan rồi kiểm lại).
 
 ## 2. Dừng chờ duyệt
-
-Trình ra các tài liệu chờ duyệt **kèm liên kết mở được, mỗi lần trình duyệt, không trừ lần nào** (một dòng liên kết markdown cho từng tài liệu; luật đầy đủ ở `references/approval-links.md`), các dòng luật mới hay đổi, danh sách task theo nhóm (nhóm nào chạy song song lane nào), và câu nào còn cần trả lời. **Kết thúc lượt.**
-Người dùng đồng ý → ghi `**Trạng thái:** đã duyệt <ngày> ("lời họ nói")` vào plan.
-**Cổng:** exit không còn là 4 vì người dùng đã duyệt, không bao giờ vì agent tự sửa dòng trạng thái.
+Trình tài liệu chờ duyệt **kèm liên kết mở được, mỗi lần trình duyệt, không trừ lần nào** (luật 9), các
+dòng luật mới hay đổi, task theo nhóm, và câu nào còn cần trả lời. **Kết thúc lượt.** Đồng ý → ghi
+`**Trạng thái:** đã duyệt <ngày> ("lời họ nói")` vào plan. **Cổng:** exit không còn là 4 vì người dùng đã
+duyệt, không bao giờ vì agent tự sửa dòng trạng thái.
 
 ## 3. Worktree — tuỳ chọn
-
 Dùng skill `task-worktree` khi người dùng bảo, khi có phiên khác đang làm ở bản checkout chính, hay khi
 build và test đỏ của việc sẽ chặn người khác: `create` → `carry` nếu việc cần thay đổi chưa commit →
 `baseline` (ghi test đỏ sẵn có vào plan). Mọi chặng sau chạy trong thư mục worktree; lane agent cũng chạy ở
@@ -110,13 +112,11 @@ build và test đỏ của việc sẽ chặn người khác: `create` → `carr
 **Cổng:** mọi task đã tick kèm bằng chứng; bản chạy đầy đủ `pass` theo `knownFailures`.
 
 ## 5. Kiểm — `/task-verify <plan>`
-
 `find-bug` trên SPEC.md, agent `architecture-reviewer` trên file đã đổi (plan code), bảng kiểm luật (plan
 model), đóng SPEC.md, sổ bug, hàng đợi bài học, cổng exit **0** và trạng thái `xong <ngày>`. Một phát hiện
 có input hay một vi phạm kiến trúc → về chặng 4 với task sửa; không đi tiếp qua cổng đỏ.
 
 ## 6. Tài liệu — `/sync-docs`
-
 SPEC.md và `CODEMAP.md` khớp code đã đổi, plan còn mở, dấu nháp còn sót. Việc còn dang dở → handover.
 
 ## 7. Báo cáo
@@ -169,7 +169,7 @@ Lý do và cái giá đã trả: `Paper-skills/docs/adr/0009`.
 `pass` (đo được, đúng) · `fail` (đo được, sai → `systematic-debugging`, về chặng sớm nhất sửa được) ·
 `not verifiable` (host không kết nối, 0 test chạy, verb trả 4) → chạy lại **đúng một lần**; lần hai là môi
 trường, ghi lý do, **không sửa code**. Verb trả 5 là `không áp dụng`, không phải lỗi. Cùng một test đỏ ba
-lần không tiến triển → đổi giả thuyết, không đổi tham số. Không bao giờ lặp lại một lần thử không đổi.
+lần không tiến triển → đổi giả thuyết, không đổi tham số (luật 7).
 
 ## Mẫu dự án mới dùng lệnh này thế nào
 

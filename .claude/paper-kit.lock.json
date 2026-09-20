@@ -1,5 +1,5 @@
 {
-  "version": "1.18.0",
+  "version": "1.19.0",
   "hosts": ["desktop"],
   "files": {
     ".agents/skills/adr/SKILL.md": "9f5c1354130c9771373656307a9c3e22d13d7e49213f7ed5ecacb6e24eb29e1c",
@@ -23,8 +23,8 @@
     ".agents/skills/paper-wpf-style/references/build-and-deploy.md": "013114d5b8fa7e25293b3c842c9754c4a1f9d8b76162f626e5dd1b441b08c3a5",
     ".agents/skills/paper-wpf-style/references/viewmodel-and-commands.md": "e128c7e69e91e2c2d1395af9f1dac454009eb1282c970b91d95c1a7f7250a87d",
     ".agents/skills/paper-wpf-style/references/xaml-shared-library.md": "9c17a0968bb22d3fb7cdd323ff21523a254f3e0f3c31a99ea748a396be1f36b7",
-    ".agents/skills/paperflow/SKILL.md": "7d0aff0133224f6c4ee328b36df7562c5b6a955274440085982842457fa063d4",
-    ".agents/skills/paperflow/references/approval-links.md": "af94bf72990df1c4c0639822139ca18bac270264c87faeb15e04e4c46b9388ae",
+    ".agents/skills/paperflow/SKILL.md": "18facd9897db11cecf9b3cac6fd4f78625e2c213a31cda61a6359e131f1993ab",
+    ".agents/skills/paperflow/references/approval-links.md": "c38405bd66f7c3718e09505a702210a27148cc2c1f35dc783cbbd942da46016a",
     ".agents/skills/parity-refactor/SKILL.md": "d779e644ed4900d9027bcba939d305fb431864d69af4406e9b549aa7def552fb",
     ".agents/skills/spec-backfill/SKILL.md": "ca3bce17c56b0f38be5d45dac15c5504d76c10315db075722d3a5684c5d7f27e",
     ".agents/skills/spec-changes/SKILL.md": "514c59c01a169e5cf49ebd594bbb5b16bc030cfa98f37671c3cd72d3f15e134d",
@@ -111,8 +111,8 @@
     ".claude/skills/paper-wpf-style/references/build-and-deploy.md": "013114d5b8fa7e25293b3c842c9754c4a1f9d8b76162f626e5dd1b441b08c3a5",
     ".claude/skills/paper-wpf-style/references/viewmodel-and-commands.md": "e128c7e69e91e2c2d1395af9f1dac454009eb1282c970b91d95c1a7f7250a87d",
     ".claude/skills/paper-wpf-style/references/xaml-shared-library.md": "9c17a0968bb22d3fb7cdd323ff21523a254f3e0f3c31a99ea748a396be1f36b7",
-    ".claude/skills/paperflow/SKILL.md": "7d0aff0133224f6c4ee328b36df7562c5b6a955274440085982842457fa063d4",
-    ".claude/skills/paperflow/references/approval-links.md": "af94bf72990df1c4c0639822139ca18bac270264c87faeb15e04e4c46b9388ae",
+    ".claude/skills/paperflow/SKILL.md": "18facd9897db11cecf9b3cac6fd4f78625e2c213a31cda61a6359e131f1993ab",
+    ".claude/skills/paperflow/references/approval-links.md": "c38405bd66f7c3718e09505a702210a27148cc2c1f35dc783cbbd942da46016a",
     ".claude/skills/parity-refactor/SKILL.md": "d779e644ed4900d9027bcba939d305fb431864d69af4406e9b549aa7def552fb",
     ".claude/skills/spec-backfill/SKILL.md": "ca3bce17c56b0f38be5d45dac15c5504d76c10315db075722d3a5684c5d7f27e",
     ".claude/skills/spec-changes/SKILL.md": "514c59c01a169e5cf49ebd594bbb5b16bc030cfa98f37671c3cd72d3f15e134d",
