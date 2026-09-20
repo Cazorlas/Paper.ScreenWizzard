@@ -235,6 +235,177 @@
   </Style>
   <Style TargetType="TextBox" BasedOn="{StaticResource Style.TextBox}" />
 
+  <!-- Editor tool button: a radio button drawn as a flat toggle. The chosen tool is filled with the accent colour, so it does not rely
+       on colour alone being told from its neighbours by hue: fill and label both change. Only the chosen one of the group is a Tab stop
+       (arrow keys move inside the group), as in the other radio groups of this app. The focus ring is the two-ring one of Button. -->
+  <Style x:Key="Style.ToolButton" TargetType="RadioButton">
+    <Setter Property="IsTabStop" Value="{Binding IsChecked, RelativeSource={RelativeSource Self}}" />
+    <Setter Property="Foreground" Value="{DynamicResource Brush.Text}" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Padding" Value="10,4" />
+    <Setter Property="MinHeight" Value="32" />
+    <Setter Property="MinWidth" Value="32" />
+    <Setter Property="Margin" Value="0,0,2,0" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="RadioButton">
+          <Grid SnapsToDevicePixels="True">
+            <Border x:Name="Surface"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="4" />
+            <ContentPresenter Margin="{TemplateBinding Padding}"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              RecognizesAccessKey="True" />
+            <Border x:Name="FocusRing"
+                    BorderBrush="{DynamicResource Brush.Focus}"
+                    BorderThickness="2"
+                    CornerRadius="4"
+                    IsHitTestVisible="False"
+                    Visibility="Collapsed">
+              <Border BorderBrush="{DynamicResource Brush.Window}" BorderThickness="2" CornerRadius="2" />
+            </Border>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Surface" Property="Background" Value="{DynamicResource Brush.ButtonHover}" />
+            </Trigger>
+            <Trigger Property="IsChecked" Value="True">
+              <Setter TargetName="Surface" Property="Background" Value="{DynamicResource Brush.Accent}" />
+              <Setter Property="Foreground" Value="{DynamicResource Brush.AccentText}" />
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+              <Setter TargetName="FocusRing" Property="Visibility" Value="Visible" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Colour swatch: a disc in the colour it stands for (the colour is the swatch's Background, set by the palette item), with a 1 px
+       border in the theme's border colour so a pale colour still has an edge on a light window and a dark one on a dark window. The
+       chosen swatch gets a ring in the text colour around it; focus adds the outer focus ring. -->
+  <Style x:Key="Style.Swatch" TargetType="RadioButton">
+    <Setter Property="IsTabStop" Value="{Binding IsChecked, RelativeSource={RelativeSource Self}}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Brush.Border}" />
+    <Setter Property="Width" Value="32" />
+    <Setter Property="Height" Value="32" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="RadioButton">
+          <Grid Background="Transparent" SnapsToDevicePixels="True">
+            <Ellipse x:Name="FocusRing" Stroke="Transparent" StrokeThickness="2" />
+            <Ellipse x:Name="ChosenRing" Margin="3" Stroke="Transparent" StrokeThickness="2" />
+            <Ellipse Margin="7"
+                     Fill="{TemplateBinding Background}"
+                     Stroke="{TemplateBinding BorderBrush}"
+                     StrokeThickness="1" />
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsChecked" Value="True">
+              <Setter TargetName="ChosenRing" Property="Stroke" Value="{DynamicResource Brush.Text}" />
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+              <Setter TargetName="FocusRing" Property="Stroke" Value="{DynamicResource Brush.Focus}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Slider: a 4 px track in the border colour and an accent thumb. The track is what the user sees, so it must reach 3:1 against the
+       window like any border; the thumb is the accent colour, which does too. Arrow keys work because Slider handles them itself. There
+       are no page buttons on the track: they would appear to UI Automation as two unnamed buttons, and the thumb and the arrow keys do
+       the job. -->
+  <Style TargetType="Slider">
+    <Setter Property="MinHeight" Value="28" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Slider">
+          <Grid Background="Transparent" SnapsToDevicePixels="True">
+            <Border x:Name="FocusRing"
+                    BorderBrush="Transparent"
+                    BorderThickness="2"
+                    CornerRadius="4"
+                    IsHitTestVisible="False" />
+            <Border Height="4"
+                    Margin="10,0"
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource Brush.Border}"
+                    CornerRadius="2" />
+            <Track x:Name="PART_Track" Margin="2,0">
+              <Track.Thumb>
+                <Thumb Width="16" Height="16" Focusable="False">
+                  <Thumb.Template>
+                    <ControlTemplate TargetType="Thumb">
+                      <Ellipse Fill="{DynamicResource Brush.Accent}" Stroke="{DynamicResource Brush.Window}" StrokeThickness="2" />
+                    </ControlTemplate>
+                  </Thumb.Template>
+                </Thumb>
+              </Track.Thumb>
+            </Track>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+              <Setter TargetName="FocusRing" Property="BorderBrush" Value="{DynamicResource Brush.Focus}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Scroll bar: a 14 px lane in the window colour with one rounded thumb in the border colour (>= 3:1 on the window in both themes). The
+       stock bar is drawn with system colours, so on a dark window it was a bright strip. No arrow or page buttons: they would show to UI
+       Automation as unnamed buttons, and the thumb, the wheel and the arrow keys of the scrolled area do the job. -->
+  <Style TargetType="ScrollBar">
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ScrollBar">
+          <Grid x:Name="Lane" Background="{DynamicResource Brush.Window}" SnapsToDevicePixels="True">
+            <Track x:Name="PART_Track">
+              <Track.Thumb>
+                <Thumb Focusable="False">
+                  <Thumb.Template>
+                    <ControlTemplate TargetType="Thumb">
+                      <Border Margin="2" Background="{DynamicResource Brush.Border}" CornerRadius="5" MinHeight="24" MinWidth="24" />
+                    </ControlTemplate>
+                  </Thumb.Template>
+                </Thumb>
+              </Track.Thumb>
+            </Track>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <!-- A vertical track counts from the bottom up, as in the stock template. -->
+            <Trigger Property="Orientation" Value="Vertical">
+              <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="True" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    <Style.Triggers>
+      <Trigger Property="Orientation" Value="Vertical">
+        <Setter Property="Width" Value="14" />
+        <Setter Property="MinWidth" Value="14" />
+      </Trigger>
+      <Trigger Property="Orientation" Value="Horizontal">
+        <Setter Property="Height" Value="14" />
+        <Setter Property="MinHeight" Value="14" />
+      </Trigger>
+    </Style.Triggers>
+  </Style>
+
   <!-- The title of a settings group. -->
   <Style x:Key="Style.GroupHeader" TargetType="TextBlock">
     <Setter Property="Foreground" Value="{DynamicResource Brush.Text}" />

@@ -17,4 +17,8 @@
     <PathGeometry Figures="M12.2,8 L14.6,8 M10.97,10.97 L12.67,12.67 M8,12.2 L8,14.6 M5.03,10.97 L3.33,12.67 M3.8,8 L1.4,8 M5.03,5.03 L3.33,3.33 M8,3.8 L8,1.4 M10.97,5.03 L12.67,3.33" />
   </GeometryGroup>
   <Geometry x:Key="Icon.Close">M3,3 L13,13 M13,3 L3,13</Geometry>
+  <!-- Editor: a curved arrow back (undo), its mirror (redo), and a plus (add a colour). -->
+  <Geometry x:Key="Icon.Undo">M6,2.5 L3,5.5 L6,8.5 M3,5.5 H10 C14,5.5 14,13 10,13 H5</Geometry>
+  <Geometry x:Key="Icon.Redo">M10,2.5 L13,5.5 L10,8.5 M13,5.5 H6 C2,5.5 2,13 6,13 H11</Geometry>
+  <Geometry x:Key="Icon.Plus">M8,3 V13 M3,8 H13</Geometry>
 </ResourceDictionary>

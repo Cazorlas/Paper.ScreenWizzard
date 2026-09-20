@@ -39,6 +39,12 @@ public interface IEditorSession
 
     void Delete(Guid id);
 
+    /// <summary>Replaces the text of a text annotation (double-click edit, SPEC editor "Chữ"); empty text deletes it. One history step.</summary>
+    void SetText(Guid id, string text);
+
+    /// <summary>Changes the font size of a text or step annotation. One history step.</summary>
+    void SetFontSize(Guid id, int fontSize);
+
     void Select(Guid? id);
 
     /// <summary>Keeps <paramref name="area"/> (clamped to the image); moves the drawings with it and drops those outside (SPEC editor, "Cắt").</summary>
@@ -65,6 +71,12 @@ public interface IEditorInteractor
 
     /// <summary>Applies the Shift rules: lines snap to 0, 45 or 90 degrees, rectangles become squares, ellipses circles.</summary>
     DragShape ConstrainDrag(ToolKind tool, PixelPoint start, PixelPoint current, bool shiftHeld);
+
+    /// <summary>
+    /// Which annotation a click at <paramref name="point"/> (image pixels) selects, or null: the topmost one, meaning the last
+    /// drawn, within <paramref name="tolerance"/> pixels. The rule lives here, not in the window, so it is tested without WPF.
+    /// </summary>
+    Guid? HitTest(IEditorSession session, PixelPoint point, int tolerance);
 
     /// <summary>Adds the text unless it is empty (SPEC editor F4); returns whether an annotation was created.</summary>
     bool AddText(IEditorSession session, PixelPoint origin, string text, RgbaColor color, int fontSize);
