@@ -1,0 +1,231 @@
+﻿{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Cazorlas/Paper-skills/paper-kit/flow/paper.profile.schema.json",
+  "title": "Paper project profile",
+  "description": "The one file that tells the kit what this project is and what each verb runs. Lives at .claude/paper.profile.json. Skills name verbs; only this file names commands.",
+  "type": "object",
+  "required": ["hosts", "lanes", "verbs"],
+  "additionalProperties": false,
+  "definitions": {
+    "buildGuard": {
+      "type": "object",
+      "required": ["pattern", "requireConfiguration"],
+      "additionalProperties": false,
+      "properties": {
+        "pattern": { "type": "string" },
+        "requireConfiguration": { "type": "string" },
+        "message": { "type": "string" }
+      }
+    }
+  },
+  "properties": {
+    "$comment": { "type": "string" },
+    "hosts": {
+      "description": "What kind of application this is. Decides which host pack's skills and hooks get vendored, and which lanes can be proved at all. 'cli' is a tooling repository (the kit itself): e2e on a throwaway project, live on a real one.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "enum": ["revit", "cad", "web", "desktop", "ai", "cli"] }
+    },
+    "lanes": {
+      "description": "The ways this project proves a change. 'unit' needs no host; 'ui' needs desktop; 'e2e' needs web or ai; 'live' needs revit or cad; 'model' (building in the user's model or drawing, proved by reading it back) needs revit or cad. A lane no declared host can prove is refused.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "enum": ["unit", "ui", "e2e", "live", "model"] }
+    },
+    "workTypes": {
+      "description": "The kinds of work this project's plans may be, each with the lanes it proves itself in. A plan names its type on one line, '**Loai viec:** code' or '**Loai viec:** model' ('**Work type:**'); a plan with no such line is code. The task gate refuses a task in a lane its plan's type does not list. Absent: every lane is allowed in every plan.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "$comment": { "type": "string" },
+        "code": {
+          "description": "Changing the program: proved by tests and by running it in the host.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "lanes": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["unit", "ui", "e2e", "live", "model"] } },
+            "rulePrefixes": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+            "rules": { "description": "Glob of the rule files a plan of this type reads first.", "type": "string" },
+            "samples": { "description": "Glob of the sample folders a plan of this type copies from.", "type": "string" },
+            "references": { "description": "Glob of the reference documents (drawings, contracts) behind the rules.", "type": "string" }
+          }
+        },
+        "model": {
+          "description": "Changing the user's model or drawing: every model-lane task cites the rule codes it builds to (F12), and each group goes survey, dry run, commit, independent read-back.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "lanes": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["unit", "ui", "e2e", "live", "model"] } },
+            "rulePrefixes": { "description": "Prefixes of a rule code a model-lane task must cite, each followed by digits (C-16, R-3). Defaults to C- and R-.", "type": "array", "items": { "type": "string", "minLength": 1 } },
+            "rules": { "description": "Glob of the rule files a model plan reads first, e.g. docs/features/**/RULE.md.", "type": "string" },
+            "samples": { "description": "Glob of the sample folders a model plan copies from, e.g. docs/features/**/SAMPLE.", "type": "string" },
+            "references": { "description": "Glob of the reference documents (drawings, contracts) behind the rules, e.g. docs/features/**/REFERENCE.md.", "type": "string" },
+            "checkNamePrefix": { "description": "Name prefix of the check views, layers or marks left behind for problems the user must look at (e.g. CHECKVIEW_). Temporary ones are deleted when the task ends.", "type": "string" }
+          }
+        }
+      }
+    },
+    "laneAliases": {
+      "description": "An older lane tag -> the lane it counts as, so plans written before the kit named its lanes still parse: a host lane once tagged [revit] is { \"revit\": \"live\" }.",
+      "type": "object",
+      "additionalProperties": { "enum": ["unit", "ui", "e2e", "live", "model"] }
+    },
+    "verbs": {
+      "description": "Verb -> the project's own command line, run from the project root. A verb left out is NOT APPLICABLE (exit 5), which is a valid verdict; do not declare a fake command to keep a gate green.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "build": { "type": "string", "minLength": 1 },
+        "test": { "type": "string", "minLength": 1 },
+        "ui": { "type": "string", "minLength": 1 },
+        "e2e": { "type": "string", "minLength": 1 },
+        "live": { "type": "string", "minLength": 1 },
+        "publish": { "type": "string", "minLength": 1 },
+        "package": { "type": "string", "minLength": 1 },
+        "watch": { "type": "string", "minLength": 1 }
+      }
+    },
+    "knownFailures": {
+      "description": "Path, relative to the project root, of the red baseline the test verb may pass over. A project with one baseline per build configuration writes a {config} placeholder, e.g. .claude/hooks/known-failures.{config}.txt, resolved to verify.configuration (or, when the profile names none, the PAPERFLOW_CONFIGURATION environment variable); with neither there is no baseline, and verify-on-stop says so. A test listed there that now passes is removed from the list by /sync-docs.",
+      "type": "string"
+    },
+    "docsSource": {
+      "description": "Where every API member is looked up before the code that calls it (skill api-lookup). One of: mcp:<server> (a docs MCP server in .mcp.json), a URL, skill:<name>, xmldoc:<folder of .NET XML documentation files>, or assembly:<path> when no docs exist - that last one carries no Remarks and the lookup row must say so.",
+      "type": "string",
+      "pattern": "^(mcp:|skill:|xmldoc:|assembly:|https?://)"
+    },
+    "api": {
+      "description": "Read by paperflow api-check (skill task-verify): the host's namespace prefixes. A code file the branch adds lines to uses the host when the whole file names one of them (a using, or a fully qualified name under it) or its project imports one for every file (a global using, a <Using Include>); then the plan's API table needs a row, or the check is red (F17). A prefix ending in '.' covers everything under it; otherwise it ends at a dot or a word boundary. This key is the only source: setup writes it from the host templates into a new profile, and a project set up before it existed adds it by hand. Absent: the check is not applicable and says to declare it. An empty list: this project calls no host API, and the check is off.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "$comment": { "type": "string" },
+        "namespaces": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "featureDocs": {
+      "description": "Folder holding each feature's SPEC.md beside its dated briefs (YYYY-MM-DD-<task>.md) and plans (YYYY-MM-DD-<task>-plan.md), plus input/ and shapes/. Defaults to docs/features.",
+      "type": "string",
+      "default": "docs/features"
+    },
+    "adrFolder": {
+      "description": "Where this project keeps its architecture decision records. Setup creates docs/decisions (README + a starter clean-architecture ADR) only when no ADR folder with a .md file exists; after that the log is the project's and the kit never touches it.",
+      "type": "string"
+    },
+    "live": {
+      "description": "Read by the host pack's live skill and lane-live. mcpServer: the project's own live MCP server in .mcp.json; dialogRules: path of the table of host dialogs that may be answered by rule (anything not listed is left for the user); notes: path of a markdown file holding this project's own live values - real tool names, which assemblies stage, bin paths, an example entry point; values only, because the live loop has one owner and that is the host pack's live skill (docs/adr/0009); pinnedAssemblies: assemblies loaded once per host process, so a change to them needs a restart the user approves.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "$comment": { "type": "string" },
+        "mcpServer": { "type": "string" },
+        "dialogRules": { "type": "string" },
+        "notes": { "type": "string" },
+        "pinnedAssemblies": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "guards": {
+      "description": "Rules for the PreToolUse guard hooks. test: a bare test command that must go through the project's runner; build: a build that must name a configuration; destructive: commands that lose the user's work or kill a running host. Core adds generic git/delete rules to destructive by itself. A destructive pattern is tried on each command segment and on each whole pipeline: stay inside one stage with [^|]*, cross a pipe only with an explicit \\|. Quoted text reaches a rule only when it is one word or a path; a quoted command after powershell -Command, bash -c or cmd /c is checked on its own.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "$comment": { "type": "string" },
+        "test": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["pattern"],
+            "additionalProperties": false,
+            "properties": {
+              "pattern": { "type": "string" },
+              "use": { "type": "string" },
+              "escape": { "type": "string" }
+            }
+          }
+        },
+        "build": {
+          "oneOf": [
+            { "$ref": "#/definitions/buildGuard" },
+            { "type": "array", "items": { "$ref": "#/definitions/buildGuard" } }
+          ]
+        },
+        "destructive": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["pattern", "reason"],
+            "additionalProperties": false,
+            "properties": {
+              "pattern": { "type": "string" },
+              "reason": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "codeMap": {
+      "description": "Read by code-map-nag and plan-nag: which source extensions count as code changed in the session.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "extensions": { "type": "array", "items": { "type": "string", "pattern": "^\\." } }
+      }
+    },
+    "verify": {
+      "description": "Read by verify-on-stop: which changed extensions trigger build + test at the end of a turn, and the configuration its build and test verbs name (what {config} in knownFailures resolves to). PAPER_SKIP_VERIFY=1 turns it off for one session.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "watch": { "type": "array", "items": { "type": "string", "pattern": "^\\." } },
+        "configuration": { "type": "string", "minLength": 1 }
+      }
+    },
+    "worktree": {
+      "description": "Read by paperflow/worktree.ps1. copyFiles: local files outside git (settings.local.json, a private .mcp.json) copied into a new task worktree; each must be gitignored, or done counts it as uncommitted.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "copyFiles": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "projectSkills": {
+      "description": "Skills that live in this project and not in the kit, each with one line saying why. A skill that holds a lifecycle stage belongs to the kit (docs/adr/0009); what may stay here is domain knowledge. Anything under .claude/skills that is neither a kit skill nor named here slipped in unnoticed - which is how two live skills came to exist.",
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "architecture": {
+      "description": "Read by the layer-guard and no-static-host-state hooks and by the architecture-reviewer agent. Empty or absent turns both hooks off. Wrong for this project? Change it here, never in a hook.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "$comment": { "type": "string" },
+        "platformFree": {
+          "description": "Paths whose code must run with no host. A file matching `path` may not name a `forbid` namespace prefix (a prefix ending in '.' covers everything under it) and its project file may not reference a package containing a `forbidPackages` substring.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["path", "forbid"],
+            "additionalProperties": false,
+            "properties": {
+              "path": { "type": "string", "description": "Glob relative to the project root: ** crosses folders, * stays in one." },
+              "forbid": { "type": "array", "items": { "type": "string" } },
+              "forbidPackages": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "hostStateTypes": {
+          "description": "Host types that must never sit in a static field: a static captures the first document of the process and is stale after the file is closed and reopened.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "reviewers": {
+          "description": "The project's own read-only reviewer agents (.claude/agents/<name>.md), run by /task-verify after the kit's architecture-reviewer on the same changed files: this project's layer names and decisions. A reviewer nothing calls drifts.",
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" }
+        }
+      }
+    }
+  }
+}

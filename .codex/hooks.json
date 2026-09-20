@@ -1,0 +1,58 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/session-anchor.ps1\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/test-guard.ps1\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/build-guard.ps1\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/destructive-guard.ps1\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/code-map-nag.ps1\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/plan-nag.ps1\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/verify-on-stop.ps1\"",
+            "timeout": 600
+          }
+        ]
+      }
+    ]
+  }
+}

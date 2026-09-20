@@ -1,0 +1,75 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-anchor.ps1\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/test-guard.ps1\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/build-guard.ps1\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/destructive-guard.ps1\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/layer-guard.ps1\"",
+            "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/no-static-host-state.ps1\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/code-map-nag.ps1\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/plan-nag.ps1\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"$CLAUDE_PROJECT_DIR/.claude/hooks/verify-on-stop.ps1\"",
+            "timeout": 600
+          }
+        ]
+      }
+    ]
+  }
+}
