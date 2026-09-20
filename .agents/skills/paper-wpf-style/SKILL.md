@@ -10,7 +10,8 @@ The project's own `CLAUDE.md` is authoritative and overrides anything here that 
 
 Worked code lives beside this file: `references/viewmodel-and-commands.md` (generator setup, full
 ViewModel and command examples, `[PaperCommand]`) and `references/xaml-shared-library.md` (what to reuse,
-the standard UserControl header). Open them when writing that kind of code.
+the standard UserControl header). Open them when writing that kind of code. A standalone app's CI, package and
+release rules are in `references/build-and-deploy.md`.
 
 ## Layer boundaries
 
@@ -24,7 +25,11 @@ Infrastructure     -> Application + Domain
 - **Application** — interfaces/ports and use cases (skill `clean-architecture`). ViewModels depend on
   these interfaces.
 - **Infrastructure** — HTTP clients, JSON DTOs, external providers, DTO→Domain mapping, persistence.
-- **WPF** — views, ViewModels, commands, navigation, and the DI composition root.
+- **WPF / Presentation** — views, ViewModels, commands, navigation. When the project's ADR chose layers as
+  projects, this is a project of its own that references UseCases and Domain and **not** Infrastructure (so a
+  ViewModel cannot call an adapter: the compiler says no).
+- **Entry host** — in a standalone app, the exe project: `Program`/`App.xaml`, the tray or main window, and the
+  DI composition root that builds the adapters. It is the only project that references every layer.
 
 `architecture.platformFree` in `.claude/paper.profile.json` keeps `System.Windows` out of the layers
 that must not see it; hook `layer-guard` blocks the edit.

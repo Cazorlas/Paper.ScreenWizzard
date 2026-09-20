@@ -69,7 +69,13 @@ Không viết ADR cho:
 4. **Số đo thắng ý kiến.** Phương án bị loại vì chi phí thì ghi chi phí đo được (số project, số file một
    thay đổi chạm, số interface chỉ có một cài đặt), không ghi "phức tạp hơn".
 5. **Mục lục:** thêm một dòng vào `README.md` của sổ.
-6. **Status `Proposed`** tới khi chủ dự án duyệt; agent không tự đổi thành `Accepted`.
+6. **Status `Proposed`** tới khi chủ dự án duyệt; agent không tự đổi thành `Accepted` — kể cả ADR khởi đầu
+   của setup, và kể cả khi chủ dự án vừa duyệt một plan nhắc tới nó. Duyệt plan không phải duyệt ADR: hỏi một
+   câu riêng, kèm liên kết mở được tới ADR.
+7. **Làm đúng phương án đã chọn.** Một ADR chọn "phương án X" thì code, `CLAUDE.md`, hook và test kiến trúc
+   theo đúng hình của X (chọn "tầng là project" thì Presentation cũng là project). Muốn lệch — gộp hai tầng,
+   hạ một tầng thành thư mục — thì **ghi ngoại lệ thành một dòng Decision riêng** có lý do đo được và điều kiện
+   bỏ nó, và chủ dự án duyệt trước khi code lệch. Lệch mà không ghi là cách một ADR im lặng mất nghĩa.
 
 ## Không sửa — thay thế
 
