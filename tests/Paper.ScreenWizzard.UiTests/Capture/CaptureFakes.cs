@@ -234,8 +234,12 @@ public sealed class FakeCaptureInteractor : ICaptureInteractor
 
     public List<(string Folder, string FileName)> SaveAsAsked { get; } = [];
 
+    /// <summary>Runs first thing in BeginAsync: the moment the real use case would go on to take the snapshot when there is no delay.</summary>
+    public Action? BeforeBegin { get; set; }
+
     public Task<CaptureBeginResult> BeginAsync(CaptureRequest request, IProgress<int>? countdown, CancellationToken cancellationToken)
     {
+        BeforeBegin?.Invoke();
         Begun.Add(request);
         RunningSession?.Cancel();
         foreach (var second in CountdownToReport)

@@ -19,6 +19,10 @@ public sealed class CaptureFlow
     // Each further dialog opens this many physical pixels down and to the right, so the earlier one can still be seen and used.
     private const int DialogCascadeStep = 32;
 
+    // How long the flow waits after closing its own windows before it lets the screen be read: the desktop compositor repaints
+    // the freed area within a frame or two (measured on this machine as well under 100 ms), so this is a margin, not a guess at zero.
+    private static readonly TimeSpan SettleAfterClose = TimeSpan.FromMilliseconds(120);
+
     private readonly ICaptureInteractor _interactor;
     private readonly ICaptureViews _views;
     private readonly INotificationPort _notifications;
@@ -28,6 +32,7 @@ public sealed class CaptureFlow
     private readonly List<DialogRun> _dialogs = [];
     private CancellationTokenSource? _current;
     private SelectionRun? _selection;
+    private CountdownRun? _countdown;
     private int _generation;
 
     public CaptureFlow(
@@ -75,16 +80,34 @@ public sealed class CaptureFlow
             }
 
             countdown ??= OpenCountdown(seconds);
+            _countdown = countdown;
             countdown.ViewModel.SecondsLeft = seconds;
         });
 
         try
         {
-            var begin = _interactor.BeginAsync(request, progress, cancellation.Token);
+            // Whatever the run this one replaces left on the screen goes BEFORE the use case is asked. With no delay BeginAsync runs
+            // straight on to read the screen, so an overlay closed after the call is still in the pixels: the image held the dimmed old
+            // overlay, and for the window kind the old overlay was the "window" under the pointer (defect D1, found by driving the exe).
+            // The closed windows also need the desktop compositor to repaint once before the screen is read, hence the short wait.
+            var closedSomething = CloseSelection(cancelSession: true);
+            if (_countdown is { } earlier)
+            {
+                earlier.Close();
+                _countdown = null;
+                closedSomething = true;
+            }
 
-            // The use case cancelled the session this run replaces before it did anything else; that overlay goes now, not
-            // when the new snapshot is ready (a 5 s countdown would leave the old one on the screen for 5 s).
-            CloseOverlayOfInactiveSession();
+            if (closedSomething)
+            {
+                await Task.Delay(SettleAfterClose);
+                if (generation != _generation)
+                {
+                    return;
+                }
+            }
+
+            var begin = _interactor.BeginAsync(request, progress, cancellation.Token);
 
             CaptureBeginResult result;
             try
@@ -122,6 +145,11 @@ public sealed class CaptureFlow
         finally
         {
             countdown?.Close();
+            if (ReferenceEquals(_countdown, countdown))
+            {
+                _countdown = null;
+            }
+
             if (ReferenceEquals(_current, cancellation))
             {
                 _current = null;
@@ -201,11 +229,11 @@ public sealed class CaptureFlow
         }
     }
 
-    private void CloseSelection(bool cancelSession)
+    private bool CloseSelection(bool cancelSession)
     {
         if (_selection is not { } run)
         {
-            return;
+            return false;
         }
 
         _selection = null;
@@ -220,6 +248,7 @@ public sealed class CaptureFlow
         }
 
         run.Handle.Close();
+        return true;
     }
 
     private void HandleCaptured(CaptureOutcome outcome, DesktopSnapshot snapshot)

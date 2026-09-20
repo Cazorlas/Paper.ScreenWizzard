@@ -273,11 +273,19 @@ public sealed class AppShell : IDisposable
         var place = position ?? _shell.PlaceCaptureBar(_settings.Current.CaptureBarPosition, monitors, MeasureCaptureBar(monitors));
         bar.SourceInitialized += (_, _) =>
             NativeMethods.SetWindowPos(new WindowInteropHelper(bar).Handle, IntPtr.Zero, place.X, place.Y, 0, 0, NativeMethods.SwpNoSize | NativeMethods.SwpNoZOrder | NativeMethods.SwpNoActivate);
-        bar.Closed += (_, _) =>
+        // The place is read while the window still exists: once it is Closed its handle is gone and GetWindowRect fails, which is how a
+        // bar dragged and then closed with X kept its old place across an exit (defect D2, found by driving the exe).
+        bar.Closing += (_, _) =>
         {
             if (ReferenceEquals(_bar, bar))
             {
                 SaveCaptureBarPosition();
+            }
+        };
+        bar.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(_bar, bar))
+            {
                 _bar = null;
             }
 

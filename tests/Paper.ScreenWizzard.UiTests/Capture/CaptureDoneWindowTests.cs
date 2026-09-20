@@ -353,11 +353,19 @@ public sealed class CaptureDoneWindowTests : UiTestBase
         }
     }
 
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern int GetSystemMetrics(int index);
+
     [Test]
     public void Dialog_TwoOpenAtOnce_EachKeepsItsOwnImageAndClosingOneLeavesTheOther()
     {
-        var first = Open(width: 640, height: 480);
-        var second = Open(width: 1920, height: 1080, area: new PixelRect(900, 100, 800, 600));
+        // Each dialog is centred on the area it is given, in physical pixels, and the click below is a real mouse click, so the dialogs must not
+        // overlap: the areas are the top-left and bottom-right quarters of the primary screen, which keeps them apart at 100% and at 200%
+        // (a fixed pair of areas overlapped on a 2560x1600 panel at 200% and the click landed on the second dialog).
+        var screenWidth = GetSystemMetrics(0);
+        var screenHeight = GetSystemMetrics(1);
+        var first = Open(width: 640, height: 480, area: new PixelRect(0, 0, screenWidth / 2, screenHeight / 2));
+        var second = Open(width: 1920, height: 1080, area: new PixelRect(screenWidth / 2, screenHeight / 2, screenWidth / 2, screenHeight / 2));
         using (first.Window)
         using (second.Window)
         {

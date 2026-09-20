@@ -415,6 +415,28 @@ public sealed class CaptureFlowTests : UiTestBase
         Assert.That(rig.Overlay(1).ViewModel.Kind, Is.EqualTo(CaptureKind.Freeform));
     }
 
+    // Found by the E2E drive of the real exe (defect D1): with no delay BeginAsync goes straight on to take the snapshot, so an overlay
+    // closed AFTER the call is still on the screen when the pixels are read - the image held the dimmed old overlay (SPEC capture:
+    // the image never contains the app's own dim layer), and for the window kind the old overlay was picked as the window under the pointer.
+    [Test]
+    public void Replaced_RunTakesItsSnapshotOnlyAfterTheOldOverlayIsGone()
+    {
+        var rig = new Rig();
+        var first = NewSession(CaptureKind.Rectangle);
+        rig.Interactor.SessionToReturn = first;
+        rig.Start(CaptureKind.Rectangle);
+        Assert.That(rig.Fake.OpenSelectionCount, Is.EqualTo(1), "the first run put its overlay up");
+
+        var openAtBegin = -1;
+        rig.Interactor.RunningSession = first;
+        rig.Interactor.BeforeBegin = () => openAtBegin = rig.Fake.OpenSelectionCount;
+        rig.Interactor.SessionToReturn = NewSession(CaptureKind.Rectangle);
+        rig.Start(CaptureKind.Rectangle);
+
+        Assert.That(openAtBegin, Is.Zero, "the old overlay must be closed before the use case can take the snapshot");
+        Assert.That(rig.Fake.OpenSelectionCount, Is.EqualTo(1), "and the new run still puts exactly one overlay up");
+    }
+
     [Test]
     public void F8_TheOlderRunFinishesAfterTheNewerStarted_ItsSessionIsCancelledAndNoOverlayOpensForIt()
     {
