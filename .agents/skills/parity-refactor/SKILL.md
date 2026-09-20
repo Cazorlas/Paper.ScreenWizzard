@@ -49,6 +49,31 @@ grep -L "\.Baseline" Baseline/*.cs        # must print nothing
 - Add `Baseline/BASELINE.md`: a frozen copy, never edited, deleted with the compare entry. **A fix made in
   the Baseline makes the comparison agree with a behaviour change instead of catching it.**
 
+## 1b. What cannot be Baselined gets inventoried instead
+
+The rule above forbids a second copy of a window, page or view model - rightly, it breaks the build or
+the running UI. **So the UI half of a move has no golden master, and nothing checks it.** That is not a
+small gap: on a module split measured 2026-09-20 the logic half compared clean while the UI half
+silently lost four grid columns, a select-all tick box and eighteen bindings. Every one compiled.
+
+What replaces the Baseline there is a list taken **before** the move and checked after:
+
+```bash
+# every path the old XAML binds to, and every public member the old view models offer
+grep -rho '{Binding [^},]*' Views/ | sort -u                    > /tmp/before-bindings.txt
+grep -rhn 'public .* \w\+ \(get\|=>\)' ViewModels/ | sort -u  > /tmp/before-members.txt
+```
+
+- **Generated members are in the build, not in the source.** Where the project generates properties or
+  commands from an attribute, a source scan misses them and reports them as lost; read the built
+  assembly's metadata instead. Measured: a source scan of one product returned 179 findings of which
+  nearly all were wrong, for exactly this reason.
+- **After the move, every entry on the list still resolves**, or it is a column somebody stopped seeing.
+  Turn the check into a test rather than a one-off: a binding that names nothing is not a compile error
+  and not an exception - WPF and its kin leave the control blank and log to a trace nobody reads.
+- **A rename is the usual cause**, so compare by what the entry *means*, not by its spelling:
+  `SheetNumber` becoming `Number` is fine, `SheetNumber` becoming nothing is the finding.
+
 ## 2. The compare entry
 
 One public entry that runs **both** sides on the same input and returns the differences.

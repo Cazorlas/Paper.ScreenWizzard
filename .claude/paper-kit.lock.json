@@ -1,5 +1,5 @@
 {
-  "version": "1.19.0",
+  "version": "1.20.0",
   "hosts": ["desktop"],
   "files": {
     ".agents/skills/adr/SKILL.md": "9f5c1354130c9771373656307a9c3e22d13d7e49213f7ed5ecacb6e24eb29e1c",
@@ -25,7 +25,7 @@
     ".agents/skills/paper-wpf-style/references/xaml-shared-library.md": "9c17a0968bb22d3fb7cdd323ff21523a254f3e0f3c31a99ea748a396be1f36b7",
     ".agents/skills/paperflow/SKILL.md": "18facd9897db11cecf9b3cac6fd4f78625e2c213a31cda61a6359e131f1993ab",
     ".agents/skills/paperflow/references/approval-links.md": "c38405bd66f7c3718e09505a702210a27148cc2c1f35dc783cbbd942da46016a",
-    ".agents/skills/parity-refactor/SKILL.md": "d779e644ed4900d9027bcba939d305fb431864d69af4406e9b549aa7def552fb",
+    ".agents/skills/parity-refactor/SKILL.md": "85c2fe3970da8fd9e24ec757bdbaf9542a34588736eae67bbb0b279f4a8bc010",
     ".agents/skills/spec-backfill/SKILL.md": "ca3bce17c56b0f38be5d45dac15c5504d76c10315db075722d3a5684c5d7f27e",
     ".agents/skills/spec-changes/SKILL.md": "514c59c01a169e5cf49ebd594bbb5b16bc030cfa98f37671c3cd72d3f15e134d",
     ".agents/skills/spec-changes/spec_changes.py": "5baaf7c53bc5d9c8869d3f2f968b7e7bdb76cc052f5159d4a75d443bc9547e83",
@@ -113,7 +113,7 @@
     ".claude/skills/paper-wpf-style/references/xaml-shared-library.md": "9c17a0968bb22d3fb7cdd323ff21523a254f3e0f3c31a99ea748a396be1f36b7",
     ".claude/skills/paperflow/SKILL.md": "18facd9897db11cecf9b3cac6fd4f78625e2c213a31cda61a6359e131f1993ab",
     ".claude/skills/paperflow/references/approval-links.md": "c38405bd66f7c3718e09505a702210a27148cc2c1f35dc783cbbd942da46016a",
-    ".claude/skills/parity-refactor/SKILL.md": "d779e644ed4900d9027bcba939d305fb431864d69af4406e9b549aa7def552fb",
+    ".claude/skills/parity-refactor/SKILL.md": "85c2fe3970da8fd9e24ec757bdbaf9542a34588736eae67bbb0b279f4a8bc010",
     ".claude/skills/spec-backfill/SKILL.md": "ca3bce17c56b0f38be5d45dac15c5504d76c10315db075722d3a5684c5d7f27e",
     ".claude/skills/spec-changes/SKILL.md": "514c59c01a169e5cf49ebd594bbb5b16bc030cfa98f37671c3cd72d3f15e134d",
     ".claude/skills/spec-changes/spec_changes.py": "5baaf7c53bc5d9c8869d3f2f968b7e7bdb76cc052f5159d4a75d443bc9547e83",
