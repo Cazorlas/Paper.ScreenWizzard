@@ -83,6 +83,12 @@ public sealed class EditorInteractor : IEditorInteractor
     public EditorOpenResult OpenFromClipboard()
     {
         var clip = _clipboard.GetImage();
+        if (clip.ReadFailed)
+        {
+            _log.Warning("Editor: the clipboard could not be read: " + clip.Detail);
+            return Failed(EditorOpenIssue.ReadFailed, NotificationMessage.Of("Editor.ClipboardReadFailed", clip.Detail ?? string.Empty));
+        }
+
         if (!clip.HasImage || clip.Image is null)
         {
             return Failed(EditorOpenIssue.ClipboardHasNoImage, NotificationMessage.Of("Editor.ClipboardHasNoImage"));
@@ -129,8 +135,9 @@ public sealed class EditorInteractor : IEditorInteractor
     public SaveDecision DecideSave(IEditorSession session, AppSettings settings)
     {
         var path = session.SourcePath;
-        if (path is null)
+        if (path is null || !ScreenshotNaming.CanWriteInPlace(path))
         {
+            // A .bmp is read only: its own name would end up holding PNG bytes, so the copy goes through Save as.
             return AskSaveAs(SaveAction.AskSaveAs, settings, null);
         }
 
@@ -146,6 +153,7 @@ public sealed class EditorInteractor : IEditorInteractor
 
     public EditorSaveResult Save(IEditorSession session, PixelImage flattened, string path, AppSettings settings)
     {
+        path = ScreenshotNaming.WithWritableExtension(path);
         var written = _delivery.SaveToPath(flattened, path, settings.JpgQuality);
         if (!written.Success)
         {

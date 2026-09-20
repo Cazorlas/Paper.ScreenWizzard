@@ -51,6 +51,8 @@ public sealed class ShellInteractor : IShellInteractor
 
         var notices = new List<NotificationMessage>();
         var settings = LoadOrDefault(input, notices);
+        settings = ReplaceUnsafeHotkeys(settings, input, notices);
+        FollowSettingsWithAutostart(settings);
 
         var registered = new List<CaptureKind>();
         var unavailable = new List<string>();
@@ -220,6 +222,43 @@ public sealed class ShellInteractor : IShellInteractor
             .All(segment => segment.IndexOfAny(invalid) < 0);
     }
 
+    // A hand-edited file can hold a chord ChangeHotkey would have refused (a plain letter would swallow every press of it in every
+    // program); the default of that kind takes its place, and the notice names what was refused.
+    private AppSettings ReplaceUnsafeHotkeys(AppSettings settings, ShellStartInput input, List<NotificationMessage> notices)
+    {
+        Dictionary<CaptureKind, HotkeyChord>? repaired = null;
+        foreach (var (kind, chord) in settings.Hotkeys)
+        {
+            if (HotkeyRules.IsSafe(chord))
+            {
+                continue;
+            }
+
+            repaired ??= new Dictionary<CaptureKind, HotkeyChord>(settings.Hotkeys);
+            repaired[kind] = CreateDefaultSettings(input.PicturesFolder).Hotkeys[kind];
+            _log.Warning($"Hotkey {HotkeyRules.Format(chord)} for {kind} in the settings is not safe; the default is used.");
+            notices.Add(NotificationMessage.Of("Shell.HotkeyUnsafeAtStart", HotkeyRules.Format(chord)));
+        }
+
+        return repaired is null ? settings : settings with { Hotkeys = repaired };
+    }
+
+    // The start-with-Windows entry is the user's list of startup programs, which the user (or a moved exe) can change behind our back;
+    // the setting is what the user chose, so the entry follows it (SPEC shell, "Khởi động cùng Windows").
+    private void FollowSettingsWithAutostart(AppSettings settings)
+    {
+        if (_autostart.IsEnabled() == settings.StartWithWindows)
+        {
+            return;
+        }
+
+        var result = _autostart.SetEnabled(settings.StartWithWindows);
+        if (!result.Success)
+        {
+            _log.Warning($"The start-with-Windows entry could not be set to {settings.StartWithWindows}: {result.Detail}");
+        }
+    }
+
     private AppSettings LoadOrDefault(ShellStartInput input, List<NotificationMessage> notices)
     {
         var loaded = _settingsStore.Load();
@@ -229,6 +268,14 @@ public sealed class ShellInteractor : IShellInteractor
         }
 
         var defaults = CreateDefaultSettings(input.PicturesFolder);
+        if (loaded.Status == SettingsLoadStatus.Unreadable)
+        {
+            // The file may be good and only locked: the defaults are not saved, so it is still there at the next start.
+            _log.Warning($"The settings file could not be read: {loaded.Detail}");
+            notices.Add(NotificationMessage.Of("Shell.SettingsUnreadable", loaded.Detail ?? string.Empty));
+            return defaults;
+        }
+
         if (loaded.Status == SettingsLoadStatus.Corrupt)
         {
             // The adapter already kept the unreadable file as .bak (SPEC shell F1).

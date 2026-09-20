@@ -73,6 +73,8 @@
   <sys:String x:Key="Shell.HotkeyNeedsModifier">Phím {0} đứng một mình sẽ cướp việc gõ chữ. Hãy thêm Ctrl, Alt hoặc Shift. Phím cũ được giữ nguyên.</sys:String>
   <sys:String x:Key="Shell.HotkeyUsedByOtherKind">Phím này đã dùng cho kiểu chụp "{0}". Phím cũ được giữ nguyên.</sys:String>
   <sys:String x:Key="Shell.HotkeyHeldByAnotherProgram">Không đăng ký được phím {0}: Windows hoặc ứng dụng khác đang giữ phím này. Phím cũ được giữ nguyên.</sys:String>
+  <sys:String x:Key="Shell.SettingsUnreadable">Không đọc được tập tin cài đặt ({0}) nên ứng dụng dùng cài đặt mặc định. Tập tin không bị đổi; hãy đóng chương trình đang giữ nó rồi mở lại ứng dụng.</sys:String>
+  <sys:String x:Key="Shell.HotkeyUnsafeAtStart">Phím tắt {0} trong cài đặt là một phím trơn, sẽ chặn mọi lần bấm phím đó, nên ứng dụng dùng phím mặc định thay thế.</sys:String>
   <sys:String x:Key="Shell.HotkeyUnavailableAtStart">Không đăng ký được phím tắt: {0}. Các phím khác vẫn chạy.</sys:String>
   <sys:String x:Key="Shell.FolderMissing">Thư mục {0} chưa tồn tại.</sys:String>
   <sys:String x:Key="Capture.Overlay.Title">Chọn vùng chụp</sys:String>
@@ -164,6 +166,7 @@
   <sys:String x:Key="Editor.ReadFailed">Không đọc được {0}: {1}</sys:String>
   <sys:String x:Key="Editor.NotAnImage">{0} không đọc được: đây không phải ảnh, hoặc file bị hỏng.</sys:String>
   <sys:String x:Key="Editor.ImageTooLarge">Ảnh {0} quá lớn để mở (không đủ bộ nhớ).</sys:String>
+  <sys:String x:Key="Editor.ClipboardReadFailed">Không đọc được clipboard: {0}</sys:String>
   <sys:String x:Key="Editor.ClipboardHasNoImage">Clipboard không có ảnh.</sys:String>
   <sys:String x:Key="Editor.SaveFailed">Không lưu được vào {0}: {1}. Các chỉnh sửa vẫn còn trong cửa sổ.</sys:String>
   <sys:String x:Key="Editor.CopyFailed">Không chép được vào clipboard: {0}. Các chỉnh sửa vẫn còn trong cửa sổ.</sys:String>

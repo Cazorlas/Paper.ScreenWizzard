@@ -82,7 +82,7 @@ public sealed class ClipboardService : IClipboardPort
             }
             catch (Exception exception)
             {
-                return new ClipboardImageResult(false, null, "The clipboard could not be read: " + exception.Message);
+                return new ClipboardImageResult(false, null, "The clipboard could not be read: " + exception.Message, ReadFailed: true);
             }
 
             if (attempt < _tries)
@@ -91,7 +91,7 @@ public sealed class ClipboardService : IClipboardPort
             }
         }
 
-        return new ClipboardImageResult(false, null, $"The clipboard is held by another program (tried {_tries} times): {last?.Message}");
+        return new ClipboardImageResult(false, null, $"The clipboard is held by another program (tried {_tries} times): {last?.Message}", ReadFailed: true);
     }
 
     private static PixelImage ToPixels(BitmapSource source)

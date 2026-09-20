@@ -73,6 +73,8 @@
   <sys:String x:Key="Shell.HotkeyNeedsModifier">The key {0} on its own would steal your typing. Add Ctrl, Alt or Shift. The old hotkey is kept.</sys:String>
   <sys:String x:Key="Shell.HotkeyUsedByOtherKind">This hotkey is already used by the "{0}" capture. The old hotkey is kept.</sys:String>
   <sys:String x:Key="Shell.HotkeyHeldByAnotherProgram">Could not register {0}: Windows or another program already holds it. The old hotkey is kept.</sys:String>
+  <sys:String x:Key="Shell.SettingsUnreadable">The settings file could not be read ({0}), so the app is using the default settings. The file was not changed; close the program that holds it and restart the app.</sys:String>
+  <sys:String x:Key="Shell.HotkeyUnsafeAtStart">The hotkey {0} in the settings is a plain key and would take over every press of it, so the default hotkey is used instead.</sys:String>
   <sys:String x:Key="Shell.HotkeyUnavailableAtStart">These hotkeys could not be registered: {0}. The other hotkeys still work.</sys:String>
   <sys:String x:Key="Shell.FolderMissing">The folder {0} does not exist.</sys:String>
   <sys:String x:Key="Capture.Overlay.Title">Select what to capture</sys:String>
@@ -164,6 +166,7 @@
   <sys:String x:Key="Editor.ReadFailed">Could not read {0}: {1}</sys:String>
   <sys:String x:Key="Editor.NotAnImage">{0} could not be read: it is not an image, or the file is damaged.</sys:String>
   <sys:String x:Key="Editor.ImageTooLarge">The image {0} is too large to open (not enough memory).</sys:String>
+  <sys:String x:Key="Editor.ClipboardReadFailed">Could not read the clipboard: {0}</sys:String>
   <sys:String x:Key="Editor.ClipboardHasNoImage">The clipboard has no image.</sys:String>
   <sys:String x:Key="Editor.SaveFailed">Could not save to {0}: {1}. Your edits are still in the window.</sys:String>
   <sys:String x:Key="Editor.CopyFailed">Could not copy to the clipboard: {0}. Your edits are still in the window.</sys:String>

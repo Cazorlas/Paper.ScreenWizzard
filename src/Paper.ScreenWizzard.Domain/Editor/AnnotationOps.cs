@@ -35,9 +35,9 @@ public static class AnnotationOps
     }
 
     /// <summary>
-    /// Whether the drawing touches <paramref name="area"/> at all. The box is generous where the real size is only known to the
-    /// renderer (text, the number circle, the thickness of a stroke): it errs toward keeping a drawing, because the renderer clips
-    /// the part outside and a wrongly dropped drawing cannot be seen again, while a kept one that shows nothing costs nothing.
+    /// Whether the drawing touches <paramref name="area"/> at all. The box follows <see cref="AnnotationMetrics"/>: a stroke is padded
+    /// by its drawn width, a step number is its disc and a text is its estimated size, so a drawing that shows nothing in the area is
+    /// not kept as a ghost (SPEC editor, "Cắt": a drawing wholly outside is removed).
     /// The area is half-open: a drawing that only touches its right or bottom edge is outside.
     /// </summary>
     public static bool Touches(Annotation annotation, PixelRect area)
@@ -48,7 +48,7 @@ public static class AnnotationOps
 
     internal static (int Left, int Top, int Right, int Bottom) Box(Annotation annotation)
     {
-        var pad = annotation.Thickness;
+        var pad = Math.Max(annotation.Thickness, (int)Math.Ceiling(AnnotationMetrics.StrokeWidthOf(annotation) / 2.0));
         switch (annotation)
         {
             case StrokeAnnotation s:
@@ -64,11 +64,16 @@ public static class AnnotationOps
             case BlurAnnotation b:
                 return (b.Area.X, b.Area.Y, b.Area.X + b.Area.Width, b.Area.Y + b.Area.Height);
             case StepAnnotation n:
-                return (n.Center.X - n.FontSize, n.Center.Y - n.FontSize, n.Center.X + n.FontSize, n.Center.Y + n.FontSize);
+                var radius = (int)Math.Ceiling(AnnotationMetrics.StepDiameter(n.FontSize) / 2.0);
+                return (n.Center.X - radius, n.Center.Y - radius, n.Center.X + radius, n.Center.Y + radius);
             case TextAnnotation t:
                 var lines = t.Text.Split('\n');
                 var longest = lines.Max(line => line.Length);
-                return (t.Origin.X, t.Origin.Y, t.Origin.X + (longest * t.FontSize), t.Origin.Y + (lines.Length * t.FontSize * 2));
+                return (
+                    t.Origin.X,
+                    t.Origin.Y,
+                    t.Origin.X + (int)Math.Ceiling(longest * t.FontSize * AnnotationMetrics.TextAdvanceFactor),
+                    t.Origin.Y + (int)Math.Ceiling(lines.Length * t.FontSize * AnnotationMetrics.TextLineFactor));
             default:
                 return (0, 0, 0, 0);
         }

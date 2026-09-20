@@ -187,6 +187,63 @@ public sealed class StoresTests
     }
 
     [Test]
+    public void Settings_AFileWithAUtf8ByteOrderMark_IsReadNotCalledCorrupt()
+    {
+        // Notepad and PowerShell 5 put EF BB BF at the start of a file they save; a file that opens fine in an editor is not corrupt.
+        var store = new SettingsStore(_scratch.Path);
+        var settings = EveryFieldChanged();
+        Assert.That(store.Save(settings).Success, Is.True);
+        var file = Path.Combine(_scratch.Path, "configs", "settings.json");
+        File.WriteAllBytes(file, [0xEF, 0xBB, 0xBF, .. File.ReadAllBytes(file)]);
+
+        var load = new SettingsStore(_scratch.Path).Load();
+
+        Assert.That(load.Status, Is.EqualTo(SettingsLoadStatus.Loaded), load.Detail);
+        AssertSame(load.Settings!, settings);
+    }
+
+    [TestCase("{\"hotkeys\": null}")]
+    [TestCase("{\"hotkeys\": {\"Rectangle\": null}}")]
+    public void Settings_ANullHotkeyTableOrChord_IsCorruptWithABak_NotACrash(string json)
+    {
+        var folder = Path.Combine(_scratch.Path, "configs");
+        Directory.CreateDirectory(folder);
+        File.WriteAllText(Path.Combine(folder, "settings.json"), json);
+
+        var load = new SettingsStore(_scratch.Path).Load();
+
+        Assert.That(load.Status, Is.EqualTo(SettingsLoadStatus.Corrupt));
+        Assert.That(File.Exists(Path.Combine(folder, "settings.json.bak")), Is.True);
+    }
+
+    [Test]
+    public void Settings_AFileLockedByAnotherProgram_IsUnreadableNotCorrupt_AndAGoodFileIsNeverWrittenOver()
+    {
+        var store = new SettingsStore(_scratch.Path);
+        var good = EveryFieldChanged();
+        Assert.That(store.Save(good).Success, Is.True);
+        var folder = Path.Combine(_scratch.Path, "configs");
+        var file = Path.Combine(folder, "settings.json");
+        var fresh = new SettingsStore(_scratch.Path);
+
+        SettingsLoadResult load;
+        using (new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.None))
+        {
+            load = fresh.Load();
+            Assert.That(fresh.Save(good with { JpgQuality = 5 }).Success, Is.False, "still locked: nothing is written");
+        }
+
+        Assert.That(load.Status, Is.EqualTo(SettingsLoadStatus.Unreadable));
+        Assert.That(File.Exists(file + ".bak"), Is.False, "a locked file is not a corrupt one, so no backup");
+
+        // The lock is gone: the file that could not be read at start is good, and a save must not replace what the app never saw.
+        var afterUnlock = fresh.Save(good with { JpgQuality = 5 });
+
+        Assert.That(afterUnlock.Success, Is.False);
+        AssertSame(new SettingsStore(_scratch.Path).Load().Settings!, good);
+    }
+
+    [Test]
     public void Settings_SavingOverAReadOnlyFile_FailsWithTheFullPathFirst()
     {
         var store = new SettingsStore(_scratch.Path);

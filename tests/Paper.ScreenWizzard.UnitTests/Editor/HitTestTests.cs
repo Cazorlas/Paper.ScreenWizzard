@@ -126,13 +126,14 @@ public sealed class HitTestTests
     }
 
     [Test]
-    public void AHighlighterStrokeIsHitLikeAPenStroke()
+    public void AHighlighterStrokeIsHitAcrossItsWholeDrawnWidthOfThreeTimesTheSliderValue()
     {
+        // Slider value 20 is drawn 60 wide, so the band reaches 30 from the centre line.
         var session = _fixture.NewSession(400, 300);
         session.Add(Stroke(1, 20, true, (10, 50), (200, 50)));
 
-        Assert.That(Hit(session, 100, 58, 0), Is.EqualTo(Id(1)), "distance 8 <= 0 + 10");
-        Assert.That(Hit(session, 100, 61, 0), Is.Null, "distance 11 > 10");
+        Assert.That(Hit(session, 100, 78, 0), Is.EqualTo(Id(1)), "distance 28 <= 0 + 30");
+        Assert.That(Hit(session, 100, 81, 0), Is.Null, "distance 31 > 30");
     }
 
     [Test]
@@ -254,26 +255,26 @@ public sealed class HitTestTests
     [Test]
     public void ATextIsHitInsideItsBoxGrownByTheTolerance()
     {
-        // Three letters at font size 10: the box is 3 * 10 = 30 wide and 2 * 10 = 20 tall from the origin, (100,100) to (130,120).
+        // Three letters at font size 10: the box is 3 * 10 * 0.6 = 18 wide and 10 * 1.4 = 14 tall from the origin, (100,100) to (118,114).
         var session = _fixture.NewSession(500, 300);
         session.Add(Text(1, 100, 100, "Van", 10));
 
         Assert.That(Hit(session, 115, 110, 0), Is.EqualTo(Id(1)));
-        Assert.That(Hit(session, 133, 110, 5), Is.EqualTo(Id(1)), "3 right of the box <= 5");
-        Assert.That(Hit(session, 136, 110, 5), Is.Null, "6 right of the box > 5");
+        Assert.That(Hit(session, 121, 110, 5), Is.EqualTo(Id(1)), "3 right of the box <= 5");
+        Assert.That(Hit(session, 124, 110, 5), Is.Null, "6 right of the box > 5");
         Assert.That(Hit(session, 115, 90, 3), Is.Null, "10 above the box > 3");
     }
 
     [Test]
     public void ATextOfTwoLinesIsHitInTheSecondLine()
     {
-        // "Van" and "2": longest line 3 letters, 2 lines, so the box is 30 wide and 2 * 10 * 2 = 40 tall.
+        // "Van" and "2": longest line 3 letters, 2 lines, so the box is 18 wide and 2 * 10 * 1.4 = 28 tall, (100,100) to (118,128).
         var session = _fixture.NewSession(500, 300);
         session.Add(Text(1, 100, 100, "Van\n2", 10));
 
-        Assert.That(Hit(session, 110, 135, 0), Is.EqualTo(Id(1)));
-        Assert.That(Hit(session, 110, 143, 5), Is.EqualTo(Id(1)), "3 under the box <= 5");
-        Assert.That(Hit(session, 110, 146, 5), Is.Null, "6 under the box > 5");
+        Assert.That(Hit(session, 110, 120, 0), Is.EqualTo(Id(1)));
+        Assert.That(Hit(session, 110, 131, 5), Is.EqualTo(Id(1)), "3 under the box <= 5");
+        Assert.That(Hit(session, 110, 134, 5), Is.Null, "6 under the box > 5");
     }
 
     [Test]

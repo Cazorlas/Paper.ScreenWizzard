@@ -76,9 +76,25 @@ public static class CaptureGeometry
         return Math.Abs(twice) / 2.0;
     }
 
-    /// <summary>True when the outline has too few distinct points or encloses too little (SPEC capture F3).</summary>
-    public static bool IsOutlineTooSmall(IReadOnlyList<PixelPoint> outline) =>
-        DistinctPointCount(outline) < 3 || OutlineArea(outline) < MinimumOutlineArea;
+    /// <summary>
+    /// True when the outline has too few distinct points or encloses too little (SPEC capture F3). The signed shoelace area of an
+    /// outline that crosses itself (a bow-tie) cancels to nothing though the cut keeps both lobes, so a small net area is checked
+    /// again against the pixels the cut would keep.
+    /// </summary>
+    public static bool IsOutlineTooSmall(IReadOnlyList<PixelPoint> outline)
+    {
+        if (DistinctPointCount(outline) < 3)
+        {
+            return true;
+        }
+
+        if (OutlineArea(outline) >= MinimumOutlineArea)
+        {
+            return false;
+        }
+
+        return InsideMask(outline, BoundingBox(outline)).Count(inside => inside) < MinimumOutlineArea;
+    }
 
     /// <summary>The rectangle that just holds every point of the outline, end excluded (a triangle from x 100 to 300 is 200 wide).</summary>
     public static PixelRect BoundingBox(IReadOnlyList<PixelPoint> outline)

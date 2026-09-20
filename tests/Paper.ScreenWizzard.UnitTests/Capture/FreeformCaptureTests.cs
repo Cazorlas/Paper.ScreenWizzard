@@ -101,6 +101,21 @@ public sealed class FreeformCaptureTests
         Assert.That(outcome.Region, Is.EqualTo(new PixelRect(0, 0, 6, 3)));
     }
 
+    // ---- a crossing outline ----
+
+    [Test]
+    public async Task ABowTieOutlineThatEnclosesTwoTrianglesOf2500PixelsIsCapturedNotRefusedAsTooSmall()
+    {
+        // (0,0) -> (100,0) -> (0,100) -> (100,100): the two lobes wind in opposite directions, so the signed shoelace area is 0,
+        // but the cut keeps 5000 pixels and the rule is about what the outline encloses.
+        var session = await _fixture.BeginAsync(FreeformRequest);
+
+        var outcome = session.CompleteFreeform([new PixelPoint(0, 0), new PixelPoint(100, 0), new PixelPoint(0, 100), new PixelPoint(100, 100)]);
+
+        Assert.That(outcome.Issue, Is.EqualTo(CaptureIssue.None));
+        Assert.That(outcome.Region, Is.EqualTo(new PixelRect(0, 0, 100, 100)));
+    }
+
     // ---- F3 ----
 
     [Test]

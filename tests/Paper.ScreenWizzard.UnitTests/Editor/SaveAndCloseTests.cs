@@ -44,6 +44,33 @@ public sealed class SaveAndCloseTests
     }
 
     [Test]
+    public void ABmpOpenedFromDiskIsNeverOverwrittenWithPngBytesCtrlSAsksSaveAsInstead()
+    {
+        // SPEC editor, "Định dạng": BMP is read only, and a file's format follows its extension (PNG or JPG). A .bmp under the
+        // original name would hold PNG bytes, so Ctrl+S must not offer to write it (F-less rule of the format section).
+        const string bmp = Folder + @"\photo.bmp";
+        var session = _fixture.OpenFileOnDisk(bmp, Flat());
+        session.Add(EditorData.Rect(1, 0, 0, 10, 10));
+
+        var decision = _fixture.Interactor.DecideSave(session, EditorData.Settings());
+
+        Assert.That(decision.Action, Is.EqualTo(SaveAction.AskSaveAs));
+        Assert.That(decision.FileName, Does.EndWith(".png"));
+    }
+
+    [Test]
+    public void ASaveAsToANameWithAnExtensionTheAppDoesNotWriteGetsPngAddedSoTheNameTellsTheTruth()
+    {
+        var session = _fixture.NewSession(Flat());
+
+        var result = _fixture.Interactor.Save(session, Flat(), Folder + @"\report.txt", EditorData.Settings());
+
+        Assert.That(result.Saved, Is.True, string.Join("|", result.Message?.Arguments ?? []));
+        Assert.That(result.Path, Is.EqualTo(Folder + @"\report.txt.png"));
+        Assert.That(_fixture.Files.Files.ContainsKey(Folder + @"\report.txt"), Is.False);
+    }
+
+    [Test]
     public void TheSuggestedNameFollowsTheChosenFormatAndNeverPicksAFileThatIsAlreadyThere()
     {
         var session = _fixture.NewSession();

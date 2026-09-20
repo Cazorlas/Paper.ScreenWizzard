@@ -25,7 +25,8 @@ public enum ImageDecodeIssue
 public sealed record ImageDecodeResult(PixelImage? Image, ImageDecodeIssue Issue);
 
 /// <summary>The clipboard read: an image, or none (SPEC editor F3).</summary>
-public sealed record ClipboardImageResult(bool HasImage, PixelImage? Image, string? Detail);
+/// <param name="ReadFailed">True when the clipboard could not be read (held by another program, an error), as against having no picture.</param>
+public sealed record ClipboardImageResult(bool HasImage, PixelImage? Image, string? Detail, bool ReadFailed = false);
 
 /// <summary>
 /// A message for the user that is not yet text: the interactor picks the key and the values, and the presentation layer

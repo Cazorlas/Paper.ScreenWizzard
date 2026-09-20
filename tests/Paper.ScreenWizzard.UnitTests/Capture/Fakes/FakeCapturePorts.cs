@@ -203,10 +203,18 @@ public sealed class FakeCodec : IImageCodecPort
 {
     public List<EncodeCall> Calls { get; } = [];
 
+    /// <summary>When set, Encode throws it: a picture too big for the memory or for the format.</summary>
+    public Exception? EncodeFailure { get; set; }
+
     public ImageDecodeResult Decode(byte[] fileBytes) => new(null, ImageDecodeIssue.NotAnImage);
 
     public byte[] Encode(PixelImage image, ImageFormat format, int jpgQuality)
     {
+        if (EncodeFailure is not null)
+        {
+            throw EncodeFailure;
+        }
+
         var result = Encoding.ASCII.GetBytes($"{format}:{image.Width}x{image.Height}:#{Calls.Count + 1}");
         Calls.Add(new EncodeCall(image.Width, image.Height, image.Bgra.ToArray(), format, jpgQuality, result));
         return result;

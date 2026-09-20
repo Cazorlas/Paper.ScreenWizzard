@@ -26,6 +26,21 @@ public sealed class ImageDeliveryTests
         _delivery = _fixture.Delivery();
     }
 
+    // ---- an encoder that runs out of memory ----
+
+    [Test]
+    public void AnEncoderThatRunsOutOfMemorySavesNothingAndNamesTheReasonInsteadOfCrashing()
+    {
+        _fixture.Codec.EncodeFailure = new OutOfMemoryException("Insufficient memory to continue the execution of the program.");
+
+        var result = _delivery.SaveToFolder(CaptureData.Ramp(4, 4), Folder, ImageFormat.Png, 90);
+
+        Assert.That(result.Success, Is.False);
+        Assert.That(result.Issue, Is.EqualTo(DeliveryIssue.EncodeFailed));
+        Assert.That(result.Detail, Does.Contain("memory"));
+        Assert.That(_fixture.Files.Files, Is.Empty, "no half-written file");
+    }
+
     // ---- Naming ----
 
     [Test]

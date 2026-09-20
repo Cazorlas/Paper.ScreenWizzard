@@ -169,6 +169,31 @@ public sealed class WindowAndFullScreenTests
         Assert.That(CaptureData.FirstPixelDifferingFromScreen(image, 0, 0), Is.EqualTo(-1));
     }
 
+    [Test]
+    public async Task AMaximizedWindowOnTheSecondMonitorGives1920x1080AndNothingOfTheFirstMonitor()
+    {
+        // The frame of a window maximized on monitor 2 (x 1920..3840) is 8 px larger on every side, so it reaches 8 px into monitor 1.
+        _fixture.UseMonitors(CaptureData.SideBySide);
+        _fixture.Windows.Windows.Add(CaptureData.Window(1, "maximized on two", new PixelRect(1912, -8, 1936, 1096), 0));
+        var session = await _fixture.BeginAsync(WindowRequest);
+
+        var outcome = session.CompleteWindow(new PixelPoint(2500, 500));
+
+        Assert.That(outcome.Region, Is.EqualTo(new PixelRect(1920, 0, 1920, 1080)));
+    }
+
+    [Test]
+    public async Task AWindowThatReallyStraddlesTwoMonitorsIsCapturedWholeAcrossBoth()
+    {
+        _fixture.UseMonitors(CaptureData.SideBySide);
+        _fixture.Windows.Windows.Add(CaptureData.Window(1, "straddling", new PixelRect(1500, 200, 800, 600), 0));
+        var session = await _fixture.BeginAsync(WindowRequest);
+
+        var outcome = session.CompleteWindow(new PixelPoint(1600, 300));
+
+        Assert.That(outcome.Region, Is.EqualTo(new PixelRect(1500, 200, 800, 600)));
+    }
+
     // ---- Toàn màn hình ----
 
     [Test]

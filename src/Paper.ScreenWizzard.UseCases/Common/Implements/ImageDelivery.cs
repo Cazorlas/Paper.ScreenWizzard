@@ -48,8 +48,19 @@ public sealed class ImageDelivery : IImageDelivery
     private DeliveryResult Write(PixelImage image, string path, ImageFormat format, int jpgQuality)
     {
         // A JPG has no transparency: lay the image on white first, on a copy, so a freeform capture is not black outside its outline.
-        var toEncode = format == ImageFormat.Jpg ? PixelImageOps.FlattenOnWhite(image) : image;
-        var bytes = _codec.Encode(toEncode, format, jpgQuality);
+        byte[] bytes;
+        try
+        {
+            var toEncode = format == ImageFormat.Jpg ? PixelImageOps.FlattenOnWhite(image) : image;
+            bytes = _codec.Encode(toEncode, format, jpgQuality);
+        }
+        catch (Exception exception) when (exception is OutOfMemoryException or InvalidOperationException or ArgumentException or NotSupportedException)
+        {
+            // A picture as big as a wall of monitors can exceed the memory of a 32-bit-sized buffer or the size a JPG can hold: the
+            // dialog stays open with the image intact (SPEC capture F4) and the reason is named instead of the app crashing.
+            return new DeliveryResult(false, DeliveryIssue.EncodeFailed, null, exception.Message);
+        }
+
         var written = _files.WriteAllBytes(path, bytes);
         return written.Success
             ? new DeliveryResult(true, DeliveryIssue.None, path, null)

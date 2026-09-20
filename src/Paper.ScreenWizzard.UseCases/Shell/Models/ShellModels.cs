@@ -13,8 +13,11 @@ public enum SettingsLoadStatus
     /// <summary>There was no file yet (first run).</summary>
     Missing,
 
-    /// <summary>The file could not be read; the adapter already kept the bad file as .bak (SPEC shell F1).</summary>
+    /// <summary>The file was read but is not a valid document; the adapter already kept the bad file as .bak (SPEC shell F1).</summary>
     Corrupt,
+
+    /// <summary>The file exists but could not be read (locked, no permission): it may be perfectly good, so it is never written over.</summary>
+    Unreadable,
 }
 
 public sealed record SettingsLoadResult(AppSettings? Settings, SettingsLoadStatus Status, string? Detail);

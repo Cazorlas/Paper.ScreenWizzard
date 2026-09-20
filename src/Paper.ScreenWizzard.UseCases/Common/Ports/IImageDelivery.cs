@@ -24,6 +24,9 @@ public enum DeliveryIssue
     None,
     FolderNotWritable,
     ClipboardBusy,
+
+    /// <summary>The encoder could not make the file (no memory for the picture, a size the format cannot hold).</summary>
+    EncodeFailed,
 }
 
 /// <param name="Path">The file written, when there is one.</param>

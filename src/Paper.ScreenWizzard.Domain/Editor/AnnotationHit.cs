@@ -4,7 +4,7 @@ namespace Paper.ScreenWizzard.Domain.Editor;
 
 /// <summary>
 /// Whether a click, in image pixels, lands on one drawing (SPEC editor, "What the user does" step 4). A line, arrow, pen stroke,
-/// rectangle or ellipse is hit on its stroke only, that is within tolerance + thickness / 2 of its centre line, so an empty
+/// rectangle or ellipse is hit on its stroke only, that is within tolerance + stroke width / 2 of its centre line (a highlighter is three times as wide as its thickness), so an empty
 /// rectangle is not selected by clicking inside it; a blur area, a text and a step number are solid, hit inside their box grown
 /// by the tolerance. Plain double arithmetic on squared distances, no square root and no allocation except a text's line split.
 /// </summary>
@@ -14,7 +14,7 @@ public static class AnnotationHit
     public static bool IsHit(Annotation annotation, PixelPoint point, int tolerance)
     {
         var reach = Math.Max(tolerance, 0);
-        var radius = reach + (annotation.Thickness / 2.0);
+        var radius = reach + (AnnotationMetrics.StrokeWidthOf(annotation) / 2.0);
         switch (annotation)
         {
             case LineAnnotation l:

@@ -13,8 +13,6 @@ namespace Paper.ScreenWizzard.Presentation.Rendering;
 /// </summary>
 public static class AnnotationRenderer
 {
-    /// <summary>The highlighter is this many times as wide as the pen for the same slider value: a highlighter that thin would be a pen.</summary>
-    public const double HighlighterWidthFactor = 3.0;
 
     /// <summary>How strongly a highlighter tints what is under it: 40% of the way from the paper to the highlight colour.</summary>
     public const double HighlighterStrength = 0.4;
@@ -28,8 +26,7 @@ public static class AnnotationRenderer
     private static readonly Typeface _boldTypeface = new(new FontFamily(FontName), FontStyles.Normal, FontWeights.SemiBold, FontStretches.Normal);
 
     /// <summary>The stroke width in image pixels: the annotation's thickness, three times that for a highlighter.</summary>
-    public static double StrokeWidthOf(Annotation annotation) =>
-        annotation is StrokeAnnotation { IsHighlighter: true } ? annotation.Thickness * HighlighterWidthFactor : annotation.Thickness;
+    public static double StrokeWidthOf(Annotation annotation) => AnnotationMetrics.StrokeWidthOf(annotation);
 
     /// <summary>Draws the annotation as the window shows it while editing (a highlighter as a translucent stroke).</summary>
     public static void Draw(DrawingContext context, Annotation annotation)
@@ -82,7 +79,7 @@ public static class AnnotationRenderer
     }
 
     /// <summary>The disc of a step number: wide enough for two digits at this font size.</summary>
-    public static double StepDiameter(int fontSize) => Math.Max(20.0, fontSize * 1.8);
+    public static double StepDiameter(int fontSize) => AnnotationMetrics.StepDiameter(fontSize);
 
     private static void DrawStroke(DrawingContext context, StrokeAnnotation stroke, double highlighterOpacity)
     {

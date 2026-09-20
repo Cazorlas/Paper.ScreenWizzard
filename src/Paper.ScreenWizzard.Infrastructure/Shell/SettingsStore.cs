@@ -26,8 +26,11 @@ public sealed class SettingsStore : ISettingsStorePort
         Converters = { new JsonStringEnumConverter(allowIntegerValues: false) },
     };
 
+    private static readonly byte[] _utf8Bom = [0xEF, 0xBB, 0xBF];
+
     private readonly string _folder;
     private readonly string _file;
+    private bool _readFailedAtLoad;
 
     public SettingsStore(string dataRoot)
     {
@@ -44,16 +47,32 @@ public sealed class SettingsStore : ISettingsStorePort
 
         try
         {
-            var bytes = File.ReadAllBytes(_file);
-            var document = JsonSerializer.Deserialize<SettingsDocument>(bytes, _options)
-                ?? throw new JsonException("the document is empty");
-            return new SettingsLoadResult(document.ToSettings(), SettingsLoadStatus.Loaded, null);
+            var settings = Read();
+            _readFailedAtLoad = false;
+            return new SettingsLoadResult(settings, SettingsLoadStatus.Loaded, null);
         }
-        catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException or ArgumentException or InvalidDataException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
+            // Locked or denied: the file may be perfectly good, so it is not backed up as "corrupt" and Save will not replace it.
+            _readFailedAtLoad = true;
+            return new SettingsLoadResult(null, SettingsLoadStatus.Unreadable, _file + ": " + exception.Message);
+        }
+        catch (Exception exception) when (exception is JsonException or ArgumentException or InvalidDataException)
+        {
+            _readFailedAtLoad = false;
             KeepAsBackup();
             return new SettingsLoadResult(null, SettingsLoadStatus.Corrupt, _file + ": " + exception.Message);
         }
+    }
+
+    // Notepad and PowerShell 5 write a UTF-8 byte order mark; the JSON reader refuses it, and a file that opens fine in an editor is not corrupt.
+    private AppSettings Read()
+    {
+        var bytes = File.ReadAllBytes(_file);
+        var content = bytes.AsSpan().StartsWith(_utf8Bom) ? bytes.AsSpan(_utf8Bom.Length) : bytes.AsSpan();
+        var document = JsonSerializer.Deserialize<SettingsDocument>(content, _options)
+            ?? throw new JsonException("the document is empty");
+        return document.ToSettings();
     }
 
     public PortResult Save(AppSettings settings)
@@ -61,6 +80,26 @@ public sealed class SettingsStore : ISettingsStorePort
         var temporary = _file + ".tmp";
         try
         {
+            if (_readFailedAtLoad && File.Exists(_file))
+            {
+                // The file could not be read at start, so what is in it was never seen: it is replaced only when it now turns out to be
+                // a broken document (kept as .bak first); a good file, or one that is still locked, stays as it is.
+                try
+                {
+                    Read();
+                    return PortResult.Fail(_file + ": the file could not be read when the app started and is kept as it is; restart the app to use it");
+                }
+                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+                {
+                    return PortResult.Fail(_file + ": " + exception.Message);
+                }
+                catch (Exception exception) when (exception is JsonException or ArgumentException or InvalidDataException)
+                {
+                    KeepAsBackup();
+                }
+            }
+
+            _readFailedAtLoad = false;
             Directory.CreateDirectory(_folder);
             var json = JsonSerializer.SerializeToUtf8Bytes(SettingsDocument.From(settings), _options);
             File.WriteAllBytes(temporary, json);
@@ -149,9 +188,10 @@ public sealed class SettingsStore : ISettingsStorePort
         public AppSettings ToSettings()
         {
             var hotkeys = new Dictionary<CaptureKind, HotkeyChord>();
-            foreach (var (name, chord) in Hotkeys)
+            // System.Text.Json accepts null for a non-nullable property: a null table or a null chord is a broken document, not a crash.
+            foreach (var (name, chord) in Hotkeys ?? throw new JsonException("the hotkeys are missing"))
             {
-                if (!Enum.TryParse<CaptureKind>(name, out var kind) || !Enum.IsDefined(kind) || string.IsNullOrWhiteSpace(chord.Key))
+                if (!Enum.TryParse<CaptureKind>(name, out var kind) || !Enum.IsDefined(kind) || chord is null || string.IsNullOrWhiteSpace(chord.Key))
                 {
                     throw new JsonException($"'{name}' is not a capture kind with a key");
                 }

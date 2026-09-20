@@ -15,6 +15,9 @@ namespace Paper.ScreenWizzard.UseCases.Capture.Implements;
 /// </summary>
 public sealed class CaptureSession : ICaptureSession
 {
+    /// <summary>How far the frame of a maximized window may reach past its monitor (the invisible resize border), in physical pixels.</summary>
+    private const int MaximizedOverhang = 16;
+
     private readonly FullScreenScope _scope;
     private readonly IMonitorCatalogPort _monitors;
     private readonly ILogPort _log;
@@ -107,11 +110,32 @@ public sealed class CaptureSession : ICaptureSession
             return Refuse(CaptureIssue.Failed, NotificationMessage.Of("Capture.Failed", "There is no window or monitor under the pointer."));
         }
 
-        // The visible frame may overhang the desktop (a maximized window); only the part on the desktop can be captured.
-        var region = CaptureGeometry.Clamp(hit.Frame, Snapshot.VirtualScreen);
+        var region = CaptureGeometry.Clamp(hit.Frame, ClampArea(hit.Frame));
         return region.Width == 0 || region.Height == 0
             ? Refuse(CaptureIssue.Failed, NotificationMessage.Of("Capture.Failed", "The window is outside every monitor."))
             : Finish(region, mask: null);
+    }
+
+    /// <summary>
+    /// The frame of a window maximized on one monitor overhangs it by a border of a few pixels; on the second monitor the overhang lands
+    /// on the first one, so clamping to the whole desktop would add a sliver of the neighbour (SPEC capture, "Ảnh cửa sổ"). A frame
+    /// that fits its own monitor plus that border is cut to the monitor; a window that really spans monitors keeps the whole desktop.
+    /// </summary>
+    private PixelRect ClampArea(PixelRect frame)
+    {
+        var centre = new PixelPoint(frame.X + (frame.Width / 2), frame.Y + (frame.Height / 2));
+        var home = Snapshot.Monitors.FirstOrDefault(m => CaptureGeometry.Contains(m.Bounds, centre));
+        if (home is null)
+        {
+            return Snapshot.VirtualScreen;
+        }
+
+        var bounds = home.Bounds;
+        var fits = frame.X >= bounds.X - MaximizedOverhang
+            && frame.Y >= bounds.Y - MaximizedOverhang
+            && frame.X + frame.Width <= bounds.X + bounds.Width + MaximizedOverhang
+            && frame.Y + frame.Height <= bounds.Y + bounds.Height + MaximizedOverhang;
+        return fits ? bounds : Snapshot.VirtualScreen;
     }
 
     public CaptureOutcome CompleteFullScreen()
