@@ -1,5 +1,5 @@
 {
-  "version": "1.17.0",
+  "version": "1.17.1",
   "hosts": ["desktop"],
   "files": {
     ".agents/skills/adr/SKILL.md": "1051f62d355f16780484b2c145a707ed5c22381f3a662b339ea9d0bc5ed8b3e8",
@@ -69,7 +69,7 @@
     ".claude/hooks/plan-nag-plan.ps1": "541ec1f8008d138d976657dba58b834723e6fa3d16289829e87f740fb28a2b6a",
     ".claude/hooks/plan-nag.ps1": "7825b2c02d02d728fbc1b09e3398b97fada582c1b39350f5a84de3cf5dcc0514",
     ".claude/hooks/session-anchor.ps1": "f9d4a31c33686f7886479879f1ea2142f781243ce839b85d18683316990fbd68",
-    ".claude/hooks/session-state.ps1": "c803aa9f92da06de9a4fb4b451ef006cfc7ab70f8f3fac717ca80935771ab465",
+    ".claude/hooks/session-state.ps1": "8fea3fded6d6341d1f2bd7263a11f0dfd0a71ffc6035cd4f8032054f7639e590",
     ".claude/hooks/test-guard.ps1": "ae0ea07f559b5ab8660d51a5e55d88cd6b88d964a0c23fc9acbac400f3c06583",
     ".claude/hooks/verify-on-stop.ps1": "c1c8db34866d2f8fbe492157ba90207acf9964e4dc18b54b7e665437e364631c",
     ".claude/paperflow/api-check-plan.ps1": "f71229c85f3c80f49e2e679d931e3dff5998e11959f8624c2010c0308c2d6812",

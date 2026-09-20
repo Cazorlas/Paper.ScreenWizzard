@@ -57,22 +57,30 @@ function ConvertTo-PaperExtensions($Value, [string[]] $Default) {
     return $list
 }
 
-# What git says this session actually touched: files dirty against HEAD, plus files in the non-merge
-# commits made since Since. Returns $null when this is not a git repo or git is not on PATH, and the
-# caller then falls back to mtime alone.
+# What git says is yours right now: the files dirty against HEAD. Returns $null when this is not a git
+# repo, git is not on PATH, or git cannot read the folder - and the caller then falls back to mtime.
 #
 # It exists because mtime does not mean "you changed this" (KIT-001). Git rewrites a file's
 # LastWriteTime whenever it puts it on disk - merge, pull, rebase, checkout, stash pop - so after
 # bringing somebody else's branch into main, every file they ever touched reads as changed by you. The
 # hook then names a plan from another session and tells you to tick its tasks.
 #
-# --no-merges is what makes a merge stop counting: the merge commit itself carries this moment's date,
-# while the commits it brings keep theirs, and those are older than Since.
-function Get-PaperGitTouchedFiles([string] $Root, [datetime] $Since) {
+# WHY ONLY DIRTY FILES, AND NOT ALSO "COMMITS MADE SINCE THE SESSION BEGAN". That was the first fix, and
+# it was still wrong. A session lasts as long as it lasts - many hours - and `git log --since` over that
+# window picks up every commit ANOTHER session pushed to main in the same hours. Measured: after the
+# first fix shipped, this hook still named nine maps and two plans, none of them this session's work.
+# `--first-parent` drops what arrives through a merge commit but not what was pushed straight to main,
+# so it does not close the hole either. Closing it properly needs the session's starting commit recorded
+# at SessionStart, which is state this hook does not have.
+#
+# So it reports uncommitted work only. That is a real loss - work you commit as you go stops being
+# reminded about - and it is the trade this file already states above: a missed reminder costs less than
+# one that fires on work the session never touched. The gate that catches an unticked task after a
+# commit is /task-verify, which reads the plan rather than the clock.
+function Get-PaperGitTouchedFiles([string] $Root) {
     if (-not (Test-Path -LiteralPath (Join-Path $Root '.git'))) { return $null }
 
     $set = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
-    $stamp = $Since.ToString('yyyy-MM-ddTHH:mm:ss')
 
     # A hook runs under whatever preference its caller set. Under Stop, a single line git writes to
     # stderr becomes a terminating error, the catch below returns $null, and the reminder quietly goes
@@ -96,10 +104,6 @@ function Get-PaperGitTouchedFiles([string] $Root, [datetime] $Since) {
             if ($arrow -ge 0) { $path = $path.Substring($arrow + 4) }
             [void] $set.Add($path.Trim('"').Replace([char] 92, [char] 47))
         }
-
-        foreach ($line in @(& git --no-pager -C $Root log --no-merges --since=$stamp --pretty=format: --name-only 2>$null)) {
-            if ($line) { [void] $set.Add($line.Trim().Replace([char] 92, [char] 47)) }
-        }
     }
     catch { return $null }
     finally { $ErrorActionPreference = $previous }
@@ -114,7 +118,7 @@ function Get-PaperGitTouchedFiles([string] $Root, [datetime] $Since) {
 # because .NET enumeration is Unicode end to end (a Vietnamese folder is read, not skipped) and it needs no
 # git. It gives up after MaxSeconds and returns what it has, so a huge tree cannot eat the hook's timeout.
 function Get-PaperChangedFiles([string] $Root, [datetime] $Since, [string[]] $Extensions, [int] $MaxSeconds = 6) {
-    $touched = Get-PaperGitTouchedFiles $Root $Since
+    $touched = Get-PaperGitTouchedFiles $Root
     $found = New-Object System.Collections.ArrayList
     $watch = [System.Diagnostics.Stopwatch]::StartNew()
     $stack = New-Object System.Collections.Stack
