@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- UseCases: interactors, ports and the plain records that cross them. Every decision of a feature lives here (ADR 0001). -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Paper.ScreenWizzard.UseCases</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Paper.ScreenWizzard.Domain\Paper.ScreenWizzard.Domain.csproj" />
+  </ItemGroup>
+</Project>

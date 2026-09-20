@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Unit tests: Domain and UseCases only, no Windows. Also holds the architecture tests that read the projects' references. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Paper.ScreenWizzard.UnitTests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+    <PackageReference Include="NUnit" Version="4.6.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="6.3.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Paper.ScreenWizzard.UseCases\Paper.ScreenWizzard.UseCases.csproj" />
+    <ProjectReference Include="..\..\src\Paper.ScreenWizzard.Domain\Paper.ScreenWizzard.Domain.csproj" />
+  </ItemGroup>
+</Project>

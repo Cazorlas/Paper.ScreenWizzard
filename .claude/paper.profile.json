@@ -1,21 +1,44 @@
 {
+  "$comment": "Paper.ScreenWizzard. Every verb is a plain dotnet command run from the repository root; the total the verdict reads is the 'Total tests: N' line of dotnet test. ui and e2e need the interactive desktop (FlaUI, real capture), so they never run beside each other and never in CI without one. There is no host and no live lane; the lane ui proves both, and the e2e verb (project E2eTests) is the one plan group 5 runs, because the desktop host declares only unit and ui.",
   "hosts": [
     "desktop"
   ],
   "lanes": [
     "unit",
-    "ui",
-    "e2e"
+    "ui"
   ],
-  "verbs": {},
+  "verbs": {
+    "build": "dotnet build Paper.ScreenWizzard.slnx -c Debug --nologo -v minimal",
+    "test": "dotnet test tests/Paper.ScreenWizzard.UnitTests -c Debug --nologo -v minimal",
+    "ui": "dotnet test tests/Paper.ScreenWizzard.UiTests -c Debug --nologo -v minimal",
+    "e2e": "dotnet test tests/Paper.ScreenWizzard.E2eTests -c Debug --nologo -v minimal"
+  },
+  "featureDocs": "docs/features",
+  "adrFolder": "docs/decisions",
   "docsSource": "https://learn.microsoft.com/dotnet/desktop/wpf",
+  "verify": {
+    "watch": [".cs", ".xaml", ".csproj", ".props", ".targets", ".slnx", ".manifest"],
+    "configuration": "Debug"
+  },
+  "codeMap": { "extensions": [".cs", ".xaml", ".csproj", ".props", ".manifest"] },
+  "api": {
+    "namespaces": ["System.Windows", "Windows.", "Microsoft.Win32", "System.Drawing", "System.Runtime.InteropServices"]
+  },
   "architecture": {
     "platformFree": [
       {
-        "path": "**/UseCases/**",
-        "forbid": [
-          "System.Windows"
-        ],
+        "path": "**/Paper.ScreenWizzard.Domain/**",
+        "forbid": ["System.Windows", "System.Drawing", "Microsoft.Win32"],
+        "forbidPackages": []
+      },
+      {
+        "path": "**/Paper.ScreenWizzard.UseCases/**",
+        "forbid": ["System.Windows", "System.Drawing", "Microsoft.Win32", "System.Runtime.InteropServices"],
+        "forbidPackages": []
+      },
+      {
+        "path": "**/Paper.ScreenWizzard.App/ViewModels/**",
+        "forbid": ["Paper.ScreenWizzard.Infrastructure"],
         "forbidPackages": []
       }
     ],

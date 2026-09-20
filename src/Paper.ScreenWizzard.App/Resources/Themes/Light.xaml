@@ -1,0 +1,35 @@
+<!-- Light theme: the brushes every view paints with. Views only ever name a brush key (DynamicResource), so swapping this
+     dictionary for Dark.xaml recolours every open window at once.
+     Contrast, measured by LanguageAndThemeTests: text >= 4.5:1 on the surface it sits on; borders, icons and the focus ring
+     >= 3:1 against window, surface and button. Both theme files define exactly the same keys. -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Surfaces -->
+  <SolidColorBrush x:Key="Brush.Window" Color="#F3F3F3" />
+  <SolidColorBrush x:Key="Brush.Surface" Color="#FFFFFF" />
+
+  <!-- Text -->
+  <SolidColorBrush x:Key="Brush.Text" Color="#1B1B1B" />
+  <SolidColorBrush x:Key="Brush.TextMuted" Color="#595959" />
+  <!-- Disabled text is exempt from WCAG contrast, but stays readable. -->
+  <SolidColorBrush x:Key="Brush.DisabledText" Color="#8A8A8A" />
+  <SolidColorBrush x:Key="Brush.Error" Color="#B3261E" />
+
+  <!-- Lines and glyphs -->
+  <SolidColorBrush x:Key="Brush.Border" Color="#767676" />
+  <SolidColorBrush x:Key="Brush.Icon" Color="#3B3B3B" />
+  <SolidColorBrush x:Key="Brush.Focus" Color="#005FB8" />
+
+  <!-- Buttons -->
+  <SolidColorBrush x:Key="Brush.ButtonBackground" Color="#E6E6E6" />
+  <SolidColorBrush x:Key="Brush.ButtonHover" Color="#D8D8D8" />
+  <SolidColorBrush x:Key="Brush.ButtonPressed" Color="#C8C8C8" />
+  <SolidColorBrush x:Key="Brush.Accent" Color="#005FB8" />
+  <SolidColorBrush x:Key="Brush.AccentHover" Color="#004E99" />
+  <SolidColorBrush x:Key="Brush.AccentPressed" Color="#003D7A" />
+  <SolidColorBrush x:Key="Brush.AccentText" Color="#FFFFFF" />
+
+  <!-- Toast: inverted against the window so a message that appears over any app stands out. -->
+  <SolidColorBrush x:Key="Brush.ToastBackground" Color="#323232" />
+  <SolidColorBrush x:Key="Brush.ToastText" Color="#FFFFFF" />
+</ResourceDictionary>

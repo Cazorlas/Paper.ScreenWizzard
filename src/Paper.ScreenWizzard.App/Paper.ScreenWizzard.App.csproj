@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- App: WPF views, view models, commands and the composition root. The exe is named Paper.ScreenWizzard. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <!-- WinForms is here for NotifyIcon only (WPF has no tray icon). -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>Paper.ScreenWizzard</AssemblyName>
+    <RootNamespace>Paper.ScreenWizzard.App</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- WFO0003 tells a WinForms app to set DPI in code. This is a WPF app, WinForms is only NotifyIcon, and WPF has no
+         SetHighDpiMode: the manifest is the one place per-monitor v2 is guaranteed before the first window exists. -->
+    <NoWarn>$(NoWarn);WFO0003</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- With both UseWPF and UseWindowsForms the two implicit usings make Application, Clipboard, Button ... ambiguous. -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Paper.ScreenWizzard.Infrastructure\Paper.ScreenWizzard.Infrastructure.csproj" />
+    <ProjectReference Include="..\Paper.ScreenWizzard.UseCases\Paper.ScreenWizzard.UseCases.csproj" />
+    <ProjectReference Include="..\Paper.ScreenWizzard.Domain\Paper.ScreenWizzard.Domain.csproj" />
+  </ItemGroup>
+</Project>

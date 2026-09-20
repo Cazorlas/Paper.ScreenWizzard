@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- UI tests: views and view models built inside the test process on an STA thread, on mock data, driven by FlaUI. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Paper.ScreenWizzard.UiTests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+    <PackageReference Include="NUnit" Version="4.6.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="6.3.0" />
+    <PackageReference Include="FlaUI.Core" Version="5.0.0" />
+    <PackageReference Include="FlaUI.UIA3" Version="5.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Paper.ScreenWizzard.App\Paper.ScreenWizzard.App.csproj" />
+    <ProjectReference Include="..\..\src\Paper.ScreenWizzard.UseCases\Paper.ScreenWizzard.UseCases.csproj" />
+    <ProjectReference Include="..\..\src\Paper.ScreenWizzard.Domain\Paper.ScreenWizzard.Domain.csproj" />
+  </ItemGroup>
+</Project>

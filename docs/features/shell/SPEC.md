@@ -119,6 +119,9 @@ Biểu tượng khay, thanh chụp, cài đặt, phím tắt, phiên bản đang
 - Cài đặt lưu ở thư mục ứng dụng của người dùng, không cần quyền quản trị; ứng dụng không chạy với quyền quản trị.
 - Chỉ Windows 10 bản 1903 trở lên (Windows 11 đã thử) vì cần cho phần quay ở đợt sau.
 - Ngôn ngữ chỉ có tiếng Việt và tiếng Anh.
+- Phím tắt gồm chữ cái hay chữ số phải kèm ít nhất Ctrl, Alt hoặc phím Windows: Shift một mình không đủ, vì Shift cộng chữ chỉ là gõ chữ
+  hoa. Phím chức năng (F1 tới F12) và PrintScreen được đứng riêng, riêng F12 Windows dành cho trình gỡ lỗi nên bị từ chối như phím do
+  ứng dụng khác giữ. (Mình chọn cách hiểu nhỏ nhất khi làm nhóm khung ứng dụng; chờ Hùng xem lại.)
 
 ## Clarifications
 

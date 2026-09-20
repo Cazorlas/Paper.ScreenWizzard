@@ -1,0 +1,40 @@
+<!-- The error dialog: a message the user must read, closed only by the OK button (Enter or Esc press it too).
+     No DataContext: the presenter passes the title and the finished text to the constructor. -->
+<Window x:Class="Paper.ScreenWizzard.App.Views.Shell.ErrorDialogWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        AutomationProperties.AutomationId="ErrorDialog"
+        Background="{DynamicResource Brush.Window}"
+        Foreground="{DynamicResource Brush.Text}"
+        FontFamily="Segoe UI"
+        FontSize="13"
+        MaxWidth="480"
+        MinWidth="320"
+        ResizeMode="NoResize"
+        SizeToContent="WidthAndHeight"
+        Topmost="True"
+        UseLayoutRounding="True"
+        WindowStartupLocation="CenterScreen">
+  <Window.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Paper.ScreenWizzard;component/Resources/Controls.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Window.Resources>
+  <StackPanel Margin="24,20,24,16">
+    <TextBlock x:Name="MessageText"
+               AutomationProperties.AutomationId="ErrorText"
+               Margin="0,0,0,18"
+               TextWrapping="Wrap" />
+    <Button x:Name="OkButton"
+            Style="{StaticResource Style.Button.Accent}"
+            AutomationProperties.AutomationId="ErrorOkButton"
+            HorizontalAlignment="Right"
+            IsCancel="True"
+            IsDefault="True"
+            MinWidth="96"
+            Content="{DynamicResource Notice.Ok}"
+            Click="OnOkClick" />
+  </StackPanel>
+</Window>

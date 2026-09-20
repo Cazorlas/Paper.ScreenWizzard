@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Paper.ScreenWizzard.Domain/Paper.ScreenWizzard.Domain.csproj" />
+    <Project Path="src/Paper.ScreenWizzard.UseCases/Paper.ScreenWizzard.UseCases.csproj" />
+    <Project Path="src/Paper.ScreenWizzard.Infrastructure/Paper.ScreenWizzard.Infrastructure.csproj" />
+    <Project Path="src/Paper.ScreenWizzard.App/Paper.ScreenWizzard.App.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Paper.ScreenWizzard.UnitTests/Paper.ScreenWizzard.UnitTests.csproj" />
+    <Project Path="tests/Paper.ScreenWizzard.UiTests/Paper.ScreenWizzard.UiTests.csproj" />
+    <Project Path="tests/Paper.ScreenWizzard.E2eTests/Paper.ScreenWizzard.E2eTests.csproj" />
+  </Folder>
+</Solution>

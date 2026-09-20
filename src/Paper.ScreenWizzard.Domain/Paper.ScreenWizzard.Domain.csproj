@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Domain: plain value types and rules. net10.0 without -windows, so the compiler itself refuses WPF and Win32 (ADR 0001). -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Paper.ScreenWizzard.Domain</RootNamespace>
+  </PropertyGroup>
+</Project>
