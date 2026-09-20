@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- App: WPF views, view models, commands and the composition root. The exe is named Paper.ScreenWizzard. -->
+  <!-- App: the entry host - Program/App.xaml, the tray icon and the composition root. Views and view models live in Presentation. The exe is named Paper.ScreenWizzard. -->
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
@@ -19,6 +19,7 @@
     <Using Remove="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Paper.ScreenWizzard.Presentation\Paper.ScreenWizzard.Presentation.csproj" />
     <ProjectReference Include="..\Paper.ScreenWizzard.Infrastructure\Paper.ScreenWizzard.Infrastructure.csproj" />
     <ProjectReference Include="..\Paper.ScreenWizzard.UseCases\Paper.ScreenWizzard.UseCases.csproj" />
     <ProjectReference Include="..\Paper.ScreenWizzard.Domain\Paper.ScreenWizzard.Domain.csproj" />

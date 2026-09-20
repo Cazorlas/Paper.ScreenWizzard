@@ -27,9 +27,6 @@ tài liệu, lần nào cũng vậy) -> task-do -> task-verify, chạy bằng sk
 | `Paper.ScreenWizzard.Presentation` | `net10.0-windows10.0.19041.0` | Views, ViewModels, Commands, Resources (giao diện sáng/tối, chuỗi vi/en), `Mvvm/` | UseCases, Domain — **không Infrastructure** | 0001 |
 | `Paper.ScreenWizzard.App` | `net10.0-windows10.0.19041.0` (WinExe) | entry host: `Program`/`App.xaml`, khay hệ thống, gốc ghép DI | mọi tầng | 0001 |
 
-> **Đang chuyển (plan T23):** Presentation hiện còn là thư mục trong `App` (`Views/`, `ViewModels/`, `Resources/`,
-> `Mvvm/`); T23 tách nó thành project riêng trước khi làm trình sửa ảnh. Xoá ghi chú này khi T23 xong.
-
 - **Mọi quyết định ở UseCases và Domain**, chạy trong unit test không cần Windows. Ví dụ: chuẩn hoá vùng kéo,
   chọn cửa sổ dưới con trỏ, kẹp vào mép desktop, đếm bước, undo/redo, đặt tên file, kiểm phím tắt.
 - **Win32/GDI/WinRT chỉ ở Infrastructure**, sau port; qua port chỉ đi số, chuỗi, mảng byte pixel, record.

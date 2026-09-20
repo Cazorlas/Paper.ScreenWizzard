@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using Paper.ScreenWizzard.App.ViewModels.Shell;
+using Paper.ScreenWizzard.Presentation.ViewModels.Shell;
 using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.UiTests.Support;

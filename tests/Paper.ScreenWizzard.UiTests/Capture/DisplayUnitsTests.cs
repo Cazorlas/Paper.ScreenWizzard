@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using Paper.ScreenWizzard.App.ViewModels.Capture;
+using Paper.ScreenWizzard.Presentation.ViewModels.Capture;
 using Paper.ScreenWizzard.Domain.Geometry;
 
 namespace Paper.ScreenWizzard.UiTests.ScreenCapture;

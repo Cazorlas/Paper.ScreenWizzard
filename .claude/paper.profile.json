@@ -37,7 +37,7 @@
         "forbidPackages": []
       },
       {
-        "path": "**/Paper.ScreenWizzard.App/ViewModels/**",
+        "path": "**/Paper.ScreenWizzard.Presentation/**",
         "forbid": ["Paper.ScreenWizzard.Infrastructure"],
         "forbidPackages": []
       }

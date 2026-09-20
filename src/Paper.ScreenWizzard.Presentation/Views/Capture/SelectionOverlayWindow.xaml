@@ -1,0 +1,98 @@
+<!-- The selection overlay: one borderless, always-on-top window over the whole virtual desktop, showing the frozen snapshot dimmed
+     by 40%, with the chosen region lit. DataContext: SelectionOverlayViewModel, passed to the constructor. Everything is laid out
+     in the units WPF gives; the code-behind converts to and from the physical pixels the session speaks, in one place
+     (DisplayUnits), and the window itself is placed in physical pixels by PhysicalWindowPlacer.
+
+     Layers, bottom to top: the picture, a 40% dim, the same picture again clipped to the lit region (rectangle, freeform outline
+     or the window under the pointer), the frame, then the labels. The Stage has a Transparent background so it takes the mouse;
+     everything above it is hit-test invisible. Esc and the right mouse button cancel. -->
+<Window x:Class="Paper.ScreenWizzard.Presentation.Views.Capture.SelectionOverlayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{DynamicResource Capture.Overlay.Title}"
+        AutomationProperties.Name="{DynamicResource Capture.Overlay.Title}"
+        AutomationProperties.AutomationId="SelectionOverlay"
+        Background="{DynamicResource Brush.OverlayDim}"
+        Foreground="{DynamicResource Brush.Text}"
+        FontFamily="Segoe UI"
+        FontSize="13"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        SizeToContent="Manual"
+        Topmost="True"
+        UseLayoutRounding="True"
+        WindowStartupLocation="Manual"
+        WindowStyle="None">
+  <Window.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Paper.ScreenWizzard.Presentation;component/Resources/Controls.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <!-- A small label on the overlay: inverted against the window so it reads over any screenshot, like the toast. -->
+      <Style x:Key="Style.OverlayLabel" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource Brush.ToastBackground}" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="IsHitTestVisible" Value="False" />
+        <Setter Property="Visibility" Value="Collapsed" />
+      </Style>
+    </ResourceDictionary>
+  </Window.Resources>
+
+  <!-- Esc cancels: the view model's command, not code-behind. -->
+  <Window.InputBindings>
+    <KeyBinding Key="Escape" Command="{Binding CancelCommand}" />
+  </Window.InputBindings>
+
+  <Canvas x:Name="Stage"
+          AutomationProperties.AutomationId="OverlayStage"
+          Background="Transparent"
+          ClipToBounds="True"
+          MouseLeftButtonDown="OnMouseLeftButtonDown"
+          MouseLeftButtonUp="OnMouseLeftButtonUp"
+          MouseMove="OnMouseMove"
+          MouseRightButtonDown="OnMouseRightButtonDown">
+    <Image x:Name="FrozenImage" IsHitTestVisible="False" RenderOptions.BitmapScalingMode="NearestNeighbor" Stretch="Fill" />
+    <Rectangle x:Name="Dim" Fill="{DynamicResource Brush.OverlayDim}" IsHitTestVisible="False" Opacity="0.4" />
+    <Image x:Name="LitImage" IsHitTestVisible="False" RenderOptions.BitmapScalingMode="NearestNeighbor" Stretch="Fill" />
+    <Path x:Name="SelectionFrame"
+          AutomationProperties.AutomationId="SelectionFrame"
+          IsHitTestVisible="False"
+          Stroke="{DynamicResource Brush.Accent}"
+          StrokeLineJoin="Round"
+          StrokeThickness="2" />
+
+    <!-- width × height beside the dragged rectangle -->
+    <Border x:Name="SizeLabelBox" Style="{StaticResource Style.OverlayLabel}">
+      <TextBlock AutomationProperties.AutomationId="SizeLabel"
+                 FontWeight="SemiBold"
+                 Foreground="{DynamicResource Brush.ToastText}"
+                 Text="{Binding SizeLabel}" />
+    </Border>
+
+    <!-- the title of the window under the pointer (Window kind) -->
+    <Border x:Name="WindowTitleBox" Style="{StaticResource Style.OverlayLabel}">
+      <TextBlock AutomationProperties.AutomationId="WindowTitleLabel"
+                 Foreground="{DynamicResource Brush.ToastText}"
+                 Text="{Binding HoverTitle}"
+                 TextTrimming="CharacterEllipsis" />
+    </Border>
+
+    <!-- Esc / right mouse button: cancel. Always visible, on the monitor the pointer was on. -->
+    <Border x:Name="HintBox" Style="{StaticResource Style.OverlayLabel}" Visibility="Visible">
+      <TextBlock AutomationProperties.AutomationId="CancelHint"
+                 Foreground="{DynamicResource Brush.ToastText}"
+                 Text="{DynamicResource Capture.Overlay.CancelHint}" />
+    </Border>
+
+    <!-- F2, F3: why nothing was captured; the user stays here and drags again. -->
+    <Border x:Name="MessageBox" Style="{StaticResource Style.OverlayLabel}">
+      <TextBlock AutomationProperties.AutomationId="OverlayMessage"
+                 AutomationProperties.LiveSetting="Assertive"
+                 Foreground="{DynamicResource Brush.ToastText}"
+                 MaxWidth="520"
+                 Text="{Binding MessageText}"
+                 TextWrapping="Wrap" />
+    </Border>
+  </Canvas>
+</Window>

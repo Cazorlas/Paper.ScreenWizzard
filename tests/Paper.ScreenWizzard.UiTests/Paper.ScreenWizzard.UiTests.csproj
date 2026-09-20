@@ -15,7 +15,7 @@
     <PackageReference Include="FlaUI.UIA3" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Paper.ScreenWizzard.App\Paper.ScreenWizzard.App.csproj" />
+    <ProjectReference Include="..\..\src\Paper.ScreenWizzard.Presentation\Paper.ScreenWizzard.Presentation.csproj" />
     <ProjectReference Include="..\..\src\Paper.ScreenWizzard.UseCases\Paper.ScreenWizzard.UseCases.csproj" />
     <ProjectReference Include="..\..\src\Paper.ScreenWizzard.Domain\Paper.ScreenWizzard.Domain.csproj" />
   </ItemGroup>

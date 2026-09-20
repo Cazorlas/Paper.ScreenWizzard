@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Presentation: views, view models, commands, themes and strings, and the small MVVM base. It references UseCases and Domain and
+       NOT Infrastructure, so a view model cannot call an adapter: the compiler refuses (ADR 0001, alternative A). -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>Paper.ScreenWizzard.Presentation</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Paper.ScreenWizzard.UseCases\Paper.ScreenWizzard.UseCases.csproj" />
+    <ProjectReference Include="..\Paper.ScreenWizzard.Domain\Paper.ScreenWizzard.Domain.csproj" />
+  </ItemGroup>
+</Project>

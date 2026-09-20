@@ -1,8 +1,8 @@
 using FlaUI.Core.Input;
 using FlaUI.Core.Tools;
 using NUnit.Framework;
-using Paper.ScreenWizzard.App.ViewModels.Capture;
-using Paper.ScreenWizzard.App.Views.Capture;
+using Paper.ScreenWizzard.Presentation.ViewModels.Capture;
+using Paper.ScreenWizzard.Presentation.Views.Capture;
 using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Geometry;
 using Paper.ScreenWizzard.UiTests.Shell;

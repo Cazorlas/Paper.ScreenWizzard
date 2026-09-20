@@ -1,6 +1,6 @@
-using Paper.ScreenWizzard.App.ViewModels.Shell;
-using Paper.ScreenWizzard.App.Views.Shell;
-using Paper.ScreenWizzard.App.Views.Shell.Services;
+using Paper.ScreenWizzard.Presentation.ViewModels.Shell;
+using Paper.ScreenWizzard.Presentation.Views.Shell;
+using Paper.ScreenWizzard.Presentation.Views.Shell.Services;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.UiTests.Support;
 using Paper.ScreenWizzard.UseCases.Shell.Models;

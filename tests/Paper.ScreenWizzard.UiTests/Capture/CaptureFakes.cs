@@ -1,5 +1,5 @@
-using Paper.ScreenWizzard.App.ViewModels.Capture;
-using Paper.ScreenWizzard.App.ViewModels.Shell;
+using Paper.ScreenWizzard.Presentation.ViewModels.Capture;
+using Paper.ScreenWizzard.Presentation.ViewModels.Shell;
 using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Geometry;
 using Paper.ScreenWizzard.Domain.Shell;

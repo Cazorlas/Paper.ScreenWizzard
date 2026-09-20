@@ -3,6 +3,7 @@
     <Project Path="src/Paper.ScreenWizzard.Domain/Paper.ScreenWizzard.Domain.csproj" />
     <Project Path="src/Paper.ScreenWizzard.UseCases/Paper.ScreenWizzard.UseCases.csproj" />
     <Project Path="src/Paper.ScreenWizzard.Infrastructure/Paper.ScreenWizzard.Infrastructure.csproj" />
+    <Project Path="src/Paper.ScreenWizzard.Presentation/Paper.ScreenWizzard.Presentation.csproj" />
     <Project Path="src/Paper.ScreenWizzard.App/Paper.ScreenWizzard.App.csproj" />
   </Folder>
   <Folder Name="/tests/">

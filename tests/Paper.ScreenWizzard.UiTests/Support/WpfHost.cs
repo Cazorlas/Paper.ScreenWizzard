@@ -1,8 +1,8 @@
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Threading;
-using Paper.ScreenWizzard.App.ViewModels.Shell;
-using Paper.ScreenWizzard.App.Views.Shell.Services;
+using Paper.ScreenWizzard.Presentation.ViewModels.Shell;
+using Paper.ScreenWizzard.Presentation.Views.Shell.Services;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.UseCases.Shell.Models;
 
