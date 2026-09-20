@@ -56,9 +56,25 @@ Nên:
 - **Lần đầu gửi liên kết trong một kho có dấu cách hay ký tự lạ trong đường dẫn, hỏi một câu** "bấm mở
   được không?", rồi ghi câu trả lời vào `REFERENCE.md` của kho đó. Một câu hỏi rẻ hơn cả một phiên gửi
   liên kết hỏng.
+- **Đã hỏi và đã đo, 2026-09-21:** dạng `<...>` **bấm mở được** trên máy của chủ dự án, kể cả khi đường dẫn đi ra ngoài thư mục làm việc bằng tiền tố hai dấu chấm và gạch chéo (một kho anh em nằm cạnh). Không còn là giả định,
+  và không cần hỏi lại lần nữa cho máy đó.
 - **Số dòng phải đo, đừng nhớ.** `#L<dòng>` lấy bằng `grep -n` ngay trước khi gửi; file vừa sửa trong
   cùng lượt thì số dòng cũ đã sai.
 
 Hai điều trên được viết ra vì `payload-contract` bắt được chính đoạn này: bản nháp đầu của nó **chứa một
 liên kết hỏng làm ví dụ**, và luật F14 ("mọi đường dẫn trong payload phải resolve") chặn lại. Ví dụ trong
 tài liệu phải để trong dấu nháy ngược, không để thành liên kết thật.
+
+## Cổng, không phải lời nhắc
+
+Luật này đã bị phá **hai lần trong một phiên bởi cùng một tác giả**, lần hai xảy ra sau khi cả phiên vừa
+dành cho đúng bài học đó. Một luật chỉ viết ra thì là một mong muốn, nên nay có hook Stop `link-nag.ps1`
+đọc câu trả lời cuối của lượt và giữ lượt lại một lần khi nó:
+
+- nêu một file markdown mà không có liên kết nào tới nó;
+- nêu mã task (`T8`, `T8c`) mà không liên kết plan nào;
+- có liên kết mang `%20` trong đích (đã đo là hỏng).
+
+Ngoại lệ có chủ ý: khối code có rào, URL web, file không phải markdown, mã luật như `F20`. Một file đã được
+liên kết một lần thì được nhắc lại bằng tên. Giới hạn đã biết: lần gửi lại vẫn sai thì lọt qua, vì một hook
+giữ lượt được mãi mãi là một vòng lặp.

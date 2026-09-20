@@ -52,7 +52,7 @@ Mười luật này đúng cho mọi chặng dưới đây, và mỗi luật có
    bảng đó, và nói được nó là dòng nào.
 9. **Mời người dùng đọc gì thì đưa liên kết bấm được tới đúng chỗ đó** — không chỉ lúc xin duyệt, mà
    mọi lần mời xem, kiểm hay chốt: mỗi tài liệu một dòng `[tên](đường dẫn)`, thêm `#L<dòng>` khi trỏ vào
-   một dòng. Luật đủ: `references/approval-links.md`. *Xong khi:* mỗi tài liệu được nhắc có một liên kết.
+   một dòng. Luật đủ: `references/approval-links.md`. *Xong khi:* mỗi tài liệu được nhắc có một liên kết. Có hook Stop `link-nag` giữ lượt khi thiếu.
 10. **Model mạnh để nghĩ, model đang set để làm.** Phần *nghĩ* (suy luận, `SPEC.md`, plan, chia task, rà
    soát) chạy trên model mạnh nhất; phần *làm* (code, task, build, test, lái host) chạy trên model người
    dùng đang set. Hai cổng, và mặc định nghiêng về **không đổi**: tài khoản phải khớp
