@@ -57,10 +57,64 @@ function ConvertTo-PaperExtensions($Value, [string[]] $Default) {
     return $list
 }
 
+# What git says this session actually touched: files dirty against HEAD, plus files in the non-merge
+# commits made since Since. Returns $null when this is not a git repo or git is not on PATH, and the
+# caller then falls back to mtime alone.
+#
+# It exists because mtime does not mean "you changed this" (KIT-001). Git rewrites a file's
+# LastWriteTime whenever it puts it on disk - merge, pull, rebase, checkout, stash pop - so after
+# bringing somebody else's branch into main, every file they ever touched reads as changed by you. The
+# hook then names a plan from another session and tells you to tick its tasks.
+#
+# --no-merges is what makes a merge stop counting: the merge commit itself carries this moment's date,
+# while the commits it brings keep theirs, and those are older than Since.
+function Get-PaperGitTouchedFiles([string] $Root, [datetime] $Since) {
+    if (-not (Test-Path -LiteralPath (Join-Path $Root '.git'))) { return $null }
+
+    $set = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+    $stamp = $Since.ToString('yyyy-MM-ddTHH:mm:ss')
+
+    # A hook runs under whatever preference its caller set. Under Stop, a single line git writes to
+    # stderr becomes a terminating error, the catch below returns $null, and the reminder quietly goes
+    # back to trusting mtime - the bug this function exists to fix, back without a sound.
+    $previous = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        # Dirty or untracked. Porcelain v1 puts the path last, and a rename carries "old -> new".
+        $global:LASTEXITCODE = 0
+        $status = @(& git --no-pager -C $Root status --porcelain --untracked-files=all 2>$null)
+
+        # A failed git and a clean tree both print nothing, and treating the first as the second would
+        # hide every file in the project. A folder can hold a .git that git cannot read - a fixture
+        # builds one, and so does a half-finished clone.
+        if ($LASTEXITCODE -ne 0) { return $null }
+
+        foreach ($line in $status) {
+            if (-not $line -or $line.Length -lt 4) { continue }
+            $path = $line.Substring(3).Trim()
+            $arrow = $path.IndexOf(' -> ')
+            if ($arrow -ge 0) { $path = $path.Substring($arrow + 4) }
+            [void] $set.Add($path.Trim('"').Replace([char] 92, [char] 47))
+        }
+
+        foreach ($line in @(& git --no-pager -C $Root log --no-merges --since=$stamp --pretty=format: --name-only 2>$null)) {
+            if ($line) { [void] $set.Add($line.Trim().Replace([char] 92, [char] 47)) }
+        }
+    }
+    catch { return $null }
+    finally { $ErrorActionPreference = $previous }
+
+    # Comma-wrapped, like every other collection returned in this kit: PowerShell unrolls a collection on
+    # return, so an EMPTY set comes back as $null - and $null is this function's signal for "no git here",
+    # which sends the caller straight back to trusting mtime. A clean tree is exactly when that matters.
+    return , $set
+}
+
 # Files under Root with one of Extensions, written after Since. A plain walk that prunes build output,
 # because .NET enumeration is Unicode end to end (a Vietnamese folder is read, not skipped) and it needs no
 # git. It gives up after MaxSeconds and returns what it has, so a huge tree cannot eat the hook's timeout.
 function Get-PaperChangedFiles([string] $Root, [datetime] $Since, [string[]] $Extensions, [int] $MaxSeconds = 6) {
+    $touched = Get-PaperGitTouchedFiles $Root $Since
     $found = New-Object System.Collections.ArrayList
     $watch = [System.Diagnostics.Stopwatch]::StartNew()
     $stack = New-Object System.Collections.Stack
@@ -76,7 +130,11 @@ function Get-PaperChangedFiles([string] $Root, [datetime] $Since, [string[]] $Ex
             }
             foreach ($file in $dir.GetFiles()) {
                 if ($Extensions -notcontains $file.Extension.ToLowerInvariant()) { continue }
-                if ($file.LastWriteTime -gt $Since) { [void] $found.Add($file) }
+                if ($file.LastWriteTime -le $Since) { continue }
+                # mtime says "written since"; git says "written BY THIS SESSION". Both, when git can say.
+                if ($null -ne $touched -and -not $touched.Contains((Get-PaperRelative $Root $file.FullName))) { continue }
+                # mtime says "written since"; git says "written BY THIS SESSION". Both, when git can say.
+                [void] $found.Add($file)
             }
         }
         catch { continue }
