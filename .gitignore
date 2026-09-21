@@ -9,3 +9,7 @@ artifacts/
 tests/**/shots/
 # The project's own copy of the Inno Setup compiler (installer/get-inno.ps1).
 .tools/
+
+# Python caches of the kit check scripts (never commit them: they made a re-vendor refuse).
+__pycache__/
+*.pyc

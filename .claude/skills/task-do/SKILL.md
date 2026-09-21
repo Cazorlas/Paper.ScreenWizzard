@@ -1,6 +1,6 @@
 ---
 name: task-do
-description: Implement an approved plan - gate first, then survey the code or the model, then each task group in order, its lanes dispatched in parallel to lane agents (logic, ui, live, model) with their task ids and the files each task may write, test-first inside every lane (a red test from the SPEC.md lines before its code, a UI mock before the real host, the open host driven on real data and read back, a model change dry-run before commit), ticking each task from the evidence rows the agents return, one full suite and build by the main session at the end, and hand over to /task-verify. Use when the user types /task-do with a plan or approves a plan.
+description: Implement an approved plan - gate first, then survey the code or the model, then each task group in order, its lanes dispatched in parallel to lane agents (logic, ui, live, model) with their task ids and the files each task may write, test-first inside every lane (on a host whose profile declares a live loop, the behaviour measured live as a baseline before the red test is written from it; a red test from the SPEC.md lines before its code, a UI mock before the real host, the open host driven on real data and read back, a model change dry-run before commit), ticking each task from the evidence rows the agents return, one full suite and build by the main session at the end, and hand over to /task-verify. Use when the user types /task-do with a plan or approves a plan.
 ---
 
 # /task-do <plan>
@@ -66,8 +66,25 @@ chứng minh code bằng chính nó.
 | --- | --- | --- |
 | `unit` | `lane-logic` | Test **trước**, thấy đỏ **ở assertion**; rồi code tới khi xanh. Verb `test` |
 | `ui` / `e2e` | `lane-ui` | Mock trên dữ liệu giả theo wireframe trong plan trước khi chạy host thật; mở ảnh ra **xem** và tự phán xét. Verb `ui` / `e2e` |
-| `live` | `lane-live` | Verb `publish`, rồi lái **phiên host đang kết nối** trên một case thật và **đọc lại** kết quả từ chính host. Dọn thứ đã tạo. Không bao giờ lưu dữ liệu của người dùng. Mở, tắt hay restart host - kể cả bản copy - phải hỏi người dùng trước, và ghi câu trả lời vào dòng bằng chứng |
+| `live` | `lane-live` | Task `baseline` (dự án khai `live.loop`): đo hành vi **hôm nay** trên host, trả số trong dòng bằng chứng có chữ `baseline`. Task kiểm: verb `publish`, rồi lái **phiên host đang kết nối** trên một case thật và **đọc lại** kết quả từ chính host. Dọn thứ đã tạo. Không bao giờ lưu dữ liệu của người dùng. Mở, tắt hay restart host - kể cả bản copy - phải hỏi người dùng trước, và ghi câu trả lời vào dòng bằng chứng |
 | `model` | `lane-model` | Mỗi nhóm: khảo sát chỉ đọc → chạy thử không giữ gì → thực hiện → **đọc lại bằng script khác**; mỗi dòng nêu mã luật. Script giữ lại trong `harness/` |
+
+### Host kiểm được thì đo trước, rồi mới đỏ
+
+Profile khai `live.loop` nghĩa là host tự kiểm được một thay đổi code. Khi đó thứ tự của việc code là
+**đo trên host → test đỏ viết từ số đo → xanh → đo lại trên host, lặp tới khi đạt**, không phải đỏ trước:
+
+1. **ensure** — phiên host đang mở và server MCP của nó trả lời (`<live.loop> ensure`); server tắt thì tự
+   bật, host thì không bao giờ tự mở. Giữ `live.dialogGuard` chạy trong lúc có lời gọi.
+2. **measure** — task `baseline` của lane `live` đo hành vi hiện tại trên dữ liệu thật; số vào `## Bằng
+   chứng` thành dòng có chữ `baseline`.
+3. **red** — session chính **đưa dòng baseline đó** cho `lane-logic` cùng mã task (worktree của nó có thể
+   chưa có bằng chứng mới nhất); test viết từ số đo và dòng `SPEC.md`, đỏ ở assertion.
+4. **green**, rồi 5. **verify** — task kiểm của lane `live` đo lại đúng thứ đó tới khi đạt.
+
+Hành vi host không cho thấy được (phép tính thuần) ghi `baseline: not checkable - <vì sao>` và giữ đỏ
+trước. Hook `live-first-guard` nhắc khi code bị sửa trước khi có dòng baseline (hay chặn, khi profile đặt
+`live.enforceOrder`). Không khai `live.loop`: thứ tự cũ — đỏ trước, `live` sau khi unit xanh.
 
 ### Một test xanh ngay lần đầu chưa phải là một test
 
@@ -111,8 +128,9 @@ trước trả hết.
    từng task. Lane agent chỉ sửa file trong các glob đó, không push, không mở hay tắt host; lane `unit` và
    lane `ui` commit **một lần** trên nhánh worktree của chúng để trả việc về (bước 4).
 2. **Nối tiếp, không song song:** task ghi `(sau T<n>)` chờ `T<n>` trả về; lane `ui` và lane `live` không
-   bao giờ chạy cùng lúc (driver UI giữ chuột và bàn phím, ảnh chụp host cần cửa sổ host ở trước); `live`
-   chỉ chạy sau khi `unit` của cùng việc đã xanh. Một nhóm chỉ có một lane thì giao một agent, vẫn chạy nền.
+   bao giờ chạy cùng lúc (driver UI giữ chuột và bàn phím, ảnh chụp host cần cửa sổ host ở trước); task
+   `baseline` của `live` chạy **trước** task `[red]` nó mở đường (mục trên), task kiểm của `live` chỉ chạy
+   sau khi `unit` của cùng việc đã xanh. Một nhóm chỉ có một lane thì giao một agent, vẫn chạy nền.
    Task không có `{files:}` mà cần sửa file thì plan sai khuôn: thêm glob vào plan trước khi giao.
 3. **Chờ** mọi agent của nhóm trả về. Session chính **giữ** plan, `SPEC.md`, dấu tick, bảng API, mọi câu
    hỏi cho người dùng và mọi bước cần công cụ host mà agent không có (agent trả `not verifiable: cần session

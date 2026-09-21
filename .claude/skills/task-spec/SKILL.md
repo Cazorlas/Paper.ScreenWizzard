@@ -45,7 +45,10 @@ Viết yêu cầu, brief và plan — theo đúng thứ tự đó — rồi kế
      mã `F<n>` nó phủ — mỗi mã một test tên bắt đầu bằng mã; một task không truy về dòng
      SPEC nào hay dòng Decisions nào là việc không ai yêu cầu.
    - **Task theo thứ tự test-first**, nhóm `### n.`: task đầu của mỗi lane `unit`/`ui`/`e2e` mang dấu
-     `[red]`; code sau test; mock UI trước host thật; lane `live` sau khi unit xanh; nhóm cuối là
+     `[red]`; code sau test; mock UI trước host thật; lane `live` sau khi unit xanh — trừ khi profile khai
+     `live.loop`: host tự kiểm được, nên mỗi nhóm có code kiểm được trên host mở bằng một task `[live]` **đo
+     baseline** (nhóm trước task `[red]`, xong khi dòng bằng chứng có chữ `baseline`), và `[red]` viết từ số đó
+     (skill `task-do`, "Host kiểm được thì đo trước"); nhóm cuối là
      Close — `find-bug`, agent `architecture-reviewer`, rồi đóng `SPEC.md`. Mỗi task nói **xong khi** nào.
    - **Mỗi task sửa file ghi `{files: <glob>, <glob>}` ở cuối dòng** — đó là tất cả những gì lane agent
      của nó được đụng. Các lane trong một nhóm chạy song song: glob của hai lane khác nhau trong một nhóm

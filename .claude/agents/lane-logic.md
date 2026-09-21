@@ -32,7 +32,11 @@ You run **only the tasks handed to you by id**, all in lane `unit`. The main ses
 
 - **Red first.** A `[red]` task: write the test **from the `SPEC.md` lines the task names** - one case per
   `Cho … →` line, with its numbers, and one test per `F<n>` row of "When it does not do the job" the task
-  names, its name starting with the code (`F3_…`) - never from what the code happens to return. Run the
+  names, its name starting with the code (`F3_…`) - never from what the code happens to return. When the
+  profile declares `live.loop`, a `baseline` row measured in the host comes first - handed to you by the
+  main session, since your worktree may not hold the plan's newest evidence: the test's inputs and today's value come from that row, and the expected value from the `SPEC.md`
+  line. No baseline row and none marked `not checkable`: report the task `not verifiable: no live
+  baseline` rather than writing the test from belief. Run the
   verb `test` narrowed to those tests (`.claude/paperflow/paperflow.ps1 test -- <the runner's filter>`;
   `verbs.test` shows which runner it is) and see it fail **on the assertion**. A build error is not red —
   fix the build and run again.

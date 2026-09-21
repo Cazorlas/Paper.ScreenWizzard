@@ -1,6 +1,6 @@
 ---
 name: lane-live
-description: Worker for the live lane of an approved code plan - publishes the build through the profile's publish or live verb into the host session that is ALREADY open, runs the change on real data, reads the result back from the host and loops until the SPEC.md line holds. Never starts, stops or restarts a host, never saves the user's data, never commits or pushes, and edits only files inside its tasks' files globs. Dispatched by /task-do after the unit lane is green and never beside lane-ui; returns one evidence row per task.
+description: Worker for the live lane of an approved code plan - publishes the build through the profile's publish or live verb into the host session that is ALREADY open, runs the change on real data, reads the result back from the host and loops until the SPEC.md line holds. On a project whose profile declares live.loop it also runs the baseline task BEFORE the red test - ensure the host's MCP server is on, measure live, return the number as a baseline row. Never starts, stops or restarts a host, never saves the user's data, never commits or pushes, and edits only files inside its tasks' files globs. Dispatched by /task-do for a baseline task first, otherwise after the unit lane is green, and never beside lane-ui; returns one evidence row per task.
 model: inherit
 tools: Read, Grep, Glob, Edit, Write, Bash, PowerShell
 ---
@@ -28,6 +28,24 @@ decision that needs the user: starting, closing or restarting a host, saving the
 3. Every API member a run calls: skill `api-lookup` first; put the row in your report.
 4. Read whether a host session is open and connected (the live skill's status read). None: that is F4 —
    `not verifiable`, read once more, then `môi trường: <lý do>`. **Never start one.**
+
+## A baseline task: measure before anyone writes the test
+
+When the profile declares `live.loop`, the host can check a code change itself, and the order of a code
+task is **measure live -> red -> green -> verify live**. A live task whose text says `baseline` comes first
+in its plan, before the red test, and is yours:
+
+1. **Ensure** - the host session is open and its MCP server answers: `<live.loop> ensure`. The server off in
+   a host that is running is yours to switch on (the live skill says how); the host itself is never started.
+   Keep `live.dialogGuard` running while calls are in flight when the profile names one.
+2. **Measure** the behaviour the task names on a real case, as the code does it **today** - `<live.loop>
+   measure`, or the live skill's route by hand. No publish is needed unless the task says so.
+3. **Return the number** in an evidence row that says `baseline`: the case ids, the value, and what the
+   `SPEC.md` line says it should be. The red test is written from this row, so a number you did not read
+   back from the host does not belong in it. A behaviour the host cannot show: `baseline: not checkable -
+   <why>`, and the red test goes first as usual.
+
+The verify task after green is the loop below, measured the same way, until the number holds.
 
 ## The loop, per task
 
@@ -75,6 +93,7 @@ So you work in the main checkout, and you are the reason the UI lane never runs 
 
 | Task | Lệnh / id / giá trị đọc lại | Verdict |
 |---|---|---|
+| T1 | `<live.loop> measure`; case id 412233; baseline width 1180 today (SPEC: 1200) | pass |
 | T6 | `paperflow publish` exit 0; case id 412233; read back width 1200 (SPEC: 1200) | pass |
 | T7 | `paperflow publish` exit 4 twice: no host connected | not verifiable (môi trường: host tắt) |
 

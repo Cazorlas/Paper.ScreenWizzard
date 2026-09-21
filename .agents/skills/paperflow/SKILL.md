@@ -28,7 +28,7 @@ hỏi "có làm tiếp không", không dừng vì một nhóm task vừa xong. H
 
 ## Luật vận hành
 
-Mười luật này đúng cho mọi chặng dưới đây, và mỗi luật có một điều kiện xong riêng — một luật không nói
+Mười một luật này đúng cho mọi chặng dưới đây, và mỗi luật có một điều kiện xong riêng — một luật không nói
 được lúc nào nó xong thì nó là lời khuyên, không phải luật.
 
 1. **Hồi phục trước đã.** Trước bất cứ việc gì, tìm plan của tính năng này. Có plan thì **đọc nó và mọi
@@ -59,11 +59,20 @@ Mười luật này đúng cho mọi chặng dưới đây, và mỗi luật có
    `models.strongOnAccount` của profile (máy có thể đang ở tài khoản công ty — hạn mức đó là tiền người
    khác trả), rồi mới tới hạn mức của model mạnh. Luật đủ: `references/model-switch.md`. *Xong khi:* báo
    cáo nói model nào cho phần nghĩ và phần làm, hay `mặc định — sai tài khoản` / `— không khả dụng`.
+11. **Host kiểm được thì đo trước, rồi mới đỏ.** Profile khai `live.loop` nghĩa là host tự kiểm được một
+   thay đổi code: thứ tự là **ensure → đo trên host (dòng `baseline`) → test đỏ viết từ số đo → xanh → đo
+   lại, lặp tới khi đạt**. Không khai thì đỏ trước như cũ. Luật đủ: skill `task-do`, "Host kiểm được thì đo
+   trước". *Xong khi:* mỗi nhóm có code kiểm được trên host mang một dòng `baseline` trước dòng đỏ của nó,
+   hay `baseline: not checkable - <vì sao>`.
 
 ## 0. Loại việc — trước mọi thứ
 
 Đọc `.claude/paper.profile.json`: `workTypes` (mỗi khoá là một loại việc, kèm `lanes`), `lanes`, `verbs`,
 `hosts`. Dự án chưa có profile thì dừng: bảo người dùng chạy setup của kit.
+
+Không gõ `/paperflow` cũng tới đây: hook `paperflow-route` đọc lời nhắn, khớp từ khoá của từng loại việc và
+từng host (`routing` của profile cộng file route của gói host) và thêm một đoạn nêu loại việc, host và thứ tự
+vòng lặp của host đó. Nó chỉ gợi ý — loại việc vẫn do bảng dưới quyết định.
 
 | Yêu cầu | Loại việc | Chặng 1 chạy |
 | --- | --- | --- |

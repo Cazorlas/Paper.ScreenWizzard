@@ -1,0 +1,12 @@
+{
+  "$comment": "Route file of the desktop host pack, read by the kit's paperflow-route hook. keywords: whole-word regular-expression fragments that mark a prompt as work on a WPF window; a project adds its own under routing.hosts.desktop.keywords. A desktop app has no live lane, so liveFirst is false and the loop is the ui lane's own: red on mock data first, the real screen last.",
+  "keywords": [
+    "wpf", "xaml", "windows?", "dialogs?", "view ?models?", "mvvm", "bindings?", "styles?", "themes?", "cửa sổ", "giao diện"
+  ],
+  "liveFirst": false,
+  "loop": [
+    "red - a UI test on mock data, seen failing on its assertion",
+    "green - the view and view model until it passes",
+    "look - open every screenshot and judge it against the plan's wireframe (skill drive-wpf)"
+  ]
+}

@@ -7,6 +7,14 @@
   "required": ["hosts", "lanes", "verbs"],
   "additionalProperties": false,
   "definitions": {
+    "routeWords": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "$comment": { "type": "string" },
+        "keywords": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
     "buildGuard": {
       "type": "object",
       "required": ["pattern", "requireConfiguration"],
@@ -132,7 +140,7 @@
       "type": "string"
     },
     "live": {
-      "description": "Read by the host pack's live skill and lane-live. mcpServer: the project's own live MCP server in .mcp.json; dialogRules: path of the table of host dialogs that may be answered by rule (anything not listed is left for the user); notes: path of a markdown file holding this project's own live values - real tool names, which assemblies stage, bin paths, an example entry point; values only, because the live loop has one owner and that is the host pack's live skill (docs/adr/0009); pinnedAssemblies: assemblies loaded once per host process, so a change to them needs a restart the user approves.",
+      "description": "Read by the host pack's live skill, lane-live and the hooks paperflow-route and live-first-guard. mcpServer: the project's own live MCP server in .mcp.json; dialogRules: path of the table of host dialogs that may be answered by rule (anything not listed is left for the user); notes: path of a markdown file holding this project's own live values - real tool names, which assemblies stage, bin paths, an example entry point; values only, because the live loop has one owner and that is the host pack's live skill (docs/adr/0009); pinnedAssemblies: assemblies loaded once per host process, so a change to them needs a restart the user approves.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -140,7 +148,56 @@
         "mcpServer": { "type": "string" },
         "dialogRules": { "type": "string" },
         "notes": { "type": "string" },
-        "pinnedAssemblies": { "type": "array", "items": { "type": "string" } }
+        "pinnedAssemblies": { "type": "array", "items": { "type": "string" } },
+        "loop": {
+          "description": "The project's live-first loop: a command line, run from the project root, that takes one step as its next argument - ensure (find the open host, switch its MCP server on if it is off, never start the host), measure (run the behaviour live and save the number as the task's baseline), red (the unit test for that number fails at an assertion), green (it passes), verify (live again, matched against the expected number), loop (green + verify until they hold). Declaring it says this host can check a code change itself, so a code task measures live BEFORE its red test: hook paperflow-route states the order, hook live-first-guard reminds (or, with enforceOrder, refuses) an edit made before the plan's evidence has a baseline row. Absent: red first as always.",
+          "type": "string",
+          "minLength": 1
+        },
+        "dialogGuard": {
+          "description": "The command that keeps host dialogs from stalling the loop while a call is in flight (it answers the rule table's rows and clears unknown ones the safe way only). Named by the router beside the loop order; run by the loop's ensure step.",
+          "type": "string",
+          "minLength": 1
+        },
+        "enforceOrder": {
+          "description": "true: hook live-first-guard refuses (exit 2) a source edit claimed by an open unit or live task while the plan's evidence has no baseline row for its group. Default false: the same text is a reminder and the edit goes ahead.",
+          "type": "boolean"
+        }
+      }
+    },
+    "routing": {
+      "description": "Read by hook paperflow-route (UserPromptSubmit), which routes a request into the paperflow skill and names the work type, the host and that host's loop order. Every keyword is a regular-expression fragment matched as a whole word, ignoring case. The project's words are ADDED to the defaults: generic words per work type in the hook, and each host pack's .claude/paperflow/routes/<host>.json. Left out entirely, a project still routes on those defaults.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "$comment": { "type": "string" },
+        "useDefaults": {
+          "description": "false: route on this profile's keywords only - no generic work-type words, no host-pack words. Default true.",
+          "type": "boolean"
+        },
+        "workTypes": {
+          "description": "Extra words per work type (code, model). Only the work types the profile declares under workTypes are routed; no workTypes means code only.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "$comment": { "type": "string" },
+            "code": { "$ref": "#/definitions/routeWords" },
+            "model": { "$ref": "#/definitions/routeWords" }
+          }
+        },
+        "hosts": {
+          "description": "Extra words per host, and optionally a loop that replaces the host pack's loop order in the routed text. A host named here is routed even when hosts leaves it out.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "$comment": { "type": "string" },
+              "keywords": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+              "loop": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+            }
+          }
+        }
       }
     },
     "guards": {

@@ -92,7 +92,13 @@ Thêm "## Kiểm tra luật" sau "Bằng chứng": | Mã | Script / cách đo | 
 
 ## Tasks
 
-Thứ tự: test đỏ trước code trong mỗi lane; mock UI trước host thật; lane `live` sau khi unit xanh;
+Profile khai `live.loop` (host tự kiểm được code): nhóm có code kiểm được trên host mở bằng một task
+`[live]` đo — "Đo <hành vi> trên host đang mở (`<live.loop> ensure`, rồi `measure`) — xong khi có dòng
+bằng chứng chứa chữ baseline với case id và số đo" — đặt ở nhóm TRƯỚC task `[red]` của nó, và `[red]` viết
+từ số đó. Không kiểm được trên host thì dòng bằng chứng ghi "baseline: not checkable - <vì sao>". Hook
+`live-first-guard` nhắc khi code bị sửa trước dòng đó.
+Thứ tự: đo baseline trên host trước test đỏ khi profile khai `live.loop`; test đỏ trước code trong mỗi lane;
+mock UI trước host thật; lane `live` kiểm lại sau khi unit xanh;
 `find-bug`, review kiến trúc và đóng SPEC.md cuối. Mỗi dòng `Cho … →` và mỗi dòng `F<n>` của bảng
 "When it does not do the job" mà việc này chạm phải có task tới được nó, và task nêu mã `F<n>` nó phủ —
 mỗi `F<n>` là **một** test, tên test bắt đầu bằng mã (`F3_…`).
