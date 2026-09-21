@@ -12,8 +12,8 @@ ba và mọi lần sau, lời trình luôn có **một dòng liên kết markdow
 
 - `SPEC.md` (mỗi tính năng bị chạm một dòng), brief và plan; plan `model` thêm RULE, SAMPLE, REFERENCE nếu việc
   này chạm tới; `/task-bug` thêm file bug.
-- Dạng `[tên hiển thị](đường dẫn từ gốc dự án)` để bấm là mở trong editor. Đường dẫn tương đối, có `#L<dòng>`
-  khi trỏ vào một dòng luật hay một task.
+- Dạng `[tên hiển thị](<đường dẫn TUYỆT ĐỐI>)` để Ctrl+click là mở, có `#L<dòng>` khi trỏ vào một dòng luật
+  hay một task. Ví dụ: `[SPEC](<D:/work/My Project/docs/SPEC.md#L12>)`. Lý do ở mục "Bấm được" dưới.
 - Tài liệu bị đổi ở lần này ghi thêm chữ *đổi* cạnh liên kết của nó, để người duyệt biết mở cái nào trước.
 
 **Không** viết "như lần trước", **không** chỉ nêu tên file, **không** gom nhiều tài liệu vào một liên kết:
@@ -47,17 +47,20 @@ tốt, và người duyệt chỉ phát hiện lúc đã bấm.
 thành `%20` — người dùng bấm, **không mở**. Suốt một phiên dài mọi liên kết đều mang lỗi đó và không có
 gì báo cho tới khi người dùng lên tiếng.
 
+**Đã đo, 2026-09-22 — thay luật "đường dẫn tương đối".** Trong Claude Code CLI (Ctrl+click trên terminal),
+**mọi** liên kết đường dẫn tương đối đều **không mở**: terminal không biết đường dẫn tương đối tính từ thư mục
+nào. Cùng phiên đo năm dạng **tuyệt đối**, cả năm đều mở: `file:///D:/.../My%20Project/x.md`, cùng URL đó có
+`#L264`, URL đó làm đích của liên kết markdown, `[x](<D:/.../My Project/x.md>)`, và `C:\...\x.md:264` để trần.
+Dạng tương đối trong dấu ngoặc nhọn chỉ từng mở trong khung chat VS Code (đo 2026-09-21), nên nó không
+dùng chung cho mọi client được.
+
 Nên:
 
-- **Đường dẫn có dấu cách thì bọc destination trong dấu ngoặc nhọn**, đúng chuẩn markdown:
-  `[tên](<thu muc co dau cach/docs/SPEC.md#L180>)`. Mã hoá `%20` **đã đo là hỏng** trên client đó.
-- **Đường dẫn tính từ gốc thư mục làm việc của phiên** — không phải từ thư mục con đang đứng, không
-  phải đường dẫn tuyệt đối.
-- **Lần đầu gửi liên kết trong một kho có dấu cách hay ký tự lạ trong đường dẫn, hỏi một câu** "bấm mở
-  được không?", rồi ghi câu trả lời vào `REFERENCE.md` của kho đó. Một câu hỏi rẻ hơn cả một phiên gửi
-  liên kết hỏng.
-- **Đã hỏi và đã đo, 2026-09-21:** dạng `<...>` **bấm mở được** trên máy của chủ dự án, kể cả khi đường dẫn đi ra ngoài thư mục làm việc bằng tiền tố hai dấu chấm và gạch chéo (một kho anh em nằm cạnh). Không còn là giả định,
-  và không cần hỏi lại lần nữa cho máy đó.
+- **Luôn dùng đường dẫn tuyệt đối**, dựng từ thư mục làm việc mà phiên in ra (đừng nhớ), bọc trong dấu
+  ngoặc nhọn để dấu cách không cắt đôi nó: `[tên](<D:/work/thu muc co dau cach/docs/SPEC.md#L180>)`.
+  Một phiên chạy trong worktree thì là đường dẫn của worktree đó, không phải của bản checkout chính.
+- `file:///` cũng được, và trong URL đó `%20` là đúng. `%20` trong một đường dẫn ổ đĩa thường thì vẫn hỏng.
+- Hook `link-nag` giữ lượt khi đích của liên kết tới một file `.md` là đường dẫn tương đối.
 - **Số dòng phải đo, đừng nhớ.** `#L<dòng>` lấy bằng `grep -n` ngay trước khi gửi; file vừa sửa trong
   cùng lượt thì số dòng cũ đã sai.
 
@@ -73,7 +76,8 @@ dành cho đúng bài học đó. Một luật chỉ viết ra thì là một mo
 
 - nêu một file markdown mà không có liên kết nào tới nó;
 - nêu mã task (`T8`, `T8c`) mà không liên kết plan nào;
-- có liên kết mang `%20` trong đích (đã đo là hỏng).
+- có liên kết tới một file `.md` mà đích là đường dẫn tương đối (đã đo 2026-09-22 là không mở từ terminal);
+- có liên kết mang `%20` trong một đường dẫn ổ đĩa (đã đo là hỏng; trong URL `file:///` thì đúng).
 
 Ngoại lệ có chủ ý: khối code có rào, URL web, file không phải markdown, mã luật như `F20`. Một file đã được
 liên kết một lần thì được nhắc lại bằng tên. Giới hạn đã biết: lần gửi lại vẫn sai thì lọt qua, vì một hook
