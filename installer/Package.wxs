@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The Paper.ScreenWizzard installer (docs/features/release/SPEC.md). Built by installer/build-package.ps1, which passes:
+    Version     x.y.z, from the release tag
+    PublishDir  the folder `dotnet publish` wrote (one self-contained exe)
+    IconFile    src/Paper.ScreenWizzard.App/app.ico
+    LicenseRtf  the licence text as RTF, for the licence page
+
+  Per user, not per machine: no administrator rights, files under %LocalAppData%\Programs, the shortcut in the user's Start menu.
+  The "run at logon" value is written by the app itself when the user turns it on in Settings; this package only removes it on uninstall.
+  The settings and the pictures under %AppData%\Paper\ScreenWizzard belong to the user and are never touched.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+
+  <Package Name="Paper.ScreenWizzard"
+           Manufacturer="Paper"
+           Version="$(Version)"
+           UpgradeCode="ACC6A4EB-1D5F-40E9-924A-869D8A9AE00C"
+           Scope="perUser"
+           Language="1033"
+           Compressed="yes">
+
+    <SummaryInformation Description="Paper.ScreenWizzard: screen capture and image editing" />
+
+    <!-- One entry in Apps: a newer file replaces the older install in place; an older file over a newer one stops with a plain message (F2). -->
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Paper.ScreenWizzard is already installed. Nothing was changed." />
+
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <!-- F1: Windows 10 version 1903 is build 18362. The installer's own WindowsBuild property cannot be used: measured on Windows 11 build
+         26200 it reads 9600 (Windows 8.1), because Windows Installer answers old packages with the compatibility version. The real build
+         number is read from the registry. -->
+    <Property Id="WINBUILD">
+      <RegistrySearch Id="WinBuildSearch" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion" Name="CurrentBuildNumber" Type="raw" />
+    </Property>
+    <Launch Condition="Installed OR (WINBUILD &gt;= 18362)"
+            Message="Paper.ScreenWizzard needs Windows 10 version 1903 or later." />
+
+    <!-- The Icon key must end in .ico: Windows Installer writes DisplayIcon (the icon in Apps) only for such a key. -->
+    <Icon Id="AppIcon.ico" SourceFile="$(IconFile)" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon.ico" />
+    <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" Sequence="execute" />
+
+    <StandardDirectory Id="LocalAppDataFolder">
+      <Directory Id="ProgramsFolder" Name="Programs">
+        <Directory Id="INSTALLFOLDER" Name="Paper.ScreenWizzard" />
+      </Directory>
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder" />
+
+    <!-- F4: the app is a tray icon with no window, so it is ended, not asked to close; no restart of Windows is requested. -->
+    <util:CloseApplication Id="CloseTheApp"
+                           Target="Paper.ScreenWizzard.exe"
+                           CloseMessage="no"
+                           TerminateProcess="0"
+                           RebootPrompt="no" />
+
+    <Feature Id="Main" Title="Paper.ScreenWizzard" Level="1">
+      <ComponentGroupRef Id="AppFiles" />
+      <ComponentRef Id="StartMenuShortcut" />
+      <ComponentRef Id="LogonEntry" />
+    </Feature>
+
+    <ComponentGroup Id="AppFiles" Directory="INSTALLFOLDER">
+      <Component Id="AppExe">
+        <File Id="AppExeFile" Source="$(PublishDir)\Paper.ScreenWizzard.exe" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <Component Id="StartMenuShortcut" Directory="ProgramMenuFolder">
+      <Shortcut Id="AppShortcut"
+                Name="Paper.ScreenWizzard"
+                Description="Screen capture and image editing"
+                Target="[INSTALLFOLDER]Paper.ScreenWizzard.exe"
+                WorkingDirectory="INSTALLFOLDER"
+                Icon="AppIcon.ico" />
+      <RegistryValue Root="HKCU" Key="Software\Paper\ScreenWizzard\Installer" Name="StartMenuShortcut" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+
+    <!-- Removes the value the app wrote for "start with Windows" when the app is uninstalled. -->
+    <Component Id="LogonEntry" Directory="INSTALLFOLDER">
+      <RegistryValue Root="HKCU" Key="Software\Paper\ScreenWizzard\Installer" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+      <RemoveRegistryValue Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\Run" Name="Paper.ScreenWizzard" />
+    </Component>
+
+    <WixVariable Id="WixUILicenseRtf" Value="$(LicenseRtf)" />
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
+
+    <!-- The last page offers to run the app, ticked. -->
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Run Paper.ScreenWizzard now" />
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1" />
+    <CustomAction Id="LaunchTheApp" FileRef="AppExeFile" ExeCommand="" Execute="immediate" Impersonate="yes" Return="asyncNoWait" />
+    <UI>
+      <Publish Dialog="ExitDialog" Control="Finish" Event="DoAction" Value="LaunchTheApp"
+               Condition="WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed" />
+    </UI>
+  </Package>
+</Wix>

@@ -74,13 +74,19 @@ Luật chung ở skill `paper-wpf-style`, `references/build-and-deploy.md`; đâ
 - **CI:** `.github/workflows/ci.yml` — `windows-latest`, `dotnet build -c Release` (cảnh báo là lỗi) rồi test
   project `UnitTests`. **`ui` và `e2e` chạy ở máy người làm, không lên CI** (cần desktop tương tác); kết quả của
   chúng là dòng bằng chứng của plan. Đọc số test đã chạy, không chỉ exit code.
-- **Gói:** `win-x64`, self-contained, một file (`PublishSingleFile`), không `PublishTrimmed` (WPF không trim được),
-  không cần quyền quản trị (manifest `asInvoker`). Mặc định là **zip di động**.
-- **Phát hành:** khi có tag `v<x.y.z>`; số phiên bản là tag. **Agent không tự đẩy tag hay tạo release** — chỉ khi
-  Hùng nói trong phiên đó.
-- **Chưa có (nợ, chưa quyết):** `release.yml` và verb `package` (cần một SPEC "phát hành" và duyệt), bộ cài
-  (MSIX hay MSI/Inno), ký số, cập nhật tự động. Mỗi thứ sau cùng là một ADR riêng. Cho tới lúc đó **không có bộ
-  cài**; chỉ có CI.
+- **Gói:** `installer/build-package.ps1 -Version x.y.z` (verb `package`) ra ba file ở `artifacts/`: `Paper.ScreenWizzard-<x.y.z>-win-x64.msi`
+  (file cài), `….zip` (bản di động) và `SHA256SUMS.txt`. `win-x64`, self-contained, một file (`PublishSingleFile`), không
+  `PublishTrimmed` (WPF không trim được), không cần quyền quản trị (manifest `asInvoker`; MSI cài theo người dùng).
+- **File cài:** MSI dựng bằng WiX 6 (`installer/Package.wxs`, công cụ ghim ở `dotnet-tools.json`), quyết định ở
+  [ADR 0002](docs/decisions/0002-file-cai-msi-wix.md) (`Proposed`). Luật của nó ở `docs/features/release/SPEC.md`. Biểu tượng của
+  exe là `src/Paper.ScreenWizzard.App/app.ico`, vẽ bằng `installer/make-icon.ps1` (chỉ chạy khi hình đổi).
+- **Kiểm file cài:** `installer/verify-installer.ps1 -Msi <file>` cài, chạy, cài đè, hạ bản, sửa chữa và gỡ **thật** trong thư mục
+  thử rồi trả máy về như cũ; exit 0 chỉ khi mọi kiểm tra đạt và số kiểm tra > 0. Nó từ chối chạy khi một bản của ứng dụng đang
+  chạy hoặc đã cài (nó sẽ đóng hay thay bản đó). Chạy sau mỗi lần đổi `installer/` hay `Package.wxs`.
+- **Phát hành:** đẩy thẻ `v<x.y.z>` → `.github/workflows/release.yml` dựng, chạy unit, dựng gói, chạy `verify-installer.ps1` rồi tạo
+  **bản nháp** release kèm ba file; Hùng bấm Publish. Chạy tay (`workflow_dispatch`) chỉ dựng và kiểm, không tạo release.
+  **Agent không tự đẩy thẻ hay tạo release** — chỉ khi Hùng nói trong phiên đó.
+- **Chưa có (nợ, chưa quyết):** ký số (cần chứng chỉ), cập nhật tự động, giao diện cài tiếng Việt, MSIX. Mỗi thứ là một ADR riêng.
 
 ## Việc đang làm
 

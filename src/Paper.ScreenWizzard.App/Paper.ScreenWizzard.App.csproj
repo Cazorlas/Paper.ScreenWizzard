@@ -9,6 +9,8 @@
     <AssemblyName>Paper.ScreenWizzard</AssemblyName>
     <RootNamespace>Paper.ScreenWizzard.App</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- The icon of the exe (Explorer, the Start menu shortcut, Apps in Settings); drawn by installer/make-icon.ps1 like the tray icon. -->
+    <ApplicationIcon>app.ico</ApplicationIcon>
     <!-- WFO0003 tells a WinForms app to set DPI in code. This is a WPF app, WinForms is only NotifyIcon, and WPF has no
          SetHighDpiMode: the manifest is the one place per-monitor v2 is guaranteed before the first window exists. -->
     <NoWarn>$(NoWarn);WFO0003</NoWarn>

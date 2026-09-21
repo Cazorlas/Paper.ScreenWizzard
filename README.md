@@ -19,6 +19,13 @@ Nằm ở khay hệ thống, gọi bằng phím tắt hoặc thanh chụp nổi.
 - Kiến trúc: [ADR 0001](docs/decisions/0001-clean-architecture.md) (còn `Proposed`, chờ chủ dự án), [CLAUDE.md](CLAUDE.md), [CODEMAP.md](CODEMAP.md)
 - Lộ trình: [docs/roadmap.md](docs/roadmap.md)
 
+## Cài đặt
+
+Tải bản mới nhất ở mục Releases của repo: `Paper.ScreenWizzard-<số phiên bản>-win-x64.msi` (bấm đúp, không cần quyền quản trị,
+không cần cài .NET) hoặc `….zip` (bản di động, giải nén ở đâu cũng chạy). Gỡ bằng Cài đặt của Windows, Ứng dụng; cài đặt và ảnh
+của bạn ở `%AppData%\Paper\ScreenWizzard` được giữ lại. Chưa ký số nên SmartScreen có thể hỏi lần đầu: Thông tin thêm, Vẫn chạy.
+Luật đầy đủ: [SPEC file cài](docs/features/release/SPEC.md).
+
 ## Dựng và thử
 
 Cần .NET 10 SDK trên Windows 10 1903 trở lên.
@@ -30,5 +37,12 @@ dotnet test tests/Paper.ScreenWizzard.UiTests       # cửa sổ thật trên d�
 dotnet test tests/Paper.ScreenWizzard.E2eTests      # adapter thật và chính file exe; dùng chuột và bàn phím thật
 ```
 
-Hai bộ cuối điều khiển màn hình thật: đóng bản Paper.ScreenWizzard đang chạy trước khi chạy chúng. CI (GitHub Actions) dựng
-bản Release và chạy bộ unit. Chưa có bản phát hành: xem mục Deploy của CLAUDE.md.
+Dựng file cài (cần .NET 10 SDK; công cụ WiX tự được khôi phục):
+
+```
+powershell -File installer/build-package.ps1 -Version 1.0.0          # ra artifacts/: .msi, .zip, SHA256SUMS.txt
+powershell -File installer/verify-installer.ps1 -Msi artifacts/Paper.ScreenWizzard-1.0.0-win-x64.msi   # cài, cài đè, gỡ thật
+```
+
+Hai bộ test cuối điều khiển màn hình thật: đóng bản Paper.ScreenWizzard đang chạy trước khi chạy chúng. CI (GitHub Actions) dựng
+bản Release và chạy bộ unit; `release.yml` dựng và kiểm file cài khi đẩy thẻ `vX.Y.Z` (chi tiết ở mục Deploy của CLAUDE.md).

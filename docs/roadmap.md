@@ -6,6 +6,7 @@ Mỗi đợt là một plan riêng đi hết vòng đời (SPEC -> duyệt -> l�
 | Đợt | Nội dung | Slug | Trạng thái |
 | --- | --- | --- | --- |
 | 1 | Khung ứng dụng, khay hệ thống, phím tắt, cài đặt; chụp 4 kiểu; trình sửa ảnh | `shell`, `capture`, `editor` | xong 2026-09-21 (chưa có bản phát hành; xem CLAUDE.md, mục Deploy) |
+| 1b | File cài `.msi` theo người dùng, bản zip di động, workflow phát hành | `release` | xong 2026-09-21 (chưa ký số; thẻ phát hành do Hùng đẩy) |
 | 2 | Quay màn hình ra MP4 (vùng / cửa sổ / toàn màn hình) | `recorder` | chưa viết |
 | 3 | Ghi chú lên màn hình kiểu EpicPen | `screen-note` | chưa viết |
 

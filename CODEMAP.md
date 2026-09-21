@@ -15,6 +15,7 @@ per layer of ADR 0001 (alternative A), and three test projects. The user reaches
 | `tests/Paper.ScreenWizzard.UnitTests` | rules and the architecture tests (`Architecture/LayerTests.cs`) |
 | `tests/Paper.ScreenWizzard.UiTests` | views on mock data, driven by FlaUI |
 | `tests/Paper.ScreenWizzard.E2eTests` | the real adapters and the real exe on the desktop |
+| `installer` | the release files: the MSI (`Package.wxs`), `build-package.ps1`, `verify-installer.ps1`, `make-icon.ps1`; the workflow is `.github/workflows/release.yml` |
 
 ## Flow
 

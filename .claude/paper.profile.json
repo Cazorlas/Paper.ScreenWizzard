@@ -10,7 +10,8 @@
   "verbs": {
     "build": "dotnet build Paper.ScreenWizzard.slnx -c Debug --nologo -v minimal",
     "test": "dotnet test tests/Paper.ScreenWizzard.UnitTests -c Debug --nologo -v minimal",
-    "ui": "dotnet test tests/Paper.ScreenWizzard.UiTests -c Debug --nologo -v minimal"
+    "ui": "dotnet test tests/Paper.ScreenWizzard.UiTests -c Debug --nologo -v minimal",
+    "package": "powershell -NoProfile -ExecutionPolicy Bypass -File installer/build-package.ps1"
   },
   "featureDocs": "docs/features",
   "adrFolder": "docs/decisions",

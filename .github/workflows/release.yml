@@ -1,0 +1,74 @@
+name: release
+
+# Builds the release files (installer .msi, portable .zip, SHA256SUMS.txt), proves the installer on the runner by installing,
+# upgrading, downgrading and uninstalling it for real, and - only for a version tag - leaves a DRAFT release with the files attached.
+#
+# The owner starts a release by pushing a tag `vX.Y.Z`; the draft is published by hand on GitHub. Nothing here publishes a release
+# by itself, and agents do not push tags (CLAUDE.md, Deploy). A manual run (workflow_dispatch) builds and verifies the same files and
+# keeps them as a workflow artifact, without touching releases: it is how the pipeline is tried without cutting a version.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build, x.y.z (a trial: no release is created)'
+        required: true
+        default: '0.0.1'
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Version
+        id: version
+        shell: pwsh
+        run: |
+          if ('${{ github.event_name }}' -eq 'workflow_dispatch') { $version = '${{ inputs.version }}' }
+          else { $version = '${{ github.ref_name }}'.TrimStart('v') }
+          if ($version -notmatch '^\d+\.\d+\.\d+$') { throw "The version must be x.y.z (tag vX.Y.Z), got '$version'" }
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "Building version $version"
+
+      - name: Build (Release, warnings are errors)
+        run: dotnet build Paper.ScreenWizzard.slnx -c Release --nologo -v minimal
+
+      - name: Unit tests
+        run: dotnet test tests/Paper.ScreenWizzard.UnitTests -c Release --no-build --nologo -v minimal
+
+      - name: Package (.msi, .zip, SHA256SUMS.txt)
+        shell: pwsh
+        run: ./installer/build-package.ps1 -Version '${{ steps.version.outputs.version }}'
+
+      - name: Prove the installer (install, run, upgrade, downgrade, repair, uninstall)
+        shell: pwsh
+        run: ./installer/verify-installer.ps1 -Msi 'artifacts/Paper.ScreenWizzard-${{ steps.version.outputs.version }}-win-x64.msi'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Paper.ScreenWizzard-${{ steps.version.outputs.version }}
+          path: |
+            artifacts/Paper.ScreenWizzard-${{ steps.version.outputs.version }}-win-x64.msi
+            artifacts/Paper.ScreenWizzard-${{ steps.version.outputs.version }}-win-x64.zip
+            artifacts/SHA256SUMS.txt
+          if-no-files-found: error
+
+      - name: Draft release (tags only)
+        if: github.event_name == 'push'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create '${{ github.ref_name }}' --draft --generate-notes --title 'Paper.ScreenWizzard ${{ steps.version.outputs.version }}' `
+            'artifacts/Paper.ScreenWizzard-${{ steps.version.outputs.version }}-win-x64.msi' `
+            'artifacts/Paper.ScreenWizzard-${{ steps.version.outputs.version }}-win-x64.zip' `
+            'artifacts/SHA256SUMS.txt'
