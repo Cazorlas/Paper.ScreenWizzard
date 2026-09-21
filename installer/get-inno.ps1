@@ -23,7 +23,11 @@ if (-not (Test-Path $iscc)) {
     $installer = Join-Path $tools "innosetup-$Version.exe"
     if (-not (Test-Path $installer)) {
         $url = "https://github.com/jrsoftware/issrc/releases/download/is-$($Version.Replace('.', '_'))/innosetup-$Version.exe"
-        Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $installer
+        # GitHub's release downloads answer 504 now and then; a build must not fail for that.
+        for ($attempt = 1; ; $attempt++) {
+            try { Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $installer; break }
+            catch { if ($attempt -ge 5) { throw }; Write-Host "download failed ($($_.Exception.Message)); attempt $attempt of 5"; Start-Sleep -Seconds (10 * $attempt) }
+        }
     }
     $actual = (Get-FileHash -Algorithm SHA256 $installer).Hash.ToLower()
     if ($actual -ne $Sha256) { Remove-Item $installer -Force; throw "innosetup-$Version.exe has SHA-256 $actual, expected $Sha256" }
