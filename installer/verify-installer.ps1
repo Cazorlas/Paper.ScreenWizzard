@@ -47,19 +47,32 @@ if (-not (Test-Path -LiteralPath $Setup)) {
 $Setup = (Resolve-Path -LiteralPath $Setup).Path
 
 # ---- helpers ------------------------------------------------------------------------------------------------------------
+# Waits for THIS process only (not for whatever it started), and gives up after a while: a stuck installer must fail the check, not the run.
+function Wait-Exit([string]$file, [string[]]$arguments, [int]$seconds = 180) {
+    $process = Start-Process $file -ArgumentList $arguments -PassThru
+    if (-not $process.WaitForExit($seconds * 1000)) {
+        Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+        Write-Host "[timeout] $file did not finish in $seconds seconds"
+        return -999
+    }
+    return $process.ExitCode
+}
+
 function Run-Setup([string]$path, [string]$folder, [string]$log, [string]$language) {
     $arguments = @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/LOG=`"$log`"")
     if ($folder) { $arguments += "/DIR=`"$folder`"" }
     if ($language) { $arguments += "/LANG=$language" }
-    return (Start-Process $path -ArgumentList $arguments -Wait -PassThru).ExitCode
+    Write-Host "  ... $(Split-Path -Leaf $path) $language"
+    return (Wait-Exit $path $arguments)
 }
 
 function Run-Uninstall([string]$folder) {
     $unins = Join-Path $folder 'unins000.exe'
     if (-not (Test-Path $unins)) { return -1 }
-    $code = (Start-Process $unins -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART') -Wait -PassThru).ExitCode
-    # The uninstaller hands the last deletions to a helper that outlives it: wait for the folder to go.
-    for ($i = 0; $i -lt 40 -and (Test-Path $folder); $i++) { Start-Sleep -Milliseconds 250 }
+    Write-Host '  ... unins000.exe'
+    $code = Wait-Exit $unins @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART')
+    # The uninstaller hands the work to a copy of itself in the temp folder and returns at once: wait for the folder and that copy to go.
+    for ($i = 0; $i -lt 240 -and ((Test-Path $folder) -or (Get-Process -Name 'unins*' -ErrorAction SilentlyContinue)); $i++) { Start-Sleep -Milliseconds 250 }
     return $code
 }
 

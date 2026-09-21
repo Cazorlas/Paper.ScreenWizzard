@@ -110,7 +110,8 @@ begin
   if RegQueryStringValue(HKCU, UninstallKey, 'DisplayVersion', Installed) then
     if VersionNumber(Installed) > VersionNumber('{#Version}') then
     begin
-      MsgBox(FmtMessage(CustomMessage('NewerInstalled'), [Installed]), mbInformation, MB_OK);
+      // Suppressible: a silent Setup (/SUPPRESSMSGBOXES) must not wait for a click nobody will make.
+      SuppressibleMsgBox(FmtMessage(CustomMessage('NewerInstalled'), [Installed]), mbInformation, MB_OK, IDOK);
       Result := False;
     end;
 end;
