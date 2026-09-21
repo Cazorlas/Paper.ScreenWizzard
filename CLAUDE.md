@@ -74,19 +74,22 @@ Luật chung ở skill `paper-wpf-style`, `references/build-and-deploy.md`; đâ
 - **CI:** `.github/workflows/ci.yml` — `windows-latest`, `dotnet build -c Release` (cảnh báo là lỗi) rồi test
   project `UnitTests`. **`ui` và `e2e` chạy ở máy người làm, không lên CI** (cần desktop tương tác); kết quả của
   chúng là dòng bằng chứng của plan. Đọc số test đã chạy, không chỉ exit code.
-- **Gói:** `installer/build-package.ps1 -Version x.y.z` (verb `package`) ra ba file ở `artifacts/`: `Paper.ScreenWizzard-<x.y.z>-win-x64.msi`
-  (file cài), `….zip` (bản di động) và `SHA256SUMS.txt`. `win-x64`, self-contained, một file (`PublishSingleFile`), không
-  `PublishTrimmed` (WPF không trim được), không cần quyền quản trị (manifest `asInvoker`; MSI cài theo người dùng).
-- **File cài:** MSI dựng bằng WiX 6 (`installer/Package.wxs`, công cụ ghim ở `dotnet-tools.json`), quyết định ở
-  [ADR 0002](docs/decisions/0002-file-cai-msi-wix.md) (`Proposed`). Luật của nó ở `docs/features/release/SPEC.md`. Biểu tượng của
-  exe là `src/Paper.ScreenWizzard.App/app.ico`, vẽ bằng `installer/make-icon.ps1` (chỉ chạy khi hình đổi).
-- **Kiểm file cài:** `installer/verify-installer.ps1 -Msi <file>` cài, chạy, cài đè, hạ bản, sửa chữa và gỡ **thật** trong thư mục
+- **Gói:** `installer/build-package.ps1 -Version x.y.z` (verb `package`) ra ba file ở `artifacts/`:
+  `Paper.ScreenWizzard-<x.y.z>-win-x64-Setup.exe` (file cài), `Paper.ScreenWizzard-<x.y.z>-win-x64.zip` (bản di động) và
+  `SHA256SUMS.txt`. `win-x64`, self-contained, một file (`PublishSingleFile`, không nén), không `PublishTrimmed` (WPF không trim
+  được), không cần quyền quản trị (manifest `asInvoker`; file cài theo người dùng).
+- **File cài:** Inno Setup 6.7.3 (`installer/Setup.iss`), hai ngôn ngữ tiếng Anh và tiếng Việt theo Windows
+  (`installer/Languages/Vietnamese.isl`); quyết định ở [ADR 0002](docs/decisions/0002-file-cai-setup-exe-inno.md) (`Proposed`). Bộ
+  biên dịch do `installer/get-inno.ps1` tải và cài vào `.tools/inno` (ghim SHA-256, không đụng máy). Luật của file cài ở
+  `docs/features/release/SPEC.md`. **Một hình biểu tượng** cho mọi nơi: `src/Paper.ScreenWizzard.App/app.ico` (cả khay đọc từ exe),
+  vẽ bằng `installer/make-icon.ps1` (chỉ chạy khi hình đổi; nó cũng ra `installer/wizard-small.bmp`).
+- **Kiểm file cài:** `installer/verify-installer.ps1 -Setup <file>` cài, chạy, cài đè, hạ bản, cài lại và gỡ **thật** trong thư mục
   thử rồi trả máy về như cũ; exit 0 chỉ khi mọi kiểm tra đạt và số kiểm tra > 0. Nó từ chối chạy khi một bản của ứng dụng đang
-  chạy hoặc đã cài (nó sẽ đóng hay thay bản đó). Chạy sau mỗi lần đổi `installer/` hay `Package.wxs`.
+  chạy hoặc đã cài (nó sẽ đóng hay thay bản đó). Chạy sau mỗi lần đổi `installer/`.
 - **Phát hành:** đẩy thẻ `v<x.y.z>` → `.github/workflows/release.yml` dựng, chạy unit, dựng gói, chạy `verify-installer.ps1` rồi tạo
-  **bản nháp** release kèm ba file; Hùng bấm Publish. Chạy tay (`workflow_dispatch`) chỉ dựng và kiểm, không tạo release.
-  **Agent không tự đẩy thẻ hay tạo release** — chỉ khi Hùng nói trong phiên đó.
-- **Chưa có (nợ, chưa quyết):** ký số (cần chứng chỉ), cập nhật tự động, giao diện cài tiếng Việt, MSIX. Mỗi thứ là một ADR riêng.
+  **bản nháp** release kèm ba file. Chạy tay (`workflow_dispatch`) chỉ dựng và kiểm, không tạo release. **Agent không tự đẩy thẻ,
+  tạo release hay bấm Publish** — chỉ khi Hùng nói trong phiên đó (2026-09-21: Hùng nói làm bản đầu và thẻ đầu).
+- **Chưa có (nợ, chưa quyết):** ký số (cần chứng chỉ), cập nhật tự động, MSI. Mỗi thứ là một ADR riêng.
 
 ## Việc đang làm
 

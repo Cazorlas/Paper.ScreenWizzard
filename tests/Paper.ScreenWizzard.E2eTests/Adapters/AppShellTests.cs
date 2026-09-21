@@ -104,4 +104,60 @@ public sealed class AppShellTests
         using var next = new SingleInstance(instance);
         Assert.That(next.TryBecomeFirstInstance(), Is.True, "Exit released the mutex");
     }
+
+    [Test]
+    public void AHotkeyAnotherProgramHolds_IsToldByAToastAtStart_NotByAnErrorBoxThatMustBeClosed()
+    {
+        // Seen by the owner on 2026-09-21: a box "These hotkeys could not be registered" that had to be closed at every start
+        // (Windows at logon, the installer's "run now") because Alt+PrintScreen and Ctrl+PrintScreen are held on that PC. The
+        // hotkey still does not work, the user is still told which one and why, but nothing is left on the screen to dismiss.
+        using var scratch = new ScratchFolder();
+        var instance = "Paper.ScreenWizzard.E2E." + Guid.NewGuid().ToString("N");
+        var seeded = StoresTests.EveryFieldChanged() with
+        {
+            Hotkeys = new Dictionary<CaptureKind, HotkeyChord>
+            {
+                [CaptureKind.Rectangle] = F13,
+                [CaptureKind.Freeform] = F14,
+                [CaptureKind.Window] = F15,
+                [CaptureKind.FullScreen] = new(Chorded, "F16"),
+            },
+            SaveFolder = Path.Combine(scratch.Path, "shots"),
+            StartWithWindows = false,
+            Language = AppLanguage.English,
+            Theme = AppTheme.Light,
+            CaptureBarPosition = null,
+        };
+        Assert.That(new SettingsStore(scratch.Path).Save(seeded).Success, Is.True, "set-up: the seeded settings file");
+        using var rig = new HotkeyRig();
+        var holder = rig.NewService();
+        Assert.That(Register(holder, CaptureKind.Freeform, F14).Success, Is.True, "set-up: another program holds F14");
+
+        var (errorBoxes, toasts) = StaHost.Instance.Invoke(() =>
+        {
+            var provider = CompositionRoot.Build(new StartupOptions(scratch.Path, instance, Autostart: true), () => { });
+            try
+            {
+                var shell = provider.GetRequiredService<AppShell>();
+                Assert.That(shell.Start(), Is.True, "the app runs although one hotkey could not be registered");
+                Application.Current.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Background);
+                var found = (
+                    Application.Current.Windows.OfType<ErrorDialogWindow>().Count(),
+                    Application.Current.Windows.OfType<ToastWindow>().Count());
+                foreach (var window in Application.Current.Windows.OfType<Window>().Where(w => w is ErrorDialogWindow or ToastWindow).ToList())
+                {
+                    window.Close();
+                }
+
+                return found;
+            }
+            finally
+            {
+                provider.Dispose();
+            }
+        });
+
+        Assert.That(errorBoxes, Is.Zero, "no error box to close");
+        Assert.That(toasts, Is.EqualTo(1), "one toast names the hotkey");
+    }
 }

@@ -21,9 +21,9 @@ Nằm ở khay hệ thống, gọi bằng phím tắt hoặc thanh chụp nổi.
 
 ## Cài đặt
 
-Tải bản mới nhất ở mục Releases của repo: `Paper.ScreenWizzard-<số phiên bản>-win-x64.msi` (bấm đúp, không cần quyền quản trị,
-không cần cài .NET) hoặc `….zip` (bản di động, giải nén ở đâu cũng chạy). Gỡ bằng Cài đặt của Windows, Ứng dụng; cài đặt và ảnh
-của bạn ở `%AppData%\Paper\ScreenWizzard` được giữ lại. Chưa ký số nên SmartScreen có thể hỏi lần đầu: Thông tin thêm, Vẫn chạy.
+Tải bản mới nhất ở mục Releases của repo: `Paper.ScreenWizzard-<số phiên bản>-win-x64-Setup.exe` (bấm đúp, tiếng Việt hoặc tiếng Anh theo Windows,
+không cần quyền quản trị, không cần cài .NET) hoặc `….zip` (bản di động, giải nén ở đâu cũng chạy). Gỡ bằng Cài đặt của Windows, Ứng dụng; cài đặt và ảnh
+của bạn ở `%AppData%\Paper\ScreenWizzard` được giữ lại. Chưa ký số nên Windows SmartScreen có thể hiện hộp xanh lần đầu: bấm Thông tin thêm, rồi Vẫn chạy.
 Luật đầy đủ: [SPEC file cài](docs/features/release/SPEC.md).
 
 ## Dựng và thử
@@ -37,11 +37,11 @@ dotnet test tests/Paper.ScreenWizzard.UiTests       # cửa sổ thật trên d�
 dotnet test tests/Paper.ScreenWizzard.E2eTests      # adapter thật và chính file exe; dùng chuột và bàn phím thật
 ```
 
-Dựng file cài (cần .NET 10 SDK; công cụ WiX tự được khôi phục):
+Dựng file cài (cần .NET 10 SDK; bộ biên dịch Inno Setup tự được tải vào `.tools/`):
 
 ```
-powershell -File installer/build-package.ps1 -Version 1.0.0          # ra artifacts/: .msi, .zip, SHA256SUMS.txt
-powershell -File installer/verify-installer.ps1 -Msi artifacts/Paper.ScreenWizzard-1.0.0-win-x64.msi   # cài, cài đè, gỡ thật
+powershell -File installer/build-package.ps1 -Version 1.0.0          # ra artifacts/: Setup.exe, .zip, SHA256SUMS.txt
+powershell -File installer/verify-installer.ps1 -Setup artifacts/Paper.ScreenWizzard-1.0.0-win-x64-Setup.exe   # cài, cài đè, gỡ thật
 ```
 
 Hai bộ test cuối điều khiển màn hình thật: đóng bản Paper.ScreenWizzard đang chạy trước khi chạy chúng. CI (GitHub Actions) dựng

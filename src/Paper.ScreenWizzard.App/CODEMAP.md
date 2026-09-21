@@ -12,7 +12,7 @@ the tray icon; the environment variables `PAPER_SCREENWIZZARD_DATA` and `PAPER_S
 | `Startup/CompositionRoot.cs` | which adapter implements which port, and the view-model and service graph |
 | `Startup/StartupOptions.cs` | the flag and the two environment variables |
 | `Startup/AppShell.cs` | the run of the app: start, hotkeys to captures, the bar, Settings, Open image, exit |
-| `Startup/TrayIcon.cs`, `TrayIconImage.cs` | the `NotifyIcon` and the icon it draws |
+| `Startup/TrayIcon.cs`, `TrayIconImage.cs` | the `NotifyIcon` and its icon (the exe's own, `app.ico`) |
 | `Startup/SettingsHolder.cs` | the settings the running app uses |
 | `Startup/NativeMethods.cs` | the few Win32 calls the shell needs (bar position) |
 | `Startup/AppStrings.en.xaml`, `AppStrings.vi.xaml` | the texts of the crash box and the open-image dialog |

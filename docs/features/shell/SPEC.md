@@ -111,7 +111,7 @@ Biểu tượng khay, thanh chụp, cài đặt, phím tắt, phiên bản đang
 | F4 | phím tắt đặt mới bị từ chối | phím cũ **vẫn hoạt động**; thông báo nêu lý do (chữ đơn, trùng trong ứng dụng, hoặc ứng dụng khác đang giữ) |
 | F5 | thư mục lưu nhập vào không tồn tại | Cài đặt hỏi có tạo thư mục không; không đồng ý thì **không lưu** giá trị đó và thư mục cũ giữ nguyên |
 | F6 | mở ứng dụng lần hai | không có bản mới; bản đầu hiện thanh chụp; không có thông báo lỗi |
-| F7 | không đăng ký được một phím tắt lúc khởi động | thông báo nêu phím nào; ứng dụng và các phím khác vẫn chạy |
+| F7 | không đăng ký được một phím tắt lúc khởi động | một thông báo nhỏ tự tắt nêu phím nào (không có hộp phải đóng, vì trên máy có phím bị giữ thì lần nào mở cũng gặp); ứng dụng và các phím khác vẫn chạy |
 
 ## Assumptions
 
@@ -133,7 +133,6 @@ Biểu tượng khay, thanh chụp, cài đặt, phím tắt, phiên bản đang
 ## What it does not do yet
 
 - Phím tắt đang do chính ứng dụng giữ không ghi được vào ô phím của Cài đặt (Windows đưa phím cho ứng dụng, không cho ô); bấm nó khi Cài đặt mở không làm gì. Đề xuất: nhả các phím trong lúc Cài đặt mở. Chờ Hùng quyết.
-- Khởi động bằng `--autostart` mà một phím không đăng ký được: hiện hộp lỗi lúc đăng nhập. Đề xuất: chỉ báo một dòng nhỏ. Chờ Hùng quyết.
 - Một trường thiếu trong file cài đặt vẫn bị coi là file hỏng; phải đổi thành giá trị mặc định trước khi thêm cài đặt ở đợt 2.
 - Alt+PrintScreen và Ctrl+PrintScreen mặc định không đăng ký được trên máy đã thử (Windows hay chương trình khác giữ): người dùng đổi phím trong Cài đặt.
 - Cập nhật tự động, bộ cài, và ký số file chạy.

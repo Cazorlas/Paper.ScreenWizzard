@@ -7,3 +7,5 @@ TestResults/
 artifacts/
 # Screenshots the ui / e2e lanes take to be looked at; the evidence is the plan's row, not the picture.
 tests/**/shots/
+# The project's own copy of the Inno Setup compiler (installer/get-inno.ps1).
+.tools/

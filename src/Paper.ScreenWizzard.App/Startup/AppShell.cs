@@ -135,7 +135,17 @@ public sealed class AppShell : IDisposable
         // What went wrong at start (a corrupt settings file, a hotkey another program holds) is said once the language is right.
         foreach (var notice in started.Notices)
         {
-            _notifications.ShowError(notice);
+            // A hotkey that is not available does not stop anything else, and on some PCs it is so at every start (Windows or a
+            // screenshot tool holds Alt+PrintScreen): a box to close each time is the wrong size of message, so it is a toast.
+            // A settings file that was corrupt or unreadable is different: the user's choices are gone or at stake, so that stays a box.
+            if (notice.Key is "Shell.HotkeyUnavailableAtStart" or "Shell.HotkeyUnsafeAtStart")
+            {
+                _notifications.ShowToast(notice);
+            }
+            else
+            {
+                _notifications.ShowError(notice);
+            }
         }
 
         if (started.ShowCaptureBar && !_options.Autostart)
