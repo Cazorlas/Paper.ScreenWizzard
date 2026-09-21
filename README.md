@@ -41,7 +41,7 @@ Dựng file cài, ba cách (đều cần .NET 10 SDK):
 
 - **Bấm đúp** `installer/Build-Installer.cmd` (thêm số phiên bản nếu muốn: `Build-Installer.cmd 1.2.3`): ra `Setup.exe`, bản zip và
   `SHA256SUMS.txt` ở `artifacts/`. Bộ biên dịch Inno Setup tự được tải vào `.tools/`, không cần cài Inno Setup.
-- **Mở `installer/Setup.iss` bằng Inno Setup** rồi bấm Compile (Ctrl+F9): đủ để ra `Setup.exe` ở `artifacts/`; nếu app chưa được
+- **Mở `installer/Setup.iss` bằng Inno Setup** (đã thử với 6.7.3 và 7.1.0) rồi bấm Compile (Ctrl+F9): đủ để ra `Setup.exe` ở `artifacts/`; nếu app chưa được
   publish thì chính file này publish trước. Đổi `Version` ở đầu file khi ra bản khác.
 - **Dòng lệnh:**
 
