@@ -78,7 +78,8 @@ Luật chung ở skill `paper-wpf-style`, `references/build-and-deploy.md`; đâ
   `Paper.ScreenWizzard-<x.y.z>-win-x64-Setup.exe` (file cài), `Paper.ScreenWizzard-<x.y.z>-win-x64.zip` (bản di động) và
   `SHA256SUMS.txt`. `win-x64`, self-contained, một file (`PublishSingleFile`, không nén), không `PublishTrimmed` (WPF không trim
   được), không cần quyền quản trị (manifest `asInvoker`; file cài theo người dùng).
-- **File cài:** Inno Setup 6.7.3 (`installer/Setup.iss`), hai ngôn ngữ tiếng Anh và tiếng Việt theo Windows
+- **File cài:** Inno Setup 6.7.3 (`installer/Setup.iss`, tự đủ: mở bằng Inno Setup rồi Compile là ra `Setup.exe`, thiếu exe thì tự publish;
+  hoặc bấm đúp `installer/Build-Installer.cmd`), hai ngôn ngữ tiếng Anh và tiếng Việt theo Windows
   (`installer/Languages/Vietnamese.isl`); quyết định ở [ADR 0002](docs/decisions/0002-file-cai-setup-exe-inno.md) (`Proposed`). Bộ
   biên dịch do `installer/get-inno.ps1` tải và cài vào `.tools/inno` (ghim SHA-256, không đụng máy). Luật của file cài ở
   `docs/features/release/SPEC.md`. **Một hình biểu tượng** cho mọi nơi: `src/Paper.ScreenWizzard.App/app.ico` (cả khay đọc từ exe),

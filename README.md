@@ -37,10 +37,16 @@ dotnet test tests/Paper.ScreenWizzard.UiTests       # cửa sổ thật trên d�
 dotnet test tests/Paper.ScreenWizzard.E2eTests      # adapter thật và chính file exe; dùng chuột và bàn phím thật
 ```
 
-Dựng file cài (cần .NET 10 SDK; bộ biên dịch Inno Setup tự được tải vào `.tools/`):
+Dựng file cài, ba cách (đều cần .NET 10 SDK):
+
+- **Bấm đúp** `installer/Build-Installer.cmd` (thêm số phiên bản nếu muốn: `Build-Installer.cmd 1.2.3`): ra `Setup.exe`, bản zip và
+  `SHA256SUMS.txt` ở `artifacts/`. Bộ biên dịch Inno Setup tự được tải vào `.tools/`, không cần cài Inno Setup.
+- **Mở `installer/Setup.iss` bằng Inno Setup** rồi bấm Compile (Ctrl+F9): đủ để ra `Setup.exe` ở `artifacts/`; nếu app chưa được
+  publish thì chính file này publish trước. Đổi `Version` ở đầu file khi ra bản khác.
+- **Dòng lệnh:**
 
 ```
-powershell -File installer/build-package.ps1 -Version 1.0.0          # ra artifacts/: Setup.exe, .zip, SHA256SUMS.txt
+powershell -File installer/build-package.ps1 -Version 1.0.0          # ra artifacts/: Setup.exe, .zip, SHA256SUMS.txt (cùng việc với Build-Installer.cmd)
 powershell -File installer/verify-installer.ps1 -Setup artifacts/Paper.ScreenWizzard-1.0.0-win-x64-Setup.exe   # cài, cài đè, gỡ thật
 ```
 

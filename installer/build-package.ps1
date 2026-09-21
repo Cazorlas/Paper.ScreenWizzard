@@ -35,16 +35,8 @@ function Run([string]$what, [scriptblock]$command) {
 Push-Location $repo
 try {
     # ---- 1. publish -----------------------------------------------------------------------------------------------
-    # The single file is not compressed by .NET: Setup.exe and the zip compress it, and an uncompressed one starts faster.
     $publishDir = Join-Path $OutDir "publish-$Version"
-    if (Test-Path $publishDir) { Remove-Item -Recurse -Force $publishDir }
-    Run 'dotnet publish' {
-        dotnet publish src/Paper.ScreenWizzard.App/Paper.ScreenWizzard.App.csproj -c Release -r win-x64 --self-contained true `
-            -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
-            -p:PublishTrimmed=false -p:DebugType=None -p:DebugSymbols=false `
-            "-p:Version=$Version" -p:IncludeSourceRevisionInInformationalVersion=false `
-            -o $publishDir --nologo -v minimal
-    }
+    & (Join-Path $PSScriptRoot 'publish-app.ps1') -Version $Version -OutDir $publishDir
     $exe = Join-Path $publishDir 'Paper.ScreenWizzard.exe'
     if (-not (Test-Path $exe)) { throw "publish did not produce $exe" }
 

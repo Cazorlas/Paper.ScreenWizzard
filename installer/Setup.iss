@@ -1,9 +1,12 @@
-﻿; The Paper.ScreenWizzard installer (docs/features/release/SPEC.md). Built by installer/build-package.ps1, which passes:
-;   Version      x.y.z, from the release tag
-;   PublishDir   the folder `dotnet publish` wrote (one self-contained exe)
-;   IconFile     src/Paper.ScreenWizzard.App/app.ico
-;   LicenseFile  LICENSE
-;   OutDir       where Setup.exe is written
+﻿; The Paper.ScreenWizzard installer (docs/features/release/SPEC.md).
+;
+; TWO WAYS TO BUILD IT
+;   1. In the Inno Setup compiler: open this file and press Compile (Ctrl+F9). Nothing else is needed: if the app has not been
+;      published yet this file publishes it first (installer\publish-app.ps1, which needs the .NET 10 SDK), then packs it. The
+;      Setup.exe appears in ..rtifacts. Change Version below when you cut another version.
+;   2. From a command line: installeruild-package.ps1 -Version x.y.z  (Setup.exe, the portable zip and SHA256SUMS.txt; it fetches
+;      its own Inno Setup compiler, so Inno Setup need not be installed). The release workflow uses this one.
+; Either way the values below can be overridden with /DName=value (Version, PublishDir, IconFile, LicenseFile, OutDir).
 ;
 ; Per user, not per machine: no administrator rights, files under %LocalAppData%\Programs, the shortcut in the user's Start menu,
 ; the entry in Apps under the user's own registry. The "run at logon" value is written by the app when the user turns it on in
@@ -13,8 +16,28 @@
 ; Two languages: English and Vietnamese, chosen from the Windows display language (a choice box appears only when Windows is in
 ; neither). The Vietnamese messages are the community translation in Languages\Vietnamese.isl (from Inno Setup's own repository).
 
+; (Paths below use forward slashes: the preprocessor reads a backslash followed by a letter in a string as an escape sequence.)
 #ifndef Version
-  #error Version is not defined (pass /DVersion=x.y.z)
+  #define Version "0.1.0"
+#endif
+#ifndef IconFile
+  #define IconFile SourcePath + "../src/Paper.ScreenWizzard.App/app.ico"
+#endif
+#ifndef LicenseFile
+  #define LicenseFile SourcePath + "../LICENSE"
+#endif
+#ifndef OutDir
+  #define OutDir SourcePath + "../artifacts"
+#endif
+#ifndef PublishDir
+  #define PublishDir SourcePath + "../artifacts/publish-" + Version
+  #if !FileExists(PublishDir + "/Paper.ScreenWizzard.exe")
+    #pragma message "The app is not published yet: running installer/publish-app.ps1 (dotnet publish, about a minute)."
+    #define PublishStatus Exec("powershell.exe", "-NoProfile -ExecutionPolicy Bypass -File """ + SourcePath + "publish-app.ps1"" -Version " + Version + " -OutDir """ + PublishDir + """", SourcePath, 1, 1)
+    #if !FileExists(PublishDir + "/Paper.ScreenWizzard.exe")
+      #error The app could not be published. Install the .NET 10 SDK, or run installer/publish-app.ps1 by hand and read its error.
+    #endif
+  #endif
 #endif
 #define AppName "Paper.ScreenWizzard"
 #define AppExe "Paper.ScreenWizzard.exe"
@@ -63,7 +86,7 @@ en.RunNow=Run {#AppName} now
 vi.RunNow=Chạy {#AppName} ngay
 
 [Files]
-Source: "{#PublishDir}\{#AppExe}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#PublishDir}/{#AppExe}"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{autoprograms}\{#AppName}"; Filename: "{app}\{#AppExe}"
@@ -136,9 +159,10 @@ begin
   Result := True;
 end;
 
-// The "start with Windows" value belongs to the app; with the app gone it would point at nothing.
+// The "start with Windows" value belongs to the app; with the app gone it would point at nothing. It goes at the START of the
+// uninstall, before any file, so that the folder being gone always means the value is gone too.
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 begin
-  if CurUninstallStep = usPostUninstall then
+  if CurUninstallStep = usUninstall then
     RegDeleteValue(HKCU, RunKey, '{#AppName}');
 end;
