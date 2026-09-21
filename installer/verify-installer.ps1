@@ -216,6 +216,8 @@ try {
 
     New-Item -ItemType Directory -Force -Path $dataDir | Out-Null
     Set-Content -LiteralPath $marker -Value 'the user data must survive an uninstall'
+    # A fresh profile (a CI runner) may not have the Run key at all.
+    if (-not (Test-Path $runKey)) { New-Item -Path $runKey -Force | Out-Null }
     Set-ItemProperty -Path $runKey -Name $appName -Value "`"$exe`" --autostart"
 
     $code = Install-Msi $higherMsi $installDir (Join-Path $Work 'upgrade.log')
