@@ -15,10 +15,15 @@
 # What does not: anything inside a fenced block (content being shown, not a reference), a web URL, a file
 # that is not markdown, and a rule code such as F20.
 #
-# And what it refuses to pass: a link that looks right and does not open. Measured 2026-09-20 in a
-# repository with a space in its path - the link went out with the space written %20 and did not open,
-# for a whole session, with nothing to say so until the user did. That is worse than a bare name, which at
-# least tells the reader to go and look. The form that opened is angle brackets around the path.
+# And what it refuses to pass: a link that looks right and does not open. Two of those were measured:
+#   - 2026-09-20, a relative path with its space written %20, in the VS Code chat: did not open.
+#   - 2026-09-22, every RELATIVE link, in the Claude Code CLI (Ctrl+click in the terminal): did not open.
+#     The terminal has no idea which folder the path is relative to. The same session measured five
+#     ABSOLUTE forms and all five opened: file:///D:/.../My%20Project/x.md, the same with #L264, that URL as
+#     a markdown link target, [x](<D:/.../My Project/x.md>), and a bare D:\...\x.md:264. So a link counts
+#     only when its target is absolute - a drive path (C:/ or C:\), a UNC path, or a file:/// URL - and
+#     %20 is fine inside a file:/// URL, where it is the URL's own spelling of a space.
+# Either is worse than a bare name, which at least tells the reader to go and look.
 #
 # ASCII only: PowerShell 5.1 reads a .ps1 without a BOM as ANSI.
 
@@ -44,10 +49,18 @@ function Get-PaperLinkNagVerdict {
     $linked = New-Object System.Collections.Generic.HashSet[string] ([System.StringComparer]::OrdinalIgnoreCase)
     $linksAPlan = $false
     $brokenLinks = New-Object System.Collections.Generic.List[string]
+    $relativeLinks = New-Object System.Collections.Generic.List[string]
+    $absolute = '^(?i)(file:///|[a-z]:[\\/]|\\\\)'
     foreach ($m in [regex]::Matches($body, $linkPattern)) {
         $label = $m.Groups[1].Value
         $target = $m.Groups[2].Value.Trim('<', '>')
-        if ($target -match '(?i)%20') { $brokenLinks.Add($m.Value) }
+        # A web link is its own way in; only a link to a local file has to be absolute.
+        if ($target -match '^(?i)https?://') { continue }
+        if ($target -notmatch $absolute) {
+            if ($target -match '(?i)\.md\b') { $relativeLinks.Add($m.Value) }
+            continue
+        }
+        if ($target -match '(?i)%20' -and $target -notmatch '^(?i)file:///') { $brokenLinks.Add($m.Value) }
         if ($target -match '(?i)plan\.md') { $linksAPlan = $true }
         foreach ($name in @($target, $label)) {
             $leaf = ($name -replace '#.*$', '') -split '[\\/]' | Select-Object -Last 1
@@ -56,6 +69,13 @@ function Get-PaperLinkNagVerdict {
     }
     $rest = [regex]::Replace($body, $linkPattern, ' ')
     $rest = [regex]::Replace($rest, 'https?://\S+', ' ')
+    # A bare file:/// URL opens too (measured 2026-09-22), and a URL carries no raw space to cut it short.
+    foreach ($m in [regex]::Matches($rest, '(?i)file:///\S+')) {
+        $leaf = ($m.Value -replace '#.*$', '') -split '[\\/]' | Select-Object -Last 1
+        if ($leaf -match '(?i)\.md$') { [void] $linked.Add($leaf) }
+        if ($m.Value -match '(?i)plan\.md') { $linksAPlan = $true }
+    }
+    $rest = [regex]::Replace($rest, '(?i)file:///\S+', ' ')
 
     $bare = New-Object System.Collections.Generic.List[string]
     foreach ($m in [regex]::Matches($rest, '[^\s`''"()\[\]<>,;:!?]+\.md\b(?:#L\d+)?')) {
@@ -71,23 +91,24 @@ function Get-PaperLinkNagVerdict {
         }
     }
 
-    if ($bare.Count -eq 0 -and $tasks.Count -eq 0 -and $brokenLinks.Count -eq 0) { return $quiet }
+    if ($bare.Count -eq 0 -and $tasks.Count -eq 0 -and $brokenLinks.Count -eq 0 -and $relativeLinks.Count -eq 0) { return $quiet }
 
     $lines = New-Object System.Collections.Generic.List[string]
     foreach ($b in @($bare | Select-Object -First 8)) { $lines.Add("  - $b - named, with no link that opens it") }
     if ($tasks.Count -gt 0) {
         $lines.Add('  - ' + (@($tasks | Select-Object -First 8) -join ', ') + ' - task ids, and this reply links no plan for the reader to find them in')
     }
-    foreach ($b in @($brokenLinks | Select-Object -First 4)) { $lines.Add("  - $b - %20 in the target does not open") }
+    foreach ($b in @($relativeLinks | Select-Object -First 8)) { $lines.Add("  - $b - a relative path does not open from the terminal") }
+    foreach ($b in @($brokenLinks | Select-Object -First 4)) { $lines.Add("  - $b - %20 outside a file:/// URL does not open") }
 
     $text = "This reply names documents without a link that opens them (paperflow rule 9):`n`n" + ($lines -join "`n") + @"
 
 
 Resend it with one clickable link per document, measured now rather than remembered:
-  [name](path from the working directory), plus #L<line> when it points at a line - take the number from
-  grep -n right before sending.
-  A path with a space goes in angle brackets: [name](<My Project/docs/x.md>). Never %20: that was measured
-  broken. A file outside the working directory is written with a leading two-dot prefix.
+  [name](<ABSOLUTE path>), plus #L<line> when it points at a line - take the number from grep -n right
+  before sending. Example: [SPEC](<D:/work/My Project/docs/SPEC.md#L12>). Build the path from the
+  working directory the session prints, never from memory. A relative path does not open from the
+  terminal (measured 2026-09-22); angle brackets keep a path with a space in one piece.
   A task is a line in a plan, so link the plan (with #L<line> of the task) whenever you name a task.
 "@
     return [pscustomobject]@{ ExitCode = 2; Text = $text }
