@@ -32,7 +32,7 @@ public partial class EditorWindow : Window
     /// When given, the window opens inside the monitor that holds the pointer (<see cref="EditorWindowPlacement"/>) instead of where WPF
     /// centres it, which is wrong on a monitor whose scale differs from the primary's. Tests that pin the window themselves pass none.
     /// </param>
-    public EditorWindow(EditorViewModel viewModel, IMonitorCatalogPort? monitors = null)
+    public EditorWindow(EditorViewModel viewModel, IMonitorCatalog? monitors = null)
     {
         InitializeComponent();
         _viewModel = viewModel;
@@ -60,7 +60,7 @@ public partial class EditorWindow : Window
 
     // In two steps, like the "Đã chụp" dialog: first the window is put on that monitor so WPF lays it out at that monitor's scale, then, once
     // it has its real size in physical pixels, it is centred there and pulled inside if it is too big for the screen.
-    private void PlaceOnThePointersMonitor(IMonitorCatalogPort monitors)
+    private void PlaceOnThePointersMonitor(IMonitorCatalog monitors)
     {
         var all = monitors.GetMonitors();
         if (EditorWindowPlacement.MonitorFor(all, monitors.GetCursorPosition()) is not { } monitor)

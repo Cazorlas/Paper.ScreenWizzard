@@ -1,7 +1,7 @@
 namespace Paper.ScreenWizzard.UseCases.Shell.Ports;
 
 /// <summary>Keeps two copies of the app from running at once.</summary>
-public interface ISingleInstancePort
+public interface ISingleInstance
 {
     /// <summary>True for the first copy; false when another copy already runs.</summary>
     bool TryBecomeFirstInstance();

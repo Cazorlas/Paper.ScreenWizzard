@@ -46,7 +46,7 @@ public sealed class SettingsViewModel : BindableBase, IDisposable
         IFolderPickerService folderPicker,
         ISettingsPrompts prompts,
         IAppearanceService appearance,
-        INotificationPort notifications,
+        INotifications notifications,
         ILocalizer localizer,
         string systemCultureName)
     {

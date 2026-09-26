@@ -11,7 +11,7 @@ namespace Paper.ScreenWizzard.Infrastructure.Common;
 /// <c>None</c>, so no pixel is decoded by <c>BitmapDecoder.Create</c>) and refuses a picture that is too large before it allocates a byte
 /// for it (SPEC editor F8); anything the three codecs do not read is "not an image" (F2). Pixels come out as B, G, R, A with straight alpha.
 /// </summary>
-public sealed class ImageCodec : IImageCodecPort
+public sealed class ImageCodec : IImageCodec
 {
     /// <summary>The longest side the editor accepts, in pixels.</summary>
     public const int MaxSide = 16384;

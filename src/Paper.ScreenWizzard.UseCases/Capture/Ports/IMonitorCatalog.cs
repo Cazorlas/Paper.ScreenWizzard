@@ -4,7 +4,7 @@ using Paper.ScreenWizzard.Domain.Shared;
 namespace Paper.ScreenWizzard.UseCases.Capture.Ports;
 
 /// <summary>The monitors and the pointer, as plain data.</summary>
-public interface IMonitorCatalogPort
+public interface IMonitorCatalog
 {
     IReadOnlyList<MonitorInfo> GetMonitors();
 

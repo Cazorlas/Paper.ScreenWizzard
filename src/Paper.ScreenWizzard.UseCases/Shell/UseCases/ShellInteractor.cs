@@ -14,19 +14,19 @@ public sealed class ShellInteractor : IShellInteractor
     /// <summary>The gap between the capture bar and the corner of the primary monitor, in physical pixels.</summary>
     private const int BarMargin = 16;
 
-    private readonly ISettingsStorePort _settingsStore;
-    private readonly IHotkeyPort _hotkeys;
-    private readonly IAutostartPort _autostart;
-    private readonly IFileStorePort _files;
-    private readonly ILogPort _log;
+    private readonly ISettingsStore _settingsStore;
+    private readonly IHotkeys _hotkeys;
+    private readonly IAutostart _autostart;
+    private readonly IFileStore _files;
+    private readonly ILog _log;
     private bool _settingsUnreadable;
 
     public ShellInteractor(
-        ISettingsStorePort settingsStore,
-        IHotkeyPort hotkeys,
-        IAutostartPort autostart,
-        IFileStorePort files,
-        ILogPort log)
+        ISettingsStore settingsStore,
+        IHotkeys hotkeys,
+        IAutostart autostart,
+        IFileStore files,
+        ILog log)
     {
         _settingsStore = settingsStore;
         _hotkeys = hotkeys;

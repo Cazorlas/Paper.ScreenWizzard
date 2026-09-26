@@ -17,16 +17,16 @@ public sealed class CaptureSession : ICaptureSession
     private const int MaximizedOverhang = 16;
 
     private readonly FullScreenScope _scope;
-    private readonly IMonitorCatalogPort _monitors;
-    private readonly ILogPort _log;
+    private readonly IMonitorCatalog _monitors;
+    private readonly ILog _log;
     private volatile bool _isActive = true;
 
     public CaptureSession(
         CaptureKind kind,
         FullScreenScope scope,
         DesktopSnapshot snapshot,
-        IMonitorCatalogPort monitors,
-        ILogPort log)
+        IMonitorCatalog monitors,
+        ILog log)
     {
         Kind = kind;
         Snapshot = snapshot;

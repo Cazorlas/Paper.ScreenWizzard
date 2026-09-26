@@ -152,8 +152,8 @@ public sealed class FakePrompts : ISettingsPrompts
     }
 }
 
-/// <summary>An INotificationPort that only records, for the tests that ask "did the view model tell the user".</summary>
-public sealed class RecordingNotifications : INotificationPort
+/// <summary>An INotifications that only records, for the tests that ask "did the view model tell the user".</summary>
+public sealed class RecordingNotifications : INotifications
 {
     public List<NotificationMessage> Toasts { get; } = [];
 

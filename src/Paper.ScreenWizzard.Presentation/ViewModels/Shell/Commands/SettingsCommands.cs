@@ -17,7 +17,7 @@ public sealed class SaveSettingsCommand : CommandBase
     private readonly IShellInteractor _shell;
     private readonly ISettingsPrompts _prompts;
     private readonly IAppearanceService _appearance;
-    private readonly INotificationPort _notifications;
+    private readonly INotifications _notifications;
     private readonly string _systemCultureName;
 
     public SaveSettingsCommand(
@@ -25,7 +25,7 @@ public sealed class SaveSettingsCommand : CommandBase
         IShellInteractor shell,
         ISettingsPrompts prompts,
         IAppearanceService appearance,
-        INotificationPort notifications,
+        INotifications notifications,
         string systemCultureName)
     {
         _owner = owner;

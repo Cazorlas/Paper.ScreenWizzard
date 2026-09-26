@@ -11,7 +11,7 @@ namespace Paper.ScreenWizzard.Infrastructure.Capture;
 /// cannot answer the window rectangle is used. No decisions here: hidden, minimised and cloaked windows are reported with their flags and
 /// the use case chooses.
 /// </summary>
-public sealed class WindowCatalog : IWindowCatalogPort
+public sealed class WindowCatalog : IWindowCatalog
 {
     public IReadOnlyList<WindowInfo> GetWindows()
     {

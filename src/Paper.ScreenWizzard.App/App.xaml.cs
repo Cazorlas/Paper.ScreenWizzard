@@ -79,7 +79,7 @@ public partial class App : Application
         else
         {
             // Before the shell exists there is nobody to show it to yet, but the log can still hold it.
-            _services?.GetService<UseCases.Shared.Ports.ILogPort>()?.Error("Unhandled error in " + where, exception);
+            _services?.GetService<UseCases.Shared.Ports.ILog>()?.Error("Unhandled error in " + where, exception);
         }
     }
 }

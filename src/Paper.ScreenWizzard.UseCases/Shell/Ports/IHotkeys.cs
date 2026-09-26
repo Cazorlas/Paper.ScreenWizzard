@@ -5,7 +5,7 @@ using Paper.ScreenWizzard.UseCases.Shared.Models;
 namespace Paper.ScreenWizzard.UseCases.Shell.Ports;
 
 /// <summary>Global hotkeys. A chord another program holds is a failed Register, not an exception.</summary>
-public interface IHotkeyPort
+public interface IHotkeys
 {
     /// <summary>
     /// Registers <paramref name="chord"/> for <paramref name="kind"/>, replacing that kind's earlier chord. It is atomic: when

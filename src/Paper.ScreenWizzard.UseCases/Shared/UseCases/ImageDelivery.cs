@@ -10,12 +10,12 @@ namespace Paper.ScreenWizzard.UseCases.Shared.UseCases;
 /// </summary>
 public sealed class ImageDelivery : IImageDelivery
 {
-    private readonly IClockPort _clock;
-    private readonly IFileStorePort _files;
-    private readonly IImageCodecPort _codec;
-    private readonly IClipboardPort _clipboard;
+    private readonly IClock _clock;
+    private readonly IFileStore _files;
+    private readonly IImageCodec _codec;
+    private readonly IClipboard _clipboard;
 
-    public ImageDelivery(IClockPort clock, IFileStorePort files, IImageCodecPort codec, IClipboardPort clipboard)
+    public ImageDelivery(IClock clock, IFileStore files, IImageCodec codec, IClipboard clipboard)
     {
         _clock = clock;
         _files = files;

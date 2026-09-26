@@ -16,24 +16,24 @@ namespace Paper.ScreenWizzard.UseCases.Editor.UseCases;
 /// </summary>
 public sealed class EditorInteractor : IEditorInteractor
 {
-    private readonly IFileStorePort _files;
-    private readonly IImageCodecPort _codec;
-    private readonly IClipboardPort _clipboard;
+    private readonly IFileStore _files;
+    private readonly IImageCodec _codec;
+    private readonly IClipboard _clipboard;
     private readonly IImageDelivery _delivery;
-    private readonly IClockPort _clock;
-    private readonly ILogPort _log;
+    private readonly IClock _clock;
+    private readonly ILog _log;
 
     // What the interactor remembers about a session's file, kept beside the session because IEditorSession has no room for it
     // and dies with it: the write time of the file when it was opened or last written, and whether overwriting was agreed.
     private readonly ConditionalWeakTable<IEditorSession, FileState> _fileStates = new();
 
     public EditorInteractor(
-        IFileStorePort files,
-        IImageCodecPort codec,
-        IClipboardPort clipboard,
+        IFileStore files,
+        IImageCodec codec,
+        IClipboard clipboard,
         IImageDelivery delivery,
-        IClockPort clock,
-        ILogPort log)
+        IClock clock,
+        ILog log)
     {
         _files = files;
         _codec = codec;

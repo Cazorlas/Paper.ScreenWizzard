@@ -46,7 +46,7 @@ public sealed class SelectionFinishedEventArgs : EventArgs
 /// </summary>
 public sealed class SelectionOverlayViewModel : BindableBase, IDisposable
 {
-    private readonly INotificationPort _notifications;
+    private readonly INotifications _notifications;
     private readonly ILocalizer _localizer;
     private readonly List<PixelPoint> _outline = [];
     private PixelPoint _anchor;
@@ -58,7 +58,7 @@ public sealed class SelectionOverlayViewModel : BindableBase, IDisposable
     private string _hoverTitle = string.Empty;
     private NotificationMessage? _message;
 
-    public SelectionOverlayViewModel(ICaptureSession session, INotificationPort notifications, ILocalizer localizer)
+    public SelectionOverlayViewModel(ICaptureSession session, INotifications notifications, ILocalizer localizer)
     {
         Session = session;
         _notifications = notifications;

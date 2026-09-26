@@ -17,7 +17,7 @@ public sealed class CaptureFixture
     public CaptureFixture()
     {
         Screen = new FakeScreenSource(Events);
-        Delay = new FakeDelayPort(Events);
+        Delay = new FakeDelay(Events);
         Monitors.Monitors.AddRange(CaptureData.SingleMonitor);
     }
 
@@ -30,7 +30,7 @@ public sealed class CaptureFixture
 
     public FakeMonitorCatalog Monitors { get; } = new();
 
-    public FakeDelayPort Delay { get; }
+    public FakeDelay Delay { get; }
 
     public FakeClipboard Clipboard { get; } = new();
 

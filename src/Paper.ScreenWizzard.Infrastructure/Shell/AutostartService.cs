@@ -11,7 +11,7 @@ namespace Paper.ScreenWizzard.Infrastructure.Shell;
 /// page), so a longer one is refused instead of being written where Windows would ignore it. The name, the exe and the key are
 /// constructor parameters so a test uses throw-away values and never the real entry.
 /// </summary>
-public sealed class AutostartService : IAutostartPort
+public sealed class AutostartService : IAutostart
 {
     public const string DefaultRunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
     public const string AutostartFlag = "--autostart";

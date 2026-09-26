@@ -10,9 +10,9 @@ public sealed class ShellFixture
 {
     public FakeSettingsStore Store { get; } = new();
 
-    public FakeHotkeyPort Hotkeys { get; } = new();
+    public FakeHotkeys Hotkeys { get; } = new();
 
-    public FakeAutostartPort Autostart { get; } = new();
+    public FakeAutostart Autostart { get; } = new();
 
     public FakeFileStore Files { get; } = new();
 
@@ -64,7 +64,7 @@ public static class ShellData
         null);
 
     /// <summary>The defaults registered on a fake port, as a running app would have them.</summary>
-    public static void RegisterAll(FakeHotkeyPort port, AppSettings settings)
+    public static void RegisterAll(FakeHotkeys port, AppSettings settings)
     {
         foreach (var pair in settings.Hotkeys)
         {

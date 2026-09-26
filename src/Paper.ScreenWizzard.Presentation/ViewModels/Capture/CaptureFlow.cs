@@ -25,7 +25,7 @@ public sealed class CaptureFlow
 
     private readonly ICaptureInteractor _interactor;
     private readonly ICaptureViews _views;
-    private readonly INotificationPort _notifications;
+    private readonly INotifications _notifications;
     private readonly IFileDialogService _fileDialogs;
     private readonly ILocalizer _localizer;
     private readonly Func<AppSettings> _settings;
@@ -38,7 +38,7 @@ public sealed class CaptureFlow
     public CaptureFlow(
         ICaptureInteractor interactor,
         ICaptureViews views,
-        INotificationPort notifications,
+        INotifications notifications,
         IFileDialogService fileDialogs,
         ILocalizer localizer,
         Func<AppSettings> settings)

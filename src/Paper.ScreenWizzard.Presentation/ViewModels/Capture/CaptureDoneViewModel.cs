@@ -19,7 +19,7 @@ namespace Paper.ScreenWizzard.Presentation.ViewModels.Capture;
 /// </summary>
 public sealed class CaptureDoneViewModel : BindableBase, IDisposable
 {
-    private readonly INotificationPort _notifications;
+    private readonly INotifications _notifications;
     private readonly ILocalizer _localizer;
     private NotificationMessage? _error;
 
@@ -28,7 +28,7 @@ public sealed class CaptureDoneViewModel : BindableBase, IDisposable
         PixelImage image,
         AppSettings settings,
         IFileDialogService fileDialogs,
-        INotificationPort notifications,
+        INotifications notifications,
         ILocalizer localizer)
     {
         Image = image;

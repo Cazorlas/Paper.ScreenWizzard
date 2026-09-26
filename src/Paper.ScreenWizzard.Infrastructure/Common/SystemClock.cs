@@ -3,7 +3,7 @@ using Paper.ScreenWizzard.UseCases.Shared.Ports;
 namespace Paper.ScreenWizzard.Infrastructure.Common;
 
 /// <summary>The wall clock (local time).</summary>
-public sealed class SystemClock : IClockPort
+public sealed class SystemClock : IClock
 {
     public DateTime Now => DateTime.Now;
 }

@@ -10,7 +10,7 @@ namespace Paper.ScreenWizzard.Infrastructure.Capture;
 /// virtual-desktop coordinates; each answers its rectangle and primary flag through <c>GetMonitorInfo</c> and its effective DPI through
 /// <c>GetDpiForMonitor</c> (per-monitor-aware process, so the true value). The primary monitor comes first, then left to right.
 /// </summary>
-public sealed class MonitorCatalog : IMonitorCatalogPort
+public sealed class MonitorCatalog : IMonitorCatalog
 {
     public IReadOnlyList<MonitorInfo> GetMonitors()
     {

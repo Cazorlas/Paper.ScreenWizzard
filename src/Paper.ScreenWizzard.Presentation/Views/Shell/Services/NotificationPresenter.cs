@@ -10,7 +10,7 @@ namespace Paper.ScreenWizzard.Presentation.Views.Shell.Services;
 /// The text comes from <see cref="ILocalizer"/> in the language in use. May be called from any thread; the window is made on
 /// the UI thread.
 /// </summary>
-public sealed class NotificationPresenter : INotificationPort
+public sealed class NotificationPresenter : INotifications
 {
     private readonly ILocalizer _localizer;
 

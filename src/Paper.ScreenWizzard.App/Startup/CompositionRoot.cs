@@ -39,21 +39,21 @@ public static class CompositionRoot
         services.AddSingleton(shutdown);
 
         // Adapters: one per port. The hotkey service and the single-instance guard are registered as themselves too, so the container disposes them.
-        services.AddSingleton<IClockPort, SystemClock>();
-        services.AddSingleton<IDelayPort, TaskDelay>();
-        services.AddSingleton<ILogPort>(_ => new FileLogger(options.DataRoot));
-        services.AddSingleton<IFileStorePort, FileStore>();
-        services.AddSingleton<IImageCodecPort, ImageCodec>();
-        services.AddSingleton<IClipboardPort, ClipboardService>();
-        services.AddSingleton<IScreenSourcePort, ScreenSource>();
-        services.AddSingleton<IWindowCatalogPort, WindowCatalog>();
-        services.AddSingleton<IMonitorCatalogPort, MonitorCatalog>();
-        services.AddSingleton<ISettingsStorePort>(_ => new SettingsStore(options.DataRoot));
+        services.AddSingleton<IClock, SystemClock>();
+        services.AddSingleton<IDelay, TaskDelay>();
+        services.AddSingleton<ILog>(_ => new FileLogger(options.DataRoot));
+        services.AddSingleton<IFileStore, FileStore>();
+        services.AddSingleton<IImageCodec, ImageCodec>();
+        services.AddSingleton<IClipboard, ClipboardService>();
+        services.AddSingleton<IScreenSource, ScreenSource>();
+        services.AddSingleton<IWindowCatalog, WindowCatalog>();
+        services.AddSingleton<IMonitorCatalog, MonitorCatalog>();
+        services.AddSingleton<ISettingsStore>(_ => new SettingsStore(options.DataRoot));
         services.AddSingleton(_ => new HotkeyService("Paper.ScreenWizzard.Hotkeys." + options.InstanceName));
-        services.AddSingleton<IHotkeyPort>(sp => sp.GetRequiredService<HotkeyService>());
-        services.AddSingleton<IAutostartPort>(_ => new AutostartService(options.InstanceName));
+        services.AddSingleton<IHotkeys>(sp => sp.GetRequiredService<HotkeyService>());
+        services.AddSingleton<IAutostart>(_ => new AutostartService(options.InstanceName));
         services.AddSingleton(_ => new SingleInstance(options.InstanceName));
-        services.AddSingleton<ISingleInstancePort>(sp => sp.GetRequiredService<SingleInstance>());
+        services.AddSingleton<ISingleInstance>(sp => sp.GetRequiredService<SingleInstance>());
 
         // Use cases.
         services.AddSingleton<IImageDelivery, ImageDelivery>();
@@ -66,14 +66,14 @@ public static class CompositionRoot
         services.AddSingleton<ILocalizer>(sp => sp.GetRequiredService<LanguageService>());
         services.AddSingleton<ThemeService>();
         services.AddSingleton<IAppearanceService, AppearanceService>();
-        services.AddSingleton<INotificationPort, NotificationPresenter>();
+        services.AddSingleton<INotifications, NotificationPresenter>();
         services.AddSingleton<IFolderPickerService, FolderPickerService>();
         services.AddSingleton<ISettingsPrompts, SettingsPrompts>();
         services.AddSingleton<IFileDialogService, FileDialogService>();
         services.AddSingleton<IEditorPrompts, WpfEditorPrompts>();
         services.AddSingleton<IEditorFlattener, WpfImageFlattener>();
         services.AddSingleton<ICaptureViews, WpfCaptureViews>();
-        services.AddSingleton<IEditorViews>(sp => new WpfEditorViews(sp.GetRequiredService<IMonitorCatalogPort>()));
+        services.AddSingleton<IEditorViews>(sp => new WpfEditorViews(sp.GetRequiredService<IMonitorCatalog>()));
 
         // The settings the running app uses, read by the flows on every capture. Defaults until the shell has loaded the real ones.
         services.AddSingleton(_ => new SettingsHolder(SettingsDefaults.Create(PicturesFolder())));
@@ -86,7 +86,7 @@ public static class CompositionRoot
         services.AddSingleton<CaptureFlow>();
         services.AddSingleton(sp => new EditorServices(
             sp.GetRequiredService<IEditorInteractor>(),
-            sp.GetRequiredService<INotificationPort>(),
+            sp.GetRequiredService<INotifications>(),
             sp.GetRequiredService<IFileDialogService>(),
             sp.GetRequiredService<IEditorPrompts>(),
             sp.GetRequiredService<IEditorFlattener>(),

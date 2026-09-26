@@ -14,7 +14,7 @@ namespace Paper.ScreenWizzard.Infrastructure.Common;
 /// tried up to <c>tries</c> times, <c>delayMilliseconds</c> apart (SPEC capture F5). Measured on this Windows: WPF's own SetImage already
 /// retries about a second before it throws, so the total wait for a held clipboard is roughly tries x 1.1 s.
 /// </summary>
-public sealed class ClipboardService : IClipboardPort
+public sealed class ClipboardService : IClipboard
 {
     private readonly int _tries;
     private readonly int _delayMilliseconds;

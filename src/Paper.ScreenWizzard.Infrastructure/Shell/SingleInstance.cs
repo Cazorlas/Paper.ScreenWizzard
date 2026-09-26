@@ -9,7 +9,7 @@ namespace Paper.ScreenWizzard.Infrastructure.Shell;
 /// NOT owned, so no thread has to release it: it lives as long as this object (and the process) does. The name may not contain a
 /// backslash (the Mutex page), so one is replaced.
 /// </summary>
-public sealed class SingleInstance : ISingleInstancePort, IDisposable
+public sealed class SingleInstance : ISingleInstance, IDisposable
 {
     private readonly string _mutexName;
     private readonly string _wakeName;

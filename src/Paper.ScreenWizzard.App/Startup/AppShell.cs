@@ -30,14 +30,14 @@ public sealed class AppShell : IDisposable
 
     private readonly StartupOptions _options;
     private readonly IShellInteractor _shell;
-    private readonly IMonitorCatalogPort _monitors;
-    private readonly IHotkeyPort _hotkeys;
-    private readonly ISingleInstancePort _singleInstance;
-    private readonly INotificationPort _notifications;
+    private readonly IMonitorCatalog _monitors;
+    private readonly IHotkeys _hotkeys;
+    private readonly ISingleInstance _singleInstance;
+    private readonly INotifications _notifications;
     private readonly LanguageService _language;
     private readonly ThemeService _theme;
     private readonly IAppearanceService _appearance;
-    private readonly ILogPort _log;
+    private readonly ILog _log;
     private readonly CaptureFlow _captureFlow;
     private readonly EditorFlow _editorFlow;
     private readonly SettingsHolder _settings;
@@ -56,14 +56,14 @@ public sealed class AppShell : IDisposable
     public AppShell(
         StartupOptions options,
         IShellInteractor shell,
-        IMonitorCatalogPort monitors,
-        IHotkeyPort hotkeys,
-        ISingleInstancePort singleInstance,
-        INotificationPort notifications,
+        IMonitorCatalog monitors,
+        IHotkeys hotkeys,
+        ISingleInstance singleInstance,
+        INotifications notifications,
         LanguageService language,
         ThemeService theme,
         IAppearanceService appearance,
-        ILogPort log,
+        ILog log,
         CaptureFlow captureFlow,
         EditorFlow editorFlow,
         SettingsHolder settings,

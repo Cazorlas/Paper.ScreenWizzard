@@ -8,7 +8,7 @@ namespace Paper.ScreenWizzard.Infrastructure.Common;
 /// Appends one line per message to <c>&lt;dataRoot&gt;\logs\yyyy-MM-dd.log</c>. A log must never be the reason the app fails, so
 /// every error here is swallowed.
 /// </summary>
-public sealed class FileLogger : ILogPort
+public sealed class FileLogger : ILog
 {
     private readonly string _logFolder;
     private readonly object _lock = new();

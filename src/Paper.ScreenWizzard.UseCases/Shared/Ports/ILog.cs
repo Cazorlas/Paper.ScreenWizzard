@@ -1,6 +1,6 @@
 namespace Paper.ScreenWizzard.UseCases.Shared.Ports;
 
-public interface ILogPort
+public interface ILog
 {
     void Info(string message);
 

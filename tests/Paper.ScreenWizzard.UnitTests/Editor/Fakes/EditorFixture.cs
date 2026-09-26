@@ -14,7 +14,7 @@ using Paper.ScreenWizzard.UseCases.Shared.UseCases;
 namespace Paper.ScreenWizzard.UnitTests.Editor.Fakes;
 
 /// <summary>Files as a dictionary, with a write time that moves on every write, and "another program" helpers for F9.</summary>
-public sealed class EditorFileStore : IFileStorePort
+public sealed class EditorFileStore : IFileStore
 {
     private static readonly DateTime _start = new(2026, 9, 20, 10, 0, 0, DateTimeKind.Utc);
 
@@ -104,7 +104,7 @@ public sealed class EditorFileStore : IFileStorePort
 }
 
 /// <summary>Records what it was asked to encode; decodes to whatever the test set.</summary>
-public sealed class EditorCodec : IImageCodecPort
+public sealed class EditorCodec : IImageCodec
 {
     public ImageDecodeResult DecodeResult { get; set; } = new(null, ImageDecodeIssue.NotAnImage);
 
@@ -126,7 +126,7 @@ public sealed class EditorCodec : IImageCodecPort
     }
 }
 
-public sealed class EditorClipboard : IClipboardPort
+public sealed class EditorClipboard : IClipboard
 {
     public PortResult SetResult { get; set; } = PortResult.Ok;
 

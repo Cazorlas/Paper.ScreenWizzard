@@ -5,7 +5,7 @@ using Paper.ScreenWizzard.UseCases.Shell.Models;
 namespace Paper.ScreenWizzard.UseCases.Shell.Ports;
 
 /// <summary>Reads and writes the one settings document under the user's application data folder.</summary>
-public interface ISettingsStorePort
+public interface ISettingsStore
 {
     SettingsLoadResult Load();
 

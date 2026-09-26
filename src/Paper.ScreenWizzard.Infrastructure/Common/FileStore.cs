@@ -7,7 +7,7 @@ namespace Paper.ScreenWizzard.Infrastructure.Common;
 /// System.IO behind the file port. It decides nothing: no folder is created for a write, nothing is renamed to avoid a clash. Every failure
 /// is <c>PortResult.Fail(path + ": " + the system's reason)</c>, so a message can name the file the reason belongs to.
 /// </summary>
-public sealed class FileStore : IFileStorePort
+public sealed class FileStore : IFileStore
 {
     public bool DirectoryExists(string path)
     {

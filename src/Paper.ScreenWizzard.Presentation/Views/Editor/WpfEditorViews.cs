@@ -8,10 +8,10 @@ namespace Paper.ScreenWizzard.Presentation.Views.Editor;
 /// <summary>Opens the real editor windows for <see cref="EditorFlow"/>. Call it on the UI thread.</summary>
 public sealed class WpfEditorViews : IEditorViews
 {
-    private readonly IMonitorCatalogPort? _monitors;
+    private readonly IMonitorCatalog? _monitors;
 
     /// <param name="monitors">The monitors and the pointer, so each window opens on the monitor that holds the pointer; none keeps WPF's own centring.</param>
-    public WpfEditorViews(IMonitorCatalogPort? monitors = null)
+    public WpfEditorViews(IMonitorCatalog? monitors = null)
     {
         _monitors = monitors;
     }

@@ -2,7 +2,7 @@ using Paper.ScreenWizzard.UseCases.Shared.Models;
 
 namespace Paper.ScreenWizzard.UseCases.Shared.Ports;
 
-public interface IFileStorePort
+public interface IFileStore
 {
     bool DirectoryExists(string path);
 

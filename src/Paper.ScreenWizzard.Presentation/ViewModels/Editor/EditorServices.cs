@@ -52,7 +52,7 @@ public interface IEditorViews
 /// <summary>Everything an editor view model needs from outside, in one place so the flow can hand it on to each new window.</summary>
 public sealed record EditorServices(
     IEditorInteractor Interactor,
-    INotificationPort Notifications,
+    INotifications Notifications,
     IFileDialogService FileDialogs,
     IEditorPrompts Prompts,
     IEditorFlattener Flattener,

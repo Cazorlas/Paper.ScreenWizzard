@@ -12,27 +12,27 @@ namespace Paper.ScreenWizzard.UseCases.Capture.UseCases;
 /// <summary>Everything the capture feature decides (SPEC capture): the countdown, the snapshot, one session at a time, where an image goes.</summary>
 public sealed class CaptureInteractor : ICaptureInteractor
 {
-    private readonly IScreenSourcePort _screen;
-    private readonly IWindowCatalogPort _windows;
-    private readonly IMonitorCatalogPort _monitors;
-    private readonly IDelayPort _delay;
+    private readonly IScreenSource _screen;
+    private readonly IWindowCatalog _windows;
+    private readonly IMonitorCatalog _monitors;
+    private readonly IDelay _delay;
     private readonly IImageDelivery _delivery;
-    private readonly IClockPort _clock;
-    private readonly IFileStorePort _files;
-    private readonly ILogPort _log;
+    private readonly IClock _clock;
+    private readonly IFileStore _files;
+    private readonly ILog _log;
     private readonly object _lock = new();
     private CaptureSession? _current;
     private long _generation;
 
     public CaptureInteractor(
-        IScreenSourcePort screen,
-        IWindowCatalogPort windows,
-        IMonitorCatalogPort monitors,
-        IDelayPort delay,
+        IScreenSource screen,
+        IWindowCatalog windows,
+        IMonitorCatalog monitors,
+        IDelay delay,
         IImageDelivery delivery,
-        IClockPort clock,
-        IFileStorePort files,
-        ILogPort log)
+        IClock clock,
+        IFileStore files,
+        ILog log)
     {
         _screen = screen;
         _windows = windows;
