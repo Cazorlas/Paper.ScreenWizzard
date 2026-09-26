@@ -88,8 +88,13 @@ vi.RunNow=Chạy {#AppName} ngay
 [Files]
 Source: "{#PublishDir}/{#AppExe}"; DestDir: "{app}"; Flags: ignoreversion
 
+[Tasks]
+; Ticked by default (no "unchecked" flag): whoever does not want the desktop icon unticks it. An upgrade keeps the earlier choice.
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
+
 [Icons]
 Name: "{autoprograms}\{#AppName}"; Filename: "{app}\{#AppExe}"
+Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "{cm:RunNow}"; Flags: nowait postinstall skipifsilent
