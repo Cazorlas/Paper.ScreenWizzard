@@ -86,7 +86,7 @@ public sealed class ShellSpecTests
         };
         ((Dictionary<CaptureKind, HotkeyChord>)saved.Hotkeys)[CaptureKind.Rectangle] =
             ShellData.Chord(HotkeyModifiers.Control | HotkeyModifiers.Shift, "1");
-        _fixture.Store.LoadResult = new SettingsLoadResult(saved, SettingsLoadStatus.Loaded, null);
+        _fixture.Store.LoadResult = new SettingsLoadResult(StoredSettings.From(saved), SettingsLoadStatus.Loaded, null);
         var monitors = new[]
         {
             ShellData.Monitor(0, 0, 0, 1920, 1080, true),

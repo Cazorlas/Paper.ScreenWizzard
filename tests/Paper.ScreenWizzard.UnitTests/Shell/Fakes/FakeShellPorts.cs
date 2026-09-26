@@ -18,6 +18,10 @@ public sealed class FakeSettingsStore : ISettingsStore
 
     public List<AppSettings> Saved { get; } = [];
 
+    public PortResult BackupResult { get; set; } = PortResult.Ok;
+
+    public int BackupCalls { get; private set; }
+
     public SettingsLoadResult Load()
     {
         LoadCalls++;
@@ -29,10 +33,16 @@ public sealed class FakeSettingsStore : ISettingsStore
         Saved.Add(settings);
         if (SaveResult.Success)
         {
-            LoadResult = new SettingsLoadResult(settings, SettingsLoadStatus.Loaded, null);
+            LoadResult = new SettingsLoadResult(StoredSettings.From(settings), SettingsLoadStatus.Loaded, null);
         }
 
         return SaveResult;
+    }
+
+    public PortResult KeepAsBackup()
+    {
+        BackupCalls++;
+        return BackupResult;
     }
 }
 
