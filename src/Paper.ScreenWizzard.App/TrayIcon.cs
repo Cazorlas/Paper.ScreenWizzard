@@ -90,7 +90,7 @@ internal sealed class TrayIcon : IDisposable
         Rebuild();
     }
 
-    // Capture x4, a line, Open image / Capture bar / Settings, a line, Exit.
+    // Capture x4, a line, Open image / Capture bar / Settings (/ Tải bản mới… while a newer version is out), a line, Exit.
     private void Rebuild()
     {
         foreach (var (item, _) in _entries)

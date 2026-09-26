@@ -11,9 +11,18 @@ namespace Paper.ScreenWizzard.UnitTests.Shell;
 [TestFixture]
 public sealed class UpdateSpecTests
 {
-    private readonly FakeReleaseFeed _feed = new();
-    private readonly FakeBrowser _browser = new();
-    private readonly FakeLog _log = new();
+    // NUnit runs every test of a fixture on one instance: the fakes are made again for each test.
+    private FakeReleaseFeed _feed = null!;
+    private FakeBrowser _browser = null!;
+    private FakeLog _log = null!;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _feed = new FakeReleaseFeed();
+        _browser = new FakeBrowser();
+        _log = new FakeLog();
+    }
 
     private UpdateInteractor Create() => new(_feed, _browser, _log);
 

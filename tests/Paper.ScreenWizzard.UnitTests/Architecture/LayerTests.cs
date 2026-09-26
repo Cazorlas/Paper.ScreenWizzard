@@ -91,7 +91,7 @@ public sealed class LayerTests
 
         var interactors = assembly.GetExportedTypes().Where(t => t is { IsClass: true, IsAbstract: false } && t.Name.EndsWith("Interactor", StringComparison.Ordinal)).ToArray();
 
-        Assert.That(interactors, Has.Length.EqualTo(3), "the shell, the capture and the editor interactor");
+        Assert.That(interactors, Has.Length.EqualTo(4), "the shell, the update, the capture and the editor interactor");
         foreach (var interactor in interactors)
         {
             var contract = interactor.GetInterfaces().SingleOrDefault(i => i.Name == "I" + interactor.Name);
