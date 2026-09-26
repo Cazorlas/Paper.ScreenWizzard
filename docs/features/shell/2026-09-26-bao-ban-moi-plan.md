@@ -82,3 +82,7 @@ Brief: [2026-09-26-bao-ban-moi.md](2026-09-26-bao-ban-moi.md) · Luật: [SPEC.m
 
 | Task | Lệnh / id / giá trị đọc lại | Verdict |
 |---|---|---|
+| T1, T2, T3 | CI `ci` run 39 (36260327803) on `290a886`: `Passed! - Failed: 0, Passed: 412, Total: 412` (375 before + 37 new: `UpdateSpecTests`, `AppVersionTests`, a new F8 case). Red first: run 38 on `9d16c5a` had 4 failed of 412 (two architecture tests that counted 3 interactors; two update tests sharing fakes across the one fixture instance), all fixed in `290a886` | pass |
+| T4, T5, T6 | the same run: `dotnet build -c Release` of the whole solution, `0 Warning(s) 0 Error(s)` (run 37 on `f73fe0b` had failed on a missing `using System.Net.Http`). Architecture review 19/19 files: no violation | pass (compile); the behaviour is T7 |
+| T7 | not run: needs `ui` and a published newer version, on Hùng's machine | not verifiable here |
+| T8 | `check_spec.py`: 4 SPEC.md, 0 problems; `check_code_map.py`: 6 CODEMAP.md, 0 stale | pass |
