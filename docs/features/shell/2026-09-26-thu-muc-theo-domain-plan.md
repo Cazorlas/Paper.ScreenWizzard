@@ -75,6 +75,13 @@ Bên cài (`ScreenSource`, `SettingsStore`, `HotkeyService`, `ClipboardService`�
 - **`App/Startup/` dồn về gốc `App/`.** Test `OuterProject_StaysThin` của kit cho phép file ghép ở gốc; `AppShell` còn giữ
   vài quyết định (nợ đã ghi ở plan đợt 1, "Nợ kiến trúc sau T21") — **không** sửa trong refactor này, vì đó là đổi logic.
 - **Không sửa lỗi dọc đường.** Thấy lỗi thì ghi vào báo cáo; sửa trong plan riêng, nơi phép so thấy đúng khác biệt đó.
+- **Sửa bảng port 2026-09-26, trong khi làm (không đổi luật):** `IDelay` và bên cài `TaskDelay` về `Capture/`, không ở `Shared/`: chỉ
+  lõi Capture gọi nó, và ADR-0003 Decision 3 đặt port ở domain mà lõi gọi nó. Test `EveryPort_SitsInTheDomainWhoseCoreCallsIt` của T1
+  bắt đúng chỗ này. Thêm vào T1 hai test ngoài danh sách ban đầu (port ở đúng domain, adapter ở domain của port) vì đó là luật của
+  ADR-0003 mà chưa gì canh. `LayerTests` không cần sửa: nó đọc namespace của interface, vẫn kết thúc bằng `.Ports`.
+- **Kiểm thay compiler trong phiên cloud:** ngoài `parity.py`, một script tạm kiểm mọi tên kiểu một file dùng đều nằm trong tầm
+  (namespace của file, namespace cha, hay một `using`) — so với commit gốc, chỉ báo lỗi mới; thử bằng cách xoá một `using` thì nó
+  bắt được. Nó không thay được compiler: CI (T9) là lần dựng thật đầu tiên.
 - **Việc sửa đọc `settings.json` (trường thiếu lấy mặc định) tạm dừng** tới khi plan này xong; nó sẽ có SPEC, brief và
   plan riêng, viết trên hình mới.
 

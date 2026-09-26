@@ -2,17 +2,18 @@
 
 The pure rules and value types of the app, on `net10.0` with no Windows: physical-pixel geometry, the capture selection maths, the
 editor's drawing model and its hit/mosaic maths, hotkey rules, file naming. Everything here is tested in `UnitTests` without Windows;
-UseCases call it, nothing else references it except Infrastructure/Presentation/App for the plain types.
+UseCases call it, nothing else references it except Infrastructure/Presentation/App for the plain types. Its first-level folders are
+the domains every other layer reuses (ADR 0003); `Shared/` is what two or more of them need, including `ImageFormat`.
 
 ## Map
 
 | File | Open it for |
 | --- | --- |
-| `Geometry/Geometry.cs` | `PixelPoint`, `PixelRect`, `PixelImage` (BGRA, straight alpha): the only shapes that cross a port |
+| `Shared/Geometry.cs` | `PixelPoint`, `PixelRect`, `PixelImage` (BGRA, straight alpha): the only shapes that cross a port |
 | `Capture/CaptureTypes.cs` | `CaptureKind`, `MonitorInfo`, `WindowInfo`, `DesktopSnapshot`, the after-capture choices |
 | `Capture/CaptureGeometry.cs` | normalise and clamp a drag, the 3-pixel minimum (`MinimumRegionSide`), the virtual-screen union |
-| `Common/PixelImageOps.cs` | crop, freeform mask, flatten a transparent image onto white for JPG |
-| `Common/ScreenshotNaming.cs` | `Screenshot yyyy-MM-dd HH.mm.ss`, the (2) (3) suffix, format from an extension |
+| `Shared/PixelImageOps.cs` | crop, freeform mask, flatten a transparent image onto white for JPG |
+| `Shared/ScreenshotNaming.cs` | `Screenshot yyyy-MM-dd HH.mm.ss`, the (2) (3) suffix, format from an extension |
 | `Editor/EditorTypes.cs` | the annotation records (stroke, line, arrow, rectangle, ellipse, text, step, blur) and `EditorDocument` |
 | `Editor/AnnotationMetrics.cs` | how big a drawing really is: highlighter 3x width, step disc, text box estimate |
 | `Editor/AnnotationFactory.cs` | which drawing a finished gesture makes: no-size shapes, backwards box, the pen dot, blank text |
