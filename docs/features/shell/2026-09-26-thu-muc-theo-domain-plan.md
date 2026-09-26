@@ -1,6 +1,6 @@
 # Thư mục theo domain (ADR-0003) — plan — 2026-09-26
 
-**Trạng thái:** chờ duyệt
+**Trạng thái:** đã duyệt 2026-09-26 ("duyệt nha, cho toàn quyền với bạn, bạn cứ quyết, làm trên phiên cloud đi, xong merge main mới nhất")
 **Loại việc:** code
 
 Chuyển năm project `src/` sang hình "thư mục cấp một là domain, vai là cấp hai" của kit 1.32.0, đổi tên port bỏ hậu tố
