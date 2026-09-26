@@ -211,7 +211,12 @@ public sealed class ShellInteractor : IShellInteractor
                 case SettingsLoadStatus.Loaded when again.Stored is { } stored && SettingsRules.Complete(stored, settings).Settings is not null:
                     return PortResult.Fail("the settings file could not be read when the app started and is kept as it is; restart the app to use it");
                 case SettingsLoadStatus.Loaded:
-                    _settingsStore.KeepAsBackup();
+                    var kept = _settingsStore.KeepAsBackup();
+                    if (!kept.Success)
+                    {
+                        _log.Warning($"The broken settings file is written over without a .bak copy: {kept.Detail}");
+                    }
+
                     _settingsUnreadable = false;
                     break;
                 case SettingsLoadStatus.Unreadable:

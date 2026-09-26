@@ -1,3 +1,4 @@
+using System.Globalization;
 using Paper.ScreenWizzard.Domain.Capture;
 
 namespace Paper.ScreenWizzard.Domain.Shell;
@@ -47,7 +48,8 @@ public static class SettingsRules
             hotkeys = new Dictionary<CaptureKind, HotkeyChord>();
             foreach (var (name, chord) in stored.Hotkeys)
             {
-                if (!Enum.TryParse<CaptureKind>(name, out var kind) || !Enum.IsDefined(kind))
+                // One name as the store writes it: Enum.TryParse alone would also take "7" or "Rectangle, Freeform".
+                if (!Enum.GetNames<CaptureKind>().Contains(name) || !Enum.TryParse<CaptureKind>(name, out var kind))
                 {
                     return SettingsCompletion.Broken($"'{name}' is not a kind of capture");
                 }
@@ -83,13 +85,13 @@ public static class SettingsRules
         var jpgQuality = Take(stored.JpgQuality, defaults.JpgQuality, "jpgQuality");
         if (!IsJpgQuality(jpgQuality))
         {
-            return SettingsCompletion.Broken($"the JPG quality {jpgQuality} is not between {JpgQualityMin} and {JpgQualityMax}");
+            return SettingsCompletion.Broken(string.Create(CultureInfo.InvariantCulture, $"the JPG quality {jpgQuality} is not between {JpgQualityMin} and {JpgQualityMax}"));
         }
 
         var delaySeconds = Take(stored.DelaySeconds, defaults.DelaySeconds, "delaySeconds");
         if (!IsDelay(delaySeconds))
         {
-            return SettingsCompletion.Broken($"the delay {delaySeconds} is not between 0 and {DelaySecondsMax} seconds");
+            return SettingsCompletion.Broken(string.Create(CultureInfo.InvariantCulture, $"the delay {delaySeconds} is not between 0 and {DelaySecondsMax} seconds"));
         }
 
         var settings = new AppSettings(

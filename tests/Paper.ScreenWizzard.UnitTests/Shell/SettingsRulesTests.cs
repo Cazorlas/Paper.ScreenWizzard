@@ -176,6 +176,9 @@ public sealed class SettingsRulesTests
 
     [TestCase("Scrolling", "PrintScreen")]
     [TestCase("7", "PrintScreen")]
+    [TestCase("1", "PrintScreen")]
+    [TestCase("Rectangle, Freeform", "PrintScreen")]
+    [TestCase("rectangle", "PrintScreen")]
     [TestCase("Rectangle", "")]
     [TestCase("Rectangle", null)]
     public void F1_AHotkeyForAnUnknownKindOrWithoutAKeyIsBroken(string kind, string? key)

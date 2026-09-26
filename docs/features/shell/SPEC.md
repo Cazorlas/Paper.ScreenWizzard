@@ -1,4 +1,4 @@
-> Đợt 1 đã làm xong 2026-09-21 (SPEC được duyệt 2026-09-20). Việc làm và bằng chứng: [2026-09-20-m1-chup-va-sua-anh-plan.md](2026-09-20-m1-chup-va-sua-anh-plan.md)
+> Đợt 1 đã làm xong 2026-09-21 (SPEC được duyệt 2026-09-20). Việc làm và bằng chứng: [2026-09-20-m1-chup-va-sua-anh-plan.md](2026-09-20-m1-chup-va-sua-anh-plan.md). Tập tin cài đặt thiếu mục: [2026-09-26-cai-dat-thieu-muc-plan.md](2026-09-26-cai-dat-thieu-muc-plan.md)
 
 # Khung ứng dụng — SPEC
 
@@ -76,8 +76,6 @@ Tray icon, capture bar, settings, hotkey, the running copy of the app.
 
 ## Settings are kept
 
-> Changed by [2026-09-26-cai-dat-thieu-muc.md](2026-09-26-cai-dat-thieu-muc.md), chờ kiểm
-
 - Given the save folder changed, the app closed and opened again → the save folder **is still the new one**
 - Given the capture bar dragged somewhere, closed and opened again → the bar **is exactly there**; if that place is now outside
   every screen (a monitor was unplugged) the bar shows in the **top-right corner of the primary screen**
@@ -117,8 +115,6 @@ Tray icon, capture bar, settings, hotkey, the running copy of the app.
 
 ## When it does not do the job
 
-> Changed by [2026-09-26-cai-dat-thieu-muc.md](2026-09-26-cai-dat-thieu-muc.md), chờ kiểm
-
 | # | Case | What the user sees |
 | --- | --- | --- |
 | F1 | the settings file is broken (not a settings document, a setting of the wrong type, or a setting outside its range) | the app runs on the defaults; a notice says the old settings were broken and the .bak copy was kept |
@@ -155,8 +151,6 @@ Tray icon, capture bar, settings, hotkey, the running copy of the app.
   value outside its range makes it broken (Hùng: "duyệt nha" to the proposal, then "còn việc gì thì làm đi").
 
 ## What it does not do yet
-
-> Changed by [2026-09-26-cai-dat-thieu-muc.md](2026-09-26-cai-dat-thieu-muc.md), chờ kiểm
 
 - A hotkey the app itself holds cannot be typed into the key box of Settings (Windows gives the key to the app, not to the box);
   pressing it while Settings is open does nothing. Proposal: release the keys while Settings is open. Waiting for Hùng.
@@ -235,8 +229,6 @@ Biểu tượng khay, thanh chụp, cài đặt, phím tắt, phiên bản đang
 
 ## Cài đặt được giữ lại
 
-> Đổi bởi [2026-09-26-cai-dat-thieu-muc.md](2026-09-26-cai-dat-thieu-muc.md), chờ kiểm
-
 - Cho đổi thư mục lưu rồi đóng ứng dụng, mở lại → thư mục lưu **vẫn là thư mục mới**
 - Cho kéo thanh chụp tới một chỗ rồi đóng, mở lại → thanh chụp **ở đúng chỗ đó**; nếu chỗ đó nay nằm ngoài mọi màn
   hình (đã rút màn hình) thì thanh chụp hiện ở **góc trên phải màn hình chính**
@@ -275,8 +267,6 @@ Biểu tượng khay, thanh chụp, cài đặt, phím tắt, phiên bản đang
 
 ## When it does not do the job
 
-> Đổi bởi [2026-09-26-cai-dat-thieu-muc.md](2026-09-26-cai-dat-thieu-muc.md), chờ kiểm
-
 | # | Case | What the user sees |
 | --- | --- | --- |
 | F1 | tập tin cài đặt hỏng (không phải một tài liệu cài đặt, có mục sai kiểu, hay có mục ngoài miền) | ứng dụng chạy với mặc định; thông báo nói cài đặt cũ bị hỏng và đã giữ bản .bak |
@@ -312,8 +302,6 @@ Biểu tượng khay, thanh chụp, cài đặt, phím tắt, phiên bản đang
   hỏng (Hùng: "duyệt nha" với đề xuất, rồi "còn việc gì thì làm đi").
 
 ## What it does not do yet
-
-> Đổi bởi [2026-09-26-cai-dat-thieu-muc.md](2026-09-26-cai-dat-thieu-muc.md), chờ kiểm
 
 - Phím tắt đang do chính ứng dụng giữ không ghi được vào ô phím của Cài đặt (Windows đưa phím cho ứng dụng, không cho ô); bấm nó khi Cài đặt mở không làm gì. Đề xuất: nhả các phím trong lúc Cài đặt mở. Chờ Hùng quyết.
 - Alt+PrintScreen và Ctrl+PrintScreen mặc định không đăng ký được trên máy đã thử (Windows hay chương trình khác giữ): người dùng đổi phím trong Cài đặt.
