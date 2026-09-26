@@ -90,6 +90,10 @@ Thêm "## Kiểm tra luật" sau "Bằng chứng": | Mã | Script / cách đo | 
 
 <Chỉ khi có giao diện: wireframe dạng chữ trong khối code. Wireframe sống ở đây, không bao giờ trong SPEC.md.>
 
+<Dưới wireframe, mỗi quyết định bố cục một dòng: 2-4 nguyên lý liên quan (Fitts, Hick, Gestalt, heuristic
+Nielsen…), chỗ chúng kéo ngược nhau, và lựa chọn — ví dụ "ít cột (tải nhận thức) vs thấy đủ để so (nhận ra
+hơn nhớ) → 4 cột, phần còn lại ở panel chi tiết".>
+
 ## Tasks
 
 Profile khai `live.loop` (host tự kiểm được code): nhóm có code kiểm được trên host mở bằng một task
@@ -109,14 +113,14 @@ mình; nhóm sau chờ nhóm trước. Lane `ui` và `live` không bao giờ chu
 ### 1. <một luồng hay một nhóm luật người dùng kiểm được riêng> — logic và giao diện song song
 
 - [ ] T1 [red][unit] Test cho SPEC "<mục>": <các dòng Cho … →> và F<n>, F<m> (mỗi mã một test `F<n>_…`) — xong khi đỏ ở **assertion**, không phải đỏ vì build {files: <tests>/<Feature>/**}
-- [ ] T2 [unit] Code tới khi T1 xanh; verb `test` — xong khi exit 0 và số test đã chạy > 0 {files: <src>/UseCases/<Feature>/**, <tests>/<Feature>/**}
-- [ ] T3 [red][ui] Mock UI trên dữ liệu giả theo wireframe — xong khi test đỏ ở assertion {files: <src>/Presentation/<Feature>/**, <tests>/<Feature>.Ui/**}
-- [ ] T4 [ui] Sửa tới khi T3 xanh; verb `ui`, mở ảnh ra xem — xong khi ảnh khớp wireframe {files: <src>/Presentation/<Feature>/**, <tests>/<Feature>.Ui/**}
+- [ ] T2 [unit] Code tới khi T1 xanh; verb `test` — xong khi exit 0 và số test đã chạy > 0 {files: <src>/Domain/<Domain>/**, <tests>/<Feature>/**}
+- [ ] T3 [red][ui] Mock UI trên dữ liệu giả theo wireframe — xong khi test đỏ ở assertion {files: <src>/Presentation/<Domain>/**, <tests>/<Feature>.Ui/**}
+- [ ] T4 [ui] Sửa tới khi T3 xanh; verb `ui`, mở ảnh ra xem — xong khi ảnh khớp wireframe {files: <src>/Presentation/<Domain>/**, <tests>/<Feature>.Ui/**}
 
 ### 2. <chạy thật trên host đang mở> — sau nhóm 1, không cùng lúc với lane ui
 
 - [ ] T5 [live] Tra mọi API member sẽ gọi ở `docsSource`; ghi vào bảng dưới — xong khi mỗi member có một dòng
-- [ ] T6 [live] Verb `publish` → chạy trên dữ liệu thật qua host đang mở → **đọc lại** → lặp tới khi đạt; dọn thứ đã tạo — xong khi giá trị đọc lại bằng dòng SPEC {files: <src>/<Feature>/Adapters/**}
+- [ ] T6 [live] Verb `publish` → chạy trên dữ liệu thật qua host đang mở → **đọc lại** → lặp tới khi đạt; dọn thứ đã tạo — xong khi giá trị đọc lại bằng dòng SPEC {files: <src>/Infrastructure/<Domain>/**}
 
 ### Last. Close
 

@@ -15,7 +15,5 @@ Lifecycle: task-spec (SPEC.md, brief, plan) -> stop for the user's approval -> t
 
 Codex runs the kit's hooks from `.codex/hooks.json`. These have no Codex equivalent, so check by hand what they would have checked:
 
-- live-first-guard.ps1 (PreToolUse Edit|Write): Codex has no Edit or Write tool to run it on
-- layer-guard.ps1 (PostToolUse Edit|Write): Codex has no Edit or Write tool to run it on
-- no-static-host-state.ps1 (PostToolUse Edit|Write): Codex has no Edit or Write tool to run it on
+- none: every kit hook runs in Codex too
 <!-- paper-kit:end -->

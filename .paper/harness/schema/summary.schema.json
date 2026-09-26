@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paper-skills.dev/schemas/harness-summary.schema.json",
+  "title": "Paper harness summary",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schemaVersion", "runId", "status", "eventCount", "quality"],
+  "properties": {
+    "schemaVersion": { "type": "string", "const": "1" },
+    "runId": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "minLength": 1 },
+    "eventCount": { "type": "integer", "minimum": 1 },
+    "quality": {
+      "type": "object",
+      "required": ["eventCounts", "toolFinishedCount", "failureCount", "permissionDeniedCount", "changedFileCount", "recovered"],
+      "properties": {
+        "eventCounts": { "type": "object" },
+        "toolFinishedCount": { "type": "integer", "minimum": 0 },
+        "failureCount": { "type": "integer", "minimum": 0 },
+        "permissionDeniedCount": { "type": "integer", "minimum": 0 },
+        "changedFileCount": { "type": "integer", "minimum": 0 },
+        "recovered": { "type": "boolean" }
+      }
+    }
+  }
+}

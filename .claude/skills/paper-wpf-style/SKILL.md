@@ -59,7 +59,8 @@ Write a local helper only when nothing fits — and say why.
 
 ## ViewModels — `[BindableBaseProperty]`
 
-Paper uses **the shared library's own source generator**, not CommunityToolkit.Mvvm. The class is `partial`,
+Paper uses **the shared library's own source generator**. CommunityToolkit.Mvvm is not wrong - the library
+already does the same job, so a second MVVM package only doubles it. The class is `partial`,
 derives from `BindableBase`/`ViewModelBase`, and the project references the generator as an analyzer.
 
 - A property is a field: `[BindableBaseProperty] private string _searchText = string.Empty;` — not static,
@@ -73,7 +74,7 @@ derives from `BindableBase`/`ViewModelBase`, and the project references the gene
 
 ## Commands — `CommandBase` / `AsyncCommandBase`
 
-Do not introduce `RelayCommand`, `[RelayCommand]`, or CommunityToolkit.Mvvm. A command is a named class;
+Use the library's commands rather than adding `RelayCommand` from an outside package. A command is a named class;
 that is what keeps the call flow readable and the workflow testable.
 
 - Workflow logic lives in the command, not the ViewModel and not the code-behind.
@@ -159,6 +160,8 @@ These are not extras. Each one has somewhere it is checked, so treat a miss as a
   WPF's `prefers-reduced-motion`.
 - **Hit area before pixel size.** An icon button drawn at 16x16 needs padding to a comfortable target;
   judge it by clicking it, not by the glyph's dimensions.
+- **The window works at its smallest and at full screen.** Set `MinWidth`/`MinHeight` to the size where
+  nothing clips, and let grids and lists take the extra room at full screen. `drive-wpf` shoots both sizes.
 
 ## Readability beats purity
 

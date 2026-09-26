@@ -9,6 +9,10 @@ WebView2 is not a second UI framework to spread work across. It earns a screen o
 does that screen better than the app could - a chart, a layered diagram, a big virtualised table, a
 preview. Everything else stays where it is.
 
+This skill holds what is true in any desktop host. A host pack may ship a companion with that host's own
+numbers - which browser the host already runs, the wrapper it binds, how to prove a screen live - and the
+revit pack does: `revit-webview`. When the project also declares that host, read both.
+
 ## Is this screen actually a WebView2 screen
 
 | The screen | Where it belongs |

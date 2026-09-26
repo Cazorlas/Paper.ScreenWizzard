@@ -74,7 +74,8 @@ Every UI task ends with at least one screenshot **opened and judged**, and the e
 1. The suite is green **more than once** - a UI suite that passes one run in three is not green, it is
    lucky. Run it again before reporting.
 2. Every bug found while driving became a test case, not just a fix.
-3. At least one screenshot per theme was opened and judged against the plan's wireframe.
+3. At least one screenshot per theme was opened and judged against the plan's wireframe, plus one with the
+   window at its `MinWidth`/`MinHeight` - clipped text and a squeezed column only show up there.
 4. Anything the fakes could not reach is named as not verified, not implied as passing.
 
 Where a host application is involved (an add-in's real window, the ribbon, a dockable pane), this skill

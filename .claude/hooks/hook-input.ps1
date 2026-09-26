@@ -12,7 +12,32 @@ function Read-PaperHookPayload {
         $reader = New-Object System.IO.StreamReader($stream, (New-Object System.Text.UTF8Encoding $false))
         $raw = $reader.ReadToEnd()
         if ([string]::IsNullOrWhiteSpace($raw)) { return $null }
-        return $raw | ConvertFrom-Json
+        $payload = $raw | ConvertFrom-Json
+        # Codex reports file edits as apply_patch with the patch in tool_input.command. The current Paper
+        # guards consume tool_input.file_path, so expose the first touched path in the same shape. Claude's
+        # native Edit/Write payload is left unchanged. The full patch is deliberately not copied into any
+        # guard message or evidence record.
+        $toolNameProperty = $payload.PSObject.Properties['tool_name']
+        $toolInputProperty = $payload.PSObject.Properties['tool_input']
+        $toolName = if ($toolNameProperty) { [string]$toolNameProperty.Value } else { '' }
+        $toolInput = if ($toolInputProperty) { $toolInputProperty.Value } else { $null }
+        $commandProperty = if ($toolInput) { $toolInput.PSObject.Properties['command'] } else { $null }
+        if ($toolName -eq 'apply_patch' -and $toolInput -and $commandProperty) {
+            $match = [regex]::Match([string]$commandProperty.Value, '(?m)^\*\*\* (?:Update|Add|Delete) File: (.+?)\s*$')
+            if ($match.Success) {
+                $path = $match.Groups[1].Value.Trim()
+                if (-not [IO.Path]::IsPathRooted($path) -and $payload.cwd) { $path = Join-Path ([string]$payload.cwd) $path }
+                if ($null -eq $toolInput.PSObject.Properties['file_path']) { $toolInput | Add-Member -NotePropertyName file_path -NotePropertyValue $path }
+                else { $toolInput.file_path = $path }
+            }
+        }
+        # Existing Paper guards use this variable after reading the payload. Resolve it to the current
+        # profile-backed checkout so Claude worktrees and Codex hooks inspect the right project.
+        if ($payload.PSObject.Properties['cwd']) {
+            $projectDir = Get-PaperHookProjectDir $payload
+            if ($projectDir) { $env:CLAUDE_PROJECT_DIR = $projectDir }
+        }
+        return $payload
     }
     catch { return $null }
 }

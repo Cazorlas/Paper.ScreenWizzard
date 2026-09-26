@@ -22,9 +22,11 @@ You run **only the tasks handed to you by id**, all in lane `unit`. The main ses
 1. Read `.claude/paper.profile.json` (`lanes`, `verbs.test`, `knownFailures`, `architecture`) and the plan
    (its Context, Rules that apply and Decisions bind you). Read the feature's `SPEC.md`, the project
    `CLAUDE.md`, and the `CODEMAP.md` on the path.
-2. Read skill `clean-architecture`. Decision logic goes in a use case: `UseCases/<Feature>/Services`
-   (interactor + port interfaces), `Implements` (interactor, policies), `Models` (plain records). Nothing
-   there names the host — `layer-guard` blocks the edit if it does.
+2. Read skill `clean-architecture`. Decision logic goes in a domain folder of the decision layer:
+   `<Domain>/Ports` (interactor interface + ports), `<Domain>/UseCases` (interactor, policies),
+   `<Domain>/Models` (plain records); what two domains need goes in `Shared/`. Nothing there names the
+   host — `layer-guard` blocks the edit if it does. A module still in the old `UseCases/<Feature>/` tree
+   stays in it: moving it is a parity refactor with its own plan, not part of your task.
 3. Every API member you will call: skill `api-lookup` first. Put the row in your report; the main session
    writes it into the plan's table.
 

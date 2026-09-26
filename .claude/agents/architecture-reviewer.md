@@ -1,6 +1,6 @@
 ---
 name: architecture-reviewer
-description: Read-only review of a change against the project's layers and its use case / port shape - platform-free layers from paper.profile.json, decisions left in commands or adapters, host objects crossing a port, host state in static fields, host calls from the wrong thread. Reads exactly the review-files list it is given and reports N/N read, file:line with the smallest fix; never edits. Use before reporting a feature or refactor done.
+description: Read-only review of a change against the project's layers and its use case / port shape - platform-free layers from paper.profile.json, decisions left in commands or adapters, host objects crossing a port, host state in static fields, host calls from the wrong thread, folders not split by domain. Reads exactly the review-files list it is given and reports N/N read, file:line with the smallest fix; never edits. Use before reporting a feature or refactor done.
 model: inherit
 tools: Read, Grep, Glob
 ---
@@ -35,6 +35,9 @@ enforce, never invent one. When unsure a thing is a violation, say so rather tha
 - **DTO in, plan out** - the host is read into DTOs once, the decision core turns DTOs into a plan, the
   adapter maps ids back and executes. A port that hands host objects inward, or a core that calls the
   host back mid-decision, breaks it.
+- **domain folder** - a first-level folder inside a layer (project or module folder): a part of the problem
+  the user can name (a format, a step, a concern). Role folders (`Ports/`, `UseCases/`, `Models/`) are the
+  second level; the outer layers reuse the same domain names.
 
 ## Check
 
@@ -57,6 +60,22 @@ enforce, never invent one. When unsure a thing is a violation, say so rather tha
    dispatcher, never directly from its UI thread).
 8. **Test fakes** — a fake implementing an interface whose signature names a host type is a finding: it
    means the port leaked, and some test runners fail to load it at all.
+9. **No abstraction without a problem** — a new interface with one implementation that is not a port and
+   has no test fake, a factory that builds one type, or a base class with one subclass, is a finding
+   unless the plan's Decisions names the problem it solves. Smallest fix: inline it. Source:
+   `clean-architecture/references/patterns.md` ("Thứ tự cân nhắc", "SOLID vừa đủ").
+10. **Folder shape** — a layer project's first-level folders are domains, the same names in every layer;
+    a port sits in the domain whose decision core calls it, one that two domains call sits in
+    `Shared/Ports/`; a role folder (`Ports/`, `UseCases/`, `Models/`, `Implements/`) at the top of a split
+    decision layer is a finding, and so is an adapter grouped by technology or by kind of adapter
+    (`Adapters/`, `Catalogs/`) instead of by domain. A domain reaches only `Shared/`, except the
+    orchestrating domain. The entry host / seam is thin and not split: composition files at its root,
+    host-called types in `Commands/`, the assembly's own folders and the screen's host window folder, nothing
+    else at its first level; a role folder there (`Services/`, `Helpers/`, `Utilities/`) is a finding -
+    smallest fix: a decision moves to the domain's `UseCases/`, a host call to the domain's Infrastructure
+    folder, text and UI to Presentation. A module the project's architecture test
+    lists as named debt is not a finding - say it is still on the list. Source: skill
+    `clean-architecture` ("Hình dạng") and the project's ADR on folders.
 
 ## Report
 

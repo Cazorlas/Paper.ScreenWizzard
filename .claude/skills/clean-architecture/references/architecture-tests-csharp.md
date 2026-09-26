@@ -124,7 +124,7 @@ private const int Host = 1, Module = 2, Shared = 3, Library = 4, Test = 90;
 private static readonly Dictionary<string, int> Ranks = new(StringComparer.OrdinalIgnoreCase)
 {
     ["MyApp"] = Host,
-    ["MyApp.Orders"] = Module,       // a feature module: UseCases/, Adapters/, Commands/, ViewModels/ inside
+    ["MyApp.Orders"] = Module,       // a feature module: Domain/, Infrastructure/, Presentation/ split by domain, Commands/
     ["MyApp.Billing"] = Module,
     ["MyApp.Pricing.Core"] = Shared, // host-free logic two modules need
     ["MyApp.Common"] = Library,
@@ -186,8 +186,12 @@ private static readonly Regex HostName = new(
     @"^\s*using\s+(?:static\s+)?(?:\w+\s*=\s*)?(Vendor\.HostApi|System\.Windows)\b|\bVendor\.HostApi\.[A-Z]",
     RegexOptions.Multiline);
 
+// Option A: every file of a *.Domain project. Option B: the Domain/ folder of a module. And UseCases/
+// anywhere, so a module still in the old UseCases/<Feature>/ tree stays guarded. Same list as the profile.
+private static readonly Regex PlatformFreePath = new(@"(\.Domain|/Domain|/UseCases)/", RegexOptions.IgnoreCase);
+
 private static IEnumerable<string> PlatformFreeFiles() => Repository.SourceFiles
-    .Where(p => p.Replace('\\', '/').IndexOf("/UseCases/", StringComparison.OrdinalIgnoreCase) >= 0);
+    .Where(p => PlatformFreePath.IsMatch(p.Replace('\\', '/')));
 
 [Test]
 public void PlatformFreeFolders_Exist() =>
@@ -215,57 +219,191 @@ private static string CodeLines(string text) => string.Join("\n", text.Split('\n
 Giới hạn cần ghi trong ADR: kiểu host đi vào qua `var` từ một port rò host thì không có tên nào để bắt. Agent
 review kiến trúc là lớp kiểm thứ hai.
 
-## 5. Interactor lộ ra bằng interface, trong `Ports/`
+## 5. Interactor lộ ra bằng interface, trong `Ports/` của domain nó
 
-Lệnh và view model phụ thuộc `I<Feature>Interactor`, không phụ thuộc class — để test thay được và để lệnh
-không lớn dần thành chỗ quyết định.
-
-```csharp
-static IEnumerable<string> FeatureFolders()
-{
-    const string marker = "/UseCases/";
-    return PlatformFreeFiles()
-        .Select(p => p.Replace('\\', '/'))
-        .Select(p =>
-        {
-            int at = p.IndexOf(marker, StringComparison.OrdinalIgnoreCase) + marker.Length;
-            return p.Substring(0, at) + p.Substring(at).Split('/')[0];   // .../UseCases/<Feature>
-        })
-        .Distinct(StringComparer.OrdinalIgnoreCase);
-}
-
-[Test]
-public void EveryUseCase_ExposesItsInteractorAsAnInterface()
-{
-    var missing = FeatureFolders()
-        .Where(feature => !Directory.Exists(Path.Combine(feature, "Ports"))
-                          || !Directory.EnumerateFiles(Path.Combine(feature, "Ports"), "I*Interactor.cs").Any())
-        .Select(Repository.Relative)
-        .ToArray();
-    Assert.That(missing, Is.Empty, "Each UseCases/<Feature> needs Ports/I<Feature>Interactor.cs: " + string.Join(", ", missing));
-}
-```
-
-**Tên thư mục là `Ports/`, không phải `Services/`: port là hợp đồng, service là bên tuân thủ nó.** Gần như repo
-nào cũng đã có một thư mục `Services/` chứa bên cài đặt, nên hai thư mục cùng tên mang hai vai ngược nhau, và
-đọc đường dẫn không biết mình đang ở bên nào. Đổi tên rồi thì một test thứ hai giữ cho tên cũ không quay lại —
-nếu không, nửa cây code sẽ dừng ở tên cũ:
+Lệnh và view model phụ thuộc `I<X>Interactor`, không phụ thuộc class — để test thay được và để lệnh
+không lớn dần thành chỗ quyết định. **`Ports/` được chia theo domain, không phẳng: test quét mọi thư mục
+`Ports/` ở mọi độ sâu.** Một test chỉ quét cấp đầu của một `Ports/` duy nhất sẽ ép mọi port về một chỗ.
 
 ```csharp
+// Every file whose own folder is a role folder of that name, at any depth.
+static IEnumerable<string> FilesInRole(string role) => Repository.SourceFiles
+    .Where(p => string.Equals(Path.GetFileName(Path.GetDirectoryName(p)), role, StringComparison.OrdinalIgnoreCase));
+
 [Test]
-public void NoUseCase_KeepsItsContractsInAServicesFolder()
+public void PortsFolders_Exist() =>
+    Assert.That(FilesInRole("Ports"), Is.Not.Empty);
+
+// Only contracts: the name starts with I, and nothing but an interface is declared.
+private static readonly Regex NotAContract = new(
+    @"^\s*(?:(?:public|internal|sealed|static|abstract|partial)\s+)*(?:class|record|struct|enum)\s+\w",
+    RegexOptions.Multiline);
+
+[Test]
+public void EveryPortsFolder_HoldsOnlyInterfaces()
 {
-    var offenders = FeatureFolders()
-        .Where(feature => Directory.Exists(Path.Combine(feature, "Services")))
+    var offenders = FilesInRole("Ports")
+        .Where(p => !Regex.IsMatch(Path.GetFileName(p), @"^I[A-Z]") || NotAContract.IsMatch(CodeLines(File.ReadAllText(p))))
         .Select(Repository.Relative)
         .ToArray();
     Assert.That(offenders, Is.Empty,
-        "Ports live in Ports/; what implements one is a service: " + string.Join(", ", offenders));
+        "Ports/ holds interfaces only; move records to Models/, classes to UseCases/: " + string.Join(", ", offenders));
+}
+
+// <D>/UseCases/<X>Interactor.cs needs <D>/Ports/I<X>Interactor.cs. A domain without an interactor needs nothing.
+// Implements/ is the old name of UseCases/ - kept so a module not migrated yet is still checked.
+[Test]
+public void EveryInteractor_HasItsInterfaceInItsDomainsPorts()
+{
+    var missing = FilesInRole("UseCases").Concat(FilesInRole("Implements"))
+        .Where(p => Path.GetFileName(p).EndsWith("Interactor.cs", StringComparison.Ordinal))
+        .Where(p =>
+        {
+            var domain = Path.GetDirectoryName(Path.GetDirectoryName(p))!;
+            return !File.Exists(Path.Combine(domain, "Ports", "I" + Path.GetFileName(p)));
+        })
+        .Select(Repository.Relative)
+        .ToArray();
+    Assert.That(missing, Is.Empty, "Add <Domain>/Ports/I<X>Interactor.cs for: " + string.Join(", ", missing));
 }
 ```
 
-Một test thứ ba giữ `Ports/` sạch — chỉ hợp đồng, không lớp cài đặt, không record: mọi file trong đó tên bắt
-đầu bằng `I`.
+Một test cần danh sách port (ví dụ: bên cài một port mang tên port đó) lấy nó từ `FilesInRole("Ports")`,
+không từ một thư mục cố định.
+
+**Tên thư mục là `Ports/`, không phải `Services/`: port là hợp đồng, service là bên tuân thủ nó.** Gần như repo
+nào cũng đã có một thư mục `Services/` chứa bên cài đặt, nên hai thư mục cùng tên mang hai vai ngược nhau, và
+đọc đường dẫn không biết mình đang ở bên nào. Đổi tên rồi thì một test giữ cho tên cũ không quay lại ở tầng
+quyết định — nếu không, nửa cây code sẽ dừng ở tên cũ:
+
+```csharp
+[Test]
+public void NoDomain_KeepsItsContractsInAServicesFolder()
+{
+    var offenders = PlatformFreeFiles()
+        .Select(p => Path.GetDirectoryName(p)!)
+        .Where(d => string.Equals(Path.GetFileName(d), "Services", StringComparison.OrdinalIgnoreCase))
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .Select(Repository.Relative)
+        .ToArray();
+    Assert.That(offenders, Is.Empty,
+        "Ports live in <Domain>/Ports/; what implements one is a service, in the outer layer: " + string.Join(", ", offenders));
+}
+```
+
+## 6. Cấp một của mỗi tầng là domain
+
+Trong mỗi tầng, thư mục cấp một là domain; vai (`Ports/`, `UseCases/`, `Models/`) là cấp hai; tầng ngoài dùng
+lại đúng tên domain. Viết cho phương án A (`<M>.Domain`, `<M>.Infrastructure`, `<M>.Presentation`); phương án
+B thay ba project đó bằng ba thư mục `Domain/`, `Infrastructure/`, `Presentation/` của mỗi module. Project
+entry host / seam (`<M>`) không chia domain nên không nằm trong `EveryLayerFolder_NamesADomain`; nó có test
+riêng `OuterProject_StaysThin`: cấp một chỉ là những thư mục có tên trong `OuterAllowed` — `Commands/`, thư
+mục của assembly, thư mục cửa sổ host của màn hình — và file ở gốc là gốc ghép. Không thư mục vai
+(`Services/`, `Helpers/`, `Utilities/`). Phương án B: gốc module là entry host, `OuterAllowed` thêm
+`Domain`, `Infrastructure`, `Presentation`.
+
+```csharp
+// Named debt: a layer project not migrated yet, one line each, with the plan that migrates it.
+// A module migrates by parity refactor (skill parity-refactor), layer by layer; its line goes when it has.
+private static readonly HashSet<string> DomainDebt = new(StringComparer.OrdinalIgnoreCase)
+{
+    "MyApp.Billing.Domain",        // docs/features/billing/<date>-domain-folders-plan.md
+    "MyApp.Billing.Infrastructure",
+};
+
+// A first-level folder that is not a domain, and why. Anything else must name a domain of <M>.Domain.
+private static readonly Dictionary<string, string> NotADomain = new(StringComparer.OrdinalIgnoreCase)
+{
+    ["Shared"] = "what two or more domains need",
+    ["Global"] = "polyfills and global usings",
+    ["Properties"] = "assembly attributes",
+    ["Shell"] = "Presentation: the window frame, a screen of no single domain",
+};
+
+private static readonly string[] RoleFolders = { "Ports", "UseCases", "Models", "Implements", "Services" };
+
+private static IEnumerable<string> FirstLevelFolders(string dir) => Directory.EnumerateDirectories(dir)
+    .Select(d => Path.GetFileName(d)!)
+    .Where(n => n is not ("bin" or "obj") && !n.StartsWith("."));
+
+private static IEnumerable<Repository.Project> DomainProjects() => Repository.Projects
+    .Where(p => p.Name.EndsWith(".Domain", StringComparison.OrdinalIgnoreCase));
+
+[Test]
+public void DomainProjects_Exist() => Assert.That(DomainProjects(), Is.Not.Empty);
+
+[Test]
+public void NoSplitDomain_KeepsARoleFolderAtItsTop()
+{
+    var offenders = DomainProjects()
+        .Where(p => !DomainDebt.Contains(p.Name))
+        .SelectMany(p => FirstLevelFolders(p.Directory)
+            .Where(f => RoleFolders.Contains(f, StringComparer.OrdinalIgnoreCase))
+            .Select(f => $"{p.Name}/{f}"))
+        .ToArray();
+    Assert.That(offenders, Is.Empty,
+        "The first level is a domain: move each file into <Domain>/Ports|UseCases|Models, or list the project in DomainDebt: "
+        + string.Join(", ", offenders));
+}
+
+[Test]
+public void EveryLayerFolder_NamesADomain()
+{
+    var problems = new List<string>();
+    foreach (var domain in DomainProjects())
+    {
+        var module = domain.Name.Substring(0, domain.Name.Length - ".Domain".Length);
+        var domains = FirstLevelFolders(domain.Directory).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var layer in new[] { ".Infrastructure", ".Presentation" })
+        {
+            var project = Repository.Projects.SingleOrDefault(p => p.Name.Equals(module + layer, StringComparison.OrdinalIgnoreCase));
+            if (project is null || DomainDebt.Contains(project.Name)) continue;
+            problems.AddRange(FirstLevelFolders(project.Directory)
+                .Where(f => !domains.Contains(f) && !NotADomain.ContainsKey(f))
+                .Select(f => $"{project.Name}/{f}"));
+        }
+    }
+    Assert.That(problems, Is.Empty,
+        "Name the folder after a domain of the module's .Domain (adapters sit straight in it), or add it to NotADomain with its reason: "
+        + string.Join(", ", problems));
+}
+
+// The outer project <M> only composes: composition files at its root, and only these first-level folders.
+// In your project the window folder is whatever hosts the screen (a web page's window, a dockable pane).
+private static readonly Dictionary<string, string> OuterAllowed = new(StringComparer.OrdinalIgnoreCase)
+{
+    ["Commands"] = "types the host calls by name - their namespace stays, the host's registration names it",
+    ["Global"] = "polyfills and global usings",
+    ["Properties"] = "assembly attributes",
+    ["Web"] = "the screen's host window, when the screen is a web page",
+};
+
+[Test]
+public void OuterProject_StaysThin()
+{
+    var outers = DomainProjects()
+        .Select(d => d.Name.Substring(0, d.Name.Length - ".Domain".Length))
+        .Select(m => Repository.Projects.SingleOrDefault(p => p.Name.Equals(m, StringComparison.OrdinalIgnoreCase)))
+        .Where(p => p is not null && !DomainDebt.Contains(p.Name))
+        .ToArray();
+    Assert.That(outers, Is.Not.Empty, "sentinel: no outer project found next to a .Domain project");
+    var problems = outers
+        .SelectMany(p => FirstLevelFolders(p!.Directory)
+            .Where(f => !OuterAllowed.ContainsKey(f))
+            .Select(f => $"{p!.Name}/{f}"))
+        .ToArray();
+    Assert.That(problems, Is.Empty,
+        "The outer project only composes - no role folder (Services/, Helpers/, Utilities/). Move a decision to "
+        + "<M>.Domain/<Domain>/UseCases/, a host call to <M>.Infrastructure/<Domain>/, text and UI to <M>.Presentation; "
+        + "composition files sit at the project root. Or add the folder to OuterAllowed with its reason: "
+        + string.Join(", ", problems));
+}
+```
+
+Một dòng trong `DomainDebt` là **nợ có tên**, không phải miễn trừ: nó nói project nào chưa chuyển và plan nào
+chuyển nó. Chuyển xong thì xoá dòng — test đỏ nếu project vẫn còn thư mục vai ở cấp một. Entry host còn
+`Services/` thì nằm cùng danh sách, tên project `<M>`, cho tới khi thư mục đó rỗng. Hướng giữa các thư mục
+domain (domain chỉ nhìn `Shared/`) chưa có test ở đây; agent `architecture-reviewer` giữ nó.
 
 ## Đặt chúng ở đâu
 

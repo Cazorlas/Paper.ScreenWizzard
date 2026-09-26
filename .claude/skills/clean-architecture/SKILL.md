@@ -33,19 +33,43 @@ so port mới với nó. Dự án chưa có ADR nào đặt tên cặp này thì
 
 ## Hình dạng
 
-```text
-UseCases/<Feature>/
-  Ports/        I<Feature>Interactor     interface của use case
-                I<Something>Port         interface mà use case cần từ thế giới ngoài (đọc DTO / thực thi plan)
-                                         port là hợp đồng; bên cài nó là một *service*, nằm ngoài UseCases/
-  Implements/   <Feature>Interactor      quyết định: giữ/bỏ, thứ tự, báo gì, log gì
-                <Rule>Policy             luật tách riêng khi interactor dài ra
-  Models/       record thuần             DTO vào, plan ra: số, chuỗi, record — không đối tượng host
+**Trong mỗi tầng — project hay thư mục của module — thư mục cấp một là domain; vai (`Ports/`, `UseCases/`,
+`Models/`) là cấp hai.** Domain là một vùng bài toán người dùng gọi được tên: một định dạng, một bước, một mối
+lo. Tính năng nhỏ là một domain; tính năng lớn tách thành nhiều domain đứng cạnh nhau, không lồng dưới tên
+tính năng. Tầng ngoài dùng lại **đúng tên domain đó**.
 
-Adapters/ (ngoài UseCases)   <Something>Adapter : I<Something>Port   dịch host <-> record, KHÔNG quyết định
-Commands/                    dựng adapter, gọi interactor, đưa kết quả lên view model — hết
-ViewModels/                  phụ thuộc I<Feature>Interactor + Models, không phụ thuộc adapter
+```text
+<tầng quyết định>/     project .Domain (hay .UseCases), hoặc thư mục Domain/ của module
+  <Domain>/
+    Ports/      I<Domain>Interactor   interface của use case (khi domain có interactor)
+                I<Cần gì>             cái lõi cần từ ngoài (đọc DTO / thực thi plan), tên theo cái cần,
+                                      không hậu tố Port. Chỉ interface: port là hợp đồng; bên cài là một
+                                      *service*, nằm ở tầng ngoài
+    UseCases/   <Domain>Interactor    quyết định: giữ/bỏ, thứ tự, báo gì, log gì
+                <Rule>Policy          luật tách riêng khi interactor dài ra
+    Models/     record thuần          DTO vào, plan ra: số, chuỗi, record — không đối tượng host
+  Shared/       Ports/ UseCases/ Models/   cái mà hai domain trở lên cùng cần; không nhìn domain nào
+
+<Infrastructure>/<Domain>/   <Host><Cần gì> : I<Cần gì>   dịch host <-> record, KHÔNG quyết định
+<Presentation>/<Domain>/     view, view model: phụ thuộc I<Domain>Interactor + Models, không phụ thuộc adapter
+<entry host>/                MỎNG, KHÔNG chia domain: gốc ghép ở gốc project (dựng adapter, gọi interactor,
+                             hết), Commands/, thư mục của assembly, thư mục cửa sổ host — không thư mục vai
 ```
+
+- **Port nằm trong domain mà lõi quyết định của nó cần port đó**, không phải domain của bên cài; port hai
+  domain trở lên cần nằm ở `Shared/Ports/`. Một domain chỉ có `Ports/` là hợp lệ; thư mục vai rỗng thì không tạo.
+- Hướng giữa thư mục (compiler không giữ): domain chỉ nhìn `Shared/`; domain điều phối (gọi các domain khác)
+  được nhìn mọi domain.
+- Adapter nằm thẳng trong thư mục domain — không `Adapters/`, `Services/` lồng thêm, không gom theo công nghệ
+  hay loại adapter. Tên bên cài chứa tên port. Màn hình không thuộc domain nào (vỏ cửa sổ) là ngoại lệ có tên.
+- **Entry host mỏng, không thư mục vai.** Project ngoài cùng chỉ ghép; cấp một của nó chỉ là `Commands/`
+  (kiểu host gọi theo tên), thư mục bắt buộc của assembly (ở dự án C# là `Global/`, `Properties/`) và thư mục
+  cửa sổ host của màn hình khi có (ở dự án có màn hình web, đó là `Web/`); gốc ghép là file ở gốc project,
+  mỗi constructor một dòng. Không `Services/`, `Helpers/`, `Utilities/`: quyết định về `<Domain>/UseCases/`,
+  lời gọi host về `<Infrastructure>/<Domain>/`, chữ và giao diện về Presentation. Chỗ dễ đọc của
+  project ngoài cùng đến từ việc nó mỏng, không từ việc chia domain (nguồn học ghi ở ADR-0019 của kit).
+- Module còn hình cũ `UseCases/<Feature>/{Ports, Implements, Models}` chuyển bằng skill `parity-refactor`,
+  từng module; module chưa chuyển là **nợ có tên** trong test kiến trúc, không phải lỗi mới.
 
 | Tầng | Được gọi | Không được gọi |
 |---|---|---|
@@ -62,7 +86,8 @@ ViewModels/                  phụ thuộc I<Feature>Interactor + Models, không
 1. **Test của interactor trước** (lane `unit`, `[red]`), với port giả bằng dữ liệu thuần. Fake mà chữ ký
    phải nhắc kiểu host nghĩa là port đã rò host — sửa port, đừng sửa fake.
 2. **Interactor** tới khi xanh.
-3. **Adapter** cài port — đây là chỗ duy nhất gọi host; tra API theo skill `api-lookup` trước.
+3. **Adapter** cài port — đây là chỗ duy nhất gọi host; đặt trong thư mục cùng tên domain ở tầng
+   Infrastructure; tra API theo skill `api-lookup` trước.
 4. **Command** mỏng: dựng adapter → gọi interactor → đưa kết quả lên view model.
 5. **Lane `live`**: chạy thật trên host, đọc lại kết quả.
 
@@ -77,6 +102,9 @@ ViewModels/                  phụ thuộc I<Feature>Interactor + Models, không
   "hostStateTypes": ["Document", "Element"]
 }
 ```
+
+`**/UseCases/**` khớp cả `<Domain>/UseCases/` lẫn hình cũ. Tầng là thư mục thì khai thêm `**/Ports/**` và
+`**/Models/**`, để port và record cũng được giữ.
 
 `Vendor.HostApi` đứng chỗ namespace và package của host; `profile.json` của gói host (`hosts/<host>`) ghi
 danh sách thật, và setup chép nó vào profile của dự án lần đầu.
@@ -94,11 +122,13 @@ ADR kiến trúc của dự án (setup tạo `docs/decisions/0001-clean-architec
 chọn một trong hai:
 
 - **Tầng là project** — compiler giữ ranh giới; giá là số project nhân lên theo module.
-- **Tầng là thư mục trong module tính năng** (hình dạng ở trên) — test kiến trúc giữ ranh giới.
+- **Tầng là thư mục trong module tính năng** — test kiến trúc giữ ranh giới.
+
+Cách nào thì bên trong mỗi tầng cũng chia domain như hình ở trên.
 
 Chuyển khi một module có host hay người dùng thứ hai — bằng ADR mới, theo skill `adr`. Test kiến trúc C#
 cho cả hai cách (mỗi project có tầng và chỉ tham chiếu xuống, module không tham chiếu module, thư mục không
-dùng host không nhắc namespace host, interactor lộ ra bằng interface):
+dùng host không nhắc namespace host, interactor lộ ra bằng interface, cấp một của mỗi tầng là domain):
 [references/architecture-tests-csharp.md](references/architecture-tests-csharp.md).
 
 ## Sâu hay mỏng — ba dấu hiệu tách sai
@@ -122,6 +152,12 @@ kế sai**, kể cả khi mọi luật tầng đều xanh.
 
 Ba dấu hiệu này dùng khi **xét một thiết kế**, không dùng để chặn commit: chúng không có test, và không nên
 có — một thiết kế sâu hay mỏng là câu người đọc trả lời, không phải máy.
+
+**Design pattern: biết tên, cân nhắc, không dựng sẵn.** Trước khi thêm interface, factory hay base class,
+đọc [references/patterns.md](references/patterns.md). Viết thẳng trước. Chỉ gọi tên pattern khi hôm nay
+đã có hai biến thể thật, hoặc đó là port cần fake, hoặc framework bắt buộc. Thử dạng C# có sẵn trước
+(`Func<>`, `event`, `record with`, `switch`). Dựng pattern thì ghi một dòng vào `Decisions` của plan:
+pattern gì, bài toán gì. SOLID vừa đủ (cùng file): trừu tượng hoá ở ranh giới, bên trong viết thẳng.
 
 ## Khi nào không tách
 

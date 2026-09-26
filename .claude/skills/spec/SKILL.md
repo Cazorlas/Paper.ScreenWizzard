@@ -15,6 +15,9 @@ input, every domain rule and the whole user flow. A spec that carries only rules
 **Write it the way the user would explain the tool to a colleague.** Short sentences, the everyday
 words of the user's trade, no jargon from software. If a sentence needs a programmer to understand it, rewrite it.
 
+**Two languages in one file**: `SPEC.md` has a `# English` part and a `# Tiếng Việt` part with the same
+sections, acceptance lines and `F` codes, changed together, checked as `F26` (`references/two-languages.md`).
+
 ## Three documents per task - SPEC.md first
 
 | File | For | Words |
@@ -103,8 +106,8 @@ its neck outside the duct.
 - **The result is measurable.** "Routed sensibly" cannot be checked; "two 45-degree elbows, 150 mm apart" can.
 - **The `Cho` is a shape, never an element of somebody's model.** No element id, no model or file
   name, no level of one project, no count of its elements. Say what makes the case, in millimetres and
-  degrees. The model that exposed it belongs in the brief.
-- **Too hard to say in a sentence? Draw it** - see Hình và sơ đồ.
+  degrees. The model that exposed it belongs in the brief. Too hard to say in a sentence? Draw it (Hình và sơ đồ).
+- **A rule that guesses (hiding secrets) states its limits, never "all"** - four reviews, 6-9 new misses each.
 - **A lookup is not a rule until its values are in it.** "The configured size" cannot become a test;
   carry the rows with their default figures, marked as defaults.
 
@@ -166,9 +169,9 @@ A spec gap is never closed by changing the code first and writing the spec to ma
    `F<n>` row the task touches is reached by a task, and the task names the codes it covers.
 5. **Stop and show the user the SPEC rules and the task list - end the turn.** Every time - the first
    presentation and the second, third and later re-approvals alike - the message **carries an openable link**
-   to each document awaiting approval (SPEC.md, brief, plan: one markdown link per line, path relative to the
-   project root, the changed ones marked); never "as before" and never a bare file name. Write
-   `đã duyệt <date> ("<their words>")` on the plan's status line only after they say OK.
+   to each document awaiting approval (SPEC.md, brief, plan: one link per line, an absolute
+   path with no `#L`, a line number in the link text, the changed ones marked); never "as before" and never
+   a bare file name. Write `đã duyệt <date> ("<their words>")` on the plan's status line only after they say OK.
    `.claude/paperflow/paperflow.ps1 tasks -Path <plan>` exits 4 until then.
 6. Tick each task the moment its proof has run and add its evidence row; the work is done when the same
    command exits 0.
@@ -180,7 +183,7 @@ correcting task and a Decisions line.
 
 ## After verification - close SPEC.md
 
-1. Remove the `Bản nháp chờ duyệt` banner and every `chờ kiểm` marker this task put in.
+1. Remove the `Bản nháp chờ duyệt` banner and every `chờ kiểm` marker this task put in, in both parts.
 2. **Delete the lines a verified line replaced**, and any line the work proved wrong.
 3. Update `Inputs`, `When it does not do the job` and `What it does not do yet` if they moved. A new
    failure row takes the next unused `F` number; a row that no longer exists is deleted, its number

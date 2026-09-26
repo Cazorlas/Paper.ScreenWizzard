@@ -25,6 +25,14 @@ tiếp, đừng khai một lệnh giả để cổng xanh.
 | 1 | Đã duyệt, còn task mở — làm task chưa tick đầu tiên |
 | 0 | Xong rồi — chỉ chạy `/task-verify` |
 
+### Harness correlation
+
+Claude and Codex hooks automatically append the session, tool, subagent, and task lifecycle events to
+`.paper/harness/runs/<run-id>/events.jsonl`. Preserve the exact plan task id and lane in every lane prompt;
+do not create a second orchestration state or tick a plan from the recorder. When handing back evidence,
+include the run id and the relevant event/artifact paths if they are available. The harness is supporting
+evidence only: the plan gate and `paperflow` verdict remain authoritative.
+
 ## 2. Khảo sát — thay đổi này đụng vào đâu
 
 Đọc `SPEC.md` của feature (cả các mục mang dấu `chờ kiểm`), brief, plan, `CLAUDE.md` của kho và của

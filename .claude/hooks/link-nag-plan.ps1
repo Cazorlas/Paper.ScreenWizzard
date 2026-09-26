@@ -23,6 +23,9 @@
 #     a markdown link target, [x](<D:/.../My Project/x.md>), and a bare D:\...\x.md:264. So a link counts
 #     only when its target is absolute - a drive path (C:/ or C:\), a UNC path, or a file:/// URL - and
 #     %20 is fine inside a file:/// URL, where it is the URL's own spelling of a space.
+#   - 2026-09-22, an absolute link with a #L<line> fragment, in the Orca terminal: did not open - the
+#     terminal took "SPEC.md#L115" as the file name - while the same path without it, and its file:///
+#     URL, both opened. So no local link carries a fragment, in any form; the line goes in the link text.
 # Either is worse than a bare name, which at least tells the reader to go and look.
 #
 # ASCII only: PowerShell 5.1 reads a .ps1 without a BOM as ANSI.
@@ -50,6 +53,7 @@ function Get-PaperLinkNagVerdict {
     $linksAPlan = $false
     $brokenLinks = New-Object System.Collections.Generic.List[string]
     $relativeLinks = New-Object System.Collections.Generic.List[string]
+    $fragmentLinks = New-Object System.Collections.Generic.List[string]
     $absolute = '^(?i)(file:///|[a-z]:[\\/]|\\\\)'
     foreach ($m in [regex]::Matches($body, $linkPattern)) {
         $label = $m.Groups[1].Value
@@ -61,6 +65,7 @@ function Get-PaperLinkNagVerdict {
             continue
         }
         if ($target -match '(?i)%20' -and $target -notmatch '^(?i)file:///') { $brokenLinks.Add($m.Value) }
+        if ($target -match '#') { $fragmentLinks.Add($m.Value) }
         if ($target -match '(?i)plan\.md') { $linksAPlan = $true }
         foreach ($name in @($target, $label)) {
             $leaf = ($name -replace '#.*$', '') -split '[\\/]' | Select-Object -Last 1
@@ -74,6 +79,7 @@ function Get-PaperLinkNagVerdict {
         $leaf = ($m.Value -replace '#.*$', '') -split '[\\/]' | Select-Object -Last 1
         if ($leaf -match '(?i)\.md$') { [void] $linked.Add($leaf) }
         if ($m.Value -match '(?i)plan\.md') { $linksAPlan = $true }
+        if ($m.Value -match '#') { $fragmentLinks.Add($m.Value) }
     }
     $rest = [regex]::Replace($rest, '(?i)file:///\S+', ' ')
 
@@ -91,7 +97,7 @@ function Get-PaperLinkNagVerdict {
         }
     }
 
-    if ($bare.Count -eq 0 -and $tasks.Count -eq 0 -and $brokenLinks.Count -eq 0 -and $relativeLinks.Count -eq 0) { return $quiet }
+    if ($bare.Count -eq 0 -and $tasks.Count -eq 0 -and $brokenLinks.Count -eq 0 -and $relativeLinks.Count -eq 0 -and $fragmentLinks.Count -eq 0) { return $quiet }
 
     $lines = New-Object System.Collections.Generic.List[string]
     foreach ($b in @($bare | Select-Object -First 8)) { $lines.Add("  - $b - named, with no link that opens it") }
@@ -100,16 +106,18 @@ function Get-PaperLinkNagVerdict {
     }
     foreach ($b in @($relativeLinks | Select-Object -First 8)) { $lines.Add("  - $b - a relative path does not open from the terminal") }
     foreach ($b in @($brokenLinks | Select-Object -First 4)) { $lines.Add("  - $b - %20 outside a file:/// URL does not open") }
+    foreach ($b in @($fragmentLinks | Select-Object -First 4)) { $lines.Add("  - $b - a #L line fragment makes the terminal look for a file named with it; put the line in the link text") }
 
     $text = "This reply names documents without a link that opens them (paperflow rule 9):`n`n" + ($lines -join "`n") + @"
 
 
 Resend it with one clickable link per document, measured now rather than remembered:
-  [name](<ABSOLUTE path>), plus #L<line> when it points at a line - take the number from grep -n right
-  before sending. Example: [SPEC](<D:/work/My Project/docs/SPEC.md#L12>). Build the path from the
-  working directory the session prints, never from memory. A relative path does not open from the
-  terminal (measured 2026-09-22); angle brackets keep a path with a space in one piece.
-  A task is a line in a plan, so link the plan (with #L<line> of the task) whenever you name a task.
+  [name](<ABSOLUTE path>), with no #L fragment - when it points at a line, the line goes in the link
+  text, taken from grep -n right before sending. Example: [SPEC line 12](<D:/work/My Project/docs/SPEC.md>).
+  Build the path from the working directory the session prints, never from memory. A relative path
+  does not open from the terminal, and neither does a #L fragment (both measured 2026-09-22); angle
+  brackets keep a path with a space in one piece.
+  A task is a line in a plan, so link the plan (with the task's line in the link text) whenever you name a task.
 "@
     return [pscustomobject]@{ ExitCode = 2; Text = $text }
 }

@@ -7,6 +7,17 @@ description: Verify a plan end to end - the evidence each lane agent returned re
 
 Xanh ở đây nghĩa là **đã đo**, không phải đã tin — kể cả điều một lane agent vừa báo.
 
+## Harness evidence
+
+Read the matching `.paper/harness/runs/*/summary.json` and `events.jsonl` after the lane evidence. Use the
+run id and event paths to correlate session/tool/task timing and recovery, but never treat a harness summary
+as proof by itself: the plan's evidence rows, independent verification, and `paperflow` gate still decide.
+Use `summary.json.quality` as a compact diagnostic: compare event/tool/failure/permission counts and changed
+files against the lane evidence. If the summary is stale or missing, run `harness.ps1 summarize` after
+recovering the final JSONL line; keep the run incomplete until independent verification exists.
+If a run has no `summary.json`, use `recover` to salvage any partial final JSONL line, then report the
+run as incomplete until the plan's independent verification evidence is available.
+
 0. **Bằng chứng theo lane.** Đọc bảng `## Bằng chứng` của plan theo từng lane (`unit`, `ui`, `e2e`,
    `live`, `model`) — mỗi lane agent trả dòng của lane nó, và từng dòng được đọc lại ở đây:
    - dòng lane `unit`/`ui`/`e2e` mà **số test đã chạy là 0**, hay không ghi số test nào → `not verifiable`,

@@ -12,8 +12,9 @@ ba và mọi lần sau, lời trình luôn có **một dòng liên kết markdow
 
 - `SPEC.md` (mỗi tính năng bị chạm một dòng), brief và plan; plan `model` thêm RULE, SAMPLE, REFERENCE nếu việc
   này chạm tới; `/task-bug` thêm file bug.
-- Dạng `[tên hiển thị](<đường dẫn TUYỆT ĐỐI>)` để Ctrl+click là mở, có `#L<dòng>` khi trỏ vào một dòng luật
-  hay một task. Ví dụ: `[SPEC](<D:/work/My Project/docs/SPEC.md#L12>)`. Lý do ở mục "Bấm được" dưới.
+- Dạng `[tên hiển thị](<đường dẫn TUYỆT ĐỐI>)` để Ctrl+click là mở. Trỏ vào một dòng luật hay một task thì
+  **số dòng nằm trong chữ của liên kết**, không bao giờ `#L<dòng>` trong đích. Ví dụ:
+  `[SPEC dòng 12](<D:/work/My Project/docs/SPEC.md>)`. Lý do ở mục "Bấm được" dưới.
 - Tài liệu bị đổi ở lần này ghi thêm chữ *đổi* cạnh liên kết của nó, để người duyệt biết mở cái nào trước.
 
 **Không** viết "như lần trước", **không** chỉ nêu tên file, **không** gom nhiều tài liệu vào một liên kết:
@@ -30,8 +31,8 @@ Cùng dạng liên kết, nhẹ hơn một bậc: **một dòng cho mỗi file �
 
 - **Báo cáo chặng 7**: mọi artifact đã ghi trong lượt — SPEC, plan, REFERENCE, RULE, CODEMAP, file bug —
   mỗi cái một liên kết. Người đọc báo cáo là người sẽ mở chúng.
-- **Nhắc tới một dòng luật, một task, một hàng bằng chứng**: liên kết có `#L<dòng>`, vì "trong REFERENCE"
-  của một file 700 dòng vẫn là đi tìm.
+- **Nhắc tới một dòng luật, một task, một hàng bằng chứng**: chữ của liên kết mang số dòng (`[plan, T8 dòng
+  147](<...>)`), vì "trong REFERENCE" của một file 700 dòng vẫn là đi tìm.
 - **Trả lời một câu hỏi bằng một thứ đã ghi sẵn**: liên kết tới chỗ đã ghi, đừng chép lại nội dung rồi
   để người dùng tự đoán nó nằm đâu.
 
@@ -54,15 +55,21 @@ nào. Cùng phiên đo năm dạng **tuyệt đối**, cả năm đều mở: `f
 Dạng tương đối trong dấu ngoặc nhọn chỉ từng mở trong khung chat VS Code (đo 2026-09-21), nên nó không
 dùng chung cho mọi client được.
 
+**Đã đo, 2026-09-22 (sau đó cùng ngày) — bỏ `#L<dòng>`.** Trong terminal Orca, `[SPEC](<C:/.../SPEC.md#L115>)`
+**không mở**: thanh trạng thái cho thấy terminal coi cả `SPEC.md#L115` là tên file. Cùng đường dẫn đó bỏ `#L`,
+và URL `file:///` của nó, cả hai đều mở. Đo trước đó thấy `#L` mở được ở client khác, nhưng một dạng chỉ mở
+ở vài client là dạng hỏng: số dòng chuyển vào chữ của liên kết.
+
 Nên:
 
 - **Luôn dùng đường dẫn tuyệt đối**, dựng từ thư mục làm việc mà phiên in ra (đừng nhớ), bọc trong dấu
-  ngoặc nhọn để dấu cách không cắt đôi nó: `[tên](<D:/work/thu muc co dau cach/docs/SPEC.md#L180>)`.
+  ngoặc nhọn để dấu cách không cắt đôi nó: `[tên dòng 180](<D:/work/thu muc co dau cach/docs/SPEC.md>)`.
   Một phiên chạy trong worktree thì là đường dẫn của worktree đó, không phải của bản checkout chính.
 - `file:///` cũng được, và trong URL đó `%20` là đúng. `%20` trong một đường dẫn ổ đĩa thường thì vẫn hỏng.
 - Hook `link-nag` giữ lượt khi đích của liên kết tới một file `.md` là đường dẫn tương đối.
-- **Số dòng phải đo, đừng nhớ.** `#L<dòng>` lấy bằng `grep -n` ngay trước khi gửi; file vừa sửa trong
-  cùng lượt thì số dòng cũ đã sai.
+- **Không `#L` và không `#` nào trong đích** của một liên kết tới file cục bộ, kể cả URL `file:///`.
+- **Số dòng phải đo, đừng nhớ.** Số dòng trong chữ liên kết lấy bằng `grep -n` ngay trước khi gửi; file vừa
+  sửa trong cùng lượt thì số dòng cũ đã sai.
 
 Hai điều trên được viết ra vì `payload-contract` bắt được chính đoạn này: bản nháp đầu của nó **chứa một
 liên kết hỏng làm ví dụ**, và luật F14 ("mọi đường dẫn trong payload phải resolve") chặn lại. Ví dụ trong
@@ -77,7 +84,8 @@ dành cho đúng bài học đó. Một luật chỉ viết ra thì là một mo
 - nêu một file markdown mà không có liên kết nào tới nó;
 - nêu mã task (`T8`, `T8c`) mà không liên kết plan nào;
 - có liên kết tới một file `.md` mà đích là đường dẫn tương đối (đã đo 2026-09-22 là không mở từ terminal);
-- có liên kết mang `%20` trong một đường dẫn ổ đĩa (đã đo là hỏng; trong URL `file:///` thì đúng).
+- có liên kết mang `%20` trong một đường dẫn ổ đĩa (đã đo là hỏng; trong URL `file:///` thì đúng);
+- có liên kết tới file cục bộ mà đích mang `#L<dòng>` hay bất kỳ `#` nào (đã đo 2026-09-22 là không mở ở Orca).
 
 Ngoại lệ có chủ ý: khối code có rào, URL web, file không phải markdown, mã luật như `F20`. Một file đã được
 liên kết một lần thì được nhắc lại bằng tên. Giới hạn đã biết: lần gửi lại vẫn sai thì lọt qua, vì một hook

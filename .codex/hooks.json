@@ -7,6 +7,11 @@
             "type": "command",
             "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/session-anchor.ps1\"",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/harness-event.ps1\"",
+            "timeout": 10
           }
         ]
       }
@@ -18,11 +23,35 @@
             "type": "command",
             "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/paperflow-route.ps1\"",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/harness-event.ps1\"",
+            "timeout": 10
           }
         ]
       }
     ],
     "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/live-first-guard.ps1\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/harness-event.ps1\"",
+            "timeout": 10
+          }
+        ]
+      },
       {
         "matcher": "Bash",
         "hooks": [
@@ -39,6 +68,32 @@
           {
             "type": "command",
             "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/destructive-guard.ps1\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/layer-guard.ps1\"",
+            "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/no-static-host-state.ps1\"",
+            "timeout": 15
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/harness-event.ps1\"",
             "timeout": 10
           }
         ]
@@ -66,6 +121,66 @@
             "type": "command",
             "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/verify-on-stop.ps1\"",
             "timeout": 600
+          },
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/harness-event.ps1\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/harness-event.ps1\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/harness-event.ps1\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/harness-event.ps1\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "TaskCreated": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/harness-event.ps1\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/harness-event.ps1\"",
+            "timeout": 10
           }
         ]
       }

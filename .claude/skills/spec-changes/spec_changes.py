@@ -31,6 +31,10 @@ RULE_START = re.compile(r"^(?:[-*+] |\d+[.)] |\||!\[)")
 HEADING = re.compile(r"^(#{1,4}) +(.+?)\s*#*\s*$")
 TABLE_SEPARATOR = re.compile(r"^\|[\s:|-]+\|?$")
 SAME_RULE = 0.6
+# A SPEC.md carries an English part and a Vietnamese part under level-1 headings (skill spec, "Two
+# languages"). Both have a "History" or a "Log"; without the part in the key, the rules of the two would
+# be pooled under one section and a change in one language would read as a change in both.
+LANGUAGE_PART = re.compile(r"^(english|ti[eế]ng vi[eệ]t)$", re.IGNORECASE)
 
 
 def git(*args, check=True):
@@ -52,6 +56,7 @@ def rules_by_section(text):
     sections = {}
     order = []
     heading = "(before the first heading)"
+    part = None
     rules = []
     current = None
     fenced = False
@@ -87,6 +92,10 @@ def rules_by_section(text):
         if match:
             close_section()
             heading = match.group(2)
+            if len(match.group(1)) == 1:
+                part = heading if LANGUAGE_PART.match(heading) else None
+            elif part:
+                heading = f"{part} · {heading}"
             continue
         if stripped.startswith("|"):
             if current:

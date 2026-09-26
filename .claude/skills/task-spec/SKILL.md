@@ -33,6 +33,8 @@ Viết yêu cầu, brief và plan — theo đúng thứ tự đó — rồi kế
    gì" và mỗi dòng mang mã `F<n>` (không bao giờ đánh số lại; một skip im lặng là một dòng `F` riêng,
    không bao giờ bị bỏ). `SPEC.md` mới mở đầu bằng banner `> Bản nháp chờ duyệt <ngày>. …`; mục bị
    đổi của một `SPEC.md` có sẵn mang `> Đổi bởi <brief>, chờ kiểm` ngay dưới heading của nó.
+   **Viết cả hai ngôn ngữ trong một file**: phần `# English` và phần `# Tiếng Việt`, cùng mục, cùng dòng
+   nghiệm thu, cùng mã `F`, đổi cùng lúc — skill `spec`, mục "Two languages".
 5. **Viết brief `<featureDocs>/<slug>/YYYY-MM-DD-<task>.md` từ `spec/brief-template.md`**: ai hỏi gì, vì
    sao, tài liệu đi kèm, mục nào của `SPEC.md` đổi, model và id được đụng tới. Không tên code, không task.
 6. **Viết plan `<featureDocs>/<slug>/YYYY-MM-DD-<task>-plan.md` từ `spec/plan-template.md`**: Context,

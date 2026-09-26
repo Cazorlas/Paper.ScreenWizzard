@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paper-skills.dev/schemas/harness-event.schema.json",
+  "title": "Paper harness event",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schemaVersion",
+    "eventId",
+    "timestamp",
+    "runId",
+    "sessionId",
+    "eventType",
+    "actor",
+    "status",
+    "redactionStatus"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "string", "const": "1" },
+    "eventId": { "type": "string", "minLength": 1 },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "runId": { "type": "string", "minLength": 1 },
+    "sessionId": { "type": ["string", "null"] },
+    "taskId": { "type": ["string", "null"] },
+    "parentTaskId": { "type": ["string", "null"] },
+    "lane": { "type": ["string", "null"] },
+    "actor": { "type": "string", "enum": ["claude", "codex", "openspace", "script"] },
+    "eventType": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "minLength": 1 },
+    "redactionStatus": { "type": "string", "enum": ["clean", "redacted", "unknown"] },
+    "extensions": { "type": "object" }
+  }
+}

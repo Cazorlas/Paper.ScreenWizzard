@@ -44,6 +44,15 @@ the brief or plan it names (a marker naming `YYYY-MM-DD-<task>` is judged by `YY
 names neither is left over when no plan in the folder is still open. A rule that merely mentions the marker
 words is not a quoted line and is never reported. Fix: close `SPEC.md` as skill `spec` says.
 
+## Two languages - F26
+
+**`F26` - a requirement in one language only.** A `SPEC.md` carrying the draft banner or a change marker
+needs both parts in the one file: a `# English` heading and a `# Tiếng Việt` heading, each over the whole
+spec (skill `spec`, "Two languages"). When both are there they must keep one shape: the same number of `##`
+sections, the same number of acceptance lines (`Given` / `Cho`), the same `F` codes; the report names what
+differs. A spec nobody is changing is not asked for the second part, so old specs get it on their next
+change.
+
 ## What it cannot catch
 
 A brief (`YYYY-MM-DD-<task>.md`) - it names no code either, but it is not a `SPEC.md`, so only reading

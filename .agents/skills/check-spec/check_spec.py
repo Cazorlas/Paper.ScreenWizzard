@@ -13,7 +13,11 @@ Two checks on the folder a SPEC.md sits in ride along, because they are about th
   F6  a drawing under shapes/ whose SVG is newer than its rendered PNG, or that has no PNG at all -
       the picture the spec links no longer shows what its source says;
   F7  a draft banner or a change marker still in SPEC.md while the plan it belongs to is finished -
-      the work is done and the requirement was never closed.
+      the work is done and the requirement was never closed;
+  F26 a SPEC.md being written or changed (it carries a banner or a marker) without both language
+      parts - a "# English" part and a "# Tieng Viet" part in the one file - or with two parts whose
+      shape differs: other sections, other acceptance lines, other F codes. The owner reads Vietnamese
+      and the code's people read English, so a requirement is approved in both.
 
 Exit code 0 when clean, 1 when any check finds a problem.
 """
@@ -54,12 +58,79 @@ DATED_NAME = re.compile(r"(\d{4}-\d{2}-\d{2}-[\w.-]+?)(?:-plan)?(?:\.md)?(?=[)\]
 STROKED_D = chr(0x111)
 
 
+# The two language parts of one SPEC.md: a level-1 heading each, compared without diacritics.
+LANGUAGE_PARTS = {"english": "English", "tieng viet": "Tiếng Việt"}
+# One line of acceptance: "- Cho ... ->" in Vietnamese, "- Given ... ->" in English (a Vietnamese part may
+# write Given too). Counted, never compared word for word - the two languages share only the shape.
+ACCEPTANCE = re.compile(r"^\s*[-*]\s+(?:cho|given)\b", re.IGNORECASE)
+F_CODE = re.compile(r"^\s*\|\s*(F\d+)\s*\|")
+
+
 def find_specs():
     out = []
     for dirpath, filenames in walk("."):
         if "SPEC.md" in filenames:
             out.append(os.path.join(dirpath, "SPEC.md").replace("\\", "/"))
     return sorted(out)
+
+
+def language_parts(text):
+    """Part name -> its lines, for every "# English" / "# Tieng Viet" heading; a part runs to the next level-1
+    heading. Lines inside a fenced block never start a part."""
+    parts, current, fenced = {}, None, False
+    for line in text.split("\n"):
+        if line.strip().startswith("```"):
+            fenced = not fenced
+        if not fenced and re.match(r"^# \S", line):
+            key = plain_words(line[2:]).strip(" #")
+            current = LANGUAGE_PARTS.get(key)
+            if current:
+                parts[current] = []
+                continue
+        if current:
+            parts[current].append(line)
+    return {name: "\n".join(lines) for name, lines in parts.items()}
+
+
+def shape(text):
+    """What both languages must share: the section count, the acceptance line count and the F codes."""
+    lines = text.split("\n")
+    return (
+        sum(1 for line in lines if line.startswith("## ")),
+        sum(1 for line in lines if ACCEPTANCE.match(line)),
+        sorted({m.group(1) for m in map(F_CODE.match, lines) if m}, key=lambda c: int(c[1:])),
+    )
+
+
+def has_marker(text):
+    return any(
+        line.lstrip().startswith(">") and (DRAFT_BANNER in plain_words(line) or CHANGE_MARKER in plain_words(line))
+        for line in text.split("\n")
+    )
+
+
+def check_languages(text):
+    """F26 - a SPEC under change has an English part and a Vietnamese part, and the two keep one shape."""
+    parts = language_parts(text)
+    missing = [name for name in LANGUAGE_PARTS.values() if name not in parts]
+    if missing:
+        if not has_marker(text):
+            return []
+        wanted = " and ".join(f'"# {name}"' for name in missing)
+        return [(0, f"SPEC.md is being written or changed and has no {wanted} part - one file, both languages")]
+    en, vi = shape(parts["English"]), shape(parts["Tiếng Việt"])
+    problems = []
+    if en[0] != vi[0]:
+        problems.append((0, f"English has {en[0]} sections, Tiếng Việt {vi[0]}"))
+    if en[1] != vi[1]:
+        problems.append((0, f"English has {en[1]} acceptance lines, Tiếng Việt {vi[1]}"))
+    only_en = [c for c in en[2] if c not in vi[2]]
+    only_vi = [c for c in vi[2] if c not in en[2]]
+    if only_en:
+        problems.append((0, f"{', '.join(only_en)} in English and not in Tiếng Việt"))
+    if only_vi:
+        problems.append((0, f"{', '.join(only_vi)} in Tiếng Việt and not in English"))
+    return problems
 
 
 def check_spec(text):
@@ -140,11 +211,12 @@ def main():
         ("SPEC - a requirement written in the code's words (a test name counts):", []),
         ("F6 - a drawing whose rendered picture is missing or older than its source:", []),
         ("F7 - a draft banner or change marker left behind by a finished plan:", []),
+        ("F26 - a SPEC under change without both language parts, or with two parts of another shape:", []),
     ]
     for path in specs:
         text = io.open(path, encoding="utf-8-sig").read()
         folder = os.path.dirname(path)
-        found = (check_spec(text), check_shapes(folder), check_markers(folder, text))
+        found = (check_spec(text), check_shapes(folder), check_markers(folder, text), check_languages(text))
         for (_, bad), problems in zip(groups, found):
             if problems:
                 bad.append((path, problems))
