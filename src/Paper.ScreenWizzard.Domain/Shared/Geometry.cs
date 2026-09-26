@@ -1,5 +1,4 @@
-namespace Paper.ScreenWizzard.Domain.Geometry;
-
+namespace Paper.ScreenWizzard.Domain.Shared;
 // Every coordinate in this app is a PHYSICAL pixel of the virtual desktop (CLAUDE.md). x and y may be negative when a
 // monitor sits left of or above the primary one. Plain data only: the rules that use these live in UseCases.
 

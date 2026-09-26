@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
 
 namespace Paper.ScreenWizzard.Presentation.Views.Capture;
 

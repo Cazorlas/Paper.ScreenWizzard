@@ -1,5 +1,5 @@
 using System.Runtime.InteropServices;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.UseCases.Capture.Ports;
 
 namespace Paper.ScreenWizzard.Infrastructure.Capture;

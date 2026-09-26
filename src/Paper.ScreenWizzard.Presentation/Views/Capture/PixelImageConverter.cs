@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
 
 namespace Paper.ScreenWizzard.Presentation.Views.Capture;
 

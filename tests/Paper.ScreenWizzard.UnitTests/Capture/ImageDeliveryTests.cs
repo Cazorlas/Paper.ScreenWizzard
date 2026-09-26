@@ -1,6 +1,5 @@
 using NUnit.Framework;
-using Paper.ScreenWizzard.Domain.Common;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.UnitTests.Capture.Fakes;
 using Paper.ScreenWizzard.UseCases.Common.Implements;
 using Paper.ScreenWizzard.UseCases.Common.Models;

@@ -1,6 +1,5 @@
 using Paper.ScreenWizzard.Domain.Capture;
-using Paper.ScreenWizzard.Domain.Common;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.UseCases.Capture.Models;
 using Paper.ScreenWizzard.UseCases.Capture.Ports;
 using Paper.ScreenWizzard.UseCases.Common.Models;

@@ -1,5 +1,5 @@
 using Paper.ScreenWizzard.Domain.Capture;
-using Paper.ScreenWizzard.Domain.Common;
+using Paper.ScreenWizzard.Domain.Shared;
 
 namespace Paper.ScreenWizzard.Domain.Shell;
 

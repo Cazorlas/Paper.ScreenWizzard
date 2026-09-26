@@ -3,9 +3,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using Paper.ScreenWizzard.Presentation.ViewModels.Capture;
 using Paper.ScreenWizzard.Domain.Capture;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
+using Paper.ScreenWizzard.Presentation.ViewModels.Capture;
 
 namespace Paper.ScreenWizzard.Presentation.Views.Capture;
 

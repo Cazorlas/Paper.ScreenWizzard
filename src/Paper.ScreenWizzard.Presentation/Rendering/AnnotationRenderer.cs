@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
 using Paper.ScreenWizzard.Domain.Editor;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
 
 namespace Paper.ScreenWizzard.Presentation.Rendering;
 

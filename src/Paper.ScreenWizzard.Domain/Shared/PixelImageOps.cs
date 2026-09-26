@@ -1,6 +1,4 @@
-using Paper.ScreenWizzard.Domain.Geometry;
-
-namespace Paper.ScreenWizzard.Domain.Common;
+namespace Paper.ScreenWizzard.Domain.Shared;
 
 /// <summary>Pure operations on <see cref="PixelImage"/> bytes (BGRA, straight alpha, no row padding).</summary>
 public static class PixelImageOps

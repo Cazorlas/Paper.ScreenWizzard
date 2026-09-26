@@ -1,8 +1,8 @@
+using Paper.ScreenWizzard.Domain.Capture;
+using Paper.ScreenWizzard.Domain.Shared;
+using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.Presentation.Mvvm;
 using Paper.ScreenWizzard.Presentation.ViewModels.Shell.Commands;
-using Paper.ScreenWizzard.Domain.Capture;
-using Paper.ScreenWizzard.Domain.Common;
-using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.UseCases.Common.Models;
 using Paper.ScreenWizzard.UseCases.Common.Ports;
 using Paper.ScreenWizzard.UseCases.Shell.Ports;

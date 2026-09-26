@@ -1,5 +1,5 @@
 using Paper.ScreenWizzard.Domain.Capture;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
 
 namespace Paper.ScreenWizzard.Presentation.Views.Editor;
 

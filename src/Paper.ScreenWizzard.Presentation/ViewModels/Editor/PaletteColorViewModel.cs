@@ -1,5 +1,5 @@
 using System.Windows.Media;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Presentation.Mvvm;
 using Paper.ScreenWizzard.Presentation.ViewModels.Shell;
 

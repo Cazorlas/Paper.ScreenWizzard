@@ -1,8 +1,7 @@
 using System.Text;
 using NUnit.Framework;
 using Paper.ScreenWizzard.Domain.Capture;
-using Paper.ScreenWizzard.Domain.Common;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.E2eTests.Support;
 using Paper.ScreenWizzard.Infrastructure.Common;

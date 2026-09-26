@@ -230,7 +230,7 @@ public sealed class SettingsWindowTests : UiTestBase
         var saved = rig.Shell.Applied.Single();
         Assert.Multiple(() =>
         {
-            Assert.That(saved.Format, Is.EqualTo(Domain.Common.ImageFormat.Jpg));
+            Assert.That(saved.Format, Is.EqualTo(Domain.Shared.ImageFormat.Jpg));
             Assert.That(saved.DelaySeconds, Is.EqualTo(5));
             Assert.That(saved.IncludeCursor, Is.True);
         });

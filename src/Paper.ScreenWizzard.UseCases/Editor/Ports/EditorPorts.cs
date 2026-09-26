@@ -1,6 +1,5 @@
-using Paper.ScreenWizzard.Domain.Common;
 using Paper.ScreenWizzard.Domain.Editor;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.UseCases.Editor.Models;
 

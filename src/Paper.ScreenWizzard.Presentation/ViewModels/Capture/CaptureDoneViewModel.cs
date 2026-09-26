@@ -1,9 +1,9 @@
 using System.Globalization;
+using Paper.ScreenWizzard.Domain.Shared;
+using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.Presentation.Mvvm;
 using Paper.ScreenWizzard.Presentation.ViewModels.Capture.Commands;
 using Paper.ScreenWizzard.Presentation.ViewModels.Shell;
-using Paper.ScreenWizzard.Domain.Geometry;
-using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.UseCases.Capture.Models;
 using Paper.ScreenWizzard.UseCases.Capture.Ports;
 using Paper.ScreenWizzard.UseCases.Common.Models;

@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.E2eTests.Support;
 using Paper.ScreenWizzard.Infrastructure.Capture;
 using Paper.ScreenWizzard.UseCases.Capture.Ports;

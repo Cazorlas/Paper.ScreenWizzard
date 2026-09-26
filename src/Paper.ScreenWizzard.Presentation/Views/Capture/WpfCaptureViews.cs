@@ -1,6 +1,6 @@
 using System.Windows;
+using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Presentation.ViewModels.Capture;
-using Paper.ScreenWizzard.Domain.Geometry;
 
 namespace Paper.ScreenWizzard.Presentation.Views.Capture;
 

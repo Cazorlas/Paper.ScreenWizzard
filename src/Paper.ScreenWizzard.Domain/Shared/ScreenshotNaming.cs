@@ -1,7 +1,6 @@
 using System.Globalization;
 
-namespace Paper.ScreenWizzard.Domain.Common;
-
+namespace Paper.ScreenWizzard.Domain.Shared;
 /// <summary>The automatic file name of a capture (SPEC capture, "Ảnh đi ra đúng như đã chụp").</summary>
 public static class ScreenshotNaming
 {

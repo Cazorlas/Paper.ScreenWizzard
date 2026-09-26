@@ -1,5 +1,4 @@
-using Paper.ScreenWizzard.Domain.Common;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.UseCases.Common.Ports;
 
 namespace Paper.ScreenWizzard.UseCases.Common.Implements;

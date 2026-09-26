@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Interop;
 using Microsoft.Win32;
 using Paper.ScreenWizzard.Domain.Capture;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.Infrastructure.Shell;
 using Paper.ScreenWizzard.Presentation.ViewModels.Capture;

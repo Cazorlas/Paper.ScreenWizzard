@@ -127,12 +127,12 @@ public sealed class ProbeWindow
     });
 
     /// <summary>The client area (the white surface) in physical pixels of the desktop.</summary>
-    public Paper.ScreenWizzard.Domain.Geometry.PixelRect ClientInPixels() => StaHost.Instance.Invoke(() =>
+    public Paper.ScreenWizzard.Domain.Shared.PixelRect ClientInPixels() => StaHost.Instance.Invoke(() =>
     {
         var content = (FrameworkElement)_window.Content;
         var scale = VisualTreeHelper.GetDpi(_window);
         var corner = content.PointToScreen(new System.Windows.Point(0, 0));
-        return new Paper.ScreenWizzard.Domain.Geometry.PixelRect(
+        return new Paper.ScreenWizzard.Domain.Shared.PixelRect(
             (int)Math.Round(corner.X),
             (int)Math.Round(corner.Y),
             (int)Math.Round(content.ActualWidth * scale.DpiScaleX),
