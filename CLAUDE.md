@@ -96,7 +96,10 @@ Luật chung ở skill `paper-wpf-style`, `references/build-and-deploy.md`; đâ
   không đẩy được thẻ (Hùng đồng ý 2026-09-26); chọn thêm `publish` thì release được đăng công khai ngay khi mọi kiểm tra đạt, GitHub
   tạo thẻ cùng lúc. **Agent chỉ bắt đầu một bản phát hành khi Hùng nói trong phiên đó** (2026-09-21: bản đầu; 2026-09-26: "làm bản
   0.1.2", rồi "bạn tự làm hết các bước lun đi"): khi Hùng đã nói, agent đi hết đường, kể cả `publish`.
-- **Chưa có (nợ, chưa quyết):** ký số (cần chứng chỉ), cập nhật tự động, MSI. Mỗi thứ là một ADR riêng.
+- **Báo bản mới:** ứng dụng hỏi `releases/latest` của kho (một phút sau khi mở, rồi mỗi ngày), có bản mới hơn thì báo và mở trang tải;
+  nó không tự tải, không tự cài (SPEC shell, "Báo bản mới"). Vì vậy một bản phát hành phải được **Publish** (không để nháp) thì người
+  dùng mới được báo, và thẻ phải là `v<x.y.z>`.
+- **Chưa có (nợ, chưa quyết):** ký số (cần chứng chỉ), tự tải và tự cài bản mới, MSI. Mỗi thứ là một ADR riêng.
 
 ## Việc đang làm
 

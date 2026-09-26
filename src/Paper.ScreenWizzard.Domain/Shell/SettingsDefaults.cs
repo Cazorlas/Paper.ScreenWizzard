@@ -26,5 +26,6 @@ public static class SettingsDefaults
         false,
         AppLanguage.System,
         AppTheme.System,
-        null);
+        null,
+        true);
 }

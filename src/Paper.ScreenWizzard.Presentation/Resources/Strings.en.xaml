@@ -22,6 +22,7 @@
   <sys:String x:Key="Tray.OpenImage">Open image…</sys:String>
   <sys:String x:Key="Tray.CaptureBar">Capture bar</sys:String>
   <sys:String x:Key="Tray.Settings">Settings</sys:String>
+  <sys:String x:Key="Tray.Update">Download the new version…</sys:String>
   <sys:String x:Key="Tray.Exit">Exit</sys:String>
   <sys:String x:Key="Tray.Tooltip">Paper.ScreenWizzard</sys:String>
   <sys:String x:Key="Settings.Title">Settings</sys:String>
@@ -31,6 +32,7 @@
   <sys:String x:Key="Settings.Group.Startup">Start with Windows</sys:String>
   <sys:String x:Key="Settings.Group.Language">Language</sys:String>
   <sys:String x:Key="Settings.Group.Theme">Theme</sys:String>
+  <sys:String x:Key="Settings.Group.Updates">Updates</sys:String>
   <sys:String x:Key="Settings.HotkeyHint">Click a box, then press the keys.</sys:String>
   <sys:String x:Key="Settings.After.ShowDialog">Show the Captured dialog</sys:String>
   <sys:String x:Key="Settings.After.OpenEditor">Open in the editor</sys:String>
@@ -53,6 +55,7 @@
   <sys:String x:Key="Settings.Scope.Monitor">The screen with the cursor</sys:String>
   <sys:String x:Key="Settings.Scope.All">All screens</sys:String>
   <sys:String x:Key="Settings.StartWithWindows">Run hidden in the tray when I sign in to Windows</sys:String>
+  <sys:String x:Key="Settings.CheckForUpdates">Check once a day for a new version and tell me</sys:String>
   <sys:String x:Key="Settings.Language.System">Follow Windows</sys:String>
   <sys:String x:Key="Settings.Language.Vietnamese">Tiếng Việt</sys:String>
   <sys:String x:Key="Settings.Language.English">English</sys:String>
@@ -70,6 +73,9 @@
   <sys:String x:Key="Shell.SettingsCorrupt">The settings file is corrupt, so the app is using the default settings. The damaged file was kept with a .bak extension.</sys:String>
   <sys:String x:Key="Shell.SettingsNotSaved">The settings could not be saved: {0}. Your changes apply to this session only and are lost when the app exits.</sys:String>
   <sys:String x:Key="Shell.AutostartFailed">Could not change the start with Windows entry: {0}. The switch went back to its old state.</sys:String>
+  <sys:String x:Key="Shell.UpdateAvailable.Title">A new version is out</sys:String>
+  <sys:String x:Key="Shell.UpdateAvailable">Paper.ScreenWizzard {0} is out. Click here to open the download page.</sys:String>
+  <sys:String x:Key="Shell.UpdatePageNotOpened">Could not open the download page of the new version: {0}. The page is {1}.</sys:String>
   <sys:String x:Key="Shell.HotkeyNeedsModifier">The key {0} on its own would steal your typing. Add Ctrl, Alt or Shift. The old hotkey is kept.</sys:String>
   <sys:String x:Key="Shell.HotkeyUsedByOtherKind">This hotkey is already used by the "{0}" capture. The old hotkey is kept.</sys:String>
   <sys:String x:Key="Shell.HotkeyHeldByAnotherProgram">Could not register {0}: Windows or another program already holds it. The old hotkey is kept.</sys:String>

@@ -35,6 +35,20 @@ public sealed class TrayMenuTests : UiTestBase
     }
 
     [Test]
+    public void Menu_WithANewVersionOut_HasTheDownloadLineAboveExit()
+    {
+        var menu = Create();
+        var raised = 0;
+        menu.UpdateRequested += (_, _) => raised++;
+
+        menu.SetUpdateAvailable(true);
+
+        Assert.That(menu.Items.Select(item => item.TextKey).TakeLast(3), Is.EqualTo(new[] { "Tray.Settings", "Tray.Update", "Tray.Exit" }));
+        menu.Items.Single(item => item.TextKey == "Tray.Update").Command.Execute(null);
+        Assert.That(raised, Is.EqualTo(1), "the line asks the shell to open the download page");
+    }
+
+    [Test]
     public void Menu_CaptureLines_ShowTheHotkeyOfTheirKind()
     {
         var menu = Create();

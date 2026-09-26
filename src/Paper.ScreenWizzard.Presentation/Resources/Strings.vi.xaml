@@ -22,6 +22,7 @@
   <sys:String x:Key="Tray.OpenImage">Mở ảnh…</sys:String>
   <sys:String x:Key="Tray.CaptureBar">Thanh chụp</sys:String>
   <sys:String x:Key="Tray.Settings">Cài đặt</sys:String>
+  <sys:String x:Key="Tray.Update">Tải bản mới…</sys:String>
   <sys:String x:Key="Tray.Exit">Thoát</sys:String>
   <sys:String x:Key="Tray.Tooltip">Paper.ScreenWizzard</sys:String>
   <sys:String x:Key="Settings.Title">Cài đặt</sys:String>
@@ -31,6 +32,7 @@
   <sys:String x:Key="Settings.Group.Startup">Khởi động cùng Windows</sys:String>
   <sys:String x:Key="Settings.Group.Language">Ngôn ngữ</sys:String>
   <sys:String x:Key="Settings.Group.Theme">Giao diện</sys:String>
+  <sys:String x:Key="Settings.Group.Updates">Bản mới</sys:String>
   <sys:String x:Key="Settings.HotkeyHint">Bấm vào ô rồi nhấn tổ hợp phím.</sys:String>
   <sys:String x:Key="Settings.After.ShowDialog">Hiện hộp thoại Đã chụp</sys:String>
   <sys:String x:Key="Settings.After.OpenEditor">Mở trình sửa ảnh</sys:String>
@@ -53,6 +55,7 @@
   <sys:String x:Key="Settings.Scope.Monitor">Màn hình có con trỏ</sys:String>
   <sys:String x:Key="Settings.Scope.All">Tất cả màn hình</sys:String>
   <sys:String x:Key="Settings.StartWithWindows">Chạy ẩn ở khay khi đăng nhập Windows</sys:String>
+  <sys:String x:Key="Settings.CheckForUpdates">Mỗi ngày kiểm một lần xem có bản mới không, có thì báo</sys:String>
   <sys:String x:Key="Settings.Language.System">Theo Windows</sys:String>
   <sys:String x:Key="Settings.Language.Vietnamese">Tiếng Việt</sys:String>
   <sys:String x:Key="Settings.Language.English">English</sys:String>
@@ -70,6 +73,9 @@
   <sys:String x:Key="Shell.SettingsCorrupt">Tập tin cài đặt bị hỏng nên ứng dụng dùng cài đặt mặc định. Bản hỏng được giữ lại với đuôi .bak.</sys:String>
   <sys:String x:Key="Shell.SettingsNotSaved">Không lưu được cài đặt: {0}. Thay đổi chỉ dùng trong phiên này và sẽ mất khi thoát ứng dụng.</sys:String>
   <sys:String x:Key="Shell.AutostartFailed">Không đổi được mục khởi động cùng Windows: {0}. Công tắc đã trở về trạng thái cũ.</sys:String>
+  <sys:String x:Key="Shell.UpdateAvailable.Title">Có bản mới</sys:String>
+  <sys:String x:Key="Shell.UpdateAvailable">Paper.ScreenWizzard {0} đã có. Bấm vào đây để mở trang tải.</sys:String>
+  <sys:String x:Key="Shell.UpdatePageNotOpened">Không mở được trang tải bản mới: {0}. Trang ở {1}.</sys:String>
   <sys:String x:Key="Shell.HotkeyNeedsModifier">Phím {0} đứng một mình sẽ cướp việc gõ chữ. Hãy thêm Ctrl, Alt hoặc Shift. Phím cũ được giữ nguyên.</sys:String>
   <sys:String x:Key="Shell.HotkeyUsedByOtherKind">Phím này đã dùng cho kiểu chụp "{0}". Phím cũ được giữ nguyên.</sys:String>
   <sys:String x:Key="Shell.HotkeyHeldByAnotherProgram">Không đăng ký được phím {0}: Windows hoặc ứng dụng khác đang giữ phím này. Phím cũ được giữ nguyên.</sys:String>

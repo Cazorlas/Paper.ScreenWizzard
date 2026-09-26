@@ -12,7 +12,7 @@ the tray icon; the environment variables `PAPER_SCREENWIZZARD_DATA` and `PAPER_S
 | `CompositionRoot.cs` | which adapter implements which port, and the view-model and service graph |
 | `StartupOptions.cs` | the flag and the two environment variables |
 | `AppShell.cs` | the run of the app: start, hotkeys to captures, the bar, Settings, Open image, exit |
-| `TrayIcon.cs`, `TrayIconImage.cs` | the `NotifyIcon` and its icon (the exe's own, `app.ico`) |
+| `TrayIcon.cs`, `TrayIconImage.cs` | the `NotifyIcon`, its icon (the exe's own, `app.ico`) and its Windows notification (a new version) |
 | `SettingsHolder.cs` | the settings the running app uses |
 | `NativeMethods.cs` | the few Win32 calls the shell needs (bar position) |
 | `AppStrings.en.xaml`, `AppStrings.vi.xaml` | the texts of the crash box and the open-image dialog |
@@ -21,4 +21,5 @@ the tray icon; the environment variables `PAPER_SCREENWIZZARD_DATA` and `PAPER_S
 ## Flow
 
 `App.OnStartup` -> `CompositionRoot.Build` -> `AppShell.Start` -> `IShellInteractor.Start` -> hotkey `Pressed` ->
-`AppShell.StartCapture` -> `CaptureFlow.StartAsync` (Presentation). Exit: tray "Exit" -> `AppShell.Exit` -> `App.OnExit` disposes the tray, the hotkeys and the mutex.
+`AppShell.StartCapture` -> `CaptureFlow.StartAsync` (Presentation). A new version: a `DispatcherTimer` in `AppShell` (a minute after start, then daily) ->
+`IUpdateInteractor.CheckAsync` -> `TrayIcon.ShowNotice` and the tray's "Tải bản mới…" line -> `IUpdateInteractor.OpenDownloadPage`. Exit: tray "Exit" -> `AppShell.Exit` -> `App.OnExit` disposes the tray, the hotkeys and the mutex.
