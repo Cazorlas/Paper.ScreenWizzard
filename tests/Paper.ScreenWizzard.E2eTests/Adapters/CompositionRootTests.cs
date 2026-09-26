@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using Paper.ScreenWizzard.App.Startup;
+using Paper.ScreenWizzard.App;
 using Paper.ScreenWizzard.E2eTests.Support;
 using Paper.ScreenWizzard.Infrastructure.Shell;
 using Paper.ScreenWizzard.Presentation.Capture.ViewModels;

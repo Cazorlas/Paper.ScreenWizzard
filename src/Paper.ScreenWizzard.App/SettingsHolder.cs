@@ -1,6 +1,6 @@
 using Paper.ScreenWizzard.Domain.Shell;
 
-namespace Paper.ScreenWizzard.App.Startup;
+namespace Paper.ScreenWizzard.App;
 
 /// <summary>
 /// The settings the running app uses, read through a <c>Func&lt;AppSettings&gt;</c> by the capture and editor flows so a change made in

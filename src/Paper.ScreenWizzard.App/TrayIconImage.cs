@@ -1,6 +1,6 @@
 using System.Drawing;
 
-namespace Paper.ScreenWizzard.App.Startup;
+namespace Paper.ScreenWizzard.App;
 
 /// <summary>
 /// The tray icon is the icon of the exe itself (<c>app.ico</c>, drawn by <c>installer/make-icon.ps1</c>): one picture for Explorer, the Start

@@ -2,7 +2,7 @@ using System.ComponentModel;
 using Paper.ScreenWizzard.Presentation.Shell.ViewModels;
 using WinForms = System.Windows.Forms;
 
-namespace Paper.ScreenWizzard.App.Startup;
+namespace Paper.ScreenWizzard.App;
 
 /// <summary>
 /// The system tray icon (<c>System.Windows.Forms.NotifyIcon</c>: WPF has none) and its menu. It only shows what

@@ -1,7 +1,7 @@
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using Paper.ScreenWizzard.App.Startup;
+using Paper.ScreenWizzard.App;
 using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.E2eTests.Support;

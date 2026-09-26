@@ -1,7 +1,6 @@
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
-using Paper.ScreenWizzard.App.Startup;
 
 namespace Paper.ScreenWizzard.App;
 

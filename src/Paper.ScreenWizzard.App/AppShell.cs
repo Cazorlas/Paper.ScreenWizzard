@@ -16,7 +16,7 @@ using Paper.ScreenWizzard.UseCases.Shared.Ports;
 using Paper.ScreenWizzard.UseCases.Shell.Models;
 using Paper.ScreenWizzard.UseCases.Shell.Ports;
 
-namespace Paper.ScreenWizzard.App.Startup;
+namespace Paper.ScreenWizzard.App;
 
 /// <summary>
 /// The running app: the one place that connects the pieces. It decides nothing - <see cref="IShellInteractor"/> answers every question of
@@ -235,7 +235,7 @@ public sealed class AppShell : IDisposable
         var code = _language.Current == ResolvedLanguage.Vietnamese ? "vi" : "en";
         var next = new ResourceDictionary
         {
-            Source = new Uri($"pack://application:,,,/Paper.ScreenWizzard;component/Startup/AppStrings.{code}.xaml"),
+            Source = new Uri($"pack://application:,,,/Paper.ScreenWizzard;component/AppStrings.{code}.xaml"),
         };
         var merged = Application.Current.Resources.MergedDictionaries;
         merged.Add(next);

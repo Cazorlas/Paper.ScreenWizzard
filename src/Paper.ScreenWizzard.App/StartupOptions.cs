@@ -1,4 +1,4 @@
-namespace Paper.ScreenWizzard.App.Startup;
+namespace Paper.ScreenWizzard.App;
 
 /// <summary>
 /// What the exe reads before it builds anything: two environment variables and one flag. The variables let a test (or a second profile) run

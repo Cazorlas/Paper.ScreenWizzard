@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace Paper.ScreenWizzard.App.Startup;
+namespace Paper.ScreenWizzard.App;
 
 /// <summary>
 /// The Win32 calls of the entry host: putting the capture bar at a physical-pixel position, reading where it is, and freeing the icon handle

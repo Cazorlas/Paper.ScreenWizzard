@@ -20,7 +20,7 @@ using Paper.ScreenWizzard.UseCases.Shared.UseCases;
 using Paper.ScreenWizzard.UseCases.Shell.Ports;
 using Paper.ScreenWizzard.UseCases.Shell.UseCases;
 
-namespace Paper.ScreenWizzard.App.Startup;
+namespace Paper.ScreenWizzard.App;
 
 /// <summary>
 /// The DI container: which adapter answers which port, which interactor uses which ports, and which view services the flows lean on. It is
