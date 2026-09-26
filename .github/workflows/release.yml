@@ -3,9 +3,13 @@ name: release
 # Builds the release files (installer Setup.exe, portable .zip, SHA256SUMS.txt), proves the installer on the runner by installing,
 # upgrading, downgrading and uninstalling it for real, and - only for a version tag - leaves a DRAFT release with the files attached.
 #
-# The owner starts a release by pushing a tag `vX.Y.Z`; the draft is published by hand on GitHub. Nothing here publishes a release
-# by itself, and agents do not push tags (CLAUDE.md, Deploy). A manual run (workflow_dispatch) builds and verifies the same files and
-# keeps them as a workflow artifact, without touching releases: it is how the pipeline is tried without cutting a version.
+# A release starts in one of two ways, and either way it ends as a DRAFT the owner publishes by hand on GitHub:
+# - pushing a tag `vX.Y.Z`;
+# - a manual run (workflow_dispatch) with `draft_release` ticked: the draft names the tag `vX.Y.Z` on the commit that was built, and
+#   GitHub creates that tag when the draft is published. This is the way when no one can push a tag (an agent's cloud session cannot).
+# - a manual run with `publish` ticked goes one step further: once every check passed, the release vX.Y.Z is published at once and
+#   GitHub creates the tag with it (the owner asked on 2026-09-26 that an agent can carry a release to the end: CLAUDE.md, Deploy).
+# A manual run with neither builds and verifies the same files and keeps them as a workflow artifact, without touching releases.
 on:
   push:
     tags: ['v*']
@@ -15,6 +19,16 @@ on:
         description: 'Version to build, x.y.z (a trial: no release is created)'
         required: true
         default: '0.0.1'
+      draft_release:
+        description: 'Also leave a DRAFT release vX.Y.Z of the built commit (the tag is created when the draft is published)'
+        type: boolean
+        required: false
+        default: false
+      publish:
+        description: 'Publish the release vX.Y.Z at once, not as a draft (the tag is created with it)'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -63,13 +77,23 @@ jobs:
             artifacts/SHA256SUMS.txt
           if-no-files-found: error
 
-      - name: Draft release (tags only)
-        if: github.event_name == 'push'
+      - name: Release (a draft for a tag or draft_release; published for publish)
+        if: github.event_name == 'push' || inputs.draft_release || inputs.publish
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create '${{ github.ref_name }}' --draft --generate-notes --title 'Paper.ScreenWizzard ${{ steps.version.outputs.version }}' `
+          $tag = 'v${{ steps.version.outputs.version }}'
+          # A draft made by a manual run is published by hand, which creates the tag, which runs this workflow again: that second run
+          # finds the release already there and leaves it alone.
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -eq 0) {
+            if ('${{ github.event_name }}' -eq 'push') { "The release $tag already exists: nothing to draft."; exit 0 }
+            throw "The release $tag already exists: choose another version."
+          }
+          $draft = if ('${{ inputs.publish }}' -eq 'true') { @() } else { @('--draft') }
+          gh release create $tag @draft --generate-notes --target '${{ github.sha }}' --title 'Paper.ScreenWizzard ${{ steps.version.outputs.version }}' `
             'artifacts/Paper.ScreenWizzard-${{ steps.version.outputs.version }}-win-x64-Setup.exe' `
             'artifacts/Paper.ScreenWizzard-${{ steps.version.outputs.version }}-win-x64.zip' `
             'artifacts/SHA256SUMS.txt'
+          if ($LASTEXITCODE -ne 0) { throw "gh release create failed ($LASTEXITCODE)" }
