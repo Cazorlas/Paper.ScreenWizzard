@@ -58,10 +58,11 @@ function Wait-Exit([string]$file, [string[]]$arguments, [int]$seconds = 180) {
     return $process.ExitCode
 }
 
-function Run-Setup([string]$path, [string]$folder, [string]$log, [string]$language) {
+function Run-Setup([string]$path, [string]$folder, [string]$log, [string]$language, [string[]]$extra = @()) {
     $arguments = @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/LOG=`"$log`"")
     if ($folder) { $arguments += "/DIR=`"$folder`"" }
     if ($language) { $arguments += "/LANG=$language" }
+    $arguments += $extra
     Write-Host "  ... $(Split-Path -Leaf $path) $language"
     return (Wait-Exit $path $arguments)
 }
@@ -91,6 +92,14 @@ function Start-Menu-Shortcut {
     $programs = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'
     return @(Get-ChildItem $programs -Recurse -Filter "$appName*.lnk" -ErrorAction SilentlyContinue)
 }
+
+# The desktop icons this run made: an icon of the app the user already had on the desktop is neither counted nor removed.
+function Desktop-Shortcut {
+    $desktop = [Environment]::GetFolderPath('DesktopDirectory')
+    return @(Get-ChildItem $desktop -Filter "$appName*.lnk" -ErrorAction SilentlyContinue | Where-Object { $desktopBefore -notcontains $_.FullName })
+}
+
+function Shortcut-Target([string]$lnk) { return (New-Object -ComObject WScript.Shell).CreateShortcut($lnk).TargetPath }
 
 function Exe-Version([string]$exe) { return (Get-Item -LiteralPath $exe).VersionInfo.ProductVersion }
 
@@ -147,6 +156,7 @@ if (@(App-Entry).Count -gt 0) {
 # ---- 3. remember what is on the machine so it can be put back ---------------------------------------------------------
 $runBefore = (Get-ItemProperty -Path $runKey -Name $appName -ErrorAction SilentlyContinue).$appName
 $marker = Join-Path $dataDir ('installer-verify-' + [guid]::NewGuid().ToString('N') + '.txt')
+$desktopBefore = @(Get-ChildItem ([Environment]::GetFolderPath('DesktopDirectory')) -Filter "$appName*.lnk" -ErrorAction SilentlyContinue | ForEach-Object FullName)
 New-Item -ItemType Directory -Force -Path $Work | Out-Null
 $installDir = Join-Path $Work 'app'
 $launched = $null
@@ -187,6 +197,9 @@ try {
     Check 'What the user does 1' 'the exe is in the chosen folder' (Test-Path $exe) $exe
     Check 'Outputs' 'the exe is the version of the package' ((Test-Path $exe) -and (Exe-Version $exe) -like "$Version*") $(if (Test-Path $exe) { Exe-Version $exe } else { 'no exe' })
     Check 'What the user does 2' 'a Start menu shortcut exists' (@(Start-Menu-Shortcut).Count -ge 1) ((@(Start-Menu-Shortcut) | ForEach-Object FullName) -join ', ')
+    $icons = @(Desktop-Shortcut)
+    Check 'Desktop' 'with the desktop box left ticked there is one desktop icon' ($icons.Count -eq 1) (($icons | ForEach-Object FullName) -join ', ')
+    Check 'Desktop' 'and it opens the installed exe' ($icons.Count -eq 1 -and (Shortcut-Target $icons[0].FullName) -eq $exe) $(if ($icons.Count -eq 1) { Shortcut-Target $icons[0].FullName } else { 'no icon' })
     $entry = @(App-Entry)
     Check 'Outputs' 'Apps lists one entry with the name, the version, the icon and the folder' ($entry.Count -eq 1 -and $entry[0].DisplayName -like "$appName*" -and $entry[0].DisplayVersion -like "$Version*" -and $entry[0].DisplayIcon -and (Test-Path ($entry[0].DisplayIcon -replace '"', '' -replace ',\d+$', ''))) ($entry | ForEach-Object { "$($_.DisplayName) | $($_.DisplayVersion) | $($_.DisplayIcon) | $($_.InstallLocation)" })
     Check 'Assumptions' 'the entry is under the user''s own registry, nothing was written for all users' ($entry.Count -eq 1 -and @(Machine-Entries).Count -eq 0) "machine entries: $(@(Machine-Entries).Count)"
@@ -239,10 +252,19 @@ try {
     Check 'F4' 'uninstalling while the app runs closes it and does not ask for a restart' ($code -eq 0 -and -not (Get-Process -Id $again.Id -ErrorAction SilentlyContinue)) "exit $code"
     Check 'Uninstall' 'the install folder is gone' (-not (Test-Path $installDir)) $installDir
     Check 'Uninstall' 'the Start menu shortcut is gone' (@(Start-Menu-Shortcut).Count -eq 0) (@(Start-Menu-Shortcut).Count)
+    Check 'Uninstall' 'the desktop icon is gone' (@(Desktop-Shortcut).Count -eq 0) (@(Desktop-Shortcut).Count)
     Check 'Uninstall' 'Apps no longer lists it' (@(App-Entry).Count -eq 0) (@(App-Entry).Count)
     $runAfter = (Get-ItemProperty -Path $runKey -Name $appName -ErrorAction SilentlyContinue).$appName
     Check 'Uninstall' 'the "run at logon" entry is gone' ($null -eq $runAfter) "value: $runAfter"
     Check 'Uninstall' 'the settings folder of the app and the user files are kept' (Test-Path $marker) $marker
+
+    # ---- the desktop box unticked: no desktop icon, the Start menu entry still there ---------------------------------
+    $code = Run-Setup $Setup $installDir (Join-Path $Work 'no-desktop.log') 'en' @('/MERGETASKS="!desktopicon"')
+    Check 'Desktop' 'with the desktop box unticked the install succeeds' ($code -eq 0) "exit $code"
+    Check 'Desktop' 'and there is no desktop icon' (@(Desktop-Shortcut).Count -eq 0) (@(Desktop-Shortcut).Count)
+    Check 'Desktop' 'and the Start menu entry is still there' (@(Start-Menu-Shortcut).Count -ge 1) (@(Start-Menu-Shortcut).Count)
+    $code = Run-Uninstall $installDir
+    Check 'Desktop' 'and it uninstalls again' ($code -eq 0 -and @(App-Entry).Count -eq 0) "exit $code, $(@(App-Entry).Count) entries"
 
     # ---- F3: a folder that cannot be made -------------------------------------------------------------------------
     # Its parent is an ordinary file. (An ACL that denies the folder proves nothing when the installer writes as the system.)
@@ -260,6 +282,7 @@ finally {
     Get-Process -Name $appName -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
     if (@(App-Entry).Count -gt 0) { Run-Uninstall $installDir | Out-Null }
     Get-ChildItem "$env:APPDATA\Microsoft\Windows\Start Menu\Programs" -Filter "$appName*.lnk" -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
+    Desktop-Shortcut | Remove-Item -Force -ErrorAction SilentlyContinue
     Remove-Item -LiteralPath $marker -Force -ErrorAction SilentlyContinue
     if ($null -ne $runBefore) { Set-ItemProperty -Path $runKey -Name $appName -Value $runBefore } else { Remove-ItemProperty -Path $runKey -Name $appName -ErrorAction SilentlyContinue }
     Remove-Item Env:\PAPER_SCREENWIZZARD_DATA, Env:\PAPER_SCREENWIZZARD_INSTANCE -ErrorAction SilentlyContinue
