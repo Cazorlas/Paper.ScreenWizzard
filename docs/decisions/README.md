@@ -12,6 +12,8 @@ Skill `adr` viết ADR mới theo đúng các luật dưới đây.
 | # | Quyết định | Status |
 | --- | --- | --- |
 | [0001](0001-clean-architecture.md) | Quyết định của tính năng nằm trong tầng không dùng host; host đi qua cổng với dữ liệu thuần | Proposed |
+| [0002](0002-file-cai-setup-exe-inno.md) | File cài là Setup.exe theo người dùng, dựng bằng Inno Setup | Proposed |
+| [0003](0003-thu-muc-cap-mot-la-domain.md) | Trong mỗi tầng, thư mục cấp một là domain; vai là cấp hai | Proposed |
 
 Thêm một dòng mỗi khi có ADR mới; khi một ADR bị thay thế, sửa cột Status của nó.
 
