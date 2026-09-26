@@ -1,0 +1,115 @@
+<!-- The "Đã chụp" dialog: the picture that was captured, its size and format, and five things to do with it. Always on top, centred
+     (in physical pixels, by the code-behind) on the monitor of the capture. One dialog per capture, each holding its own image.
+     DataContext: CaptureDoneViewModel, passed to the constructor. Esc is Bỏ (the Discard button is IsCancel), the title bar's
+     ✕ closes it the same way, and Save is the default button and starts with focus so Enter keeps the image.
+     A failed Save or Copy shows its reason in DialogError and leaves everything else where it was (SPEC capture F4, F5). -->
+<Window x:Class="Paper.ScreenWizzard.Presentation.Capture.Views.CaptureDoneWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Paper.ScreenWizzard.Presentation.Capture.Views"
+        Title="{DynamicResource Capture.Done.Title}"
+        AutomationProperties.Name="{DynamicResource Capture.Done.Title}"
+        AutomationProperties.AutomationId="CaptureDoneWindow"
+        Background="{DynamicResource Brush.Window}"
+        Foreground="{DynamicResource Brush.Text}"
+        FontFamily="Segoe UI"
+        FontSize="13"
+        FocusManager.FocusedElement="{Binding ElementName=SaveButton}"
+        ResizeMode="NoResize"
+        SizeToContent="WidthAndHeight"
+        Topmost="True"
+        UseLayoutRounding="True"
+        WindowStartupLocation="Manual">
+  <Window.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Paper.ScreenWizzard.Presentation;component/Resources/Controls.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <local:PixelImageConverter x:Key="PixelImage" />
+      <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+    </ResourceDictionary>
+  </Window.Resources>
+
+  <Grid Margin="20,16,20,16">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <!-- The thumbnail and what it is. The frame is the theme's border colour so the picture's edge shows on either theme. -->
+    <Grid Grid.Row="0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" MinWidth="120" />
+      </Grid.ColumnDefinitions>
+      <Border AutomationProperties.AutomationId="ThumbnailFrame"
+              Background="{DynamicResource Brush.Surface}"
+              BorderBrush="{DynamicResource Brush.Border}"
+              BorderThickness="1">
+        <Image AutomationProperties.AutomationId="Thumbnail"
+               AutomationProperties.Name="{DynamicResource Capture.Done.Thumbnail}"
+               MaxHeight="180"
+               MaxWidth="280"
+               MinHeight="60"
+               MinWidth="100"
+               RenderOptions.BitmapScalingMode="HighQuality"
+               Source="{Binding Image, Converter={StaticResource PixelImage}}"
+               Stretch="Uniform"
+               StretchDirection="DownOnly" />
+      </Border>
+      <StackPanel Grid.Column="1" Margin="20,0,0,0" VerticalAlignment="Center">
+        <TextBlock AutomationProperties.AutomationId="SizeText"
+                   FontSize="18"
+                   FontWeight="SemiBold"
+                   Text="{Binding SizeText}" />
+        <TextBlock AutomationProperties.AutomationId="FormatText"
+                   Foreground="{DynamicResource Brush.TextMuted}"
+                   Text="{Binding FormatText}" />
+      </StackPanel>
+    </Grid>
+
+    <!-- Why a delivery failed, inside the dialog so the image is still here to try another button. -->
+    <TextBlock Grid.Row="1"
+               AutomationProperties.AutomationId="DialogError"
+               AutomationProperties.LiveSetting="Assertive"
+               Foreground="{DynamicResource Brush.Error}"
+               Margin="0,14,0,0"
+               MaxWidth="480"
+               Text="{Binding ErrorText}"
+               TextWrapping="Wrap"
+               Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}" />
+
+    <!-- Tab order is this order, which is the visual order. -->
+    <StackPanel Grid.Row="2" Margin="0,16,0,0" HorizontalAlignment="Right" Orientation="Horizontal">
+      <Button x:Name="SaveButton"
+              AutomationProperties.AutomationId="SaveButton"
+              Command="{Binding SaveCommand}"
+              Content="{DynamicResource Capture.Done.Save}"
+              FontWeight="SemiBold"
+              IsDefault="True"
+              MinWidth="84" />
+      <Button Margin="8,0,0,0"
+              AutomationProperties.AutomationId="SaveAsButton"
+              Command="{Binding SaveAsCommand}"
+              Content="{DynamicResource Capture.Done.SaveAs}"
+              MinWidth="84" />
+      <Button Margin="8,0,0,0"
+              AutomationProperties.AutomationId="CopyButton"
+              Command="{Binding CopyCommand}"
+              Content="{DynamicResource Capture.Done.Copy}"
+              MinWidth="84" />
+      <Button Margin="8,0,0,0"
+              AutomationProperties.AutomationId="EditButton"
+              Command="{Binding EditCommand}"
+              Content="{DynamicResource Capture.Done.Edit}"
+              MinWidth="84" />
+      <Button Margin="8,0,0,0"
+              AutomationProperties.AutomationId="DiscardButton"
+              Command="{Binding DiscardCommand}"
+              Content="{DynamicResource Capture.Done.Discard}"
+              IsCancel="True"
+              MinWidth="84" />
+    </StackPanel>
+  </Grid>
+</Window>

@@ -1,10 +1,10 @@
 using System.IO;
 using FlaUI.Core.Input;
 using NUnit.Framework;
-using Paper.ScreenWizzard.Presentation.ViewModels.Shell;
-using Paper.ScreenWizzard.Presentation.Views.Shell;
 using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Shell;
+using Paper.ScreenWizzard.Presentation.Shell.ViewModels;
+using Paper.ScreenWizzard.Presentation.Shell.Views;
 using Paper.ScreenWizzard.UiTests.Support;
 using Paper.ScreenWizzard.UseCases.Shell.Models;
 

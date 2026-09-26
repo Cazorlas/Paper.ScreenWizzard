@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using Paper.ScreenWizzard.Presentation.ViewModels.Shell;
+using Paper.ScreenWizzard.Presentation.Shell.ViewModels;
 using WinForms = System.Windows.Forms;
 
 namespace Paper.ScreenWizzard.App.Startup;

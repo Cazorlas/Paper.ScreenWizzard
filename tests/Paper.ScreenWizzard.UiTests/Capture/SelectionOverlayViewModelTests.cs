@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Shared;
-using Paper.ScreenWizzard.Presentation.ViewModels.Capture;
+using Paper.ScreenWizzard.Presentation.Capture.ViewModels;
 using Paper.ScreenWizzard.UiTests.Shell;
 using Paper.ScreenWizzard.UseCases.Capture.Models;
 using Paper.ScreenWizzard.UseCases.Shared.Models;

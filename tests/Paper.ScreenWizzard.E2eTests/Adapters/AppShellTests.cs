@@ -6,7 +6,7 @@ using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.E2eTests.Support;
 using Paper.ScreenWizzard.Infrastructure.Shell;
-using Paper.ScreenWizzard.Presentation.Views.Shell;
+using Paper.ScreenWizzard.Presentation.Shell.Views;
 using static Paper.ScreenWizzard.E2eTests.Support.HotkeyRig;
 
 namespace Paper.ScreenWizzard.E2eTests.Adapters;

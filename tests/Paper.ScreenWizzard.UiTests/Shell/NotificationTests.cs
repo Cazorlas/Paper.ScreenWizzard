@@ -69,7 +69,7 @@ public sealed class NotificationTests : UiTestBase
     public void TheErrorDialogHasNoTaskbarButtonBecauseTheAppLivesInTheTrayOnly()
     {
         // SPEC shell: the app never shows on the taskbar unless the editor or Settings is open; an error box is neither.
-        var shown = WpfHost.Instance.Invoke(() => new Paper.ScreenWizzard.Presentation.Views.Shell.ErrorDialogWindow("title", "text").ShowInTaskbar);
+        var shown = WpfHost.Instance.Invoke(() => new Paper.ScreenWizzard.Presentation.Shell.Views.ErrorDialogWindow("title", "text").ShowInTaskbar);
 
         Assert.That(shown, Is.False);
     }

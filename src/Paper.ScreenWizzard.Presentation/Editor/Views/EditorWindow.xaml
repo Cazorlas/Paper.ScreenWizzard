@@ -1,0 +1,385 @@
+<!-- The image editor (SPEC editor): a toolbar of two rows, the image in a scroll area, and a status bar with the save and copy buttons.
+     DataContext: EditorViewModel, passed to the constructor. Everything the window shows comes from it; the code-behind only turns mouse and
+     wheel input into image pixels (EditorCoordinates), reports the scroll area's size and the monitor's scale, moves the text box onto the
+     picture, and asks the view model before the window closes.
+     Tab order is the visual order: tools (one stop, arrow keys inside), colours (one stop), the colour code box and its button, thickness, font
+     size, undo and redo (skipped while disabled), fit and 100%, the picture, then copy, save as and save.
+     Keys: Ctrl+S, Ctrl+C, Ctrl+V, Ctrl+Z, Ctrl+Y (or Ctrl+Shift+Z), Delete, Esc and Enter are bindings below; Ctrl+wheel zooms. -->
+<Window x:Class="Paper.ScreenWizzard.Presentation.Editor.Views.EditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Paper.ScreenWizzard.Presentation.Editor.Views"
+        xmlns:shell="clr-namespace:Paper.ScreenWizzard.Presentation.Shell.Views"
+        Title="{DynamicResource Editor.Title}"
+        AutomationProperties.Name="{DynamicResource Editor.Title}"
+        AutomationProperties.AutomationId="EditorWindow"
+        AllowDrop="True"
+        Background="{DynamicResource Brush.Window}"
+        Foreground="{DynamicResource Brush.Text}"
+        FontFamily="Segoe UI"
+        FontSize="13"
+        Height="700"
+        MinHeight="480"
+        MinWidth="780"
+        UseLayoutRounding="True"
+        Width="1120"
+        WindowStartupLocation="CenterScreen">
+  <Window.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Paper.ScreenWizzard.Presentation;component/Resources/Controls.xaml" />
+        <ResourceDictionary Source="/Paper.ScreenWizzard.Presentation;component/Resources/Icons.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <shell:ChoiceConverter x:Key="Choice" />
+      <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+      <!-- Every glyph is stroked with the button's own foreground, so a disabled button's icon dims with its label. -->
+      <Style x:Key="Style.Glyph" TargetType="Path">
+        <Setter Property="Stroke" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+        <Setter Property="StrokeThickness" Value="1.5" />
+        <Setter Property="StrokeLineJoin" Value="Round" />
+        <Setter Property="StrokeStartLineCap" Value="Round" />
+        <Setter Property="StrokeEndLineCap" Value="Round" />
+        <Setter Property="Width" Value="16" />
+        <Setter Property="Height" Value="16" />
+        <Setter Property="Stretch" Value="None" />
+      </Style>
+
+      <!-- A small label in front of a group of options. -->
+      <Style x:Key="Style.OptionLabel" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextMuted}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Margin" Value="0,0,8,0" />
+      </Style>
+
+      <!-- The text box laid over the picture while text is typed: the theme's surface behind it so it reads on any screenshot. -->
+      <Style x:Key="Style.TextBox.Draft" TargetType="TextBox" BasedOn="{StaticResource Style.TextBox}">
+        <Setter Property="Background" Value="{DynamicResource Brush.Surface}" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="MinWidth" Value="60" />
+        <Setter Property="Padding" Value="4,2" />
+        <Setter Property="AcceptsReturn" Value="True" />
+        <Setter Property="TextWrapping" Value="NoWrap" />
+      </Style>
+    </ResourceDictionary>
+  </Window.Resources>
+
+  <Window.InputBindings>
+    <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCommand}" />
+    <KeyBinding Key="C" Modifiers="Control" Command="{Binding CopyCommand}" />
+    <KeyBinding Key="V" Modifiers="Control" Command="{Binding PasteCommand}" />
+    <KeyBinding Key="Z" Modifiers="Control" Command="{Binding UndoCommand}" />
+    <KeyBinding Key="Y" Modifiers="Control" Command="{Binding RedoCommand}" />
+    <KeyBinding Key="Z" Modifiers="Control+Shift" Command="{Binding RedoCommand}" />
+    <KeyBinding Key="Delete" Command="{Binding DeleteCommand}" />
+    <KeyBinding Key="Escape" Command="{Binding CancelCommand}" />
+    <KeyBinding Key="Return" Command="{Binding ConfirmCommand}" />
+  </Window.InputBindings>
+
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <!-- Row 1 of the toolbar: the eleven tools. One radio group; the chosen tool is filled. -->
+    <Border Grid.Row="0" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,0,0,1" Padding="10,8,10,8">
+      <StackPanel>
+        <StackPanel Orientation="Horizontal" KeyboardNavigation.DirectionalNavigation="Cycle">
+          <RadioButton AutomationProperties.AutomationId="ToolButton.Select"
+                       AutomationProperties.Name="{DynamicResource Editor.Tool.Select.Name}"
+                       Content="{DynamicResource Editor.Tool.Select}"
+                       GroupName="Tools"
+                       IsChecked="{Binding Tool, Converter={StaticResource Choice}, ConverterParameter=Select, Mode=TwoWay}"
+                       Style="{StaticResource Style.ToolButton}"
+                       ToolTip="{DynamicResource Editor.Tool.Select.Name}" />
+          <RadioButton AutomationProperties.AutomationId="ToolButton.Pen"
+                       AutomationProperties.Name="{DynamicResource Editor.Tool.Pen.Name}"
+                       Content="{DynamicResource Editor.Tool.Pen}"
+                       GroupName="Tools"
+                       IsChecked="{Binding Tool, Converter={StaticResource Choice}, ConverterParameter=Pen, Mode=TwoWay}"
+                       Style="{StaticResource Style.ToolButton}"
+                       ToolTip="{DynamicResource Editor.Tool.Pen.Name}" />
+          <RadioButton AutomationProperties.AutomationId="ToolButton.Highlighter"
+                       AutomationProperties.Name="{DynamicResource Editor.Tool.Highlighter.Name}"
+                       Content="{DynamicResource Editor.Tool.Highlighter}"
+                       GroupName="Tools"
+                       IsChecked="{Binding Tool, Converter={StaticResource Choice}, ConverterParameter=Highlighter, Mode=TwoWay}"
+                       Style="{StaticResource Style.ToolButton}"
+                       ToolTip="{DynamicResource Editor.Tool.Highlighter.Name}" />
+          <RadioButton AutomationProperties.AutomationId="ToolButton.Line"
+                       AutomationProperties.Name="{DynamicResource Editor.Tool.Line.Name}"
+                       Content="{DynamicResource Editor.Tool.Line}"
+                       GroupName="Tools"
+                       IsChecked="{Binding Tool, Converter={StaticResource Choice}, ConverterParameter=Line, Mode=TwoWay}"
+                       Style="{StaticResource Style.ToolButton}"
+                       ToolTip="{DynamicResource Editor.Tool.Line.Name}" />
+          <RadioButton AutomationProperties.AutomationId="ToolButton.Arrow"
+                       AutomationProperties.Name="{DynamicResource Editor.Tool.Arrow.Name}"
+                       Content="{DynamicResource Editor.Tool.Arrow}"
+                       GroupName="Tools"
+                       IsChecked="{Binding Tool, Converter={StaticResource Choice}, ConverterParameter=Arrow, Mode=TwoWay}"
+                       Style="{StaticResource Style.ToolButton}"
+                       ToolTip="{DynamicResource Editor.Tool.Arrow.Name}" />
+          <RadioButton AutomationProperties.AutomationId="ToolButton.Rectangle"
+                       AutomationProperties.Name="{DynamicResource Editor.Tool.Rectangle.Name}"
+                       Content="{DynamicResource Editor.Tool.Rectangle}"
+                       GroupName="Tools"
+                       IsChecked="{Binding Tool, Converter={StaticResource Choice}, ConverterParameter=Rectangle, Mode=TwoWay}"
+                       Style="{StaticResource Style.ToolButton}"
+                       ToolTip="{DynamicResource Editor.Tool.Rectangle.Name}" />
+          <RadioButton AutomationProperties.AutomationId="ToolButton.Ellipse"
+                       AutomationProperties.Name="{DynamicResource Editor.Tool.Ellipse.Name}"
+                       Content="{DynamicResource Editor.Tool.Ellipse}"
+                       GroupName="Tools"
+                       IsChecked="{Binding Tool, Converter={StaticResource Choice}, ConverterParameter=Ellipse, Mode=TwoWay}"
+                       Style="{StaticResource Style.ToolButton}"
+                       ToolTip="{DynamicResource Editor.Tool.Ellipse.Name}" />
+          <RadioButton AutomationProperties.AutomationId="ToolButton.Text"
+                       AutomationProperties.Name="{DynamicResource Editor.Tool.Text.Name}"
+                       Content="{DynamicResource Editor.Tool.Text}"
+                       GroupName="Tools"
+                       IsChecked="{Binding Tool, Converter={StaticResource Choice}, ConverterParameter=Text, Mode=TwoWay}"
+                       Style="{StaticResource Style.ToolButton}"
+                       ToolTip="{DynamicResource Editor.Tool.Text.Name}" />
+          <RadioButton AutomationProperties.AutomationId="ToolButton.StepNumber"
+                       AutomationProperties.Name="{DynamicResource Editor.Tool.StepNumber.Name}"
+                       Content="{DynamicResource Editor.Tool.StepNumber}"
+                       GroupName="Tools"
+                       IsChecked="{Binding Tool, Converter={StaticResource Choice}, ConverterParameter=StepNumber, Mode=TwoWay}"
+                       Style="{StaticResource Style.ToolButton}"
+                       ToolTip="{DynamicResource Editor.Tool.StepNumber.Name}" />
+          <RadioButton AutomationProperties.AutomationId="ToolButton.Blur"
+                       AutomationProperties.Name="{DynamicResource Editor.Tool.Blur.Name}"
+                       Content="{DynamicResource Editor.Tool.Blur}"
+                       GroupName="Tools"
+                       IsChecked="{Binding Tool, Converter={StaticResource Choice}, ConverterParameter=Blur, Mode=TwoWay}"
+                       Style="{StaticResource Style.ToolButton}"
+                       ToolTip="{DynamicResource Editor.Tool.Blur.Name}" />
+          <RadioButton AutomationProperties.AutomationId="ToolButton.Crop"
+                       AutomationProperties.Name="{DynamicResource Editor.Tool.Crop.Name}"
+                       Content="{DynamicResource Editor.Tool.Crop}"
+                       GroupName="Tools"
+                       IsChecked="{Binding Tool, Converter={StaticResource Choice}, ConverterParameter=Crop, Mode=TwoWay}"
+                       Style="{StaticResource Style.ToolButton}"
+                       ToolTip="{DynamicResource Editor.Tool.Crop.Name}" />
+        </StackPanel>
+
+        <!-- Row 2: colour (eight swatches and a colour code), thickness, font size, undo and redo, zoom. -->
+        <WrapPanel Margin="0,8,0,0">
+          <TextBlock Style="{StaticResource Style.OptionLabel}" Text="{DynamicResource Editor.Color.Label}" />
+          <ItemsControl Focusable="False" IsTabStop="False" ItemsSource="{Binding Palette}" Margin="0,0,6,0" VerticalAlignment="Center" KeyboardNavigation.DirectionalNavigation="Cycle">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <RadioButton AutomationProperties.AutomationId="{Binding AutomationId}"
+                             AutomationProperties.Name="{Binding Name}"
+                             Background="{Binding Brush}"
+                             Command="{Binding DataContext.SetColorCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                             CommandParameter="{Binding}"
+                             GroupName="Palette"
+                             IsChecked="{Binding IsSelected, Mode=OneWay}"
+                             Style="{StaticResource Style.Swatch}"
+                             ToolTip="{Binding Name}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <TextBox x:Name="CustomColorBox"
+                   AutomationProperties.AutomationId="CustomColorBox"
+                   AutomationProperties.Name="{DynamicResource Editor.Color.Custom}"
+                   MaxLength="9"
+                   MinHeight="30"
+                   Text="{Binding CustomColorText, UpdateSourceTrigger=PropertyChanged}"
+                   ToolTip="{DynamicResource Editor.Color.Custom}"
+                   VerticalAlignment="Center"
+                   Width="86">
+            <TextBox.InputBindings>
+              <KeyBinding Key="Return" Command="{Binding ApplyCustomColorCommand}" />
+            </TextBox.InputBindings>
+            <TextBox.Style>
+              <Style TargetType="TextBox" BasedOn="{StaticResource Style.TextBox}">
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding HasCustomColorError}" Value="True">
+                    <Setter Property="BorderBrush" Value="{DynamicResource Brush.Error}" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </TextBox.Style>
+          </TextBox>
+          <Button AutomationProperties.AutomationId="CustomColorButton"
+                  AutomationProperties.Name="{DynamicResource Editor.Color.Add}"
+                  Command="{Binding ApplyCustomColorCommand}"
+                  Margin="2,0,18,0"
+                  Style="{StaticResource Style.Button.Icon}"
+                  ToolTip="{DynamicResource Editor.Color.Add}"
+                  VerticalAlignment="Center">
+            <Path Data="{StaticResource Icon.Plus}" Style="{StaticResource Style.Glyph}" />
+          </Button>
+
+          <TextBlock Style="{StaticResource Style.OptionLabel}" Text="{DynamicResource Editor.Thickness}" />
+          <Slider x:Name="ThicknessSlider"
+                  AutomationProperties.AutomationId="ThicknessSlider"
+                  AutomationProperties.Name="{DynamicResource Editor.Thickness}"
+                  IsSnapToTickEnabled="True"
+                  Maximum="20"
+                  Minimum="1"
+                  SmallChange="1"
+                  TickFrequency="1"
+                  ToolTip="{DynamicResource Editor.Thickness}"
+                  Value="{Binding Thickness, Mode=TwoWay}"
+                  VerticalAlignment="Center"
+                  Width="120" />
+          <TextBlock AutomationProperties.AutomationId="ThicknessValue"
+                     MinWidth="22"
+                     Margin="6,0,18,0"
+                     Text="{Binding Thickness}"
+                     TextAlignment="Right"
+                     VerticalAlignment="Center" />
+
+          <TextBlock Style="{StaticResource Style.OptionLabel}" Text="{DynamicResource Editor.FontSize}" />
+          <TextBox x:Name="FontSizeBox"
+                   AutomationProperties.AutomationId="FontSizeBox"
+                   AutomationProperties.Name="{DynamicResource Editor.FontSize}"
+                   MaxLength="3"
+                   MinHeight="30"
+                   Padding="6,4"
+                   KeyDown="OnFontSizeBoxKeyDown"
+                   LostKeyboardFocus="OnFontSizeBoxLostKeyboardFocus"
+                   Text="{Binding FontSizeText, UpdateSourceTrigger=PropertyChanged}"
+                   ToolTip="{DynamicResource Editor.FontSize}"
+                   VerticalAlignment="Center"
+                   Width="56" />
+
+          <Border Width="1" Margin="14,4,14,4" Background="{DynamicResource Brush.Border}" />
+
+          <Button AutomationProperties.AutomationId="UndoButton"
+                  AutomationProperties.Name="{DynamicResource Editor.Undo}"
+                  Command="{Binding UndoCommand}"
+                  Style="{StaticResource Style.Button.Icon}"
+                  ToolTip="{DynamicResource Editor.Undo.Tip}"
+                  VerticalAlignment="Center">
+            <Path Data="{StaticResource Icon.Undo}" Style="{StaticResource Style.Glyph}" />
+          </Button>
+          <Button AutomationProperties.AutomationId="RedoButton"
+                  AutomationProperties.Name="{DynamicResource Editor.Redo}"
+                  Command="{Binding RedoCommand}"
+                  Style="{StaticResource Style.Button.Icon}"
+                  ToolTip="{DynamicResource Editor.Redo.Tip}"
+                  VerticalAlignment="Center">
+            <Path Data="{StaticResource Icon.Redo}" Style="{StaticResource Style.Glyph}" />
+          </Button>
+
+          <Border Width="1" Margin="14,4,14,4" Background="{DynamicResource Brush.Border}" />
+
+          <Button AutomationProperties.AutomationId="ZoomFitButton"
+                  AutomationProperties.Name="{DynamicResource Editor.Zoom.Fit}"
+                  Command="{Binding ZoomFitCommand}"
+                  Content="{DynamicResource Editor.Zoom.Fit}"
+                  Padding="12,4"
+                  VerticalAlignment="Center" />
+          <Button AutomationProperties.AutomationId="Zoom100Button"
+                  AutomationProperties.Name="{DynamicResource Editor.Zoom.Reset}"
+                  Command="{Binding Zoom100Command}"
+                  Content="1:1"
+                  Margin="6,0,0,0"
+                  Padding="12,4"
+                  VerticalAlignment="Center" />
+          <TextBlock AutomationProperties.AutomationId="ZoomText"
+                     AutomationProperties.HelpText="{DynamicResource Editor.Zoom.Level}"
+                     Margin="12,0,0,0"
+                     MinWidth="44"
+                     Text="{Binding ZoomText}"
+                     VerticalAlignment="Center" />
+        </WrapPanel>
+      </StackPanel>
+    </Border>
+
+    <!-- The image: ViewScale display units per image pixel, centred, in a scroll area (Ctrl+wheel zooms). The frame is the theme's border
+         colour so the picture's edge shows on either theme. The text box is laid over the picture at the image pixel the user clicked. -->
+    <ScrollViewer x:Name="Scroller"
+                  Grid.Row="1"
+                  Focusable="False"
+                  HorizontalScrollBarVisibility="Auto"
+                  VerticalScrollBarVisibility="Auto"
+                  PreviewMouseWheel="OnScrollerPreviewMouseWheel"
+                  ScrollChanged="OnScrollerScrollChanged"
+                  SizeChanged="OnScrollerSizeChanged">
+      <Grid Margin="12" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Border BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" HorizontalAlignment="Left" VerticalAlignment="Top">
+          <Grid>
+            <local:EditorCanvas x:Name="Picture"
+                                AutomationProperties.AutomationId="ImageCanvas"
+                                AutomationProperties.Name="{DynamicResource Editor.Canvas}"
+                                Cursor="Cross"
+                                LostMouseCapture="OnPictureLostMouseCapture"
+                                MouseLeftButtonDown="OnPictureMouseLeftButtonDown"
+                                MouseLeftButtonUp="OnPictureMouseLeftButtonUp"
+                                MouseMove="OnPictureMouseMove" />
+            <Canvas x:Name="Overlay">
+              <TextBox x:Name="TextDraftBox"
+                       AutomationProperties.AutomationId="TextDraftBox"
+                       AutomationProperties.Name="{DynamicResource Editor.Text.Draft}"
+                       Style="{StaticResource Style.TextBox.Draft}"
+                       Text="{Binding TextDraftText, UpdateSourceTrigger=PropertyChanged}"
+                       Visibility="Collapsed"
+                       LostKeyboardFocus="OnTextDraftLostKeyboardFocus">
+                <TextBox.InputBindings>
+                  <KeyBinding Key="Return" Modifiers="Control" Command="{Binding CommitTextCommand}" />
+                  <KeyBinding Key="Escape" Command="{Binding CommitTextCommand}" />
+                </TextBox.InputBindings>
+              </TextBox>
+            </Canvas>
+          </Grid>
+        </Border>
+      </Grid>
+    </ScrollViewer>
+
+    <!-- The status bar: the image size and whether it is saved, what the keys do now, and the buttons. -->
+    <Border Grid.Row="2" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,1,0,0" Padding="12,8,12,8">
+      <DockPanel LastChildFill="True">
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+          <Button AutomationProperties.AutomationId="CopyButton"
+                  AutomationProperties.Name="{DynamicResource Editor.Copy}"
+                  Command="{Binding CopyCommand}"
+                  Content="{DynamicResource Editor.Copy}"
+                  MinWidth="92"
+                  ToolTip="{DynamicResource Editor.Copy.Tip}" />
+          <Button AutomationProperties.AutomationId="SaveAsButton"
+                  AutomationProperties.Name="{DynamicResource Editor.SaveAs}"
+                  Command="{Binding SaveAsCommand}"
+                  Content="{DynamicResource Editor.SaveAs}"
+                  Margin="8,0,0,0"
+                  MinWidth="92" />
+          <Button AutomationProperties.AutomationId="SaveButton"
+                  AutomationProperties.Name="{DynamicResource Editor.Save}"
+                  Command="{Binding SaveCommand}"
+                  Content="{DynamicResource Editor.Save}"
+                  FontWeight="SemiBold"
+                  Margin="8,0,0,0"
+                  MinWidth="92"
+                  Style="{StaticResource Style.Button.Accent}"
+                  ToolTip="{DynamicResource Editor.Save.Tip}" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+          <TextBlock AutomationProperties.AutomationId="SizeText"
+                     AutomationProperties.HelpText="{DynamicResource Editor.Status.Size}"
+                     FontWeight="SemiBold"
+                     Text="{Binding SizeText}" />
+          <TextBlock AutomationProperties.AutomationId="SaveStateText"
+                     Margin="18,0,0,0"
+                     Text="{Binding SaveStateText}" />
+          <TextBlock AutomationProperties.AutomationId="HintText"
+                     AutomationProperties.LiveSetting="Polite"
+                     Foreground="{DynamicResource Brush.TextMuted}"
+                     Margin="18,0,0,0"
+                     Text="{Binding HintText}" />
+        </StackPanel>
+      </DockPanel>
+    </Border>
+  </Grid>
+</Window>

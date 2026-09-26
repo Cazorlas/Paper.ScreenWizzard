@@ -50,10 +50,17 @@ ALLOWED = [
     # Tests that read source folders by path: the folders moved.
     ('var views = Path.Combine(RepositoryRoot(), "src", "Paper.ScreenWizzard.Presentation", "Views", "Capture");',
      'var views = Path.Combine(RepositoryRoot(), "src", "Paper.ScreenWizzard.Presentation", "Capture", "Views");'),
+    # ViewModels/Editor/ held Commands/ as well; the editor's commands now sit beside it, so the scan names them.
+    ('var files = new[] { "Views", "ViewModels" }', 'var files = new[] { "Views", "ViewModels", "Commands" }'),
     ('.SelectMany(folder => Directory.EnumerateFiles(Path.Combine(root, folder, "Editor"), "*.cs", SearchOption.AllDirectories))',
      '.SelectMany(folder => Directory.EnumerateFiles(Path.Combine(root, "Editor", folder), "*.cs", SearchOption.AllDirectories))'),
     ('Directory.EnumerateFiles(Path.Combine(RepositoryRoot(), "src", "Paper.ScreenWizzard.Presentation", "Views", "Editor"), "*.xaml", SearchOption.AllDirectories);',
      'Directory.EnumerateFiles(Path.Combine(RepositoryRoot(), "src", "Paper.ScreenWizzard.Presentation", "Editor", "Views"), "*.xaml", SearchOption.AllDirectories);'),
+    # A comment that names the moved namespaces.
+    ("// The namespace is not ...UiTests.Editor on purpose: a namespace of that name would hide the Presentation.Views.Editor and",
+     "// The namespace is not ...UiTests.Editor on purpose: a namespace of that name would hide the short name of the Presentation.Editor"),
+    ("// ViewModels.Editor namespaces' short names, the same trap the capture lane met with FlaUI's Capture class.",
+     "// namespace (its Views and ViewModels), the same trap the capture lane met with FlaUI's Capture class."),
     # The entry host's string dictionaries left Startup/ with the rest of it.
     ('Source = new Uri($"pack://application:,,,/Paper.ScreenWizzard;component/Startup/AppStrings.{code}.xaml"),',
      'Source = new Uri($"pack://application:,,,/Paper.ScreenWizzard;component/AppStrings.{code}.xaml"),'),

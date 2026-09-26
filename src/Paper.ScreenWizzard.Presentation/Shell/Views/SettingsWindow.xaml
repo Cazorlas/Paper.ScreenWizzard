@@ -1,0 +1,278 @@
+<!-- Settings. DataContext: SettingsViewModel, passed to the constructor. Two columns so the window fits a laptop screen:
+     left  Phím tắt, Sau khi chụp, Khởi động cùng Windows
+     right Lưu file, Ngôn ngữ, Giao diện
+     Tab order is document order: the left column top to bottom, then the right, then Save and Cancel. Enter presses Save
+     (IsDefault) and Esc presses Cancel (IsCancel); nothing reaches the use case before Save.
+     A radio button stands for one value of a setting through ChoiceConverter (ConverterParameter is the value as text). -->
+<Window x:Class="Paper.ScreenWizzard.Presentation.Shell.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Paper.ScreenWizzard.Presentation.Shell.Views"
+        Title="{DynamicResource Settings.Title}"
+        AutomationProperties.AutomationId="SettingsWindow"
+        Background="{DynamicResource Brush.Window}"
+        Foreground="{DynamicResource Brush.Text}"
+        FontFamily="Segoe UI"
+        FontSize="13"
+        MaxHeight="{x:Static SystemParameters.MaximizedPrimaryScreenHeight}"
+        ResizeMode="NoResize"
+        SizeToContent="WidthAndHeight"
+        UseLayoutRounding="True"
+        WindowStartupLocation="CenterScreen">
+  <Window.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Paper.ScreenWizzard.Presentation;component/Resources/Controls.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <local:ChoiceConverter x:Key="Choice" />
+      <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+      <!-- A group is a header, then its controls. -->
+      <Style x:Key="Style.Group" TargetType="StackPanel">
+        <Setter Property="Margin" Value="0,0,0,20" />
+      </Style>
+      <Style x:Key="Style.Label" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextMuted}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+      </Style>
+      <!-- A row of radio buttons that wraps inside its column; one Tab stop, arrows move within it. -->
+      <Style x:Key="Style.RadioRow" TargetType="WrapPanel">
+        <Setter Property="KeyboardNavigation.DirectionalNavigation" Value="Cycle" />
+        <Setter Property="Orientation" Value="Horizontal" />
+      </Style>
+      <Style x:Key="Style.RadioRowItem" TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
+        <Setter Property="Margin" Value="0,0,20,0" />
+      </Style>
+    </ResourceDictionary>
+  </Window.Resources>
+
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" Focusable="False">
+      <Grid Margin="24,20,24,0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="420" />
+          <ColumnDefinition Width="36" />
+          <ColumnDefinition Width="420" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Left column -->
+        <StackPanel Grid.Column="0">
+
+          <!-- Phím tắt: one box per capture kind; the box is filled by pressing the keys. -->
+          <StackPanel Style="{StaticResource Style.Group}">
+            <TextBlock Style="{StaticResource Style.GroupHeader}" Text="{DynamicResource Settings.Group.Hotkeys}" />
+            <TextBlock Style="{StaticResource Style.Label}" Margin="0,0,0,8" TextWrapping="Wrap" Text="{DynamicResource Settings.HotkeyHint}" />
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="150" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+              </Grid.RowDefinitions>
+              <TextBlock Grid.Row="0" Style="{StaticResource Style.Label}" Text="{DynamicResource Capture.Kind.Rectangle}" />
+              <local:HotkeyCaptureBox Grid.Row="0" Grid.Column="1" Margin="0,3"
+                                      Style="{StaticResource Style.TextBox}"
+                                      AutomationProperties.AutomationId="HotkeyBox.Rectangle"
+                                      AutomationProperties.Name="{DynamicResource Capture.Kind.Rectangle}"
+                                      Chord="{Binding Hotkeys[0].Chord, Mode=TwoWay}" />
+              <TextBlock Grid.Row="1" Style="{StaticResource Style.Label}" Text="{DynamicResource Capture.Kind.Freeform}" />
+              <local:HotkeyCaptureBox Grid.Row="1" Grid.Column="1" Margin="0,3"
+                                      Style="{StaticResource Style.TextBox}"
+                                      AutomationProperties.AutomationId="HotkeyBox.Freeform"
+                                      AutomationProperties.Name="{DynamicResource Capture.Kind.Freeform}"
+                                      Chord="{Binding Hotkeys[1].Chord, Mode=TwoWay}" />
+              <TextBlock Grid.Row="2" Style="{StaticResource Style.Label}" Text="{DynamicResource Capture.Kind.Window}" />
+              <local:HotkeyCaptureBox Grid.Row="2" Grid.Column="1" Margin="0,3"
+                                      Style="{StaticResource Style.TextBox}"
+                                      AutomationProperties.AutomationId="HotkeyBox.Window"
+                                      AutomationProperties.Name="{DynamicResource Capture.Kind.Window}"
+                                      Chord="{Binding Hotkeys[2].Chord, Mode=TwoWay}" />
+              <TextBlock Grid.Row="3" Style="{StaticResource Style.Label}" Text="{DynamicResource Capture.Kind.FullScreen}" />
+              <local:HotkeyCaptureBox Grid.Row="3" Grid.Column="1" Margin="0,3"
+                                      Style="{StaticResource Style.TextBox}"
+                                      AutomationProperties.AutomationId="HotkeyBox.FullScreen"
+                                      AutomationProperties.Name="{DynamicResource Capture.Kind.FullScreen}"
+                                      Chord="{Binding Hotkeys[3].Chord, Mode=TwoWay}" />
+            </Grid>
+          </StackPanel>
+
+          <!-- Sau khi chụp: one choice of five. -->
+          <StackPanel Style="{StaticResource Style.Group}" KeyboardNavigation.DirectionalNavigation="Cycle">
+            <TextBlock Style="{StaticResource Style.GroupHeader}" Text="{DynamicResource Settings.Group.AfterCapture}" />
+            <RadioButton GroupName="AfterCapture" AutomationProperties.AutomationId="AfterCapture.ShowDialog"
+                         Content="{DynamicResource Settings.After.ShowDialog}"
+                         IsChecked="{Binding AfterCapture, Converter={StaticResource Choice}, ConverterParameter=ShowDialog}" />
+            <RadioButton GroupName="AfterCapture" AutomationProperties.AutomationId="AfterCapture.OpenEditor"
+                         Content="{DynamicResource Settings.After.OpenEditor}"
+                         IsChecked="{Binding AfterCapture, Converter={StaticResource Choice}, ConverterParameter=OpenEditor}" />
+            <RadioButton GroupName="AfterCapture" AutomationProperties.AutomationId="AfterCapture.CopyToClipboard"
+                         Content="{DynamicResource Settings.After.CopyToClipboard}"
+                         IsChecked="{Binding AfterCapture, Converter={StaticResource Choice}, ConverterParameter=CopyToClipboard}" />
+            <RadioButton GroupName="AfterCapture" AutomationProperties.AutomationId="AfterCapture.SaveToFile"
+                         Content="{DynamicResource Settings.After.SaveToFile}"
+                         IsChecked="{Binding AfterCapture, Converter={StaticResource Choice}, ConverterParameter=SaveToFile}" />
+            <RadioButton GroupName="AfterCapture" AutomationProperties.AutomationId="AfterCapture.ClipboardAndFile"
+                         Content="{DynamicResource Settings.After.ClipboardAndFile}"
+                         IsChecked="{Binding AfterCapture, Converter={StaticResource Choice}, ConverterParameter=ClipboardAndFile}" />
+          </StackPanel>
+
+          <!-- Khởi động cùng Windows -->
+          <StackPanel Style="{StaticResource Style.Group}">
+            <TextBlock Style="{StaticResource Style.GroupHeader}" Text="{DynamicResource Settings.Group.Startup}" />
+            <CheckBox AutomationProperties.AutomationId="AutostartCheck"
+                      Content="{DynamicResource Settings.StartWithWindows}"
+                      IsChecked="{Binding StartWithWindows}" />
+          </StackPanel>
+        </StackPanel>
+
+        <!-- Right column -->
+        <StackPanel Grid.Column="2">
+
+          <!-- Lưu file: folder, format, JPG quality, delay, cursor, full-screen scope. -->
+          <StackPanel Style="{StaticResource Style.Group}">
+            <TextBlock Style="{StaticResource Style.GroupHeader}" Text="{DynamicResource Settings.Group.SaveFile}" />
+
+            <TextBlock Style="{StaticResource Style.Label}" Margin="0,0,0,4" Text="{DynamicResource Settings.SaveFolder}" />
+            <Grid Margin="0,0,0,12">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <!-- PropertyChanged, not LostFocus: Enter must save what is in the box even while the box still has focus. -->
+              <TextBox AutomationProperties.AutomationId="SaveFolderBox"
+                       AutomationProperties.Name="{DynamicResource Settings.SaveFolder}"
+                       Text="{Binding SaveFolder, UpdateSourceTrigger=PropertyChanged}" />
+              <Button Grid.Column="1" Margin="8,0,0,0"
+                      AutomationProperties.AutomationId="BrowseFolderButton"
+                      Content="{DynamicResource Settings.Browse}"
+                      Command="{Binding BrowseFolderCommand}" />
+            </Grid>
+
+            <TextBlock Style="{StaticResource Style.Label}" Margin="0,0,0,2" Text="{DynamicResource Settings.Format}" />
+            <WrapPanel Style="{StaticResource Style.RadioRow}" Margin="0,0,0,6">
+              <RadioButton Style="{StaticResource Style.RadioRowItem}" GroupName="Format" AutomationProperties.AutomationId="Format.Png"
+                           Content="{DynamicResource Settings.Format.Png}"
+                           IsChecked="{Binding Format, Converter={StaticResource Choice}, ConverterParameter=Png}" />
+              <RadioButton Style="{StaticResource Style.RadioRowItem}" GroupName="Format" AutomationProperties.AutomationId="Format.Jpg"
+                           Content="{DynamicResource Settings.Format.Jpg}"
+                           IsChecked="{Binding Format, Converter={StaticResource Choice}, ConverterParameter=Jpg}" />
+            </WrapPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,12" IsEnabled="{Binding IsJpg}">
+              <TextBlock Style="{StaticResource Style.Label}" Margin="0,0,10,0" Text="{DynamicResource Settings.JpgQuality}" />
+              <TextBox Width="70"
+                       AutomationProperties.AutomationId="JpgQualityBox"
+                       AutomationProperties.Name="{DynamicResource Settings.JpgQuality}"
+                       Text="{Binding JpgQuality, UpdateSourceTrigger=PropertyChanged}" />
+            </StackPanel>
+
+            <TextBlock Style="{StaticResource Style.Label}" Margin="0,0,0,2" Text="{DynamicResource Settings.Delay}" />
+            <WrapPanel Style="{StaticResource Style.RadioRow}" Margin="0,0,0,6">
+              <RadioButton Style="{StaticResource Style.RadioRowItem}" GroupName="Delay" AutomationProperties.AutomationId="Delay.0"
+                           Content="{DynamicResource Settings.Delay.0}"
+                           IsChecked="{Binding DelaySeconds, Converter={StaticResource Choice}, ConverterParameter=0}" />
+              <RadioButton Style="{StaticResource Style.RadioRowItem}" GroupName="Delay" AutomationProperties.AutomationId="Delay.3"
+                           Content="{DynamicResource Settings.Delay.3}"
+                           IsChecked="{Binding DelaySeconds, Converter={StaticResource Choice}, ConverterParameter=3}" />
+              <RadioButton Style="{StaticResource Style.RadioRowItem}" GroupName="Delay" AutomationProperties.AutomationId="Delay.5"
+                           Content="{DynamicResource Settings.Delay.5}"
+                           IsChecked="{Binding DelaySeconds, Converter={StaticResource Choice}, ConverterParameter=5}" />
+              <RadioButton Style="{StaticResource Style.RadioRowItem}" GroupName="Delay" AutomationProperties.AutomationId="Delay.10"
+                           Content="{DynamicResource Settings.Delay.10}"
+                           IsChecked="{Binding DelaySeconds, Converter={StaticResource Choice}, ConverterParameter=10}" />
+            </WrapPanel>
+
+            <CheckBox Margin="0,0,0,6" AutomationProperties.AutomationId="IncludeCursorCheck"
+                      Content="{DynamicResource Settings.IncludeCursor}"
+                      IsChecked="{Binding IncludeCursor}" />
+
+            <TextBlock Style="{StaticResource Style.Label}" Margin="0,0,0,2" Text="{DynamicResource Settings.Scope}" />
+            <WrapPanel Style="{StaticResource Style.RadioRow}">
+              <RadioButton Style="{StaticResource Style.RadioRowItem}" GroupName="Scope" AutomationProperties.AutomationId="Scope.MonitorUnderCursor"
+                           Content="{DynamicResource Settings.Scope.Monitor}"
+                           IsChecked="{Binding FullScreenScope, Converter={StaticResource Choice}, ConverterParameter=MonitorUnderCursor}" />
+              <RadioButton Style="{StaticResource Style.RadioRowItem}" GroupName="Scope" AutomationProperties.AutomationId="Scope.AllMonitors"
+                           Content="{DynamicResource Settings.Scope.All}"
+                           IsChecked="{Binding FullScreenScope, Converter={StaticResource Choice}, ConverterParameter=AllMonitors}" />
+            </WrapPanel>
+          </StackPanel>
+
+          <!-- Ngôn ngữ -->
+          <StackPanel Style="{StaticResource Style.Group}">
+            <TextBlock Style="{StaticResource Style.GroupHeader}" Text="{DynamicResource Settings.Group.Language}" />
+            <WrapPanel Style="{StaticResource Style.RadioRow}">
+              <RadioButton Style="{StaticResource Style.RadioRowItem}" GroupName="Language" AutomationProperties.AutomationId="Language.System"
+                           Content="{DynamicResource Settings.Language.System}"
+                           IsChecked="{Binding Language, Converter={StaticResource Choice}, ConverterParameter=System}" />
+              <RadioButton Style="{StaticResource Style.RadioRowItem}" GroupName="Language" AutomationProperties.AutomationId="Language.Vietnamese"
+                           Content="{DynamicResource Settings.Language.Vietnamese}"
+                           IsChecked="{Binding Language, Converter={StaticResource Choice}, ConverterParameter=Vietnamese}" />
+              <RadioButton Style="{StaticResource Style.RadioRowItem}" GroupName="Language" AutomationProperties.AutomationId="Language.English"
+                           Content="{DynamicResource Settings.Language.English}"
+                           IsChecked="{Binding Language, Converter={StaticResource Choice}, ConverterParameter=English}" />
+            </WrapPanel>
+          </StackPanel>
+
+          <!-- Giao diện -->
+          <StackPanel Style="{StaticResource Style.Group}">
+            <TextBlock Style="{StaticResource Style.GroupHeader}" Text="{DynamicResource Settings.Group.Theme}" />
+            <WrapPanel Style="{StaticResource Style.RadioRow}">
+              <RadioButton Style="{StaticResource Style.RadioRowItem}" GroupName="Theme" AutomationProperties.AutomationId="Theme.System"
+                           Content="{DynamicResource Settings.Theme.System}"
+                           IsChecked="{Binding Theme, Converter={StaticResource Choice}, ConverterParameter=System}" />
+              <RadioButton Style="{StaticResource Style.RadioRowItem}" GroupName="Theme" AutomationProperties.AutomationId="Theme.Light"
+                           Content="{DynamicResource Settings.Theme.Light}"
+                           IsChecked="{Binding Theme, Converter={StaticResource Choice}, ConverterParameter=Light}" />
+              <RadioButton Style="{StaticResource Style.RadioRowItem}" GroupName="Theme" AutomationProperties.AutomationId="Theme.Dark"
+                           Content="{DynamicResource Settings.Theme.Dark}"
+                           IsChecked="{Binding Theme, Converter={StaticResource Choice}, ConverterParameter=Dark}" />
+            </WrapPanel>
+          </StackPanel>
+        </StackPanel>
+      </Grid>
+    </ScrollViewer>
+
+    <!-- The bar under the groups: why the last Save stopped (F2 to F5), then Save and Cancel. -->
+    <Border Grid.Row="1"
+            Background="{DynamicResource Brush.Surface}"
+            BorderBrush="{DynamicResource Brush.Border}"
+            BorderThickness="0,1,0,0"
+            Padding="24,12">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <TextBlock Margin="0,0,24,0"
+                   VerticalAlignment="Center"
+                   AutomationProperties.AutomationId="SettingsMessage"
+                   AutomationProperties.LiveSetting="Assertive"
+                   Foreground="{DynamicResource Brush.Error}"
+                   TextWrapping="Wrap"
+                   Text="{Binding MessageText}"
+                   Visibility="{Binding HasMessage, Converter={StaticResource BoolToVisibility}}" />
+        <StackPanel Grid.Column="1" Orientation="Horizontal">
+          <Button Style="{StaticResource Style.Button.Accent}"
+                  AutomationProperties.AutomationId="SaveButton"
+                  Content="{DynamicResource Settings.Save}"
+                  Command="{Binding SaveCommand}"
+                  IsDefault="True"
+                  MinWidth="96" />
+          <Button Margin="8,0,0,0"
+                  AutomationProperties.AutomationId="CancelButton"
+                  Content="{DynamicResource Settings.Cancel}"
+                  Command="{Binding CancelCommand}"
+                  IsCancel="True"
+                  MinWidth="96" />
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
+</Window>

@@ -176,7 +176,7 @@ public sealed class CaptureStringsTests : UiTestBase
         var en = ResourceFiles.Load("Strings.en.xaml");
         var light = ResourceFiles.Load("Themes/Light.xaml");
         var dark = ResourceFiles.Load("Themes/Dark.xaml");
-        var views = Path.Combine(RepositoryRoot(), "src", "Paper.ScreenWizzard.Presentation", "Views", "Capture");
+        var views = Path.Combine(RepositoryRoot(), "src", "Paper.ScreenWizzard.Presentation", "Capture", "Views");
         var used = Directory.EnumerateFiles(views, "*.xaml", SearchOption.AllDirectories)
             .SelectMany(path => Regex.Matches(File.ReadAllText(path), @"\{DynamicResource\s+([A-Za-z0-9_.]+)\}").Select(match => match.Groups[1].Value))
             .Distinct()
@@ -195,7 +195,7 @@ public sealed class CaptureStringsTests : UiTestBase
     [Test]
     public void Keys_TheCaptureViewsCarryNoHardCodedColourAndNoLiteralText()
     {
-        var views = Path.Combine(RepositoryRoot(), "src", "Paper.ScreenWizzard.Presentation", "Views", "Capture");
+        var views = Path.Combine(RepositoryRoot(), "src", "Paper.ScreenWizzard.Presentation", "Capture", "Views");
         var files = Directory.EnumerateFiles(views, "*.xaml", SearchOption.AllDirectories).ToList();
         var problems = new List<string>();
 

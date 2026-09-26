@@ -202,8 +202,8 @@ public sealed class EditorStringsTests : UiTestBase
     {
         var vi = ResourceFiles.Load("Strings.vi.xaml");
         var root = Path.Combine(RepositoryRoot(), "src", "Paper.ScreenWizzard.Presentation");
-        var files = new[] { "Views", "ViewModels" }
-            .SelectMany(folder => Directory.EnumerateFiles(Path.Combine(root, folder, "Editor"), "*.cs", SearchOption.AllDirectories))
+        var files = new[] { "Views", "ViewModels", "Commands" }
+            .SelectMany(folder => Directory.EnumerateFiles(Path.Combine(root, "Editor", folder), "*.cs", SearchOption.AllDirectories))
             .ToList();
         var keys = files
             .SelectMany(path => Regex.Matches(File.ReadAllText(path), "\"(Editor\\.[A-Za-z0-9.]+)\"").Select(match => match.Groups[1].Value))
@@ -218,7 +218,7 @@ public sealed class EditorStringsTests : UiTestBase
     }
 
     private static IEnumerable<string> EditorXamlFiles() =>
-        Directory.EnumerateFiles(Path.Combine(RepositoryRoot(), "src", "Paper.ScreenWizzard.Presentation", "Views", "Editor"), "*.xaml", SearchOption.AllDirectories);
+        Directory.EnumerateFiles(Path.Combine(RepositoryRoot(), "src", "Paper.ScreenWizzard.Presentation", "Editor", "Views"), "*.xaml", SearchOption.AllDirectories);
 
     // A number and a percentage are the same in both languages.
     private static bool IsSameInBothLanguages(string key) => key is "Editor.Tool.StepNumber";

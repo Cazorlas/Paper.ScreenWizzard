@@ -2,18 +2,18 @@ using NUnit.Framework;
 using Paper.ScreenWizzard.Domain.Editor;
 using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
-using Paper.ScreenWizzard.Presentation.Rendering;
-using Paper.ScreenWizzard.Presentation.ViewModels.Capture;
-using Paper.ScreenWizzard.Presentation.ViewModels.Editor;
-using Paper.ScreenWizzard.Presentation.ViewModels.Shell;
+using Paper.ScreenWizzard.Presentation.Capture.ViewModels;
+using Paper.ScreenWizzard.Presentation.Editor.Rendering;
+using Paper.ScreenWizzard.Presentation.Editor.ViewModels;
+using Paper.ScreenWizzard.Presentation.Shell.ViewModels;
 using Paper.ScreenWizzard.UiTests.ScreenCapture;
 using Paper.ScreenWizzard.UiTests.Shell;
 using Paper.ScreenWizzard.UseCases.Editor.Models;
 using Paper.ScreenWizzard.UseCases.Editor.Ports;
 using Paper.ScreenWizzard.UseCases.Shared.Models;
 
-// The namespace is not ...UiTests.Editor on purpose: a namespace of that name would hide the Presentation.Views.Editor and
-// ViewModels.Editor namespaces' short names, the same trap the capture lane met with FlaUI's Capture class.
+// The namespace is not ...UiTests.Editor on purpose: a namespace of that name would hide the short name of the Presentation.Editor
+// namespace (its Views and ViewModels), the same trap the capture lane met with FlaUI's Capture class.
 namespace Paper.ScreenWizzard.UiTests.ImageEditor;
 
 /// <summary>Plain data and pixel reading for the editor tests.</summary>

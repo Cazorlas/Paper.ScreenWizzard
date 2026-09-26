@@ -1,8 +1,8 @@
 using NUnit.Framework;
 using Paper.ScreenWizzard.Domain.Editor;
 using Paper.ScreenWizzard.Domain.Shared;
-using Paper.ScreenWizzard.Presentation.Rendering;
-using Paper.ScreenWizzard.Presentation.ViewModels.Editor;
+using Paper.ScreenWizzard.Presentation.Editor.Rendering;
+using Paper.ScreenWizzard.Presentation.Editor.ViewModels;
 using Paper.ScreenWizzard.UiTests.ScreenCapture;
 using Paper.ScreenWizzard.UiTests.Shell;
 using Paper.ScreenWizzard.UiTests.Support;
