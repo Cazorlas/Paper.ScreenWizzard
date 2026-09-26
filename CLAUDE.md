@@ -91,8 +91,10 @@ Luật chung ở skill `paper-wpf-style`, `references/build-and-deploy.md`; đâ
   thử rồi trả máy về như cũ; exit 0 chỉ khi mọi kiểm tra đạt và số kiểm tra > 0. Nó từ chối chạy khi một bản của ứng dụng đang
   chạy hoặc đã cài (nó sẽ đóng hay thay bản đó). Chạy sau mỗi lần đổi `installer/`.
 - **Phát hành:** đẩy thẻ `v<x.y.z>` → `.github/workflows/release.yml` dựng, chạy unit, dựng gói, chạy `verify-installer.ps1` rồi tạo
-  **bản nháp** release kèm ba file. Chạy tay (`workflow_dispatch`) chỉ dựng và kiểm, không tạo release. **Agent không tự đẩy thẻ,
-  tạo release hay bấm Publish** — chỉ khi Hùng nói trong phiên đó (2026-09-21: Hùng nói làm bản đầu và thẻ đầu).
+  **bản nháp** release kèm ba file. Chạy tay (`workflow_dispatch`) chỉ dựng và kiểm; chạy tay có chọn `draft_release` thì cũng tạo
+  bản nháp `v<x.y.z>` trên commit vừa dựng, và GitHub tạo thẻ lúc bản nháp được Publish — đó là đường của agent, vì phiên cloud
+  không đẩy được thẻ (Hùng đồng ý 2026-09-26). **Agent không tự đẩy thẻ, tạo bản nháp release hay bấm Publish** — chỉ khi Hùng nói
+  trong phiên đó (2026-09-21: bản đầu và thẻ đầu; 2026-09-26: "làm bản 0.1.2"). Publish luôn do Hùng bấm.
 - **Chưa có (nợ, chưa quyết):** ký số (cần chứng chỉ), cập nhật tự động, MSI. Mỗi thứ là một ADR riêng.
 
 ## Việc đang làm

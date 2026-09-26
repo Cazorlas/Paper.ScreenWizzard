@@ -103,8 +103,9 @@ need it, to remove it cleanly, while my pictures and settings are still there if
   cannot install once for every user of the machine.
 - **Not signed yet:** Windows SmartScreen may show the blue box "Windows protected your PC" the first time the installer is
   downloaded and run; click More info, then Run anyway. Signing needs a certificate (see the ADR on the installer).
-- A release is started by the project owner: pushing the tag `v<x.y.z>` runs the build and leaves a draft on GitHub. An agent
-  pushes a tag or clicks Publish only when the owner says so in that session.
+- A release is started by the project owner, in one of two ways, and either leaves a draft on GitHub that the owner publishes by
+  hand: pushing the tag `v<x.y.z>`, or running the release build by hand with "draft release" ticked (the tag is created when the
+  draft is published). An agent starts a release only when the owner says so in that session, and never clicks Publish.
 - The Vietnamese text of the installer window is the community translation shipped with Inno Setup; the project's own lines
   ("newer version installed", "Run now") are written by the project.
 
@@ -212,8 +213,9 @@ còn ảnh và cài đặt của tôi vẫn còn nếu tôi cài lại.
   máy không cài một lần cho mọi người dùng được.
 - **Chưa ký số:** Windows SmartScreen có thể hiện hộp xanh "Windows đã bảo vệ PC của bạn" lần đầu tải và chạy file cài; bấm
   Thông tin thêm, rồi Vẫn chạy. Ký số cần một chứng chỉ (xem ADR về file cài).
-- Việc phát hành do chủ dự án bắt đầu: đẩy thẻ `v<x.y.z>` thì bản dựng tự chạy và tạo bản nháp trên GitHub. Agent chỉ đẩy thẻ
-  và bấm Publish khi chủ dự án nói trong phiên đó.
+- Việc phát hành do chủ dự án bắt đầu, bằng một trong hai cách, cách nào cũng để lại một bản nháp trên GitHub cho chủ dự án bấm
+  Publish: đẩy thẻ `v<x.y.z>`, hoặc chạy tay bản dựng phát hành có chọn "tạo bản nháp" (thẻ được tạo lúc bản nháp được Publish).
+  Agent chỉ bắt đầu một bản phát hành khi chủ dự án nói trong phiên đó, và không bao giờ bấm Publish.
 - Bản dịch tiếng Việt của cửa sổ cài là bản cộng đồng đi kèm công cụ Inno Setup; câu chữ riêng của dự án (báo bản mới hơn, ô
   "Chạy ngay") do dự án viết.
 
