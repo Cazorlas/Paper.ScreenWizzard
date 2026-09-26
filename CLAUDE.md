@@ -28,7 +28,8 @@ tài liệu, lần nào cũng vậy) -> task-do -> task-verify, chạy bằng sk
 | `Paper.ScreenWizzard.App` | `net10.0-windows10.0.19041.0` (WinExe) | entry host: `App.xaml`, khay hệ thống, gốc ghép DI; mọi file ở gốc project, không thư mục | mọi tầng | 0001, 0003 |
 
 - **Trong mỗi project, thư mục cấp một là domain** (`Capture`, `Editor`, `Shell`, và `Shared` cho cái hai domain trở lên cần), vai là
-  cấp hai; port nằm trong domain mà lõi của nó gọi (ADR 0003). `tests/.../Architecture/FolderShapeTests.cs` canh hình này.
+  cấp hai; port nằm trong domain dùng nó (lõi hay màn hình), ở `Shared/` khi hai domain dùng; domain chỉ nhìn chính nó và
+  `Shared/`, trừ `Shell` là domain điều phối (ADR 0003). `tests/.../Architecture/FolderShapeTests.cs` canh hình này.
 - **Mọi quyết định ở UseCases và Domain**, chạy trong unit test không cần Windows. Ví dụ: chuẩn hoá vùng kéo,
   chọn cửa sổ dưới con trỏ, kẹp vào mép desktop, đếm bước, undo/redo, đặt tên file, kiểm phím tắt.
 - **Win32/GDI/WinRT để chụp, đọc hệ thống và ghi ra ngoài chỉ ở Infrastructure**, sau port; qua port chỉ đi số, chuỗi, mảng

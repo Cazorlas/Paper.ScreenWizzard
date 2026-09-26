@@ -45,8 +45,8 @@ hình bên trong mọi tầng theo ADR-0019 của kit, và agent `architecture-r
    lên dùng nằm ở `Shared/Ports/`, và bên cài nằm ở `Shared/` của tầng mình.
 4. **Entry host mỏng, không thư mục vai**: file của `App` nằm ở gốc project.
 5. **Test kiến trúc giữ hình này** (`tests/Paper.ScreenWizzard.UnitTests/Architecture/`), theo
-   `clean-architecture/references/architecture-tests-csharp.md` mục 5 và 6. Hướng giữa các thư mục domain (domain
-   chỉ nhìn `Shared/`) chưa có test; agent `architecture-reviewer` giữ nó.
+   `clean-architecture/references/architecture-tests-csharp.md` mục 5 và 6. Hướng giữa các thư mục domain (Decision
+   2a) có test cho dòng `using`; tên đầy đủ trong biểu thức và `clr-namespace` trong XAML thì agent `architecture-reviewer` giữ.
 6. Phương án A của ADR-0001 không đổi: vẫn năm project, cùng hướng tham chiếu. ADR này thay **hình bên trong**
    project mà ADR-0001 vẽ, và thay Decision 5 của nó ("không refactor một lượt") cho riêng lần chuyển này.
 

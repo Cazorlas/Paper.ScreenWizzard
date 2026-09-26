@@ -5,8 +5,8 @@ namespace Paper.ScreenWizzard.UnitTests.Architecture;
 
 /// <summary>
 /// ADR 0003: inside every layer project the first-level folders are domains (the same names in every layer) and the roles (Ports,
-/// UseCases, Models, ViewModels, Views, Commands) are the second level; a port sits in the domain whose core calls it, in Shared when two
-/// domains do; the entry host has no folder of its own. The tests read the folders and sources as text, so they run without Windows.
+/// UseCases, Models, ViewModels, Views, Commands) are the second level; a port sits in the domain that uses it (a core or a screen), in
+/// Shared when two domains do; a domain sees only itself and Shared, except the orchestrating Shell; the entry host has no folder of its own. The tests read the folders and sources as text, so they run without Windows.
 /// Every test first checks that the list it walks is not empty: a renamed folder must fail here, not pass by checking nothing.
 /// </summary>
 [TestFixture]
@@ -30,7 +30,7 @@ public sealed class FolderShapeTests
         ["Properties"] = "assembly attributes",
     };
 
-    // The domain that starts the others: hotkeys and the tray start a capture and open the editor (ADR 0003, Decision 1).
+    // The domain that starts the others: hotkeys and the tray start a capture and open the editor (ADR 0003, Decision 2a).
     private const string Orchestrator = "Shell";
 
     // Reaches across domains that exist on purpose or are named debt, each with its reason.
