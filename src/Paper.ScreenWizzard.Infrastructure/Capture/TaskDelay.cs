@@ -1,6 +1,6 @@
-using Paper.ScreenWizzard.UseCases.Shared.Ports;
+using Paper.ScreenWizzard.UseCases.Capture.Ports;
 
-namespace Paper.ScreenWizzard.Infrastructure.Shared;
+namespace Paper.ScreenWizzard.Infrastructure.Capture;
 
 /// <summary>Real waiting for the countdown.</summary>
 public sealed class TaskDelay : IDelay
