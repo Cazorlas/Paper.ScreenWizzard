@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Nodes;
 using NUnit.Framework;
 using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Shared;
@@ -43,6 +44,15 @@ public sealed class StoresTests
         AppLanguage.Vietnamese,
         AppTheme.Dark,
         new PixelPoint(-1200, 40));
+
+    // What the app runs on for a loaded file; nothing may have fallen back to a default, or the store forgot a setting.
+    private static AppSettings Completed(SettingsLoadResult load)
+    {
+        var completion = SettingsRules.Complete(load.Stored!, SettingsDefaults.Create(@"C:\unused"));
+        Assert.That(completion.Problem, Is.Null);
+        Assert.That(completion.Defaulted, Is.Empty, "settings the store did not write or did not read");
+        return completion.Settings!;
+    }
 
     internal static void AssertSame(AppSettings actual, AppSettings expected)
     {
@@ -102,7 +112,7 @@ public sealed class StoresTests
         var load = new SettingsStore(_scratch.Path).Load();
 
         Assert.That(load.Status, Is.EqualTo(SettingsLoadStatus.Missing));
-        Assert.That(load.Settings, Is.Null);
+        Assert.That(load.Stored, Is.Null);
     }
 
     [Test]
@@ -116,7 +126,7 @@ public sealed class StoresTests
 
         Assert.That(saved.Success, Is.True, saved.Detail);
         Assert.That(load.Status, Is.EqualTo(SettingsLoadStatus.Loaded), load.Detail);
-        AssertSame(load.Settings!, settings);
+        AssertSame(Completed(load), settings);
         var file = Path.Combine(_scratch.Path, "configs", "settings.json");
         Assert.That(File.Exists(file), Is.True, "<data root>\\configs\\settings.json");
         var text = File.ReadAllText(file, Encoding.UTF8);
@@ -135,7 +145,7 @@ public sealed class StoresTests
         Assert.That(store.Save(first).Success, Is.True);
         Assert.That(store.Save(second).Success, Is.True);
 
-        AssertSame(store.Load().Settings!, second);
+        AssertSame(Completed(store.Load()), second);
     }
 
     [Test]
@@ -149,7 +159,7 @@ public sealed class StoresTests
         var load = new SettingsStore(_scratch.Path).Load();
 
         Assert.That(load.Status, Is.EqualTo(SettingsLoadStatus.Corrupt));
-        Assert.That(load.Settings, Is.Null);
+        Assert.That(load.Stored, Is.Null);
         Assert.That(File.Exists(Path.Combine(folder, "settings.json.bak")), Is.True, "the bad file is kept next to it");
         Assert.That(File.ReadAllBytes(Path.Combine(folder, "settings.json.bak")), Is.EqualTo(bad), "the bad file is kept as settings.json.bak");
     }
@@ -199,21 +209,89 @@ public sealed class StoresTests
         var load = new SettingsStore(_scratch.Path).Load();
 
         Assert.That(load.Status, Is.EqualTo(SettingsLoadStatus.Loaded), load.Detail);
-        AssertSame(load.Settings!, settings);
+        AssertSame(Completed(load), settings);
     }
 
     [TestCase("{\"hotkeys\": null}")]
     [TestCase("{\"hotkeys\": {\"Rectangle\": null}}")]
-    public void Settings_ANullHotkeyTableOrChord_IsCorruptWithABak_NotACrash(string json)
+    public void Settings_ANullHotkeyTableOrChord_IsHandedOverAsWritten_NotACrash(string json)
     {
+        // Whether a missing table means "the default keys" (F8) or a null key means "broken" (F1) is SettingsRules' call, not the adapter's.
         var folder = Path.Combine(_scratch.Path, "configs");
         Directory.CreateDirectory(folder);
         File.WriteAllText(Path.Combine(folder, "settings.json"), json);
 
         var load = new SettingsStore(_scratch.Path).Load();
 
+        Assert.That(load.Status, Is.EqualTo(SettingsLoadStatus.Loaded), load.Detail);
+        Assert.That(load.Stored!.JpgQuality, Is.Null, "a setting the file lacks is null");
+        Assert.That(File.Exists(Path.Combine(folder, "settings.json.bak")), Is.False, "the adapter keeps a .bak only of what it cannot read");
+    }
+
+    [Test]
+    public void F8_AFileWithoutAJpgQualityLoadsWithThatSettingEmpty()
+    {
+        var store = new SettingsStore(_scratch.Path);
+        Assert.That(store.Save(EveryFieldChanged()).Success, Is.True);
+        var file = Path.Combine(_scratch.Path, "configs", "settings.json");
+        var document = JsonNode.Parse(File.ReadAllText(file))!.AsObject();
+        Assert.That(document.Remove("jpgQuality"), Is.True, "set-up: the file names the setting jpgQuality");
+        File.WriteAllText(file, document.ToJsonString());
+
+        var load = new SettingsStore(_scratch.Path).Load();
+
+        Assert.That(load.Status, Is.EqualTo(SettingsLoadStatus.Loaded), load.Detail);
+        var stored = load.Stored!;
+        Assert.That(stored.JpgQuality, Is.Null);
+        Assert.That(stored.SaveFolder, Is.EqualTo(EveryFieldChanged().SaveFolder), "the settings the file has are read");
+        Assert.That(stored.Theme, Is.EqualTo(AppTheme.Dark));
+        Assert.That(File.Exists(file + ".bak"), Is.False, "a missing setting is not a broken file");
+    }
+
+    [Test]
+    public void F8_AFileWithAnUnknownSettingLoads()
+    {
+        // A newer version may write a setting this one does not know; going back to this version must not lose the rest.
+        var store = new SettingsStore(_scratch.Path);
+        Assert.That(store.Save(EveryFieldChanged()).Success, Is.True);
+        var file = Path.Combine(_scratch.Path, "configs", "settings.json");
+        var document = JsonNode.Parse(File.ReadAllText(file))!.AsObject();
+        document["recordingFramesPerSecond"] = 30;
+        File.WriteAllText(file, document.ToJsonString());
+
+        var load = new SettingsStore(_scratch.Path).Load();
+
+        Assert.That(load.Status, Is.EqualTo(SettingsLoadStatus.Loaded), load.Detail);
+        AssertSame(Completed(load), EveryFieldChanged());
+    }
+
+    [TestCase("\"jpgQuality\": \"high\"")]
+    [TestCase("\"format\": \"Webp\"")]
+    public void F1_AValueOfTheWrongTypeIsCorruptWithABak(string setting)
+    {
+        var folder = Path.Combine(_scratch.Path, "configs");
+        Directory.CreateDirectory(folder);
+        File.WriteAllText(Path.Combine(folder, "settings.json"), "{" + setting + "}");
+
+        var load = new SettingsStore(_scratch.Path).Load();
+
         Assert.That(load.Status, Is.EqualTo(SettingsLoadStatus.Corrupt));
         Assert.That(File.Exists(Path.Combine(folder, "settings.json.bak")), Is.True);
+    }
+
+    [Test]
+    public void F1_KeepAsBackupCopiesTheFileOverBak()
+    {
+        var store = new SettingsStore(_scratch.Path);
+        Assert.That(store.Save(EveryFieldChanged() with { JpgQuality = 50 }).Success, Is.True);
+        var file = Path.Combine(_scratch.Path, "configs", "settings.json");
+        File.WriteAllText(file + ".bak", "an older backup");
+
+        var kept = store.KeepAsBackup();
+
+        Assert.That(kept.Success, Is.True, kept.Detail);
+        Assert.That(File.ReadAllBytes(file + ".bak"), Is.EqualTo(File.ReadAllBytes(file)), "the file is copied, an older backup overwritten");
+        Assert.That(File.Exists(file), Is.True, "the file itself stays until the next save");
     }
 
     [Test]
@@ -253,7 +331,7 @@ public sealed class StoresTests
 
         Assert.That(refused.Success, Is.False, "a read-only settings file is not silently overwritten");
         Assert.That(refused.Detail, Does.StartWith(file + ": "));
-        Assert.That(store.Load().Settings!.JpgQuality, Is.EqualTo(77), "the file on disk is unchanged");
+        Assert.That(store.Load().Stored!.JpgQuality, Is.EqualTo(77), "the file on disk is unchanged");
     }
 
     // ---- log ----

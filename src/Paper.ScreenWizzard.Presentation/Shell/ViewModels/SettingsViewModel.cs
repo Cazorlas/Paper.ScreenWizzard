@@ -122,7 +122,7 @@ public sealed class SettingsViewModel : BindableBase, IDisposable
     public int JpgQuality
     {
         get => _jpgQuality;
-        set => SetProperty(ref _jpgQuality, Math.Clamp(value, 1, 100));
+        set => SetProperty(ref _jpgQuality, Math.Clamp(value, SettingsRules.JpgQualityMin, SettingsRules.JpgQualityMax));
     }
 
     public int DelaySeconds

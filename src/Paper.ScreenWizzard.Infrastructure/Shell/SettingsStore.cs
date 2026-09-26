@@ -12,8 +12,9 @@ namespace Paper.ScreenWizzard.Infrastructure.Shell;
 
 /// <summary>
 /// The one settings document, <c>&lt;dataRoot&gt;\configs\settings.json</c>, as indented JSON with enums written as names. A file that
-/// cannot be read or is not a valid document is copied over <c>settings.json.bak</c> and reported <see cref="SettingsLoadStatus.Corrupt"/>
-/// (SPEC shell F1). A save goes to a temporary file first and then replaces the document, so a failure half way never leaves a torn file;
+/// is not a settings document (not JSON, a value of the wrong type) is copied over <c>settings.json.bak</c> and reported
+/// <see cref="SettingsLoadStatus.Corrupt"/> (SPEC shell F1); a document is handed over as it is, missing settings as null, and whether
+/// its values are in range is the use case's decision (<see cref="KeepAsBackup"/> when they are not). A save goes to a temporary file first and then replaces the document, so a failure half way never leaves a torn file;
 /// a failed save reports <c>"&lt;full path&gt;: &lt;reason&gt;"</c> so the shell's message can name the file (SPEC shell F2).
 /// </summary>
 public sealed class SettingsStore : ISettingsStore
@@ -45,8 +46,7 @@ public sealed class SettingsStore : ISettingsStore
 
         try
         {
-            var settings = Read();
-            return new SettingsLoadResult(settings, SettingsLoadStatus.Loaded, null);
+            return new SettingsLoadResult(Read(), SettingsLoadStatus.Loaded, null);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or NotSupportedException or System.Security.SecurityException)
         {
@@ -55,19 +55,19 @@ public sealed class SettingsStore : ISettingsStore
         }
         catch (Exception exception) when (exception is JsonException or ArgumentException or InvalidDataException)
         {
-            KeepAsBackup();
+            Backup();
             return new SettingsLoadResult(null, SettingsLoadStatus.Corrupt, _file + ": " + exception.Message);
         }
     }
 
     // Notepad and PowerShell 5 write a UTF-8 byte order mark; the JSON reader refuses it, and a file that opens fine in an editor is not corrupt.
-    private AppSettings Read()
+    private StoredSettings Read()
     {
         var bytes = File.ReadAllBytes(_file);
         var content = bytes.AsSpan().StartsWith(_utf8Bom) ? bytes.AsSpan(_utf8Bom.Length) : bytes.AsSpan();
         var document = JsonSerializer.Deserialize<SettingsDocument>(content, _options)
             ?? throw new JsonException("the document is empty");
-        return document.ToSettings();
+        return document.ToStored();
     }
 
     public PortResult Save(AppSettings settings)
@@ -104,49 +104,55 @@ public sealed class SettingsStore : ISettingsStore
         }
     }
 
-    // The bad file is kept next to the new one so the user can look at it (SPEC shell F1); an older backup is overwritten.
-    private void KeepAsBackup()
+    public PortResult KeepAsBackup()
     {
         try
         {
             File.Copy(_file, _file + ".bak", overwrite: true);
+            return PortResult.Ok;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
-            // A file that cannot even be copied cannot be kept; the Corrupt answer is still right.
+            return PortResult.Fail(_file + ".bak: " + exception.Message);
         }
     }
 
-    // The document is its own set of plain types, so a change to the domain record never silently changes the file format.
+    // The bad file is kept next to the new one so the user can look at it (SPEC shell F1); an older backup is overwritten. A file that
+    // cannot even be copied cannot be kept, and the Corrupt answer is still right.
+    private void Backup() => KeepAsBackup();
+
+    // The document is its own set of plain types, so a change to the domain record never silently changes the file format. Every setting
+    // may be missing (null): a file of an older version lacks what was added since, and what that means is the use case's call (SPEC
+    // shell F8). A setting this version does not know is skipped by the reader, so a file a newer version wrote still loads.
     private sealed class SettingsDocument
     {
-        public required Dictionary<string, HotkeyDocument> Hotkeys { get; init; }
+        public Dictionary<string, HotkeyDocument?>? Hotkeys { get; init; }
 
-        public required AfterCaptureAction AfterCapture { get; init; }
+        public AfterCaptureAction? AfterCapture { get; init; }
 
-        public required string SaveFolder { get; init; }
+        public string? SaveFolder { get; init; }
 
-        public required ImageFormat Format { get; init; }
+        public ImageFormat? Format { get; init; }
 
-        public required int JpgQuality { get; init; }
+        public int? JpgQuality { get; init; }
 
-        public required int DelaySeconds { get; init; }
+        public int? DelaySeconds { get; init; }
 
-        public required bool IncludeCursor { get; init; }
+        public bool? IncludeCursor { get; init; }
 
-        public required FullScreenScope FullScreenScope { get; init; }
+        public FullScreenScope? FullScreenScope { get; init; }
 
-        public required bool StartWithWindows { get; init; }
+        public bool? StartWithWindows { get; init; }
 
-        public required AppLanguage Language { get; init; }
+        public AppLanguage? Language { get; init; }
 
-        public required AppTheme Theme { get; init; }
+        public AppTheme? Theme { get; init; }
 
         public PositionDocument? CaptureBarPosition { get; init; }
 
         public static SettingsDocument From(AppSettings settings) => new()
         {
-            Hotkeys = settings.Hotkeys.ToDictionary(pair => pair.Key.ToString(), pair => new HotkeyDocument(pair.Value.Modifiers, pair.Value.Key)),
+            Hotkeys = settings.Hotkeys.ToDictionary(pair => pair.Key.ToString(), pair => (HotkeyDocument?)new HotkeyDocument(pair.Value.Modifiers, pair.Value.Key)),
             AfterCapture = settings.AfterCapture,
             SaveFolder = settings.SaveFolder,
             Format = settings.Format,
@@ -160,52 +166,22 @@ public sealed class SettingsStore : ISettingsStore
             CaptureBarPosition = settings.CaptureBarPosition is { } place ? new PositionDocument(place.X, place.Y) : null,
         };
 
-        public AppSettings ToSettings()
-        {
-            var hotkeys = new Dictionary<CaptureKind, HotkeyChord>();
-            // System.Text.Json accepts null for a non-nullable property: a null table or a null chord is a broken document, not a crash.
-            foreach (var (name, chord) in Hotkeys ?? throw new JsonException("the hotkeys are missing"))
-            {
-                if (!Enum.TryParse<CaptureKind>(name, out var kind) || !Enum.IsDefined(kind) || chord is null || string.IsNullOrWhiteSpace(chord.Key))
-                {
-                    throw new JsonException($"'{name}' is not a capture kind with a key");
-                }
-
-                hotkeys[kind] = new HotkeyChord(chord.Modifiers, chord.Key);
-            }
-
-            if (string.IsNullOrWhiteSpace(SaveFolder))
-            {
-                throw new JsonException("the save folder is empty");
-            }
-
-            if (JpgQuality is < 1 or > 100)
-            {
-                throw new JsonException($"the JPG quality {JpgQuality} is not between 1 and 100");
-            }
-
-            if (DelaySeconds < 0)
-            {
-                throw new JsonException($"the delay {DelaySeconds} is negative");
-            }
-
-            return new AppSettings(
-                hotkeys,
-                AfterCapture,
-                SaveFolder,
-                Format,
-                JpgQuality,
-                DelaySeconds,
-                IncludeCursor,
-                FullScreenScope,
-                StartWithWindows,
-                Language,
-                Theme,
-                CaptureBarPosition is { } place ? new PixelPoint(place.X, place.Y) : null);
-        }
+        public StoredSettings ToStored() => new(
+            Hotkeys?.ToDictionary(pair => pair.Key, pair => pair.Value is { } chord ? new StoredHotkey(chord.Modifiers, chord.Key) : (StoredHotkey?)null),
+            AfterCapture,
+            SaveFolder,
+            Format,
+            JpgQuality,
+            DelaySeconds,
+            IncludeCursor,
+            FullScreenScope,
+            StartWithWindows,
+            Language,
+            Theme,
+            CaptureBarPosition is { } place ? new PixelPoint(place.X, place.Y) : null);
     }
 
-    private sealed record HotkeyDocument(HotkeyModifiers Modifiers, string Key);
+    private sealed record HotkeyDocument(HotkeyModifiers? Modifiers, string? Key);
 
     private sealed record PositionDocument(int X, int Y);
 }

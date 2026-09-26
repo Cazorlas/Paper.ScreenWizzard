@@ -44,7 +44,7 @@ public sealed class ShellStartRepairTests
         var started = interactor.Start(StartInput());
 
         // The lock is gone and the file is a good document the app never saw: writing defaults over it would destroy it.
-        _fixture.Store.LoadResult = new SettingsLoadResult(ShellData.SpecDefaults(), SettingsLoadStatus.Loaded, null);
+        _fixture.Store.LoadResult = new SettingsLoadResult(StoredSettings.From(ShellData.SpecDefaults()), SettingsLoadStatus.Loaded, null);
         var refusedGood = interactor.Apply(started.Settings);
 
         _fixture.Store.LoadResult = new SettingsLoadResult(null, SettingsLoadStatus.Unreadable, "still locked");
@@ -71,6 +71,56 @@ public sealed class ShellStartRepairTests
     }
 
     [Test]
+    public void AfterAnUnreadableStartASaveGoesThroughWhenTheFileTurnsOutToHoldAValueOutsideItsRange()
+    {
+        var interactor = _fixture.Create();
+        _fixture.Store.LoadResult = new SettingsLoadResult(null, SettingsLoadStatus.Unreadable, "locked");
+        var started = interactor.Start(StartInput());
+
+        _fixture.Store.LoadResult = new SettingsLoadResult(StoredSettings.From(ShellData.SpecDefaults()) with { DelaySeconds = 99 }, SettingsLoadStatus.Loaded, null);
+        var applied = interactor.Apply(started.Settings);
+
+        Assert.That(applied.Saved, Is.True, "a broken file loses nothing when it is written over");
+        Assert.That(_fixture.Store.Saved, Has.Count.EqualTo(1));
+        Assert.That(_fixture.Store.BackupCalls, Is.EqualTo(1), "the broken file is kept as .bak before it is written over (F1)");
+    }
+
+    [Test]
+    public void F8_AMissingSettingStartsWithoutNoticeAndWithoutBackup()
+    {
+        var written = ShellData.SpecDefaults() with { Theme = AppTheme.Dark, DelaySeconds = 3 };
+        _fixture.Store.LoadResult = new SettingsLoadResult(StoredSettings.From(written) with { JpgQuality = null, SaveFolder = null }, SettingsLoadStatus.Loaded, null);
+
+        var result = _fixture.Create().Start(StartInput());
+
+        Assert.That(result.Settings.JpgQuality, Is.EqualTo(90), "SPEC shell Inputs: JPG quality 90");
+        Assert.That(result.Settings.SaveFolder, Is.EqualTo(@"C:\Users\Hung\Pictures\Paper.ScreenWizzard"), "SPEC shell Inputs: the Pictures folder, Paper.ScreenWizzard");
+        Assert.That(result.Settings.Theme, Is.EqualTo(AppTheme.Dark), "the settings the file has are kept");
+        Assert.That(result.Settings.DelaySeconds, Is.EqualTo(3));
+        Assert.That(result.Notices.Select(n => n.Key), Does.Not.Contain("Shell.SettingsCorrupt"));
+        Assert.That(result.Notices, Is.Empty, "a missing setting is normal after an update: no notice");
+        Assert.That(_fixture.Store.BackupCalls, Is.EqualTo(0), "no .bak");
+        Assert.That(_fixture.Store.Saved, Is.Empty, "the file is not rewritten at start");
+        var info = string.Join("\n", _fixture.Log.Lines.Where(l => l.StartsWith("I ", StringComparison.Ordinal)));
+        Assert.That(info, Does.Contain("jpgQuality").And.Contain("saveFolder"), "one line in the log names what was missing");
+    }
+
+    [Test]
+    public void F1_AnOutOfRangeFileIsKeptAsBakAndStartsOnDefaultsWithTheCorruptNotice()
+    {
+        var written = ShellData.SpecDefaults() with { SaveFolder = @"D:\Ảnh", JpgQuality = 0 };
+        _fixture.Store.LoadResult = new SettingsLoadResult(StoredSettings.From(written), SettingsLoadStatus.Loaded, null);
+
+        var result = _fixture.Create().Start(StartInput());
+
+        Assert.That(_fixture.Store.BackupCalls, Is.EqualTo(1), "the broken file is kept as .bak");
+        Assert.That(result.Notices.Select(n => n.Key), Does.Contain("Shell.SettingsCorrupt"));
+        Assert.That(result.Settings.SaveFolder, Is.EqualTo(@"C:\Users\Hung\Pictures\Paper.ScreenWizzard"), "the app runs on the defaults");
+        Assert.That(result.Settings.JpgQuality, Is.EqualTo(90));
+        Assert.That(_fixture.Store.Saved, Is.Empty, "as with any broken file, nothing is written at start");
+    }
+
+    [Test]
     public void AHotkeyOfAPlainLetterInTheFileIsNotRegisteredTheDefaultTakesItsPlaceAndTheNoticeNamesIt()
     {
         var settings = ShellData.SpecDefaults();
@@ -78,7 +128,7 @@ public sealed class ShellStartRepairTests
         {
             [CaptureKind.Rectangle] = ShellData.Chord(HotkeyModifiers.None, "A"),
         };
-        _fixture.Store.LoadResult = new SettingsLoadResult(settings with { Hotkeys = hotkeys }, SettingsLoadStatus.Loaded, null);
+        _fixture.Store.LoadResult = new SettingsLoadResult(StoredSettings.From(settings with { Hotkeys = hotkeys }), SettingsLoadStatus.Loaded, null);
 
         var result = _fixture.Create().Start(StartInput());
 
@@ -92,7 +142,7 @@ public sealed class ShellStartRepairTests
     public void StartWithWindowsOnInTheSettingsAndNoRunEntryWritesTheEntryAgain()
     {
         var settings = ShellData.SpecDefaults() with { StartWithWindows = true };
-        _fixture.Store.LoadResult = new SettingsLoadResult(settings, SettingsLoadStatus.Loaded, null);
+        _fixture.Store.LoadResult = new SettingsLoadResult(StoredSettings.From(settings), SettingsLoadStatus.Loaded, null);
         _fixture.Autostart.Enabled = false;
 
         _fixture.Create().Start(StartInput());
@@ -105,7 +155,7 @@ public sealed class ShellStartRepairTests
     public void StartWithWindowsOffInTheSettingsAndARunEntryLeftBehindRemovesTheEntry()
     {
         var settings = ShellData.SpecDefaults() with { StartWithWindows = false };
-        _fixture.Store.LoadResult = new SettingsLoadResult(settings, SettingsLoadStatus.Loaded, null);
+        _fixture.Store.LoadResult = new SettingsLoadResult(StoredSettings.From(settings), SettingsLoadStatus.Loaded, null);
         _fixture.Autostart.Enabled = true;
 
         _fixture.Create().Start(StartInput());
@@ -118,7 +168,7 @@ public sealed class ShellStartRepairTests
     public void StartWithWindowsThatAlreadyAgreesWithTheEntryTouchesNothing()
     {
         var settings = ShellData.SpecDefaults() with { StartWithWindows = true };
-        _fixture.Store.LoadResult = new SettingsLoadResult(settings, SettingsLoadStatus.Loaded, null);
+        _fixture.Store.LoadResult = new SettingsLoadResult(StoredSettings.From(settings), SettingsLoadStatus.Loaded, null);
         _fixture.Autostart.Enabled = true;
 
         _fixture.Create().Start(StartInput());
