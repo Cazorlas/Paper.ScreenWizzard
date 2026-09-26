@@ -13,7 +13,7 @@ decision is made here. Each adapter sits in the folder of its port's domain (ADR
 | `Capture/WindowCatalog.cs` | top-level windows top to bottom with the DWM visible frame |
 | `Capture/TaskDelay.cs` | the countdown's wait |
 | `Shell/HotkeyService.cs` | `RegisterHotKey` through a message-only window; atomic re-register, F12 refused |
-| `Shell/SettingsStore.cs` | `settings.json`, the `.bak` of a corrupt file, the path in every failure |
+| `Shell/SettingsStore.cs` | `settings.json` read as written (missing settings null), the `.bak` of a file it cannot read or the use case calls broken, the path in every failure |
 | `Shell/AutostartService.cs` | the HKCU Run value |
 | `Shell/SingleInstance.cs` | the named mutex and the wake event |
 | `Shared/ClipboardService.cs` | set and get an image, with the retries of a busy clipboard |

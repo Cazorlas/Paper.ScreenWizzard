@@ -199,8 +199,8 @@ public sealed class ShellInteractor : IShellInteractor
         new(false, issue, conflicting, current, message);
 
     // A file that could not be read at start may be perfectly good, so the defaults the app runs on must not replace it. The file is
-    // looked at again at the moment of a save: still locked or now readable and good -> refuse; broken (the adapter kept a .bak) or
-    // gone -> nothing is lost by writing.
+    // looked at again at the moment of a save: still locked or now readable and good -> refuse; broken (kept as .bak: by the adapter
+    // for a wrong type, here for a value outside its range) or gone -> nothing is lost by writing.
     private PortResult Persist(AppSettings settings)
     {
         if (_settingsUnreadable)
@@ -208,8 +208,12 @@ public sealed class ShellInteractor : IShellInteractor
             var again = _settingsStore.Load();
             switch (again.Status)
             {
-                case SettingsLoadStatus.Loaded:
+                case SettingsLoadStatus.Loaded when again.Stored is { } stored && SettingsRules.Complete(stored, settings).Settings is not null:
                     return PortResult.Fail("the settings file could not be read when the app started and is kept as it is; restart the app to use it");
+                case SettingsLoadStatus.Loaded:
+                    _settingsStore.KeepAsBackup();
+                    _settingsUnreadable = false;
+                    break;
                 case SettingsLoadStatus.Unreadable:
                     return PortResult.Fail(again.Detail ?? "the settings file is still unreadable");
                 default:
@@ -287,12 +291,28 @@ public sealed class ShellInteractor : IShellInteractor
     {
         var loaded = _settingsStore.Load();
         _settingsUnreadable = loaded.Status == SettingsLoadStatus.Unreadable;
-        if (loaded.Status == SettingsLoadStatus.Loaded && loaded.Settings is { } settings)
+        var defaults = CreateDefaultSettings(input.PicturesFolder);
+        if (loaded.Status == SettingsLoadStatus.Loaded && loaded.Stored is { } stored)
         {
-            return settings;
+            var completion = SettingsRules.Complete(stored, defaults);
+            if (completion.Settings is { } settings)
+            {
+                // A file of an older version lacks what was added since: normal, so the log says it and the user is not told (F8).
+                if (completion.Defaulted.Count > 0)
+                {
+                    _log.Info($"The settings file lacks {string.Join(", ", completion.Defaulted)}; the defaults are used for them.");
+                }
+
+                return settings;
+            }
+
+            // A value outside its range breaks the file as a value of the wrong type does (F1): kept as .bak, not written over at start.
+            var kept = _settingsStore.KeepAsBackup();
+            _log.Warning($"The settings file is broken: {completion.Problem}" + (kept.Success ? string.Empty : $"; the .bak copy failed: {kept.Detail}"));
+            notices.Add(NotificationMessage.Of("Shell.SettingsCorrupt"));
+            return defaults;
         }
 
-        var defaults = CreateDefaultSettings(input.PicturesFolder);
         if (loaded.Status == SettingsLoadStatus.Unreadable)
         {
             // The file may be good and only locked: the defaults are not saved, so it is still there at the next start.

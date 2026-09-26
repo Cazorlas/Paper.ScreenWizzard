@@ -7,20 +7,21 @@ namespace Paper.ScreenWizzard.UseCases.Shell.Models;
 
 public enum SettingsLoadStatus
 {
-    /// <summary>The file was read.</summary>
+    /// <summary>The file was read as a settings document; whether its values are in range is the use case's question.</summary>
     Loaded,
 
     /// <summary>There was no file yet (first run).</summary>
     Missing,
 
-    /// <summary>The file was read but is not a valid document; the adapter already kept the bad file as .bak (SPEC shell F1).</summary>
+    /// <summary>The file is not a settings document (not JSON, a value of the wrong type); the adapter already kept it as .bak (SPEC shell F1).</summary>
     Corrupt,
 
     /// <summary>The file exists but could not be read (locked, no permission): it may be perfectly good, so it is never written over.</summary>
     Unreadable,
 }
 
-public sealed record SettingsLoadResult(AppSettings? Settings, SettingsLoadStatus Status, string? Detail);
+/// <param name="Stored">The settings as the file holds them when <see cref="SettingsLoadStatus.Loaded"/>; a setting the file lacks is null.</param>
+public sealed record SettingsLoadResult(StoredSettings? Stored, SettingsLoadStatus Status, string? Detail);
 
 /// <summary>What <c>Start</c> needs from the outside world, gathered by the entry point.</summary>
 public sealed record ShellStartInput(

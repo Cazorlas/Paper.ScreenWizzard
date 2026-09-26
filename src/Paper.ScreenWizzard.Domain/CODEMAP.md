@@ -25,9 +25,11 @@ the domains every other layer reuses (ADR 0003); `Shared/` is what two or more o
 | `Shell/ShellTypes.cs` | `AppSettings`, `HotkeyChord`, language and theme choices |
 | `Shell/HotkeyRules.cs` | is a chord safe, are two the same, how it is written |
 | `Shell/SettingsDefaults.cs` | the settings a new user gets (SPEC shell, Inputs) |
+| `Shell/StoredSettings.cs` | the settings file as written, a missing setting as null |
+| `Shell/SettingsRules.cs` | the limits of each setting; a missing one takes its default, one out of range breaks the file |
 
 ## Flow
 
 No flow of its own: `CaptureSession` (UseCases) calls `CaptureGeometry` and `PixelImageOps`; `ImageDelivery` calls `ScreenshotNaming`;
 `EditorSession` and `EditorInteractor` call `AnnotationOps`, `AnnotationHit`, `AnnotationFactory`, `EditorGeometry` and `Mosaic`; the renderer in Presentation reads `AnnotationMetrics`; `ShellInteractor` calls
-`HotkeyRules` and `SettingsDefaults`.
+`HotkeyRules`, `SettingsDefaults` and `SettingsRules.Complete`.

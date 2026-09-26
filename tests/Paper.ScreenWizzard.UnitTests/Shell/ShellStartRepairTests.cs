@@ -82,6 +82,7 @@ public sealed class ShellStartRepairTests
 
         Assert.That(applied.Saved, Is.True, "a broken file loses nothing when it is written over");
         Assert.That(_fixture.Store.Saved, Has.Count.EqualTo(1));
+        Assert.That(_fixture.Store.BackupCalls, Is.EqualTo(1), "the broken file is kept as .bak before it is written over (F1)");
     }
 
     [Test]
