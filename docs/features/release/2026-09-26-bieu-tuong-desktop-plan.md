@@ -46,7 +46,7 @@ Không có lane `unit` hay `ui`: không có mã ứng dụng. Bằng chứng là
 
 ### 1. File cài
 
-- [ ] T1 `verify-installer.ps1`: hàm `Desktop-Shortcut`; kiểm "What the user does 3 / Cài đè và gỡ: có một biểu tượng trên màn hình nền" sau lần cài tiếng Việt; kiểm "không có biểu tượng khi bỏ chọn" bằng một lần cài `/MERGETASKS="!desktopicon"` vào thư mục thử rồi gỡ; kiểm "gỡ thì biểu tượng mất"; dọn biểu tượng trong khối `finally` — xong khi trên bản cài chưa có task, các kiểm tra mới **đỏ** (lượt dựng tay chạy trước khi đổi `Setup.iss`) {files: installer/verify-installer.ps1}
+- [x] T1 `verify-installer.ps1`: hàm `Desktop-Shortcut`; kiểm "What the user does 3 / Cài đè và gỡ: có một biểu tượng trên màn hình nền" sau lần cài tiếng Việt; kiểm "không có biểu tượng khi bỏ chọn" bằng một lần cài `/MERGETASKS="!desktopicon"` vào thư mục thử rồi gỡ; kiểm "gỡ thì biểu tượng mất"; dọn biểu tượng trong khối `finally` — xong khi trên bản cài chưa có task, các kiểm tra mới **đỏ** (lượt dựng tay chạy trước khi đổi `Setup.iss`) {files: installer/verify-installer.ps1}
 - [ ] T2 `Setup.iss`: `[Tasks]` `desktopicon` và `[Icons]` `{autodesktop}` — xong khi lượt dựng tay `release.yml` báo mọi kiểm tra đạt, số kiểm tra lớn hơn 35 {files: installer/Setup.iss}
 
 ### Last. Close
@@ -63,3 +63,4 @@ Không có lane `unit` hay `ui`: không có mã ứng dụng. Bằng chứng là
 
 | Task | Lệnh / id / giá trị đọc lại | Verdict |
 |---|---|---|
+| T1 | lượt dựng tay `release.yml` số 8 (run 36255212162) trên `1c46e56`, `Setup.iss` chưa đổi: `verify-installer: 42 checks, 40 passed, 2 failed`; hỏng đúng hai kiểm tra mới `Desktop  with the desktop box left ticked there is one desktop icon` và `Desktop  and it opens the installed exe`. Ba kiểm tra "bỏ ô thì không có biểu tượng" đạt sẵn trên file cài cũ (vốn không tạo biểu tượng), nên lượt này không chứng minh gì cho chúng | pass (đỏ ở kiểm tra) |
