@@ -2,10 +2,9 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Paper.ScreenWizzard.Domain.Capture;
-using Paper.ScreenWizzard.Domain.Common;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
-using Paper.ScreenWizzard.UseCases.Common.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 using Paper.ScreenWizzard.UseCases.Shell.Models;
 using Paper.ScreenWizzard.UseCases.Shell.Ports;
 
@@ -17,7 +16,7 @@ namespace Paper.ScreenWizzard.Infrastructure.Shell;
 /// (SPEC shell F1). A save goes to a temporary file first and then replaces the document, so a failure half way never leaves a torn file;
 /// a failed save reports <c>"&lt;full path&gt;: &lt;reason&gt;"</c> so the shell's message can name the file (SPEC shell F2).
 /// </summary>
-public sealed class SettingsStore : ISettingsStorePort
+public sealed class SettingsStore : ISettingsStore
 {
     private static readonly JsonSerializerOptions _options = new()
     {

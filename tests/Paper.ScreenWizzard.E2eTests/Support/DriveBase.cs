@@ -1,7 +1,7 @@
 using FlaUI.Core.AutomationElements;
 using NUnit.Framework;
 using Paper.ScreenWizzard.Domain.Capture;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
 
 namespace Paper.ScreenWizzard.E2eTests.Support;

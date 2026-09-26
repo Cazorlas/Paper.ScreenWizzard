@@ -1,7 +1,6 @@
 using NUnit.Framework;
 using Paper.ScreenWizzard.Domain.Capture;
-using Paper.ScreenWizzard.Domain.Common;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.E2eTests.Support;
 
 namespace Paper.ScreenWizzard.E2eTests.Drive;

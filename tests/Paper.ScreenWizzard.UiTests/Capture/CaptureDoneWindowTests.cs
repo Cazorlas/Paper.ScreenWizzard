@@ -3,17 +3,15 @@ using System.Windows.Media;
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.WindowsAPI;
 using NUnit.Framework;
-using Paper.ScreenWizzard.Presentation.ViewModels.Capture;
-using Paper.ScreenWizzard.Presentation.Views.Capture;
 using Paper.ScreenWizzard.Domain.Capture;
-using Paper.ScreenWizzard.Domain.Common;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
+using Paper.ScreenWizzard.Presentation.Capture.ViewModels;
+using Paper.ScreenWizzard.Presentation.Capture.Views;
 using Paper.ScreenWizzard.UiTests.Shell;
 using Paper.ScreenWizzard.UiTests.Support;
 using Paper.ScreenWizzard.UseCases.Capture.Models;
-using Paper.ScreenWizzard.UseCases.Common.Models;
-using Paper.ScreenWizzard.UseCases.Shell.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 
 namespace Paper.ScreenWizzard.UiTests.ScreenCapture;
 

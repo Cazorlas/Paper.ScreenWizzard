@@ -1,12 +1,12 @@
-using Paper.ScreenWizzard.Presentation.ViewModels.Capture;
-using Paper.ScreenWizzard.Presentation.ViewModels.Shell;
 using Paper.ScreenWizzard.Domain.Capture;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
+using Paper.ScreenWizzard.Presentation.Capture.ViewModels;
+using Paper.ScreenWizzard.Presentation.Shared.ViewModels;
 using Paper.ScreenWizzard.UiTests.Shell;
 using Paper.ScreenWizzard.UseCases.Capture.Models;
 using Paper.ScreenWizzard.UseCases.Capture.Ports;
-using Paper.ScreenWizzard.UseCases.Common.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 
 // The namespace is not ...UiTests.Capture on purpose: FlaUI has a class called Capture, and a namespace of that name in
 // Paper.ScreenWizzard.UiTests would hide it from Support/WindowSession.cs.
@@ -366,6 +366,6 @@ public sealed class FakeHandle<T> : IViewHandle
 /// <summary>The settings the capture tests start from: the defaults of SPEC shell, "Inputs", with the format a test may change.</summary>
 public static class CaptureSettings
 {
-    public static AppSettings Default(Paper.ScreenWizzard.Domain.Common.ImageFormat format = Paper.ScreenWizzard.Domain.Common.ImageFormat.Png) =>
+    public static AppSettings Default(Paper.ScreenWizzard.Domain.Shared.ImageFormat format = Paper.ScreenWizzard.Domain.Shared.ImageFormat.Png) =>
         ShellTestData.DefaultSettings() with { Format = format };
 }

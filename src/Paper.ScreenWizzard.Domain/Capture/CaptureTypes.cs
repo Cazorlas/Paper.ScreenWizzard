@@ -1,4 +1,4 @@
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
 
 namespace Paper.ScreenWizzard.Domain.Capture;
 
@@ -35,11 +35,6 @@ public enum AfterCaptureAction
     SaveToFile,
     ClipboardAndFile,
 }
-
-/// <summary>A monitor of the virtual desktop.</summary>
-/// <param name="Bounds">Its rectangle in virtual-desktop pixels; X and Y may be negative.</param>
-/// <param name="Dpi">The monitor's DPI; 96 is 100%.</param>
-public sealed record MonitorInfo(int Index, PixelRect Bounds, bool IsPrimary, int Dpi);
 
 /// <summary>
 /// A top-level window at the moment of the snapshot.

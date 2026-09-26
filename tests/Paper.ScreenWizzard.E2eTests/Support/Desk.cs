@@ -2,13 +2,12 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using NUnit.Framework;
 using FlaUI.Core.Input;
 using FlaUI.Core.WindowsAPI;
-using Paper.ScreenWizzard.Domain.Capture;
-using Paper.ScreenWizzard.Domain.Geometry;
-using Paper.ScreenWizzard.Infrastructure.Capture;
-using MonitorInfo = Paper.ScreenWizzard.Domain.Capture.MonitorInfo;
+using NUnit.Framework;
+using Paper.ScreenWizzard.Domain.Shared;
+using Paper.ScreenWizzard.Infrastructure.Shared;
+using MonitorInfo = Paper.ScreenWizzard.Domain.Shared.MonitorInfo;
 
 namespace Paper.ScreenWizzard.E2eTests.Support;
 

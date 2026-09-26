@@ -1,14 +1,14 @@
 using FlaUI.Core.Input;
 using FlaUI.Core.Tools;
 using NUnit.Framework;
-using Paper.ScreenWizzard.Presentation.ViewModels.Capture;
-using Paper.ScreenWizzard.Presentation.Views.Capture;
 using Paper.ScreenWizzard.Domain.Capture;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
+using Paper.ScreenWizzard.Presentation.Capture.ViewModels;
+using Paper.ScreenWizzard.Presentation.Capture.Views;
 using Paper.ScreenWizzard.UiTests.Shell;
 using Paper.ScreenWizzard.UiTests.Support;
 using Paper.ScreenWizzard.UseCases.Capture.Models;
-using Paper.ScreenWizzard.UseCases.Common.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 
 namespace Paper.ScreenWizzard.UiTests.ScreenCapture;
 
@@ -491,7 +491,7 @@ public sealed class CaptureFlowTests : UiTestBase
     public void RealWindows_DragOnTheOverlayThenTheDialogAppearsWithTheCapturedSizeAndDiscardLeavesNothing()
     {
         var rig = new Rig(new WpfCaptureViews());
-        WpfHost.Instance.Invoke(() => WpfHost.Instance.Language.Apply(Paper.ScreenWizzard.UseCases.Shell.Models.ResolvedLanguage.Vietnamese));
+        WpfHost.Instance.Invoke(() => WpfHost.Instance.Language.Apply(Paper.ScreenWizzard.UseCases.Shared.Models.ResolvedLanguage.Vietnamese));
         rig.Interactor.SessionToReturn = NewSession(CaptureKind.Rectangle);
         rig.Start(CaptureKind.Rectangle);
         using var overlay = WpfHost.Instance.Attach("SelectionOverlay");

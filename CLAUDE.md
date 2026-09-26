@@ -21,17 +21,20 @@ tài liệu, lần nào cũng vậy) -> task-do -> task-verify, chạy bằng sk
 
 | Project | Target | Chứa | Được tham chiếu | ADR |
 | --- | --- | --- | --- | --- |
-| `Paper.ScreenWizzard.Domain` | `net10.0` | kiểu giá trị (điểm, hình chữ nhật, vùng chọn, ghi chú vẽ), luật thuần | không gì | 0001 |
-| `Paper.ScreenWizzard.UseCases` | `net10.0` | interactor `I<Feature>Interactor`, port `I<X>Port`, record vào / plan ra | Domain | 0001 |
-| `Paper.ScreenWizzard.Infrastructure` | `net10.0-windows10.0.19041.0` | adapter: chụp, danh sách cửa sổ / màn hình, clipboard, phím tắt, file, cài đặt, khởi động cùng Windows | UseCases, Domain | 0001 |
-| `Paper.ScreenWizzard.Presentation` | `net10.0-windows10.0.19041.0` | Views, ViewModels, Commands, Resources (giao diện sáng/tối, chuỗi vi/en), `Mvvm/` | UseCases, Domain — **không Infrastructure** | 0001 |
-| `Paper.ScreenWizzard.App` | `net10.0-windows10.0.19041.0` (WinExe) | entry host: `Program`/`App.xaml`, khay hệ thống, gốc ghép DI | mọi tầng | 0001 |
+| `Paper.ScreenWizzard.Domain` | `net10.0` | kiểu giá trị (điểm, hình chữ nhật, vùng chọn, ghi chú vẽ), luật thuần | không gì | 0001, 0003 |
+| `Paper.ScreenWizzard.UseCases` | `net10.0` | `<Domain>/Ports` (mỗi file một interface: `I<Feature>Interactor`, port `I<X>` đặt tên theo thứ nó cung cấp), `<Domain>/UseCases` (interactor), `<Domain>/Models` (record vào / plan ra) | Domain | 0001, 0003 |
+| `Paper.ScreenWizzard.Infrastructure` | `net10.0-windows10.0.19041.0` | adapter: chụp, danh sách cửa sổ / màn hình, clipboard, phím tắt, file, cài đặt, khởi động cùng Windows | UseCases, Domain | 0001, 0003 |
+| `Paper.ScreenWizzard.Presentation` | `net10.0-windows10.0.19041.0` | `<Domain>/{ViewModels, Commands, Views}`, `Resources/` (giao diện sáng/tối, chuỗi vi/en), `Mvvm/` | UseCases, Domain — **không Infrastructure** | 0001, 0003 |
+| `Paper.ScreenWizzard.App` | `net10.0-windows10.0.19041.0` (WinExe) | entry host: `App.xaml`, khay hệ thống, gốc ghép DI; mọi file ở gốc project, không thư mục | mọi tầng | 0001, 0003 |
 
+- **Trong mỗi project, thư mục cấp một là domain** (`Capture`, `Editor`, `Shell`, và `Shared` cho cái hai domain trở lên cần), vai là
+  cấp hai; port nằm trong domain dùng nó (lõi hay màn hình), ở `Shared/` khi hai domain dùng; domain chỉ nhìn chính nó và
+  `Shared/`, trừ `Shell` là domain điều phối (ADR 0003). `tests/.../Architecture/FolderShapeTests.cs` canh hình này.
 - **Mọi quyết định ở UseCases và Domain**, chạy trong unit test không cần Windows. Ví dụ: chuẩn hoá vùng kéo,
   chọn cửa sổ dưới con trỏ, kẹp vào mép desktop, đếm bước, undo/redo, đặt tên file, kiểm phím tắt.
 - **Win32/GDI/WinRT để chụp, đọc hệ thống và ghi ra ngoài chỉ ở Infrastructure**, sau port; qua port chỉ đi số, chuỗi, mảng
   byte pixel, record. Ngoại lệ có chủ ý, mỗi cái nằm cạnh cửa sổ nó đặt và không quyết định gì: đặt cửa sổ theo pixel vật lý
-  (`Presentation/Views/Capture/PhysicalWindowPlacer`), viền tối của cửa sổ, vị trí thanh chụp (`App/Startup/NativeMethods`).
+  (`Presentation/Shared/Views/PhysicalWindowPlacer`), viền tối của cửa sổ, vị trí thanh chụp (`App/NativeMethods`).
   Toạ độ luôn là **pixel vật lý của desktop ảo** (app chạy per-monitor DPI v2), không bao giờ đơn vị hiển thị.
 - **ViewModel không gọi Infrastructure**: project Presentation không tham chiếu nó, nên đó là lỗi biên dịch.
   Nó nhận interface UseCases từ DI. Test kiến trúc trong `tests/Paper.ScreenWizzard.UnitTests` canh hướng

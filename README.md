@@ -16,7 +16,7 @@ Nằm ở khay hệ thống, gọi bằng phím tắt hoặc thanh chụp nổi.
 
 - Yêu cầu: [khung](docs/features/shell/SPEC.md), [chụp](docs/features/capture/SPEC.md), [sửa ảnh](docs/features/editor/SPEC.md)
 - Việc đã làm và bằng chứng: [plan đợt 1](docs/features/shell/2026-09-20-m1-chup-va-sua-anh-plan.md)
-- Kiến trúc: [ADR 0001](docs/decisions/0001-clean-architecture.md) (còn `Proposed`, chờ chủ dự án), [CLAUDE.md](CLAUDE.md), [CODEMAP.md](CODEMAP.md)
+- Kiến trúc: [ADR 0001](docs/decisions/0001-clean-architecture.md) và [ADR 0003](docs/decisions/0003-thu-muc-cap-mot-la-domain.md) (còn `Proposed`, chờ chủ dự án), [CLAUDE.md](CLAUDE.md), [CODEMAP.md](CODEMAP.md)
 - Lộ trình: [docs/roadmap.md](docs/roadmap.md)
 
 ## Cài đặt

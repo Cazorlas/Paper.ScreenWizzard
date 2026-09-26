@@ -3,13 +3,13 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using FlaUI.Core.Input;
 using Paper.ScreenWizzard.Domain.Editor;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
-using Paper.ScreenWizzard.Presentation.Rendering;
-using Paper.ScreenWizzard.Presentation.ViewModels.Editor;
-using Paper.ScreenWizzard.Presentation.Views.Editor;
+using Paper.ScreenWizzard.Presentation.Editor.Rendering;
+using Paper.ScreenWizzard.Presentation.Editor.ViewModels;
+using Paper.ScreenWizzard.Presentation.Editor.Views;
 using Paper.ScreenWizzard.UiTests.Support;
-using Paper.ScreenWizzard.UseCases.Shell.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 
 namespace Paper.ScreenWizzard.UiTests.ImageEditor;
 

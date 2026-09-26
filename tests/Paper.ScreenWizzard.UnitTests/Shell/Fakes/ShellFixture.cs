@@ -1,8 +1,7 @@
 using Paper.ScreenWizzard.Domain.Capture;
-using Paper.ScreenWizzard.Domain.Common;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
-using Paper.ScreenWizzard.UseCases.Shell.Implements;
+using Paper.ScreenWizzard.UseCases.Shell.UseCases;
 
 namespace Paper.ScreenWizzard.UnitTests.Shell.Fakes;
 
@@ -11,9 +10,9 @@ public sealed class ShellFixture
 {
     public FakeSettingsStore Store { get; } = new();
 
-    public FakeHotkeyPort Hotkeys { get; } = new();
+    public FakeHotkeys Hotkeys { get; } = new();
 
-    public FakeAutostartPort Autostart { get; } = new();
+    public FakeAutostart Autostart { get; } = new();
 
     public FakeFileStore Files { get; } = new();
 
@@ -65,7 +64,7 @@ public static class ShellData
         null);
 
     /// <summary>The defaults registered on a fake port, as a running app would have them.</summary>
-    public static void RegisterAll(FakeHotkeyPort port, AppSettings settings)
+    public static void RegisterAll(FakeHotkeys port, AppSettings settings)
     {
         foreach (var pair in settings.Hotkeys)
         {

@@ -3,8 +3,7 @@ using FlaUI.Core.Tools;
 using NUnit.Framework;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.UiTests.Support;
-using Paper.ScreenWizzard.UseCases.Common.Models;
-using Paper.ScreenWizzard.UseCases.Shell.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 
 namespace Paper.ScreenWizzard.UiTests.Shell;
 
@@ -69,7 +68,7 @@ public sealed class NotificationTests : UiTestBase
     public void TheErrorDialogHasNoTaskbarButtonBecauseTheAppLivesInTheTrayOnly()
     {
         // SPEC shell: the app never shows on the taskbar unless the editor or Settings is open; an error box is neither.
-        var shown = WpfHost.Instance.Invoke(() => new Paper.ScreenWizzard.Presentation.Views.Shell.ErrorDialogWindow("title", "text").ShowInTaskbar);
+        var shown = WpfHost.Instance.Invoke(() => new Paper.ScreenWizzard.Presentation.Shared.Views.ErrorDialogWindow("title", "text").ShowInTaskbar);
 
         Assert.That(shown, Is.False);
     }

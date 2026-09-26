@@ -1,12 +1,13 @@
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
-using Paper.ScreenWizzard.App.Startup;
+using Paper.ScreenWizzard.App;
 using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.E2eTests.Support;
 using Paper.ScreenWizzard.Infrastructure.Shell;
-using Paper.ScreenWizzard.Presentation.Views.Shell;
+using Paper.ScreenWizzard.Presentation.Shared.Views;
+using Paper.ScreenWizzard.Presentation.Shell.Views;
 using static Paper.ScreenWizzard.E2eTests.Support.HotkeyRig;
 
 namespace Paper.ScreenWizzard.E2eTests.Adapters;
@@ -78,7 +79,7 @@ public sealed class AppShellTests
                 var bar = Application.Current.Windows.OfType<CaptureBarWindow>().SingleOrDefault(w => w.IsVisible);
                 Assert.That(bar, Is.Not.Null, "a second launch shows the capture bar of the first copy");
                 Native.GetWindowRect(new System.Windows.Interop.WindowInteropHelper(bar!).Handle, out var rect);
-                var desktop = new Paper.ScreenWizzard.Infrastructure.Capture.MonitorCatalog().GetMonitors();
+                var desktop = new Paper.ScreenWizzard.Infrastructure.Shared.MonitorCatalog().GetMonitors();
                 Assert.That(
                     desktop.Any(m => rect.Left >= m.Bounds.X && rect.Top >= m.Bounds.Y && rect.Right <= m.Bounds.X + m.Bounds.Width && rect.Bottom <= m.Bounds.Y + m.Bounds.Height),
                     Is.True,

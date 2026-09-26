@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
+using Paper.ScreenWizzard.UseCases.Capture.Models;
 using Paper.ScreenWizzard.UseCases.Capture.Ports;
 
 namespace Paper.ScreenWizzard.Infrastructure.Capture;
@@ -10,7 +11,7 @@ namespace Paper.ScreenWizzard.Infrastructure.Capture;
 /// GDI answers in a per-monitor-DPI-aware process (the exe's manifest). The result is B, G, R, A with alpha 255: GDI leaves the alpha
 /// byte of a screen copy at 0, and a screenshot is opaque.
 /// </summary>
-public sealed class ScreenSource : IScreenSourcePort
+public sealed class ScreenSource : IScreenSource
 {
     private const int BytesPerPixel = 4;
 

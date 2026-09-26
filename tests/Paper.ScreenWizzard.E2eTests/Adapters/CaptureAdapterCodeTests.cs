@@ -3,7 +3,7 @@ using System.Diagnostics;
 using NUnit.Framework;
 using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.E2eTests.Support;
-using Paper.ScreenWizzard.Infrastructure.Common;
+using Paper.ScreenWizzard.Infrastructure.Shared;
 using static Paper.ScreenWizzard.E2eTests.Support.HotkeyRig;
 
 namespace Paper.ScreenWizzard.E2eTests.Adapters;

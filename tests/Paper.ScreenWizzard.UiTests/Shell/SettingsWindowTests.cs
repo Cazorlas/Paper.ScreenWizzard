@@ -4,7 +4,7 @@ using NUnit.Framework;
 using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.UiTests.Support;
-using Paper.ScreenWizzard.UseCases.Common.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 using Paper.ScreenWizzard.UseCases.Shell.Models;
 
 namespace Paper.ScreenWizzard.UiTests.Shell;
@@ -47,7 +47,7 @@ public sealed class SettingsWindowTests : UiTestBase
         // The harness never sends the real PrintScreen key (it would capture the desktop), so the key-up event is raised on the box.
         var recorded = WpfHost.Instance.Invoke(() =>
         {
-            var box = new Paper.ScreenWizzard.Presentation.Views.Shell.HotkeyCaptureBox();
+            var box = new Paper.ScreenWizzard.Presentation.Shell.Views.HotkeyCaptureBox();
             var window = new System.Windows.Window { Content = box, ShowActivated = false, ShowInTaskbar = false, Width = 200, Height = 100 };
             window.Show();
             try
@@ -230,7 +230,7 @@ public sealed class SettingsWindowTests : UiTestBase
         var saved = rig.Shell.Applied.Single();
         Assert.Multiple(() =>
         {
-            Assert.That(saved.Format, Is.EqualTo(Domain.Common.ImageFormat.Jpg));
+            Assert.That(saved.Format, Is.EqualTo(Domain.Shared.ImageFormat.Jpg));
             Assert.That(saved.DelaySeconds, Is.EqualTo(5));
             Assert.That(saved.IncludeCursor, Is.True);
         });

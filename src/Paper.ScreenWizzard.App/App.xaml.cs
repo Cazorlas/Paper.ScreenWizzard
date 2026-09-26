@@ -1,7 +1,6 @@
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
-using Paper.ScreenWizzard.App.Startup;
 
 namespace Paper.ScreenWizzard.App;
 
@@ -79,7 +78,7 @@ public partial class App : Application
         else
         {
             // Before the shell exists there is nobody to show it to yet, but the log can still hold it.
-            _services?.GetService<UseCases.Common.Ports.ILogPort>()?.Error("Unhandled error in " + where, exception);
+            _services?.GetService<UseCases.Shared.Ports.ILog>()?.Error("Unhandled error in " + where, exception);
         }
     }
 }

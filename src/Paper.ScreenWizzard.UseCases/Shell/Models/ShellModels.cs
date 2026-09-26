@@ -1,7 +1,7 @@
 using Paper.ScreenWizzard.Domain.Capture;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
-using Paper.ScreenWizzard.UseCases.Common.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 
 namespace Paper.ScreenWizzard.UseCases.Shell.Models;
 
@@ -29,13 +29,6 @@ public sealed record ShellStartInput(
     string SystemCultureName,
     IReadOnlyList<MonitorInfo> Monitors,
     PixelSize CaptureBarSize);
-
-/// <summary>The language the windows use once "follow Windows" is resolved.</summary>
-public enum ResolvedLanguage
-{
-    Vietnamese,
-    English,
-}
 
 public sealed record ShellStartResult(
     bool ContinueRunning,

@@ -4,7 +4,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Shell;
-using Paper.ScreenWizzard.UseCases.Common.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 using Paper.ScreenWizzard.UseCases.Shell.Ports;
 
 namespace Paper.ScreenWizzard.Infrastructure.Shell;
@@ -19,7 +19,7 @@ namespace Paper.ScreenWizzard.Infrastructure.Shell;
 /// leaves the old one working (SPEC shell F4). F12 is refused before Windows is asked: the page says it is reserved for the debugger.
 /// </para>
 /// </summary>
-public sealed class HotkeyService : IHotkeyPort, IDisposable
+public sealed class HotkeyService : IHotkeys, IDisposable
 {
     private const int FirstId = 0x0100;
     private const int LastId = 0xBFFF; // ids 0x0000-0xBFFF are the application's (RegisterHotKey page)

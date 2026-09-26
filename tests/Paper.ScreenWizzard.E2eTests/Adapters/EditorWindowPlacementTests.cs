@@ -1,7 +1,6 @@
 using NUnit.Framework;
-using Paper.ScreenWizzard.Domain.Capture;
-using Paper.ScreenWizzard.Domain.Geometry;
-using Paper.ScreenWizzard.Presentation.Views.Editor;
+using Paper.ScreenWizzard.Domain.Shared;
+using Paper.ScreenWizzard.Presentation.Editor.Views;
 
 namespace Paper.ScreenWizzard.E2eTests.Adapters;
 

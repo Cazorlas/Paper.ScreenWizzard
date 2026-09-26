@@ -1,14 +1,14 @@
 using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Shell;
-using Paper.ScreenWizzard.UseCases.Common.Models;
-using Paper.ScreenWizzard.UseCases.Common.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Ports;
 using Paper.ScreenWizzard.UseCases.Shell.Models;
 using Paper.ScreenWizzard.UseCases.Shell.Ports;
 
 namespace Paper.ScreenWizzard.UnitTests.Shell.Fakes;
 
 /// <summary>An in-memory settings file: a successful Save is what the next Load reads, as the real file would be.</summary>
-public sealed class FakeSettingsStore : ISettingsStorePort
+public sealed class FakeSettingsStore : ISettingsStore
 {
     public SettingsLoadResult LoadResult { get; set; } = new(null, SettingsLoadStatus.Missing, null);
 
@@ -37,7 +37,7 @@ public sealed class FakeSettingsStore : ISettingsStorePort
 }
 
 /// <summary>Registered chords per kind, with a set of chords "another program" holds.</summary>
-public sealed class FakeHotkeyPort : IHotkeyPort
+public sealed class FakeHotkeys : IHotkeys
 {
     private readonly Dictionary<CaptureKind, HotkeyChord> _registered = [];
 
@@ -73,7 +73,7 @@ public sealed class FakeHotkeyPort : IHotkeyPort
     }
 }
 
-public sealed class FakeAutostartPort : IAutostartPort
+public sealed class FakeAutostart : IAutostart
 {
     public bool Enabled { get; set; }
 
@@ -96,7 +96,7 @@ public sealed class FakeAutostartPort : IAutostartPort
 }
 
 /// <summary>Folders as a set of paths; only the members the shell uses do anything.</summary>
-public sealed class FakeFileStore : IFileStorePort
+public sealed class FakeFileStore : IFileStore
 {
     public HashSet<string> Directories { get; } = new(StringComparer.OrdinalIgnoreCase);
 
@@ -126,7 +126,7 @@ public sealed class FakeFileStore : IFileStorePort
     public DateTime? GetLastWriteTimeUtc(string path) => null;
 }
 
-public sealed class FakeLog : ILogPort
+public sealed class FakeLog : ILog
 {
     public List<string> Lines { get; } = [];
 

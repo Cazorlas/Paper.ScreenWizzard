@@ -1,11 +1,10 @@
 using System.Text;
 using Paper.ScreenWizzard.Domain.Capture;
-using Paper.ScreenWizzard.Domain.Common;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
+using Paper.ScreenWizzard.UseCases.Capture.Models;
 using Paper.ScreenWizzard.UseCases.Capture.Ports;
-using Paper.ScreenWizzard.UseCases.Common.Models;
-using Paper.ScreenWizzard.UseCases.Common.Ports;
-using Paper.ScreenWizzard.UseCases.Shell.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Ports;
 
 namespace Paper.ScreenWizzard.UnitTests.Capture.Fakes;
 
@@ -13,7 +12,7 @@ namespace Paper.ScreenWizzard.UnitTests.Capture.Fakes;
 /// A screen whose every pixel has a colour that depends only on its virtual-desktop position, so a cropped image can be
 /// checked pixel by pixel against where it came from. It renders whatever area it is asked for, the way the real adapter would.
 /// </summary>
-public sealed class FakeScreenSource : IScreenSourcePort
+public sealed class FakeScreenSource : IScreenSource
 {
     private readonly List<string> _events;
 
@@ -55,14 +54,14 @@ public sealed class FakeScreenSource : IScreenSourcePort
     }
 }
 
-public sealed class FakeWindowCatalog : IWindowCatalogPort
+public sealed class FakeWindowCatalog : IWindowCatalog
 {
     public List<WindowInfo> Windows { get; } = [];
 
     public IReadOnlyList<WindowInfo> GetWindows() => Windows.ToList();
 }
 
-public sealed class FakeMonitorCatalog : IMonitorCatalogPort
+public sealed class FakeMonitorCatalog : IMonitorCatalog
 {
     public List<MonitorInfo> Monitors { get; } = [];
 
@@ -78,11 +77,11 @@ public sealed class FakeMonitorCatalog : IMonitorCatalogPort
 }
 
 /// <summary>Immediate by default; in manual mode each wait stays pending until the test completes it.</summary>
-public sealed class FakeDelayPort : IDelayPort
+public sealed class FakeDelay : IDelay
 {
     private readonly List<string> _events;
 
-    public FakeDelayPort(List<string> events) => _events = events;
+    public FakeDelay(List<string> events) => _events = events;
 
     public bool Manual { get; set; }
 
@@ -131,7 +130,7 @@ public sealed class FakeProgress : IProgress<int>
     }
 }
 
-public sealed class FakeClipboard : IClipboardPort
+public sealed class FakeClipboard : IClipboard
 {
     public PortResult SetResult { get; set; } = PortResult.Ok;
 
@@ -147,7 +146,7 @@ public sealed class FakeClipboard : IClipboardPort
 }
 
 /// <summary>Folders as a set of paths and files as a dictionary; a write into a folder that is not there fails like the disk does.</summary>
-public sealed class FakeFileStore : IFileStorePort
+public sealed class FakeFileStore : IFileStore
 {
     public HashSet<string> Directories { get; } = new(StringComparer.OrdinalIgnoreCase);
 
@@ -199,7 +198,7 @@ public sealed class FakeFileStore : IFileStorePort
 public sealed record EncodeCall(int Width, int Height, byte[] Bgra, ImageFormat Format, int Quality, byte[] Result);
 
 /// <summary>A codec that does not compress: it records what it was given and answers with marker bytes.</summary>
-public sealed class FakeCodec : IImageCodecPort
+public sealed class FakeCodec : IImageCodec
 {
     public List<EncodeCall> Calls { get; } = [];
 
@@ -221,12 +220,12 @@ public sealed class FakeCodec : IImageCodecPort
     }
 }
 
-public sealed class FakeClock : IClockPort
+public sealed class FakeClock : IClock
 {
     public DateTime Now { get; set; } = new(2026, 9, 20, 14, 3, 5);
 }
 
-public sealed class FakeLog : ILogPort
+public sealed class FakeLog : ILog
 {
     public List<string> Lines { get; } = [];
 

@@ -1,12 +1,11 @@
 using NUnit.Framework;
 using Paper.ScreenWizzard.Domain.Capture;
-using Paper.ScreenWizzard.Domain.Common;
-using Paper.ScreenWizzard.Domain.Geometry;
+using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
-using Paper.ScreenWizzard.UseCases.Capture.Implements;
 using Paper.ScreenWizzard.UseCases.Capture.Models;
 using Paper.ScreenWizzard.UseCases.Capture.Ports;
-using Paper.ScreenWizzard.UseCases.Common.Implements;
+using Paper.ScreenWizzard.UseCases.Capture.UseCases;
+using Paper.ScreenWizzard.UseCases.Shared.UseCases;
 
 namespace Paper.ScreenWizzard.UnitTests.Capture.Fakes;
 
@@ -18,7 +17,7 @@ public sealed class CaptureFixture
     public CaptureFixture()
     {
         Screen = new FakeScreenSource(Events);
-        Delay = new FakeDelayPort(Events);
+        Delay = new FakeDelay(Events);
         Monitors.Monitors.AddRange(CaptureData.SingleMonitor);
     }
 
@@ -31,7 +30,7 @@ public sealed class CaptureFixture
 
     public FakeMonitorCatalog Monitors { get; } = new();
 
-    public FakeDelayPort Delay { get; }
+    public FakeDelay Delay { get; }
 
     public FakeClipboard Clipboard { get; } = new();
 

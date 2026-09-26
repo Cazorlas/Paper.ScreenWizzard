@@ -1,6 +1,6 @@
-using Paper.ScreenWizzard.Domain.Geometry;
-using Paper.ScreenWizzard.UseCases.Common.Models;
+using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.UseCases.Editor.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 
 namespace Paper.ScreenWizzard.UseCases.Editor.Models;
 
