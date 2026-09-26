@@ -107,7 +107,8 @@ public static class SettingsRules
             Take(stored.Language, defaults.Language, "language"),
             Take(stored.Theme, defaults.Theme, "theme"),
             // Where the bar was dragged; a file that never saw a drag has none, which is the default too.
-            stored.CaptureBarPosition);
+            stored.CaptureBarPosition,
+            Take(stored.CheckForUpdates, defaults.CheckForUpdates, "checkForUpdates"));
         return new SettingsCompletion(settings, null, defaulted);
     }
 }

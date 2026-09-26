@@ -32,6 +32,19 @@ public sealed class TrayOpenImageCommand : CommandBase
     public override void Execute(object? parameter) => _owner.RaiseOpenImageRequested();
 }
 
+/// <summary>"Tải bản mới…": the line that is there only while a newer version is out.</summary>
+public sealed class TrayUpdateCommand : CommandBase
+{
+    private readonly TrayMenuViewModel _owner;
+
+    public TrayUpdateCommand(TrayMenuViewModel owner)
+    {
+        _owner = owner;
+    }
+
+    public override void Execute(object? parameter) => _owner.RaiseUpdateRequested();
+}
+
 /// <summary>"Thanh chụp": asks the owner to show or hide the bar.</summary>
 public sealed class TrayToggleCaptureBarCommand : CommandBase
 {

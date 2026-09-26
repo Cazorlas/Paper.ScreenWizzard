@@ -37,6 +37,7 @@ public sealed class SettingsViewModel : BindableBase, IDisposable
     private bool _includeCursor;
     private FullScreenScope _fullScreenScope;
     private bool _startWithWindows;
+    private bool _checkForUpdates;
     private AppLanguage _language;
     private AppTheme _theme;
     private NotificationMessage? _message;
@@ -61,6 +62,7 @@ public sealed class SettingsViewModel : BindableBase, IDisposable
         _includeCursor = settings.IncludeCursor;
         _fullScreenScope = settings.FullScreenScope;
         _startWithWindows = settings.StartWithWindows;
+        _checkForUpdates = settings.CheckForUpdates;
         _language = settings.Language;
         _theme = settings.Theme;
 
@@ -149,6 +151,13 @@ public sealed class SettingsViewModel : BindableBase, IDisposable
         set => SetProperty(ref _startWithWindows, value);
     }
 
+    /// <summary>Whether the app asks GitHub once a day for a newer version (SPEC shell, "Báo bản mới").</summary>
+    public bool CheckForUpdates
+    {
+        get => _checkForUpdates;
+        set => SetProperty(ref _checkForUpdates, value);
+    }
+
     public AppLanguage Language
     {
         get => _language;
@@ -189,6 +198,7 @@ public sealed class SettingsViewModel : BindableBase, IDisposable
         FullScreenScope = _fullScreenScope,
         Language = _language,
         Theme = _theme,
+        CheckForUpdates = _checkForUpdates,
     };
 
     internal void RequestClose(bool saved) => CloseRequested?.Invoke(this, new SettingsClosedEventArgs(saved));

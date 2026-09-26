@@ -54,7 +54,9 @@ public sealed class AppRun : IDisposable
             false,
             AppLanguage.Vietnamese,
             AppTheme.Light,
-            defaultBarPlace ? new PixelPoint(primary.Bounds.X + 40, primary.Bounds.Y + 40) : null);
+            defaultBarPlace ? new PixelPoint(primary.Bounds.X + 40, primary.Bounds.Y + 40) : null,
+            // A driven copy never asks GitHub: the test would depend on the network and on what is published.
+            false);
         Seeded = tweak is null ? settings : tweak(settings);
         if (seed)
         {

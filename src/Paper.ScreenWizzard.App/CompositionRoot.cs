@@ -54,11 +54,14 @@ public static class CompositionRoot
         services.AddSingleton<IHotkeys>(sp => sp.GetRequiredService<HotkeyService>());
         services.AddSingleton<IAutostart>(_ => new AutostartService(options.InstanceName));
         services.AddSingleton(_ => new SingleInstance(options.InstanceName));
+        services.AddSingleton<IReleaseFeed>(_ => new GitHubReleaseFeed("Paper.ScreenWizzard"));
+        services.AddSingleton<IBrowser, Browser>();
         services.AddSingleton<ISingleInstance>(sp => sp.GetRequiredService<SingleInstance>());
 
         // Use cases.
         services.AddSingleton<IImageDelivery, ImageDelivery>();
         services.AddSingleton<IShellInteractor, ShellInteractor>();
+        services.AddSingleton<IUpdateInteractor, UpdateInteractor>();
         services.AddSingleton<ICaptureInteractor, CaptureInteractor>();
         services.AddSingleton<IEditorInteractor, EditorInteractor>();
 

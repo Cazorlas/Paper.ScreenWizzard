@@ -37,6 +37,7 @@ public sealed class SettingsRulesTests
         Language = AppLanguage.Vietnamese,
         Theme = AppTheme.Dark,
         CaptureBarPosition = new PixelPoint(-800, 20),
+        CheckForUpdates = false,
     };
 
     [Test]
@@ -81,6 +82,15 @@ public sealed class SettingsRulesTests
         var settings = completion.Settings!;
         Assert.That(settings.Hotkeys, Is.EquivalentTo(defaults.Hotkeys));
         Assert.That(settings with { Hotkeys = defaults.Hotkeys }, Is.EqualTo(defaults));
+    }
+
+    [Test]
+    public void F8_AFileFromBeforeTheUpdateCheck_HasTheCheckOn()
+    {
+        var completion = SettingsRules.Complete(Written() with { CheckForUpdates = null }, ShellData.SpecDefaults());
+
+        Assert.That(completion.Settings!.CheckForUpdates, Is.True, "0.1.2 and older did not write it; the default is on");
+        Assert.That(completion.Defaulted, Is.EquivalentTo(new[] { "checkForUpdates" }));
     }
 
     [Test]

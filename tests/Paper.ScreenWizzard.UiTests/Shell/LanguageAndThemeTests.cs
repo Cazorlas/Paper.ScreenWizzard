@@ -71,6 +71,12 @@ public sealed class LanguageAndThemeTests : UiTestBase
         "Tray.CaptureBar",
         "Tray.Settings",
         "Tray.Exit",
+        "Tray.Update",
+        "Settings.Group.Updates",
+        "Settings.CheckForUpdates",
+        "Shell.UpdateAvailable.Title",
+        "Shell.UpdateAvailable",
+        "Shell.UpdatePageNotOpened",
         "Settings.Save",
         "Settings.Cancel",
     ];

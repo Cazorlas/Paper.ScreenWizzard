@@ -15,6 +15,8 @@ decision is made here. Each adapter sits in the folder of its port's domain (ADR
 | `Shell/HotkeyService.cs` | `RegisterHotKey` through a message-only window; atomic re-register, F12 refused |
 | `Shell/SettingsStore.cs` | `settings.json` read as written (missing settings null), the `.bak` of a file it cannot read or the use case calls broken, the path in every failure |
 | `Shell/AutostartService.cs` | the HKCU Run value |
+| `Shell/GitHubReleaseFeed.cs` | the tag of the newest published release, from the GitHub REST API, unsigned-in |
+| `Shell/Browser.cs` | opens a page in the default browser |
 | `Shell/SingleInstance.cs` | the named mutex and the wake event |
 | `Shared/ClipboardService.cs` | set and get an image, with the retries of a busy clipboard |
 | `Shared/ImageCodec.cs` | decode PNG/JPG/BMP (size checked first), encode PNG/JPG |

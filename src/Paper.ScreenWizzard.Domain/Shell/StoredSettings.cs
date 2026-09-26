@@ -22,7 +22,8 @@ public sealed record StoredSettings(
     bool? StartWithWindows,
     AppLanguage? Language,
     AppTheme? Theme,
-    PixelPoint? CaptureBarPosition)
+    PixelPoint? CaptureBarPosition,
+    bool? CheckForUpdates = null)
 {
     /// <summary>A file that holds no setting at all.</summary>
     public static StoredSettings Empty { get; } = new(null, null, null, null, null, null, null, null, null, null, null, null);
@@ -40,5 +41,6 @@ public sealed record StoredSettings(
         settings.StartWithWindows,
         settings.Language,
         settings.Theme,
-        settings.CaptureBarPosition);
+        settings.CaptureBarPosition,
+        settings.CheckForUpdates);
 }

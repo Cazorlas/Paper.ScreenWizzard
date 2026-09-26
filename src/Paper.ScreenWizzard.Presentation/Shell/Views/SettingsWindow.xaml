@@ -132,6 +132,14 @@
                       Content="{DynamicResource Settings.StartWithWindows}"
                       IsChecked="{Binding StartWithWindows}" />
           </StackPanel>
+
+          <!-- Báo bản mới -->
+          <StackPanel Style="{StaticResource Style.Group}">
+            <TextBlock Style="{StaticResource Style.GroupHeader}" Text="{DynamicResource Settings.Group.Updates}" />
+            <CheckBox AutomationProperties.AutomationId="CheckForUpdatesCheck"
+                      Content="{DynamicResource Settings.CheckForUpdates}"
+                      IsChecked="{Binding CheckForUpdates}" />
+          </StackPanel>
         </StackPanel>
 
         <!-- Right column -->

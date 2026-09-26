@@ -147,7 +147,7 @@ public sealed class FolderShapeTests
             .Select(Relative)
             .ToArray();
 
-        Assert.That(interactors, Has.Length.EqualTo(3), "the shell, the capture and the editor interactor");
+        Assert.That(interactors, Has.Length.EqualTo(4), "the shell, the update, the capture and the editor interactor");
         Assert.That(missing, Is.Empty, "put <Domain>/UseCases/<X>Interactor.cs beside <Domain>/Ports/I<X>Interactor.cs");
     }
 

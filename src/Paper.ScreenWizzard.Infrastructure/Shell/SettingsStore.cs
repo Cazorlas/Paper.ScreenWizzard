@@ -150,6 +150,8 @@ public sealed class SettingsStore : ISettingsStore
 
         public PositionDocument? CaptureBarPosition { get; init; }
 
+        public bool? CheckForUpdates { get; init; }
+
         public static SettingsDocument From(AppSettings settings) => new()
         {
             Hotkeys = settings.Hotkeys.ToDictionary(pair => pair.Key.ToString(), pair => (HotkeyDocument?)new HotkeyDocument(pair.Value.Modifiers, pair.Value.Key)),
@@ -164,6 +166,7 @@ public sealed class SettingsStore : ISettingsStore
             Language = settings.Language,
             Theme = settings.Theme,
             CaptureBarPosition = settings.CaptureBarPosition is { } place ? new PositionDocument(place.X, place.Y) : null,
+            CheckForUpdates = settings.CheckForUpdates,
         };
 
         public StoredSettings ToStored() => new(
@@ -178,7 +181,8 @@ public sealed class SettingsStore : ISettingsStore
             StartWithWindows,
             Language,
             Theme,
-            CaptureBarPosition is { } place ? new PixelPoint(place.X, place.Y) : null);
+            CaptureBarPosition is { } place ? new PixelPoint(place.X, place.Y) : null,
+            CheckForUpdates);
     }
 
     private sealed record HotkeyDocument(HotkeyModifiers? Modifiers, string? Key);

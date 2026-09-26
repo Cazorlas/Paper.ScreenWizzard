@@ -1,6 +1,8 @@
 using System.Globalization;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Interop;
+using System.Windows.Threading;
 using Microsoft.Win32;
 using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Shared;
@@ -29,6 +31,7 @@ public sealed class AppShell : IDisposable
 
     private readonly StartupOptions _options;
     private readonly IShellInteractor _shell;
+    private readonly IUpdateInteractor _updates;
     private readonly IMonitorCatalog _monitors;
     private readonly IHotkeys _hotkeys;
     private readonly ISingleInstance _singleInstance;
@@ -51,10 +54,13 @@ public sealed class AppShell : IDisposable
     private bool _exiting;
     private bool _disposed;
     private bool _reportingFailure;
+    private DispatcherTimer? _updateTimer;
+    private UpdateOffer? _update;
 
     public AppShell(
         StartupOptions options,
         IShellInteractor shell,
+        IUpdateInteractor updates,
         IMonitorCatalog monitors,
         IHotkeys hotkeys,
         ISingleInstance singleInstance,
@@ -72,6 +78,7 @@ public sealed class AppShell : IDisposable
     {
         _options = options;
         _shell = shell;
+        _updates = updates;
         _monitors = monitors;
         _hotkeys = hotkeys;
         _singleInstance = singleInstance;
@@ -130,6 +137,7 @@ public sealed class AppShell : IDisposable
         _trayMenu.ToggleCaptureBarRequested += (_, _) => ToggleCaptureBar();
         _trayMenu.SettingsRequested += (_, _) => OpenSettings();
         _trayMenu.ExitRequested += (_, _) => Exit();
+        _trayMenu.UpdateRequested += (_, _) => OpenUpdatePage();
         _tray = new TrayIcon(_trayMenu, _language, ShowCaptureBar);
 
         // What went wrong at start (a corrupt settings file, a hotkey another program holds) is said once the language is right.
@@ -153,6 +161,7 @@ public sealed class AppShell : IDisposable
             ShowCaptureBar(started.CaptureBarPosition);
         }
 
+        StartUpdateChecks();
         return true;
     }
 
@@ -200,6 +209,7 @@ public sealed class AppShell : IDisposable
         }
 
         _disposed = true;
+        _updateTimer?.Stop();
         _tray?.Dispose();
         if (_hotkeys is IDisposable hotkeys)
         {
@@ -415,6 +425,60 @@ public sealed class AppShell : IDisposable
         foreach (var path in dialog.FileNames)
         {
             _editorFlow.OpenFile(path);
+        }
+    }
+
+    // ---- a new version ----
+
+    // A minute after start, then once a day (UpdateRules); whether to ask GitHub at all and what counts as newer is the use case's.
+    private void StartUpdateChecks()
+    {
+        var timer = new DispatcherTimer { Interval = UpdateRules.FirstCheckDelay };
+        timer.Tick += async (_, _) =>
+        {
+            timer.Interval = UpdateRules.CheckInterval;
+            await CheckForUpdateAsync();
+        };
+        _updateTimer = timer;
+        timer.Start();
+    }
+
+    private async Task CheckForUpdateAsync()
+    {
+        try
+        {
+            var running = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+            var result = await _updates.CheckAsync(_settings.Current, running, CancellationToken.None);
+            if (_exiting || result.Offer is not { } offer)
+            {
+                return;
+            }
+
+            _update = offer;
+            _trayMenu?.SetUpdateAvailable(true);
+            if (result.Notice is { } notice)
+            {
+                _tray?.ShowNotice(_language.GetString("Shell.UpdateAvailable.Title"), _language.Format(notice), OpenUpdatePage);
+            }
+        }
+        catch (Exception exception)
+        {
+            // The check is a courtesy: whatever went wrong is logged, and the user is not interrupted for it.
+            _log.Error("The update check failed", exception);
+        }
+    }
+
+    private void OpenUpdatePage()
+    {
+        if (_update is not { } offer)
+        {
+            return;
+        }
+
+        var message = _updates.OpenDownloadPage(offer);
+        if (message is not null)
+        {
+            _notifications.ShowError(message);
         }
     }
 
