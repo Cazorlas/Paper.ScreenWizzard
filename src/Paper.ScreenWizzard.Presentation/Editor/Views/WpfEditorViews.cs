@@ -1,7 +1,7 @@
 using System.Windows;
-using Paper.ScreenWizzard.Presentation.Capture.ViewModels;
 using Paper.ScreenWizzard.Presentation.Editor.ViewModels;
-using Paper.ScreenWizzard.UseCases.Capture.Ports;
+using Paper.ScreenWizzard.Presentation.Shared.ViewModels;
+using Paper.ScreenWizzard.UseCases.Shared.Ports;
 
 namespace Paper.ScreenWizzard.Presentation.Editor.Views;
 

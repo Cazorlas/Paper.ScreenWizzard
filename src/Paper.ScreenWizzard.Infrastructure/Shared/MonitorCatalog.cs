@@ -1,9 +1,8 @@
 using System.Globalization;
-using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Shared;
-using Paper.ScreenWizzard.UseCases.Capture.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.Ports;
 
-namespace Paper.ScreenWizzard.Infrastructure.Capture;
+namespace Paper.ScreenWizzard.Infrastructure.Shared;
 
 /// <summary>
 /// The monitors and the pointer as plain data. <c>EnumDisplayMonitors</c> with no device context and no clip lists every monitor in

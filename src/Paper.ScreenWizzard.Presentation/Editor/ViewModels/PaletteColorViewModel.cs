@@ -1,7 +1,7 @@
 using System.Windows.Media;
 using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Presentation.Mvvm;
-using Paper.ScreenWizzard.Presentation.Shell.ViewModels;
+using Paper.ScreenWizzard.Presentation.Shared.ViewModels;
 
 namespace Paper.ScreenWizzard.Presentation.Editor.ViewModels;
 

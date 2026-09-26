@@ -5,9 +5,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Paper.ScreenWizzard.Domain.Editor;
 using Paper.ScreenWizzard.Domain.Shared;
-using Paper.ScreenWizzard.Presentation.Capture.Views;
 using Paper.ScreenWizzard.Presentation.Editor.Rendering;
 using Paper.ScreenWizzard.Presentation.Editor.ViewModels;
+using Paper.ScreenWizzard.Presentation.Shared.Views;
 
 namespace Paper.ScreenWizzard.Presentation.Editor.Views;
 

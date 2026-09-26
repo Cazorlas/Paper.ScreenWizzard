@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 
-namespace Paper.ScreenWizzard.Presentation.Shell.Views;
+namespace Paper.ScreenWizzard.Presentation.Shared.Views;
 
 /// <summary>
 /// The title bar belongs to Windows, not to WPF, so a brush cannot reach it: a dark window under a white caption looks broken.

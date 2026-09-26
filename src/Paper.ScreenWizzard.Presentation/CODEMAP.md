@@ -3,7 +3,9 @@
 Everything the user sees, on `net10.0-windows` with WPF: windows, view models, named commands, the light/dark themes and the vi/en strings.
 It references UseCases and Domain but not Infrastructure (ADR 0001), so a view model reaches the adapters only through UseCases interfaces.
 The three flows below open and close windows around what the interactors answer. Each domain folder holds `ViewModels/`,
-`Commands/` and `Views/` (ADR 0003); `Mvvm/` and `Resources/` are the two first-level folders that are not a domain.
+`Commands/` and `Views/` (ADR 0003), and `Shared/` what two domains use: `ILocalizer`, the file dialog, the toast and error
+windows, the converters, the title-bar theme, physical-pixel placement. `Mvvm/` and `Resources/` are the two first-level folders that
+are not a domain.
 
 ## Map
 
@@ -18,8 +20,9 @@ The three flows below open and close windows around what the interactors answer.
 | `Capture/ViewModels/CaptureDoneViewModel.cs` | the five buttons of the "Đã chụp" dialog |
 | `Editor/ViewModels/EditorViewModel.cs`, `EditorFlow.cs` | tools, zoom, save/copy/close, open; `EditorCoordinates.cs` view-to-image maths |
 | `Editor/Rendering/AnnotationRenderer.cs`, `WpfImageFlattener.cs` | drawing annotations and producing the flattened `PixelImage` |
-| `Shell/Views/`, `Capture/Views/`, `Editor/Views/` | the windows and, beside them, the WPF services (theme, language, dialogs, notifications) |
-| `Capture/Views/PhysicalWindowPlacer.cs` | the only place that positions a window in physical pixels |
+| `Shell/Views/`, `Capture/Views/`, `Editor/Views/` | the windows and, beside them, the WPF services of that domain (theme, folder picker, prompts) |
+| `Shared/Views/LanguageService.cs`, `NotificationPresenter.cs`, `ToastWindow`, `ErrorDialogWindow` | text in the language in use; toasts and error boxes for every domain |
+| `Shared/Views/PhysicalWindowPlacer.cs` | the only place that positions a window in physical pixels |
 | `Editor/Views/EditorWindowPlacement.cs` | keeps the editor inside the monitor that holds the pointer |
 
 ## Flow

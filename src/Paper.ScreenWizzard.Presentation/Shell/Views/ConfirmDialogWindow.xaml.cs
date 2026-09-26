@@ -1,4 +1,5 @@
 using System.Windows;
+using Paper.ScreenWizzard.Presentation.Shared.Views;
 
 namespace Paper.ScreenWizzard.Presentation.Shell.Views;
 

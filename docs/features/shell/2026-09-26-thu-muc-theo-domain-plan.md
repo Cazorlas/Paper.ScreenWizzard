@@ -82,6 +82,12 @@ Bên cài (`ScreenSource`, `SettingsStore`, `HotkeyService`, `ClipboardService`�
 - **Kiểm thay compiler trong phiên cloud:** ngoài `parity.py`, một script tạm kiểm mọi tên kiểu một file dùng đều nằm trong tầm
   (namespace của file, namespace cha, hay một `using`) — so với commit gốc, chỉ báo lỗi mới; thử bằng cách xoá một `using` thì nó
   bắt được. Nó không thay được compiler: CI (T9) là lần dựng thật đầu tiên.
+- **Review kiến trúc lần 1 (T13) báo 5 vi phạm, cùng một gốc:** Presentation không có `Shared/`, nên cái hai domain dùng nằm ở
+  `Shell/` hay `Capture/`. Sửa ở T13a. Kèm theo: ADR-0003 thêm Decision 2a (domain chỉ nhìn chính nó và `Shared/`; `Shell` là domain
+  điều phối; `AppSettings` là nợ có tên) và Decision 3 tính cả màn hình khi xét ai dùng port; `Editor/Rendering/` được ghi là vai
+  thứ tư của Editor. Rejected: đưa `IMonitorCatalog` cho `CompositionRoot` đổi thành dữ liệu thuần trước khi vào `WpfEditorViews` —
+  đó là đổi logic, không phải dời file. Reviewer nói `CLAUDE.md` chưa đổi: không đúng, T11 (`56f15ba`) đã đổi; nó đọc lúc nào đó
+  trước khi đọc bản mới hay nhầm — `grep` trên `CLAUDE.md` không còn `I<X>Port`, `Views/Capture/`, `App/Startup`.
 - **Việc sửa đọc `settings.json` (trường thiếu lấy mặc định) tạm dừng** tới khi plan này xong; nó sẽ có SPEC, brief và
   plan riêng, viết trên hình mới.
 
@@ -114,6 +120,7 @@ refactor không có mock UI mới để viết đỏ trước; bộ `ui` có s�
 - [x] T11 `CLAUDE.md` (bảng tầng: `I<Feature>Interactor`, port `I<X>`, đường dẫn mới; mục Việc đang làm), `CODEMAP.md` gốc và của năm project; `check-code-map` sạch {files: CLAUDE.md, CODEMAP.md, src/**/CODEMAP.md}
 - [x] T12 `find-bug`: **không áp dụng** — không dòng `SPEC.md` nào đổi; phép so của T2 và bộ test của T9, T10 thay nó. Xong khi dòng bằng chứng ghi lý do này
 - [ ] T13 Agent `architecture-reviewer` trên danh sách file review (mọi file đổi) — xong khi đọc N/N và 0 vi phạm mục 1-10 (một vi phạm là fail: về `/task-do`)
+- [ ] T13a Sửa 5 vi phạm của `architecture-reviewer` (lần 1): Presentation có `Shared/` cho cái hai domain dùng (`ILocalizer`, `IFileDialogService`, `IViewHandle`, `LanguageService`, `NotificationPresenter`, `ToastWindow`, `ErrorDialogWindow`, `TitleBarTheme`, `OwnerWindow`, `ChoiceConverter`, `FileDialogService`, `PixelImageConverter`, `PhysicalWindowPlacer`); `IMonitorCatalog`, `MonitorCatalog`, `MonitorInfo` về `Shared/` (Capture, Editor, Shell cùng dùng); `ResolvedLanguage` về `UseCases/Shared/Models`; test `EveryPort_SitsInTheDomainThatUsesIt` và `NoDomain_ReachesIntoAnotherDomain` giữ luật — xong khi test mới đỏ trên commit trước và xanh sau, `parity.py` 0, CI xanh, và reviewer đọc lại 0 vi phạm {files: src/**, tests/**, docs/**, CLAUDE.md}
 - [ ] T14 `check-spec` sạch (không `SPEC.md` nào đổi); `parity.py` chạy lần cuối 0 khác biệt, rồi xoá nó cùng thư mục `harness/` — xong khi hai lệnh exit 0 {files: docs/features/shell/harness/**}
 
 ## API đã tra

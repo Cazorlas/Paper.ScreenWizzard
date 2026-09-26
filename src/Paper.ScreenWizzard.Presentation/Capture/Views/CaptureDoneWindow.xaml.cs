@@ -1,7 +1,7 @@
 using System.Windows;
 using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Presentation.Capture.ViewModels;
-using Paper.ScreenWizzard.Presentation.Shell.Views;
+using Paper.ScreenWizzard.Presentation.Shared.Views;
 
 namespace Paper.ScreenWizzard.Presentation.Capture.Views;
 

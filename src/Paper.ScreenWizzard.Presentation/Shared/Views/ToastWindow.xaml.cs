@@ -2,7 +2,7 @@ using System.Windows;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 
-namespace Paper.ScreenWizzard.Presentation.Shell.Views;
+namespace Paper.ScreenWizzard.Presentation.Shared.Views;
 
 /// <summary>
 /// Shows its text, waits <c>lifetime</c>, then fades out and closes itself. When the user turned Windows animation off

@@ -10,7 +10,8 @@ the domains every other layer reuses (ADR 0003); `Shared/` is what two or more o
 | File | Open it for |
 | --- | --- |
 | `Shared/Geometry.cs` | `PixelPoint`, `PixelRect`, `PixelImage` (BGRA, straight alpha): the only shapes that cross a port |
-| `Capture/CaptureTypes.cs` | `CaptureKind`, `MonitorInfo`, `WindowInfo`, `DesktopSnapshot`, the after-capture choices |
+| `Shared/MonitorInfo.cs` | a monitor of the virtual desktop: capture, the editor's placement and the bar's all read it |
+| `Capture/CaptureTypes.cs` | `CaptureKind`, `WindowInfo`, `DesktopSnapshot`, the after-capture choices |
 | `Capture/CaptureGeometry.cs` | normalise and clamp a drag, the 3-pixel minimum (`MinimumRegionSide`), the virtual-screen union |
 | `Shared/PixelImageOps.cs` | crop, freeform mask, flatten a transparent image onto white for JPG |
 | `Shared/ScreenshotNaming.cs` | `Screenshot yyyy-MM-dd HH.mm.ss`, the (2) (3) suffix, format from an extension |

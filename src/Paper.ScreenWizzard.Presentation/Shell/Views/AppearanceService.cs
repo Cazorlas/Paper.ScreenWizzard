@@ -1,6 +1,7 @@
 using Paper.ScreenWizzard.Domain.Shell;
+using Paper.ScreenWizzard.Presentation.Shared.Views;
 using Paper.ScreenWizzard.Presentation.Shell.ViewModels;
-using Paper.ScreenWizzard.UseCases.Shell.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 
 namespace Paper.ScreenWizzard.Presentation.Shell.Views;
 

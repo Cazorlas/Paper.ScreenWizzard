@@ -1,10 +1,8 @@
 using System.Windows;
 using Microsoft.Win32;
-using Paper.ScreenWizzard.Presentation.Capture.ViewModels;
-using Paper.ScreenWizzard.Presentation.Shell.ViewModels;
-using Paper.ScreenWizzard.Presentation.Shell.Views;
+using Paper.ScreenWizzard.Presentation.Shared.ViewModels;
 
-namespace Paper.ScreenWizzard.Presentation.Capture.Views;
+namespace Paper.ScreenWizzard.Presentation.Shared.Views;
 
 /// <summary>The real "Save as" box: starts in the folder and with the name the use case suggests, and adds the extension the user omits.</summary>
 public sealed class FileDialogService : IFileDialogService

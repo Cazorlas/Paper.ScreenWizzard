@@ -11,7 +11,6 @@ decision is made here. Each adapter sits in the folder of its port's domain (ADR
 | `NativeMethods.cs` | every P/Invoke of the project (GDI, DWM, monitors, cursor, hotkey) |
 | `Capture/ScreenSource.cs` | `BitBlt` of the virtual desktop into a DIB, the cursor drawn in |
 | `Capture/WindowCatalog.cs` | top-level windows top to bottom with the DWM visible frame |
-| `Capture/MonitorCatalog.cs` | monitors with DPI, the pointer, the layout signature |
 | `Capture/TaskDelay.cs` | the countdown's wait |
 | `Shell/HotkeyService.cs` | `RegisterHotKey` through a message-only window; atomic re-register, F12 refused |
 | `Shell/SettingsStore.cs` | `settings.json`, the `.bak` of a corrupt file, the path in every failure |
@@ -19,6 +18,7 @@ decision is made here. Each adapter sits in the folder of its port's domain (ADR
 | `Shell/SingleInstance.cs` | the named mutex and the wake event |
 | `Shared/ClipboardService.cs` | set and get an image, with the retries of a busy clipboard |
 | `Shared/ImageCodec.cs` | decode PNG/JPG/BMP (size checked first), encode PNG/JPG |
+| `Shared/MonitorCatalog.cs` | monitors with DPI, the pointer, the layout signature |
 | `Shared/FileStore.cs`, `FileLogger.cs`, `SystemClock.cs` | the small ports |
 
 ## Flow

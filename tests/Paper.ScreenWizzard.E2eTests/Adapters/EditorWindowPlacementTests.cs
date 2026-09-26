@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Presentation.Editor.Views;
 

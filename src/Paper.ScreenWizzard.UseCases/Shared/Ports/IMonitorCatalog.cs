@@ -1,7 +1,6 @@
-using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Shared;
 
-namespace Paper.ScreenWizzard.UseCases.Capture.Ports;
+namespace Paper.ScreenWizzard.UseCases.Shared.Ports;
 
 /// <summary>The monitors and the pointer, as plain data.</summary>
 public interface IMonitorCatalog

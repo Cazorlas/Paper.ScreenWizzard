@@ -2,6 +2,7 @@ using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.Presentation.Capture.ViewModels;
 using Paper.ScreenWizzard.Presentation.Mvvm;
+using Paper.ScreenWizzard.Presentation.Shared.ViewModels;
 using Paper.ScreenWizzard.UseCases.Capture.Ports;
 
 namespace Paper.ScreenWizzard.Presentation.Capture.Commands;

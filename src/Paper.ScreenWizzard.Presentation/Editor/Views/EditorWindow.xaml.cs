@@ -6,11 +6,10 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using Paper.ScreenWizzard.Domain.Shared;
-using Paper.ScreenWizzard.Presentation.Capture.Views;
 using Paper.ScreenWizzard.Presentation.Editor.Rendering;
 using Paper.ScreenWizzard.Presentation.Editor.ViewModels;
-using Paper.ScreenWizzard.Presentation.Shell.Views;
-using Paper.ScreenWizzard.UseCases.Capture.Ports;
+using Paper.ScreenWizzard.Presentation.Shared.Views;
+using Paper.ScreenWizzard.UseCases.Shared.Ports;
 
 namespace Paper.ScreenWizzard.Presentation.Editor.Views;
 

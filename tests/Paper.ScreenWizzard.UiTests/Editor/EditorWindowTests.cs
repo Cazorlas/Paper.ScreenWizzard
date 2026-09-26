@@ -11,7 +11,6 @@ using Paper.ScreenWizzard.Presentation.Editor.ViewModels;
 using Paper.ScreenWizzard.UiTests.ScreenCapture;
 using Paper.ScreenWizzard.UiTests.Support;
 using Paper.ScreenWizzard.UseCases.Shared.Models;
-using Paper.ScreenWizzard.UseCases.Shell.Models;
 
 namespace Paper.ScreenWizzard.UiTests.ImageEditor;
 

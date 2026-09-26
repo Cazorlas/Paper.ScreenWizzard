@@ -1,6 +1,6 @@
 using System.Windows;
 using System.Windows.Automation;
-using Paper.ScreenWizzard.Presentation.Shell.Views;
+using Paper.ScreenWizzard.Presentation.Shared.Views;
 
 namespace Paper.ScreenWizzard.Presentation.Editor.Views;
 

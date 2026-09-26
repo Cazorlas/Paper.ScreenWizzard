@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Paper.ScreenWizzard.Presentation.Shared.ViewModels;
 using Paper.ScreenWizzard.Presentation.Shell.ViewModels;
 using WinForms = System.Windows.Forms;
 

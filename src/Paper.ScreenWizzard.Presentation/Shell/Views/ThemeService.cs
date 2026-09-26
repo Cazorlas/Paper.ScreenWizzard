@@ -1,6 +1,7 @@
 using System.Windows;
 using Microsoft.Win32;
 using Paper.ScreenWizzard.Domain.Shell;
+using Paper.ScreenWizzard.Presentation.Shared.Views;
 
 namespace Paper.ScreenWizzard.Presentation.Shell.Views;
 

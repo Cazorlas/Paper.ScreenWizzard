@@ -11,10 +11,10 @@ interfaces; Infrastructure implements the ports.
 | --- | --- |
 | `Shell/Ports/` | `IShellInteractor` and the ports of the shell: `ISettingsStore`, `IHotkeys`, `IAutostart`, `ISingleInstance` |
 | `Shell/UseCases/ShellInteractor.cs` | start-up (load or default settings, register the hotkeys, notices), hotkey change, apply, autostart, bar placement |
-| `Capture/Ports/` | `ICaptureInteractor`, `ICaptureSession`, `IScreenSource`, `IWindowCatalog`, `IMonitorCatalog`, `IDelay` |
+| `Capture/Ports/` | `ICaptureInteractor`, `ICaptureSession`, `IScreenSource`, `IWindowCatalog`, `IDelay` |
 | `Capture/UseCases/CaptureInteractor.cs` | countdown, snapshot, one session at a time, where a captured image goes |
 | `Capture/UseCases/CaptureSession.cs` | choosing on the frozen snapshot: rectangle, freeform, window hit-test, full screen |
-| `Shared/Ports/` | `IClock`, `ILog`, `INotifications`, `IClipboard`, `IFileStore`, `IImageCodec`, `IImageDelivery` |
+| `Shared/Ports/` | `IMonitorCatalog` (capture and the editor's window placement), `IClock`, `ILog`, `INotifications`, `IClipboard`, `IFileStore`, `IImageCodec`, `IImageDelivery` |
 | `Shared/UseCases/ImageDelivery.cs` | save to a folder (automatic name), to a path, to the clipboard; JPG on white |
 | `Editor/Ports/` | `IEditorInteractor`, `IEditorSession` |
 | `Editor/UseCases/EditorSession.cs` | the history: one step per change, redo branch, dirty tracking, crop, blur render |

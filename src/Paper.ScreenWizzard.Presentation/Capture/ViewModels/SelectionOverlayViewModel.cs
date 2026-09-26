@@ -3,7 +3,7 @@ using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Presentation.Capture.Commands;
 using Paper.ScreenWizzard.Presentation.Mvvm;
-using Paper.ScreenWizzard.Presentation.Shell.ViewModels;
+using Paper.ScreenWizzard.Presentation.Shared.ViewModels;
 using Paper.ScreenWizzard.UseCases.Capture.Models;
 using Paper.ScreenWizzard.UseCases.Capture.Ports;
 using Paper.ScreenWizzard.UseCases.Shared.Models;

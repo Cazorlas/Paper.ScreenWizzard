@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace Paper.ScreenWizzard.Presentation.Shell.Views;
+namespace Paper.ScreenWizzard.Presentation.Shared.Views;
 
 /// <summary>Shows an error until the user closes it.</summary>
 public partial class ErrorDialogWindow : Window

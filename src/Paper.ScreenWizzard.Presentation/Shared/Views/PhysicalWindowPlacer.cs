@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Interop;
 using Paper.ScreenWizzard.Domain.Shared;
 
-namespace Paper.ScreenWizzard.Presentation.Capture.Views;
+namespace Paper.ScreenWizzard.Presentation.Shared.Views;
 
 /// <summary>
 /// The one class that places a window in PHYSICAL desktop pixels. WPF positions windows in device-independent units of one

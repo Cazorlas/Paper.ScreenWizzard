@@ -9,6 +9,8 @@ using Paper.ScreenWizzard.Presentation.Capture.Views;
 using Paper.ScreenWizzard.Presentation.Editor.Rendering;
 using Paper.ScreenWizzard.Presentation.Editor.ViewModels;
 using Paper.ScreenWizzard.Presentation.Editor.Views;
+using Paper.ScreenWizzard.Presentation.Shared.ViewModels;
+using Paper.ScreenWizzard.Presentation.Shared.Views;
 using Paper.ScreenWizzard.Presentation.Shell.ViewModels;
 using Paper.ScreenWizzard.Presentation.Shell.Views;
 using Paper.ScreenWizzard.UseCases.Capture.Ports;

@@ -491,7 +491,7 @@ public sealed class CaptureFlowTests : UiTestBase
     public void RealWindows_DragOnTheOverlayThenTheDialogAppearsWithTheCapturedSizeAndDiscardLeavesNothing()
     {
         var rig = new Rig(new WpfCaptureViews());
-        WpfHost.Instance.Invoke(() => WpfHost.Instance.Language.Apply(Paper.ScreenWizzard.UseCases.Shell.Models.ResolvedLanguage.Vietnamese));
+        WpfHost.Instance.Invoke(() => WpfHost.Instance.Language.Apply(Paper.ScreenWizzard.UseCases.Shared.Models.ResolvedLanguage.Vietnamese));
         rig.Interactor.SessionToReturn = NewSession(CaptureKind.Rectangle);
         rig.Start(CaptureKind.Rectangle);
         using var overlay = WpfHost.Instance.Attach("SelectionOverlay");

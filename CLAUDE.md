@@ -33,7 +33,7 @@ tài liệu, lần nào cũng vậy) -> task-do -> task-verify, chạy bằng sk
   chọn cửa sổ dưới con trỏ, kẹp vào mép desktop, đếm bước, undo/redo, đặt tên file, kiểm phím tắt.
 - **Win32/GDI/WinRT để chụp, đọc hệ thống và ghi ra ngoài chỉ ở Infrastructure**, sau port; qua port chỉ đi số, chuỗi, mảng
   byte pixel, record. Ngoại lệ có chủ ý, mỗi cái nằm cạnh cửa sổ nó đặt và không quyết định gì: đặt cửa sổ theo pixel vật lý
-  (`Presentation/Capture/Views/PhysicalWindowPlacer`), viền tối của cửa sổ, vị trí thanh chụp (`App/NativeMethods`).
+  (`Presentation/Shared/Views/PhysicalWindowPlacer`), viền tối của cửa sổ, vị trí thanh chụp (`App/NativeMethods`).
   Toạ độ luôn là **pixel vật lý của desktop ảo** (app chạy per-monitor DPI v2), không bao giờ đơn vị hiển thị.
 - **ViewModel không gọi Infrastructure**: project Presentation không tham chiếu nó, nên đó là lỗi biên dịch.
   Nó nhận interface UseCases từ DI. Test kiến trúc trong `tests/Paper.ScreenWizzard.UnitTests` canh hướng

@@ -9,7 +9,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:Paper.ScreenWizzard.Presentation.Editor.Views"
-        xmlns:shell="clr-namespace:Paper.ScreenWizzard.Presentation.Shell.Views"
+        xmlns:shared="clr-namespace:Paper.ScreenWizzard.Presentation.Shared.Views"
         Title="{DynamicResource Editor.Title}"
         AutomationProperties.Name="{DynamicResource Editor.Title}"
         AutomationProperties.AutomationId="EditorWindow"
@@ -30,7 +30,7 @@
         <ResourceDictionary Source="/Paper.ScreenWizzard.Presentation;component/Resources/Controls.xaml" />
         <ResourceDictionary Source="/Paper.ScreenWizzard.Presentation;component/Resources/Icons.xaml" />
       </ResourceDictionary.MergedDictionaries>
-      <shell:ChoiceConverter x:Key="Choice" />
+      <shared:ChoiceConverter x:Key="Choice" />
       <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
 
       <!-- Every glyph is stroked with the button's own foreground, so a disabled button's icon dims with its label. -->

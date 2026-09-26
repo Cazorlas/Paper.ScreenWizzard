@@ -1,7 +1,7 @@
 <!-- A toast: a small message near the bottom right of the screen that fades in, waits, and fades out. It never takes focus
      (ShowActivated=False, Focusable=False) so it cannot steal a key press from what the user is typing into.
      No DataContext: the presenter passes the finished text to the constructor. -->
-<Window x:Class="Paper.ScreenWizzard.Presentation.Shell.Views.ToastWindow"
+<Window x:Class="Paper.ScreenWizzard.Presentation.Shared.Views.ToastWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         AllowsTransparency="True"

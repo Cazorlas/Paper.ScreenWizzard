@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace Paper.ScreenWizzard.Presentation.Shell.Views;
+namespace Paper.ScreenWizzard.Presentation.Shared.Views;
 
 /// <summary>Which window a dialog opens over: the one the user is in, else the newest visible one, else none.</summary>
 internal static class OwnerWindow

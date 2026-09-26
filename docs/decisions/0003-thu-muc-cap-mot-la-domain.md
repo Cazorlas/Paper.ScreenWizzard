@@ -35,9 +35,14 @@ hình bên trong mọi tầng theo ADR-0019 của kit, và agent `architecture-r
    được gọi bằng pack URI).
 2. **Vai là cấp hai.** UseCases: `<D>/Ports/` (chỉ interface, mỗi file một interface, tên file bằng tên interface),
    `<D>/UseCases/` (interactor, session, policy), `<D>/Models/` (record, enum). Presentation: `<D>/ViewModels/`,
-   `<D>/Commands/`, `<D>/Views/`. Domain và Infrastructure không cần thư mục vai: file nằm thẳng trong domain.
-3. **Port tên theo cái cần, không hậu tố `Port`**, và nằm trong domain mà lõi quyết định gọi nó; port hai domain
-   trở lên gọi nằm ở `Shared/Ports/`.
+   `<D>/Commands/`, `<D>/Views/`, và riêng Editor thêm `Editor/Rendering/` (vẽ hình ghi chú bằng WPF: không phải cửa sổ, không
+   phải view model). Domain và Infrastructure không cần thư mục vai: file nằm thẳng trong domain.
+2a. **Domain chỉ nhìn chính nó và `Shared/`.** `Shell` là domain điều phối: phím tắt, khay và thanh chụp bắt đầu một lần chụp và
+   mở trình sửa, nên `Shell` được nhìn mọi domain. `Shared/` không nhìn domain nào. Nợ có tên: `AppSettings` nằm ở
+   `Domain/Shell` và dựng từ kiểu của Shell lẫn Capture, nên lõi và màn hình của Capture và Editor đọc `Domain.Shell` để lấy
+   lựa chọn của người dùng; chuyển nó là một việc riêng (cần tách cài đặt theo domain).
+3. **Port tên theo cái cần, không hậu tố `Port`**, và nằm trong domain dùng nó (lõi hay màn hình); port hai domain trở
+   lên dùng nằm ở `Shared/Ports/`, và bên cài nằm ở `Shared/` của tầng mình.
 4. **Entry host mỏng, không thư mục vai**: file của `App` nằm ở gốc project.
 5. **Test kiến trúc giữ hình này** (`tests/Paper.ScreenWizzard.UnitTests/Architecture/`), theo
    `clean-architecture/references/architecture-tests-csharp.md` mục 5 và 6. Hướng giữa các thư mục domain (domain

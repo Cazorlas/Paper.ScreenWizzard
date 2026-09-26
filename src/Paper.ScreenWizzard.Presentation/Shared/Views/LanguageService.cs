@@ -1,10 +1,9 @@
 using System.Globalization;
 using System.Windows;
-using Paper.ScreenWizzard.Presentation.Shell.ViewModels;
+using Paper.ScreenWizzard.Presentation.Shared.ViewModels;
 using Paper.ScreenWizzard.UseCases.Shared.Models;
-using Paper.ScreenWizzard.UseCases.Shell.Models;
 
-namespace Paper.ScreenWizzard.Presentation.Shell.Views;
+namespace Paper.ScreenWizzard.Presentation.Shared.Views;
 
 /// <summary>
 /// The language of every window. The text lives in <c>Resources/Strings.vi.xaml</c> and <c>Strings.en.xaml</c>, one shared key

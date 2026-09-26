@@ -30,6 +30,18 @@ public sealed class FolderShapeTests
         ["Properties"] = "assembly attributes",
     };
 
+    // The domain that starts the others: hotkeys and the tray start a capture and open the editor (ADR 0003, Decision 1).
+    private const string Orchestrator = "Shell";
+
+    // Reaches across domains that exist on purpose or are named debt, each with its reason.
+    private static readonly Dictionary<(string Domain, string Reached), string> _domainDebt = new()
+    {
+        [("Capture", "Domain.Shell")] = "AppSettings lives in Domain/Shell and is built from Shell and Capture types; the capture reads the user's choices from it",
+        [("Editor", "Domain.Shell")] = "AppSettings, as above: the editor reads the save folder and the JPG quality",
+    };
+
+    private static readonly Regex _layerUsing = new(@"^using\s+Paper\.ScreenWizzard\.(Domain|UseCases|Infrastructure|Presentation)\.(\w+)", RegexOptions.Multiline);
+
     private static readonly Regex _notAContract = new(
         @"^\s*(?:(?:public|internal|sealed|static|abstract|partial|readonly)\s+)*(?:class|record|struct|enum)\s+\w",
         RegexOptions.Multiline);
@@ -140,31 +152,61 @@ public sealed class FolderShapeTests
     }
 
     [Test]
-    public void EveryPort_SitsInTheDomainWhoseCoreCallsIt()
+    public void EveryPort_SitsInTheDomainThatUsesIt()
     {
-        var cores = SourcesOf("UseCases")
-            .Where(f => Path.GetFileName(Path.GetDirectoryName(f)) == "UseCases")
-            .Select(f => (Domain: DomainOf("UseCases", f), Text: File.ReadAllText(f)))
+        // Who uses a port: the cores (UseCases/<Domain>/UseCases) and the screens (Presentation/<Domain>). The entry host only wires.
+        var users = SourcesOf("UseCases").Where(f => Path.GetFileName(Path.GetDirectoryName(f)) == "UseCases").Select(f => (Domain: DomainOf("UseCases", f), Text: File.ReadAllText(f)))
+            .Concat(SourcesOf("Presentation").Select(f => (Domain: DomainOf("Presentation", f), Text: File.ReadAllText(f))))
+            .Where(u => u.Domain is not ("Mvvm" or "Resources"))
             .ToArray();
         var problems = new List<string>();
         foreach (var port in PortFiles())
         {
             var name = Path.GetFileNameWithoutExtension(port);
             var home = DomainOf("UseCases", port);
-            var callers = cores.Where(c => Regex.IsMatch(c.Text, $@"\b{name}\b")).Select(c => c.Domain).Distinct().ToArray();
-            if (home != "Shared" && callers.Any(c => c != home))
+            var domains = users.Where(u => Regex.IsMatch(u.Text, $@"\b{name}\b")).Select(u => u.Domain).Distinct().ToArray();
+            var strangers = domains.Where(d => d != home && d != "Shared" && d != Orchestrator).ToArray();
+            if (home != "Shared" && strangers.Length > 0)
             {
-                problems.Add($"{name} sits in {home} but the {string.Join(", ", callers)} core calls it: move it to Shared/Ports");
+                problems.Add($"{name} sits in {home} but {string.Join(", ", strangers)} uses it too: move it to Shared/Ports");
             }
 
-            if (home == "Shared" && callers.Length == 1)
+            if (home == "Shared" && domains.Length == 1 && domains[0] != "Shared")
             {
-                problems.Add($"{name} sits in Shared but only the {callers[0]} core calls it: move it to {callers[0]}/Ports");
+                problems.Add($"{name} sits in Shared but only {domains[0]} uses it: move it to {domains[0]}/Ports");
             }
         }
 
-        Assert.That(cores, Is.Not.Empty, "no <Domain>/UseCases folder found");
+        Assert.That(users, Is.Not.Empty, "no core or screen found");
         Assert.That(problems, Is.Empty, string.Join("\n", problems));
+    }
+
+    [TestCase("Domain")]
+    [TestCase("UseCases")]
+    [TestCase("Infrastructure")]
+    [TestCase("Presentation")]
+    public void NoDomain_ReachesIntoAnotherDomain(string layer)
+    {
+        var files = SourcesOf(layer).Where(f => DomainOf(layer, f) is var d && d != Orchestrator && !d.EndsWith(".cs", StringComparison.Ordinal) && !_notADomain.ContainsKey(d)).ToArray();
+        var problems = new List<string>();
+        foreach (var file in files)
+        {
+            var domain = DomainOf(layer, file);
+            foreach (Match directive in _layerUsing.Matches(File.ReadAllText(file)))
+            {
+                var target = directive.Groups[2].Value;
+                var reached = directive.Groups[1].Value + "." + target;
+                if (target != domain && target != "Shared" && !_notADomain.ContainsKey(target) && !_domainDebt.ContainsKey((domain, reached)))
+                {
+                    problems.Add($"{Relative(file)} ({domain}) uses {reached}");
+                }
+            }
+        }
+
+        Assert.That(files, Is.Not.Empty, $"no domain folder found in {Prefix}{layer}");
+        Assert.That(problems, Is.Empty,
+            "a domain sees only itself and Shared (the orchestrating domain, Shell, sees all): move what two domains need to Shared, or name the debt in _domainDebt with its reason\n"
+            + string.Join("\n", problems));
     }
 
     [Test]

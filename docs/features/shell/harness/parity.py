@@ -61,6 +61,13 @@ ALLOWED = [
      "// The namespace is not ...UiTests.Editor on purpose: a namespace of that name would hide the short name of the Presentation.Editor"),
     ("// ViewModels.Editor namespaces' short names, the same trap the capture lane met with FlaUI's Capture class.",
      "// namespace (its Views and ViewModels), the same trap the capture lane met with FlaUI's Capture class."),
+    # Converters that two domains use moved to Shared/Views; the XAML that names them gains a prefix for it.
+    ('xmlns:local="clr-namespace:Paper.ScreenWizzard.Presentation.Capture.Views"', 'xmlns:shared="clr-namespace:Paper.ScreenWizzard.Presentation.Shared.Views"'),
+    ('<local:PixelImageConverter x:Key="PixelImage" />', '<shared:PixelImageConverter x:Key="PixelImage" />'),
+    ('xmlns:shell="clr-namespace:Paper.ScreenWizzard.Presentation.Shell.Views"', 'xmlns:shared="clr-namespace:Paper.ScreenWizzard.Presentation.Shared.Views"'),
+    ('<shell:ChoiceConverter x:Key="Choice" />', '<shared:ChoiceConverter x:Key="Choice" />'),
+    ('<local:ChoiceConverter x:Key="Choice" />', '<shared:ChoiceConverter x:Key="Choice" />'),
+    (None, 'xmlns:shared="clr-namespace:Paper.ScreenWizzard.Presentation.Shared.Views"'),
     # The entry host's string dictionaries left Startup/ with the rest of it.
     ('Source = new Uri($"pack://application:,,,/Paper.ScreenWizzard;component/Startup/AppStrings.{code}.xaml"),',
      'Source = new Uri($"pack://application:,,,/Paper.ScreenWizzard;component/AppStrings.{code}.xaml"),'),
@@ -128,7 +135,7 @@ def rewrite_rules(base, work):
             # The same name qualified from inside Paper.ScreenWizzard ("UseCases.Editor.Models.X").
             rules.append((re.compile(rf"(?<![\w.]){re.escape(short(old_ns))}\.{type_name}\b"), f"{short(new_ns)}.{new_name}"))
     # A rename counts once it has happened: the old name is gone from the working tree.
-    work_text = "\n".join(work.values())
+    work_text = "\n".join(text for name, text in work.items() if name not in NEW_FILES)
     for type_name, new_name in TYPE_RENAMES.items():
         if not re.search(rf"\b{type_name}\b", work_text):
             rules.append((re.compile(rf"\b{type_name}\b"), new_name))
@@ -160,6 +167,11 @@ def main():
     only_before, only_after = before - after, after - before
     allowed = 0
     for old_line, new_line in ALLOWED:
+        if old_line is None:  # a line only added
+            while only_after[new_line]:
+                only_after[new_line] -= 1
+                allowed += 1
+            continue
         while only_before[old_line] and only_after[new_line]:
             only_before[old_line] -= 1
             only_after[new_line] -= 1

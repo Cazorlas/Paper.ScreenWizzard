@@ -4,7 +4,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Paper.ScreenWizzard.Domain.Shared;
 
-namespace Paper.ScreenWizzard.Presentation.Capture.Views;
+namespace Paper.ScreenWizzard.Presentation.Shared.Views;
 
 /// <summary>Turns the plain pixel array that crosses the ports into a frozen WPF bitmap, one bitmap pixel per image pixel.</summary>
 public static class PixelImageBitmap

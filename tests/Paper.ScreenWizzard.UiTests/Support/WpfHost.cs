@@ -2,9 +2,10 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Threading;
 using Paper.ScreenWizzard.Domain.Shell;
+using Paper.ScreenWizzard.Presentation.Shared.Views;
 using Paper.ScreenWizzard.Presentation.Shell.ViewModels;
 using Paper.ScreenWizzard.Presentation.Shell.Views;
-using Paper.ScreenWizzard.UseCases.Shell.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 
 namespace Paper.ScreenWizzard.UiTests.Support;
 
