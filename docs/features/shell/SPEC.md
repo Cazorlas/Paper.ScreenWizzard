@@ -1,4 +1,4 @@
-> Đợt 1 đã làm xong 2026-09-21 (SPEC được duyệt 2026-09-20). Việc làm và bằng chứng: [2026-09-20-m1-chup-va-sua-anh-plan.md](2026-09-20-m1-chup-va-sua-anh-plan.md). Tập tin cài đặt thiếu mục: [2026-09-26-cai-dat-thieu-muc-plan.md](2026-09-26-cai-dat-thieu-muc-plan.md)
+> Đợt 1 đã làm xong 2026-09-21 (SPEC được duyệt 2026-09-20). Việc làm và bằng chứng: [2026-09-20-m1-chup-va-sua-anh-plan.md](2026-09-20-m1-chup-va-sua-anh-plan.md). Tập tin cài đặt thiếu mục: [2026-09-26-cai-dat-thieu-muc-plan.md](2026-09-26-cai-dat-thieu-muc-plan.md). Báo bản mới: [2026-09-26-bao-ban-moi-plan.md](2026-09-26-bao-ban-moi-plan.md)
 
 # Khung ứng dụng — SPEC
 
@@ -19,12 +19,13 @@ taskbar, comes up with one key, and lets me set the keys, the save folder, and w
 1. Opens the app. Its icon appears in the notification area and the capture bar comes up (the first time). No main window takes the
    screen.
 2. Right-clicks the tray icon: the menu has Capture rectangle, Capture freeform, Capture window, Capture full screen, Open image…,
-   Capture bar (show or hide), Settings, Exit. Double-clicking the icon shows the capture bar.
+   Capture bar (show or hide), Settings, Exit; while a newer version is out, also Download the new version…. Double-clicking the
+   icon shows the capture bar.
 3. The capture bar is a small window always on top, with one button per kind of capture and a Settings button. It can be dragged
    anywhere; next time it opens exactly there.
 4. In Settings the user changes: the hotkey of each kind of capture, what happens after a capture, the save folder, the file
    format, the delay, including the pointer, starting with Windows, the language (follow Windows, Vietnamese, English), the theme
-   (follow Windows, light, dark).
+   (follow Windows, light, dark), and whether to check for a new version.
 5. Closing the capture bar or the editor with X closes only that window; the app keeps running in the tray. Only "Exit" in the tray
    menu ends the app.
 
@@ -43,6 +44,7 @@ taskbar, comes up with one key, and lets me set the keys, the save folder, and w
 | Start with Windows | off | the app starts by itself (hidden in the tray) at sign-in |
 | Language | follow Windows | the text of every window |
 | Theme | follow Windows | light or dark |
+| Check for a new version | on | once a day the app asks GitHub whether a newer version is published, and says so |
 
 ## Outputs
 
@@ -52,7 +54,7 @@ taskbar, comes up with one key, and lets me set the keys, the save folder, and w
 
 ## Key entities
 
-Tray icon, capture bar, settings, hotkey, the running copy of the app.
+Tray icon, capture bar, settings, hotkey, the running copy of the app, a new version.
 
 ## Only one copy runs
 
@@ -101,6 +103,21 @@ Tray icon, capture bar, settings, hotkey, the running copy of the app.
 - Given the dark theme → text and icons stay readable: text contrast **4.5:1 or more**, icons and borders **3:1 or more**, in the
   light and the dark theme alike
 
+## A new version is announced
+
+**The user learns of a new version without looking for it, and installs it when they choose.**
+
+- Given a newer version published on GitHub and the check on → about **a minute after start**, and then **once a day** while the
+  app runs, a Windows notification says "Paper.ScreenWizzard 0.1.3 is out"; clicking it **opens that version's release page** in
+  the browser
+- Given the notification closed without a click → the tray menu **keeps a "Download the new version…" line** that opens the same
+  page, until the app exits
+- Given the same version found again while the app runs → **no second notification**; a version newer still is announced again
+- Given the running version is the newest (or newer, a build not yet published) → **nothing** is shown
+- Given the check turned off in Settings → the app **asks GitHub nothing**; nothing leaves the PC
+- The app only opens a page of its own releases on GitHub. It **downloads and installs nothing by itself**: the user downloads the
+  Setup from that page and runs it, which installs over the old version and keeps the settings (release SPEC).
+
 ## Usable from the keyboard
 
 - Given Tab through the buttons of the capture bar and of Settings → the order **follows what is seen**, and the focused button
@@ -125,6 +142,8 @@ Tray icon, capture bar, settings, hotkey, the running copy of the app.
 | F6 | the app is opened a second time | no new copy; the first one shows the capture bar; no error notice |
 | F7 | a hotkey cannot be registered at start | a small notice that fades names the key (no box to close, since on a machine where a key is held it would come up at every start); the app and the other keys keep working |
 | F8 | the settings file lacks a setting | that setting takes its default and the others are kept; no notice (a missing setting is normal after an update), only a line in the log |
+| F9 | the new-version check gets no answer (no network, GitHub refuses or is slow) | nothing is shown; a line in the log; the next check, a day later or at the next start, tries again |
+| F10 | the release page does not open (no browser) | a notice names the reason and the page's address, to open by hand |
 
 ## Assumptions
 
@@ -137,6 +156,8 @@ Tray icon, capture bar, settings, hotkey, the running copy of the app.
   the debugger and which is refused as a key another program holds. (The narrowest reading, chosen while building the shell;
   Hùng has not reviewed it.)
 - The longest delay a settings file may hold is 10 seconds, the longest the Settings window offers.
+- The repository is public, so the check needs no account. It sends only the app's name (GitHub refuses a request without one); a
+  draft or a pre-release is never offered.
 
 ## Clarifications
 
@@ -149,6 +170,9 @@ Tray icon, capture bar, settings, hotkey, the running copy of the app.
 
 - Q: a settings file lacking a setting? -> A: the setting takes its default and the file is not broken; only a wrong type or a
   value outside its range makes it broken (Hùng: "duyệt nha" to the proposal, then "còn việc gì thì làm đi").
+- Q: does the app learn of a new version and tell the user to install it? (Hùng: "nếu có bản update mới thì có tự động biết để báo
+  user cài ko", with "làm nốt lun đi") -> A: yes, it says so and opens the download page; installing stays the user's step
+  (the agent's choice, under "cho toàn quyền với bạn").
 
 ## What it does not do yet
 
@@ -156,7 +180,7 @@ Tray icon, capture bar, settings, hotkey, the running copy of the app.
   pressing it while Settings is open does nothing. Proposal: release the keys while Settings is open. Waiting for Hùng.
 - Alt+PrintScreen and Ctrl+PrintScreen, the defaults, could not be registered on the machine tried (Windows or another program holds
   them): the user changes the key in Settings.
-- Automatic updates and signing of the executable.
+- Downloading and installing a new version by itself (it only says one is out), and signing of the executable.
 - Syncing settings between machines.
 - Running as administrator to capture windows of programs running elevated.
 - Buttons for screen recording and screen notes: later rounds, see the roadmap.
@@ -172,12 +196,13 @@ bằng một phím, và tôi tự đặt được phím, thư mục lưu, và vi
 
 1. Mở ứng dụng. Biểu tượng hiện ở khay hệ thống, thanh chụp hiện lên (lần đầu). Không có cửa sổ chính chiếm màn hình.
 2. Bấm chuột phải biểu tượng khay: menu có Chụp vùng chữ nhật, Chụp vùng tự do, Chụp cửa sổ, Chụp toàn màn hình,
-   Mở ảnh…, Thanh chụp (hiện hoặc ẩn), Cài đặt, Thoát. Bấm đúp biểu tượng thì hiện thanh chụp.
+   Mở ảnh…, Thanh chụp (hiện hoặc ẩn), Cài đặt, Thoát; khi có bản mới thì có thêm Tải bản mới…. Bấm đúp biểu tượng thì hiện
+   thanh chụp.
 3. Thanh chụp là một cửa sổ nhỏ luôn nằm trên cùng, có một nút cho mỗi kiểu chụp và nút Cài đặt. Kéo nó đi đâu cũng
    được; lần sau mở lại nó ở đúng chỗ đó.
 4. Trong Cài đặt, người dùng đổi: phím tắt của từng kiểu chụp, việc làm sau khi chụp, thư mục lưu, định dạng file, độ
    trễ, kèm con trỏ, khởi động cùng Windows, ngôn ngữ (tự theo Windows, tiếng Việt, tiếng Anh), giao diện (tự theo
-   Windows, sáng, tối).
+   Windows, sáng, tối), và có kiểm bản mới không.
 5. Đóng thanh chụp hay cửa sổ sửa bằng nút X chỉ đóng cửa sổ đó; ứng dụng vẫn chạy ở khay. Chỉ "Thoát" trong menu khay
    mới tắt ứng dụng.
 
@@ -196,6 +221,7 @@ bằng một phím, và tôi tự đặt được phím, thư mục lưu, và vi
 | Khởi động cùng Windows | tắt | ứng dụng tự chạy (ẩn ở khay) khi đăng nhập |
 | Ngôn ngữ | theo Windows | chữ trên mọi cửa sổ |
 | Giao diện | theo Windows | sáng hay tối |
+| Kiểm bản mới | bật | mỗi ngày một lần ứng dụng hỏi GitHub xem có bản mới hơn đã phát hành không, có thì báo |
 
 ## Outputs
 
@@ -205,7 +231,7 @@ bằng một phím, và tôi tự đặt được phím, thư mục lưu, và vi
 
 ## Key entities
 
-Biểu tượng khay, thanh chụp, cài đặt, phím tắt, phiên bản đang chạy của ứng dụng.
+Biểu tượng khay, thanh chụp, cài đặt, phím tắt, phiên bản đang chạy của ứng dụng, bản mới.
 
 ## Chỉ một bản chạy
 
@@ -254,6 +280,20 @@ Biểu tượng khay, thanh chụp, cài đặt, phím tắt, phiên bản đang
 - Cho giao diện tối → chữ và biểu tượng vẫn đọc được: tỉ lệ tương phản chữ **từ 4.5:1**, biểu tượng và viền **từ 3:1**,
   ở cả giao diện sáng lẫn tối
 
+## Báo bản mới
+
+**Người dùng biết có bản mới mà không phải đi tìm, và cài khi họ muốn.**
+
+- Cho có bản mới hơn đã phát hành trên GitHub và đang bật kiểm → khoảng **một phút sau khi mở**, rồi **mỗi ngày một lần** khi
+  ứng dụng còn chạy, một thông báo của Windows nói "Paper.ScreenWizzard 0.1.3 đã có"; bấm vào thì **mở trang phát hành của bản
+  đó** trong trình duyệt
+- Cho thông báo tắt mà không bấm → menu khay **giữ dòng "Tải bản mới…"** mở cùng trang đó, tới khi thoát ứng dụng
+- Cho lần kiểm sau lại thấy đúng bản đó khi ứng dụng còn chạy → **không báo lần hai**; một bản mới hơn nữa thì báo lại
+- Cho bản đang chạy là bản mới nhất (hay mới hơn, bản dựng chưa phát hành) → **không hiện gì**
+- Cho tắt kiểm bản mới trong Cài đặt → ứng dụng **không hỏi GitHub gì cả**; không gì rời khỏi máy
+- Ứng dụng chỉ mở trang phát hành của chính nó trên GitHub. Nó **không tự tải, không tự cài**: người dùng tải file Setup từ trang
+  đó và chạy, file cài đè lên bản cũ và giữ cài đặt (SPEC file cài).
+
 ## Dùng được bằng bàn phím
 
 - Cho Tab qua các nút của thanh chụp và Cài đặt → thứ tự **theo thứ tự nhìn thấy**, nút đang chọn có viền rõ
@@ -277,6 +317,8 @@ Biểu tượng khay, thanh chụp, cài đặt, phím tắt, phiên bản đang
 | F6 | mở ứng dụng lần hai | không có bản mới; bản đầu hiện thanh chụp; không có thông báo lỗi |
 | F7 | không đăng ký được một phím tắt lúc khởi động | một thông báo nhỏ tự tắt nêu phím nào (không có hộp phải đóng, vì trên máy có phím bị giữ thì lần nào mở cũng gặp); ứng dụng và các phím khác vẫn chạy |
 | F8 | tập tin cài đặt thiếu một mục | mục đó lấy giá trị mặc định, các mục khác giữ nguyên; không thông báo (thiếu một mục là chuyện thường sau khi cập nhật), chỉ ghi một dòng vào nhật ký |
+| F9 | lần kiểm bản mới không có trả lời (không mạng, GitHub từ chối hay chậm) | không hiện gì; một dòng trong nhật ký; lần kiểm sau, một ngày sau hay lần mở sau, thử lại |
+| F10 | không mở được trang phát hành (không có trình duyệt) | thông báo nêu lý do và địa chỉ trang, để mở tay |
 
 ## Assumptions
 
@@ -288,6 +330,8 @@ Biểu tượng khay, thanh chụp, cài đặt, phím tắt, phiên bản đang
   hoa. Phím chức năng (F1 tới F12) và PrintScreen được đứng riêng, riêng F12 Windows dành cho trình gỡ lỗi nên bị từ chối như phím do
   ứng dụng khác giữ. (Mình chọn cách hiểu nhỏ nhất khi làm nhóm khung ứng dụng; Hùng chưa xem lại.)
 - Độ trễ dài nhất một tập tin cài đặt được ghi là 10 giây, dài nhất mà cửa sổ Cài đặt cho chọn.
+- Kho mã công khai, nên việc kiểm không cần tài khoản. Nó chỉ gửi tên ứng dụng (GitHub từ chối yêu cầu không có tên); bản nháp
+  hay bản thử trước (pre-release) không bao giờ được báo.
 
 ## Clarifications
 
@@ -300,12 +344,15 @@ Biểu tượng khay, thanh chụp, cài đặt, phím tắt, phiên bản đang
 
 - Q: tập tin cài đặt thiếu một mục? -> A: mục đó lấy mặc định và tập tin không bị coi là hỏng; chỉ sai kiểu hay ngoài miền mới là
   hỏng (Hùng: "duyệt nha" với đề xuất, rồi "còn việc gì thì làm đi").
+- Q: ứng dụng có tự biết có bản mới để báo người dùng cài không? (Hùng: "nếu có bản update mới thì có tự động biết để báo user cài
+  ko", kèm "làm nốt lun đi") -> A: có, nó báo và mở trang tải; cài vẫn là bước của người dùng (agent chọn, theo "cho toàn quyền với
+  bạn").
 
 ## What it does not do yet
 
 - Phím tắt đang do chính ứng dụng giữ không ghi được vào ô phím của Cài đặt (Windows đưa phím cho ứng dụng, không cho ô); bấm nó khi Cài đặt mở không làm gì. Đề xuất: nhả các phím trong lúc Cài đặt mở. Chờ Hùng quyết.
 - Alt+PrintScreen và Ctrl+PrintScreen mặc định không đăng ký được trên máy đã thử (Windows hay chương trình khác giữ): người dùng đổi phím trong Cài đặt.
-- Cập nhật tự động và ký số file chạy.
+- Tự tải và tự cài bản mới (nó chỉ báo là có), và ký số file chạy.
 - Đồng bộ cài đặt giữa các máy.
 - Chạy với quyền quản trị để chụp cửa sổ của ứng dụng chạy quyền cao.
 - Nút quay màn hình và ghi chú lên màn hình: đợt sau, xem lộ trình.

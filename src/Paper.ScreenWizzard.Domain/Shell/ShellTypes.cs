@@ -43,4 +43,5 @@ public sealed record AppSettings(
     bool StartWithWindows,
     AppLanguage Language,
     AppTheme Theme,
-    PixelPoint? CaptureBarPosition);
+    PixelPoint? CaptureBarPosition,
+    bool CheckForUpdates = true);

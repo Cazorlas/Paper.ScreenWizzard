@@ -9,8 +9,9 @@ interfaces; Infrastructure implements the ports.
 
 | File | Open it for |
 | --- | --- |
-| `Shell/Ports/` | `IShellInteractor` and the ports of the shell: `ISettingsStore`, `IHotkeys`, `IAutostart`, `ISingleInstance` |
+| `Shell/Ports/` | `IShellInteractor` and the ports of the shell: `ISettingsStore`, `IHotkeys`, `IAutostart`, `ISingleInstance`; `IUpdateInteractor` and its ports `IReleaseFeed`, `IBrowser` |
 | `Shell/UseCases/ShellInteractor.cs` | start-up (load or default settings, register the hotkeys, notices), hotkey change, apply, autostart, bar placement |
+| `Shell/UseCases/UpdateInteractor.cs` | whether a newer version is out (check on, running x.y.z, newest tag), said once per version; opens its release page |
 | `Capture/Ports/` | `ICaptureInteractor`, `ICaptureSession`, `IScreenSource`, `IWindowCatalog`, `IDelay` |
 | `Capture/UseCases/CaptureInteractor.cs` | countdown, snapshot, one session at a time, where a captured image goes |
 | `Capture/UseCases/CaptureSession.cs` | choosing on the frozen snapshot: rectangle, freeform, window hit-test, full screen |
@@ -27,3 +28,4 @@ Capture: `CaptureInteractor.BeginAsync` -> `IDelay` countdown -> `IScreenSource`
 `CaptureInteractor.PlanAfterCapture` -> `CaptureInteractor.Deliver` -> `ImageDelivery.SaveToFolder`.
 Editor: `EditorInteractor.OpenFile` -> `EditorSession` -> `EditorInteractor.DecideSave` -> `EditorInteractor.Save` -> `ImageDelivery.SaveToPath`.
 Shell: `ShellInteractor.Start` -> `ISettingsStore.Load` -> `IHotkeys.Register` -> notices for what could not be registered.
+New version: `UpdateInteractor.CheckAsync` -> `IReleaseFeed.GetLatestAsync` -> `AppVersion` compare -> offer and notice; `OpenDownloadPage` -> `IBrowser.Open`.

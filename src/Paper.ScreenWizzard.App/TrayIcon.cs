@@ -19,6 +19,7 @@ internal sealed class TrayIcon : IDisposable
     private readonly ILocalizer _localizer;
     private readonly System.Drawing.Icon _image;
     private readonly List<(TrayMenuItemViewModel Item, WinForms.ToolStripMenuItem Entry)> _entries = [];
+    private Action? _balloonClicked;
     private bool _disposed;
 
     public TrayIcon(TrayMenuViewModel viewModel, ILocalizer localizer, Action showCaptureBar)
@@ -40,10 +41,23 @@ internal sealed class TrayIcon : IDisposable
             }
         };
 
+        _icon.BalloonTipClicked += (_, _) => _balloonClicked?.Invoke();
+        _icon.BalloonTipClosed += (_, _) => _balloonClicked = null;
+
         Rebuild();
         _viewModel.PropertyChanged += OnViewModelChanged;
         _localizer.LanguageChanged += OnLanguageChanged;
         _icon.Visible = true;
+    }
+
+    /// <summary>
+    /// A Windows notification from the tray icon (on Windows 10 and 11 it is a toast and goes to the notification centre). A click on it
+    /// runs <paramref name="clicked"/>; one that closes unclicked forgets it.
+    /// </summary>
+    public void ShowNotice(string title, string text, Action clicked)
+    {
+        _balloonClicked = clicked;
+        _icon.ShowBalloonTip(10_000, title, text, WinForms.ToolTipIcon.Info);
     }
 
     public void Dispose()

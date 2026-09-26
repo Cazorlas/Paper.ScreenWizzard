@@ -44,13 +44,16 @@ public sealed class TrayMenuItemViewModel : BindableBase
 /// </summary>
 public sealed class TrayMenuViewModel : BindableBase
 {
+    private IReadOnlyDictionary<CaptureKind, HotkeyChord> _hotkeys;
     private IReadOnlyList<TrayMenuItemViewModel> _items;
     private bool _captureBarVisible;
+    private bool _updateAvailable;
 
     public TrayMenuViewModel(IReadOnlyDictionary<CaptureKind, HotkeyChord> hotkeys, bool captureBarVisible)
     {
         _captureBarVisible = captureBarVisible;
-        _items = BuildItems(hotkeys);
+        _hotkeys = hotkeys;
+        _items = BuildItems();
     }
 
     /// <summary>A capture line was chosen.</summary>
@@ -65,13 +68,30 @@ public sealed class TrayMenuViewModel : BindableBase
 
     public event EventHandler? ExitRequested;
 
-    /// <summary>Capture x4, Open image, Capture bar, Settings, Exit, in that order.</summary>
+    /// <summary>The "Tải bản mới…" line was chosen.</summary>
+    public event EventHandler? UpdateRequested;
+
+    /// <summary>Capture x4, Open image, Capture bar, Settings, then "Tải bản mới…" while a newer version is out, then Exit.</summary>
     public IReadOnlyList<TrayMenuItemViewModel> Items => _items;
 
     /// <summary>Redraws the shortcut texts after a hotkey changed in Settings.</summary>
     public void SetHotkeys(IReadOnlyDictionary<CaptureKind, HotkeyChord> hotkeys)
     {
-        _items = BuildItems(hotkeys);
+        _hotkeys = hotkeys;
+        _items = BuildItems();
+        RaisePropertyChanged(nameof(Items));
+    }
+
+    /// <summary>Adds the "Tải bản mới…" line once a newer version is known (SPEC shell, "Báo bản mới").</summary>
+    public void SetUpdateAvailable(bool available)
+    {
+        if (_updateAvailable == available)
+        {
+            return;
+        }
+
+        _updateAvailable = available;
+        _items = BuildItems();
         RaisePropertyChanged(nameof(Items));
     }
 
@@ -95,18 +115,30 @@ public sealed class TrayMenuViewModel : BindableBase
 
     internal void RaiseExitRequested() => ExitRequested?.Invoke(this, EventArgs.Empty);
 
+    internal void RaiseUpdateRequested() => UpdateRequested?.Invoke(this, EventArgs.Empty);
+
     private static string ShortcutOf(IReadOnlyDictionary<CaptureKind, HotkeyChord> hotkeys, CaptureKind kind) =>
         hotkeys.TryGetValue(kind, out var chord) ? HotkeyChordFormatter.Format(chord) : string.Empty;
 
-    private List<TrayMenuItemViewModel> BuildItems(IReadOnlyDictionary<CaptureKind, HotkeyChord> hotkeys) =>
-    [
-        new("Tray.CaptureRectangle", ShortcutOf(hotkeys, CaptureKind.Rectangle), new TrayCaptureCommand(this, CaptureKind.Rectangle), false, false),
-        new("Tray.CaptureFreeform", ShortcutOf(hotkeys, CaptureKind.Freeform), new TrayCaptureCommand(this, CaptureKind.Freeform), false, false),
-        new("Tray.CaptureWindow", ShortcutOf(hotkeys, CaptureKind.Window), new TrayCaptureCommand(this, CaptureKind.Window), false, false),
-        new("Tray.CaptureFullScreen", ShortcutOf(hotkeys, CaptureKind.FullScreen), new TrayCaptureCommand(this, CaptureKind.FullScreen), false, false),
-        new("Tray.OpenImage", string.Empty, new TrayOpenImageCommand(this), false, false),
-        new("Tray.CaptureBar", string.Empty, new TrayToggleCaptureBarCommand(this), true, _captureBarVisible),
-        new("Tray.Settings", string.Empty, new TraySettingsCommand(this), false, false),
-        new("Tray.Exit", string.Empty, new TrayExitCommand(this), false, false),
-    ];
+    private List<TrayMenuItemViewModel> BuildItems()
+    {
+        var hotkeys = _hotkeys;
+        List<TrayMenuItemViewModel> items =
+        [
+            new("Tray.CaptureRectangle", ShortcutOf(hotkeys, CaptureKind.Rectangle), new TrayCaptureCommand(this, CaptureKind.Rectangle), false, false),
+            new("Tray.CaptureFreeform", ShortcutOf(hotkeys, CaptureKind.Freeform), new TrayCaptureCommand(this, CaptureKind.Freeform), false, false),
+            new("Tray.CaptureWindow", ShortcutOf(hotkeys, CaptureKind.Window), new TrayCaptureCommand(this, CaptureKind.Window), false, false),
+            new("Tray.CaptureFullScreen", ShortcutOf(hotkeys, CaptureKind.FullScreen), new TrayCaptureCommand(this, CaptureKind.FullScreen), false, false),
+            new("Tray.OpenImage", string.Empty, new TrayOpenImageCommand(this), false, false),
+            new("Tray.CaptureBar", string.Empty, new TrayToggleCaptureBarCommand(this), true, _captureBarVisible),
+            new("Tray.Settings", string.Empty, new TraySettingsCommand(this), false, false),
+            new("Tray.Exit", string.Empty, new TrayExitCommand(this), false, false),
+        ];
+        if (_updateAvailable)
+        {
+            items.Insert(items.Count - 1, new("Tray.Update", string.Empty, new TrayUpdateCommand(this), false, false));
+        }
+
+        return items;
+    }
 }

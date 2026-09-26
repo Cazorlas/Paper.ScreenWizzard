@@ -29,6 +29,7 @@ public sealed class SettingsWindowTests : UiTestBase
         "HotkeyBox.FullScreen",
         "AfterCapture.ShowDialog",
         "AutostartCheck",
+        "CheckForUpdatesCheck",
         "SaveFolderBox",
         "BrowseFolderButton",
         "Format.Png",
@@ -178,9 +179,22 @@ public sealed class SettingsWindowTests : UiTestBase
             Assert.That(rig.Session.IsToggledOn("IncludeCursorCheck"), Is.False);
             Assert.That(rig.Session.IsSelected("Scope.MonitorUnderCursor"), Is.True);
             Assert.That(rig.Session.IsToggledOn("AutostartCheck"), Is.False);
+            Assert.That(rig.Session.IsToggledOn("CheckForUpdatesCheck"), Is.True, "SPEC shell Inputs: check for a new version, on");
             Assert.That(rig.Session.IsSelected("Language.System"), Is.True);
             Assert.That(rig.Session.IsSelected("Theme.System"), Is.True);
         });
+    }
+
+    [Test]
+    public void Settings_TurningTheUpdateCheckOff_IsSaved()
+    {
+        using var rig = SettingsRig.Open();
+
+        rig.Session.Click("CheckForUpdatesCheck");
+        rig.Session.Click("SaveButton");
+
+        Assert.That(rig.Shell.Applied, Has.Count.EqualTo(1));
+        Assert.That(rig.Shell.Applied[0].CheckForUpdates, Is.False);
     }
 
     [Test]
