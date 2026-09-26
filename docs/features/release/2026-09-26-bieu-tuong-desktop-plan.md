@@ -47,11 +47,11 @@ Không có lane `unit` hay `ui`: không có mã ứng dụng. Bằng chứng là
 ### 1. File cài
 
 - [x] T1 `verify-installer.ps1`: hàm `Desktop-Shortcut`; kiểm "What the user does 3 / Cài đè và gỡ: có một biểu tượng trên màn hình nền" sau lần cài tiếng Việt; kiểm "không có biểu tượng khi bỏ chọn" bằng một lần cài `/MERGETASKS="!desktopicon"` vào thư mục thử rồi gỡ; kiểm "gỡ thì biểu tượng mất"; dọn biểu tượng trong khối `finally` — xong khi trên bản cài chưa có task, các kiểm tra mới **đỏ** (lượt dựng tay chạy trước khi đổi `Setup.iss`) {files: installer/verify-installer.ps1}
-- [ ] T2 `Setup.iss`: `[Tasks]` `desktopicon` và `[Icons]` `{autodesktop}` — xong khi lượt dựng tay `release.yml` báo mọi kiểm tra đạt, số kiểm tra lớn hơn 35 {files: installer/Setup.iss}
+- [x] T2 `Setup.iss`: `[Tasks]` `desktopicon` và `[Icons]` `{autodesktop}` — xong khi lượt dựng tay `release.yml` báo mọi kiểm tra đạt, số kiểm tra lớn hơn 35 {files: installer/Setup.iss}
 
 ### Last. Close
 
-- [ ] T3 Đóng SPEC.md (gỡ dấu "chờ kiểm"), `check-spec` sạch; `CLAUDE.md` mục Deploy nhắc biểu tượng màn hình nền nếu cần — xong khi `check-spec` exit 0 {files: docs/features/release/SPEC.md}
+- [x] T3 Đóng SPEC.md (gỡ dấu "chờ kiểm"), `check-spec` sạch; `CLAUDE.md` mục Deploy nhắc biểu tượng màn hình nền nếu cần — xong khi `check-spec` exit 0 {files: docs/features/release/SPEC.md}
 
 ## API đã tra
 
@@ -64,3 +64,5 @@ Không có lane `unit` hay `ui`: không có mã ứng dụng. Bằng chứng là
 | Task | Lệnh / id / giá trị đọc lại | Verdict |
 |---|---|---|
 | T1 | lượt dựng tay `release.yml` số 8 (run 36255212162) trên `1c46e56`, `Setup.iss` chưa đổi: `verify-installer: 42 checks, 40 passed, 2 failed`; hỏng đúng hai kiểm tra mới `Desktop  with the desktop box left ticked there is one desktop icon` và `Desktop  and it opens the installed exe`. Ba kiểm tra "bỏ ô thì không có biểu tượng" đạt sẵn trên file cài cũ (vốn không tạo biểu tượng), nên lượt này không chứng minh gì cho chúng | pass (đỏ ở kiểm tra) |
+| T2 | lượt dựng tay `release.yml` số 9 (run 36255711845) trên `027a948`: `verify-installer: 42 checks, 42 passed, 0 failed` (35 cũ + 7 mới: có một biểu tượng khi để ô, biểu tượng mở đúng exe, không biểu tượng khi bỏ ô, Start menu vẫn có, gỡ lại được, gỡ thì biểu tượng mất); artifact `Paper.ScreenWizzard-0.1.2` | pass |
+| T3 | SPEC file cài: gỡ 6 dấu "chờ kiểm" (3 mục × 2 ngôn ngữ); `check_spec.py` 0 problems | pass |

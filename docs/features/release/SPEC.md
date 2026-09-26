@@ -1,4 +1,4 @@
-> Đã làm xong 2026-09-21 theo lời Hùng ("setup đầy đủ file cài lun nha"); đổi sang Setup.exe hai ngôn ngữ cùng ngày theo lời Hùng ("giao diện trình cài làm 2 thứ tiếng dc ko"). Việc làm và bằng chứng: [2026-09-21-file-cai-plan.md](2026-09-21-file-cai-plan.md)
+> Đã làm xong 2026-09-21 theo lời Hùng ("setup đầy đủ file cài lun nha"); đổi sang Setup.exe hai ngôn ngữ cùng ngày theo lời Hùng ("giao diện trình cài làm 2 thứ tiếng dc ko"). Việc làm và bằng chứng: [2026-09-21-file-cai-plan.md](2026-09-21-file-cai-plan.md). Biểu tượng trên màn hình nền: [2026-09-26-bieu-tuong-desktop-plan.md](2026-09-26-bieu-tuong-desktop-plan.md)
 
 # File cài đặt và phát hành — SPEC
 
@@ -16,8 +16,6 @@ asking for no administrator rights and no .NET, so that I can start at once with
 need it, to remove it cleanly, while my pictures and settings are still there if I install it again.
 
 ## What the user does
-
-> Changed by [2026-09-26-bieu-tuong-desktop.md](2026-09-26-bieu-tuong-desktop.md), chờ kiểm
 
 1. Downloads `Paper.ScreenWizzard-<version>-win-x64-Setup.exe` and double-clicks it. The installer window is in **Vietnamese
    or English following the Windows display language** (on a Windows in another language, a box offers the two). There is
@@ -44,8 +42,6 @@ need it, to remove it cleanly, while my pictures and settings are still there if
 
 ## Outputs
 
-> Changed by [2026-09-26-bieu-tuong-desktop.md](2026-09-26-bieu-tuong-desktop.md), chờ kiểm
-
 - One installer (`Setup.exe`) for 64-bit Windows 10 and 11, with .NET inside, needing nothing else.
 - One portable zip with the same content.
 - One SHA-256 checksum file for both.
@@ -60,8 +56,6 @@ need it, to remove it cleanly, while my pictures and settings are still there if
 - **Portable copy:** the same executable, with no installation.
 
 ## Upgrade and uninstall
-
-> Changed by [2026-09-26-bieu-tuong-desktop.md](2026-09-26-bieu-tuong-desktop.md), chờ kiểm
 
 **Installing a new version over an old one replaces it; there are never two.**
 
@@ -133,8 +127,6 @@ còn ảnh và cài đặt của tôi vẫn còn nếu tôi cài lại.
 
 ## What the user does
 
-> Đổi bởi [2026-09-26-bieu-tuong-desktop.md](2026-09-26-bieu-tuong-desktop.md), chờ kiểm
-
 1. Tải `Paper.ScreenWizzard-<số phiên bản>-win-x64-Setup.exe`, bấm đúp. Cửa sổ cài hiện bằng **tiếng Việt hay tiếng
    Anh theo ngôn ngữ hiển thị của Windows** (Windows dùng ngôn ngữ khác thì hiện một hộp chọn giữa hai thứ tiếng). Có lời
    cấp phép, chỗ chọn thư mục (mặc định nằm trong thư mục riêng của người dùng), rồi nút Cài đặt.
@@ -159,8 +151,6 @@ còn ảnh và cài đặt của tôi vẫn còn nếu tôi cài lại.
 
 ## Outputs
 
-> Đổi bởi [2026-09-26-bieu-tuong-desktop.md](2026-09-26-bieu-tuong-desktop.md), chờ kiểm
-
 - Một file cài (`Setup.exe`) cho Windows 10 và 11 bản 64 bit, tự chứa .NET, không cần cài gì thêm.
 - Một file zip di động cùng nội dung.
 - Một file mã kiểm tra SHA-256 cho cả hai.
@@ -175,8 +165,6 @@ còn ảnh và cài đặt của tôi vẫn còn nếu tôi cài lại.
 - **Bản di động:** cùng file chạy, không có bản cài.
 
 ## Cài đè và gỡ
-
-> Đổi bởi [2026-09-26-bieu-tuong-desktop.md](2026-09-26-bieu-tuong-desktop.md), chờ kiểm
 
 **Cài bản mới lên bản cũ thay bản cũ, không tạo hai bản.**
 
