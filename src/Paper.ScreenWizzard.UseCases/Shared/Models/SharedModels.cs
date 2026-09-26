@@ -1,6 +1,6 @@
 using Paper.ScreenWizzard.Domain.Shared;
 
-namespace Paper.ScreenWizzard.UseCases.Common.Models;
+namespace Paper.ScreenWizzard.UseCases.Shared.Models;
 
 /// <summary>What a port answers when it only has to say whether it worked.</summary>
 /// <param name="Detail">The system's own reason, in English, for the error text the user reads; null on success.</param>

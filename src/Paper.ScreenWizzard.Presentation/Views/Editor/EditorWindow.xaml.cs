@@ -10,7 +10,7 @@ using Paper.ScreenWizzard.Presentation.Rendering;
 using Paper.ScreenWizzard.Presentation.ViewModels.Editor;
 using Paper.ScreenWizzard.Presentation.Views.Capture;
 using Paper.ScreenWizzard.Presentation.Views.Shell.Services;
-using Paper.ScreenWizzard.UseCases.Shell.Ports;
+using Paper.ScreenWizzard.UseCases.Capture.Ports;
 
 namespace Paper.ScreenWizzard.Presentation.Views.Editor;
 

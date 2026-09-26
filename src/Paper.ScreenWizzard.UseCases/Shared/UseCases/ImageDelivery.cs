@@ -1,7 +1,8 @@
 using Paper.ScreenWizzard.Domain.Shared;
-using Paper.ScreenWizzard.UseCases.Common.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Ports;
 
-namespace Paper.ScreenWizzard.UseCases.Common.Implements;
+namespace Paper.ScreenWizzard.UseCases.Shared.UseCases;
 
 /// <summary>
 /// Puts a finished image in a file or on the clipboard: the automatic file name that never overwrites, the white background

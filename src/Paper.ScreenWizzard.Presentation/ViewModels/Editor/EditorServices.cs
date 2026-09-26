@@ -2,8 +2,8 @@ using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.Presentation.ViewModels.Capture;
 using Paper.ScreenWizzard.Presentation.ViewModels.Shell;
-using Paper.ScreenWizzard.UseCases.Common.Ports;
 using Paper.ScreenWizzard.UseCases.Editor.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.Ports;
 
 namespace Paper.ScreenWizzard.Presentation.ViewModels.Editor;
 

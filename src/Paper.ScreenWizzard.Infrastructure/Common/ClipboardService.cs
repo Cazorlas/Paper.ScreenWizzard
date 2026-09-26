@@ -3,8 +3,8 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Paper.ScreenWizzard.Domain.Shared;
-using Paper.ScreenWizzard.UseCases.Common.Models;
-using Paper.ScreenWizzard.UseCases.Common.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Ports;
 
 namespace Paper.ScreenWizzard.Infrastructure.Common;
 

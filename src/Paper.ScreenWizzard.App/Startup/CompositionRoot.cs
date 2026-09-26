@@ -12,14 +12,14 @@ using Paper.ScreenWizzard.Presentation.Views.Capture;
 using Paper.ScreenWizzard.Presentation.Views.Capture.Services;
 using Paper.ScreenWizzard.Presentation.Views.Editor;
 using Paper.ScreenWizzard.Presentation.Views.Shell.Services;
-using Paper.ScreenWizzard.UseCases.Capture.Implements;
 using Paper.ScreenWizzard.UseCases.Capture.Ports;
-using Paper.ScreenWizzard.UseCases.Common.Implements;
-using Paper.ScreenWizzard.UseCases.Common.Ports;
-using Paper.ScreenWizzard.UseCases.Editor.Implements;
+using Paper.ScreenWizzard.UseCases.Capture.UseCases;
 using Paper.ScreenWizzard.UseCases.Editor.Ports;
-using Paper.ScreenWizzard.UseCases.Shell.Implements;
+using Paper.ScreenWizzard.UseCases.Editor.UseCases;
+using Paper.ScreenWizzard.UseCases.Shared.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.UseCases;
 using Paper.ScreenWizzard.UseCases.Shell.Ports;
+using Paper.ScreenWizzard.UseCases.Shell.UseCases;
 
 namespace Paper.ScreenWizzard.App.Startup;
 

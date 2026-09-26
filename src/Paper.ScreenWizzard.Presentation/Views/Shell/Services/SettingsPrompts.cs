@@ -1,6 +1,6 @@
 using System.Windows;
 using Paper.ScreenWizzard.Presentation.ViewModels.Shell;
-using Paper.ScreenWizzard.UseCases.Common.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 
 namespace Paper.ScreenWizzard.Presentation.Views.Shell.Services;
 

@@ -1,5 +1,5 @@
 using Microsoft.Win32;
-using Paper.ScreenWizzard.UseCases.Common.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 using Paper.ScreenWizzard.UseCases.Shell.Ports;
 
 namespace Paper.ScreenWizzard.Infrastructure.Shell;

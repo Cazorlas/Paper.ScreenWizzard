@@ -1,10 +1,10 @@
 using System.Text;
 using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Shared;
+using Paper.ScreenWizzard.UseCases.Capture.Models;
 using Paper.ScreenWizzard.UseCases.Capture.Ports;
-using Paper.ScreenWizzard.UseCases.Common.Models;
-using Paper.ScreenWizzard.UseCases.Common.Ports;
-using Paper.ScreenWizzard.UseCases.Shell.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Ports;
 
 namespace Paper.ScreenWizzard.UnitTests.Capture.Fakes;
 

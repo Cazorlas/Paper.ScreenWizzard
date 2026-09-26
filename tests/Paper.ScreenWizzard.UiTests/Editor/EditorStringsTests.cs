@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Paper.ScreenWizzard.Domain.Editor;
 using Paper.ScreenWizzard.UiTests.Support;
-using Paper.ScreenWizzard.UseCases.Common.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 using Paper.ScreenWizzard.UseCases.Shell.Models;
 
 namespace Paper.ScreenWizzard.UiTests.ImageEditor;

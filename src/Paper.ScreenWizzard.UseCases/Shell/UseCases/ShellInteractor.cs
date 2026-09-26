@@ -1,12 +1,12 @@
 using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
-using Paper.ScreenWizzard.UseCases.Common.Models;
-using Paper.ScreenWizzard.UseCases.Common.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Ports;
 using Paper.ScreenWizzard.UseCases.Shell.Models;
 using Paper.ScreenWizzard.UseCases.Shell.Ports;
 
-namespace Paper.ScreenWizzard.UseCases.Shell.Implements;
+namespace Paper.ScreenWizzard.UseCases.Shell.UseCases;
 
 /// <summary>Everything the shell decides (SPEC shell): startup, hotkey changes, saving settings, autostart, bar placement.</summary>
 public sealed class ShellInteractor : IShellInteractor

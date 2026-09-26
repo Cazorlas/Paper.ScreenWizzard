@@ -1,5 +1,5 @@
-using Paper.ScreenWizzard.UseCases.Common.Models;
-using Paper.ScreenWizzard.UseCases.Common.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Ports;
 
 namespace Paper.ScreenWizzard.Infrastructure.Common;
 

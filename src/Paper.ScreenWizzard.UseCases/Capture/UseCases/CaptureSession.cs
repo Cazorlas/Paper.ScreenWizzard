@@ -2,11 +2,10 @@ using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.UseCases.Capture.Models;
 using Paper.ScreenWizzard.UseCases.Capture.Ports;
-using Paper.ScreenWizzard.UseCases.Common.Models;
-using Paper.ScreenWizzard.UseCases.Common.Ports;
-using Paper.ScreenWizzard.UseCases.Shell.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Ports;
 
-namespace Paper.ScreenWizzard.UseCases.Capture.Implements;
+namespace Paper.ScreenWizzard.UseCases.Capture.UseCases;
 
 /// <summary>
 /// One capture run over a frozen snapshot (SPEC capture). It crops the snapshot; it never reads the screen again, so

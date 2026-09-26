@@ -1,10 +1,10 @@
 using Paper.ScreenWizzard.Domain.Editor;
 using Paper.ScreenWizzard.Domain.Shared;
-using Paper.ScreenWizzard.UseCases.Common.Models;
 using Paper.ScreenWizzard.UseCases.Editor.Models;
 using Paper.ScreenWizzard.UseCases.Editor.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 
-namespace Paper.ScreenWizzard.UseCases.Editor.Implements;
+namespace Paper.ScreenWizzard.UseCases.Editor.UseCases;
 
 /// <summary>
 /// One image being edited and its history (SPEC editor, "Hình vẽ và lịch sử"). Every mutating call is one step: the history is

@@ -2,10 +2,10 @@ using NUnit.Framework;
 using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
-using Paper.ScreenWizzard.UseCases.Capture.Implements;
 using Paper.ScreenWizzard.UseCases.Capture.Models;
 using Paper.ScreenWizzard.UseCases.Capture.Ports;
-using Paper.ScreenWizzard.UseCases.Common.Implements;
+using Paper.ScreenWizzard.UseCases.Capture.UseCases;
+using Paper.ScreenWizzard.UseCases.Shared.UseCases;
 
 namespace Paper.ScreenWizzard.UnitTests.Capture.Fakes;
 

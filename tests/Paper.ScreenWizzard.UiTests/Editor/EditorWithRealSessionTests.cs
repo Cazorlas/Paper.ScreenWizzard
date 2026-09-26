@@ -6,7 +6,7 @@ using Paper.ScreenWizzard.Presentation.ViewModels.Editor;
 using Paper.ScreenWizzard.UiTests.ScreenCapture;
 using Paper.ScreenWizzard.UiTests.Shell;
 using Paper.ScreenWizzard.UiTests.Support;
-using Paper.ScreenWizzard.UseCases.Editor.Implements;
+using Paper.ScreenWizzard.UseCases.Editor.UseCases;
 
 namespace Paper.ScreenWizzard.UiTests.ImageEditor;
 

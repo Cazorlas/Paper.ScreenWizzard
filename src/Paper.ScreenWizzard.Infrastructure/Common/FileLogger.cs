@@ -1,6 +1,6 @@
 using System.Globalization;
 using System.Text;
-using Paper.ScreenWizzard.UseCases.Common.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.Ports;
 
 namespace Paper.ScreenWizzard.Infrastructure.Common;
 

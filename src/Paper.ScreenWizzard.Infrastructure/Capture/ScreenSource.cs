@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using Paper.ScreenWizzard.Domain.Shared;
+using Paper.ScreenWizzard.UseCases.Capture.Models;
 using Paper.ScreenWizzard.UseCases.Capture.Ports;
 
 namespace Paper.ScreenWizzard.Infrastructure.Capture;

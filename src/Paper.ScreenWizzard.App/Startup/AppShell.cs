@@ -11,8 +11,9 @@ using Paper.ScreenWizzard.Presentation.ViewModels.Editor;
 using Paper.ScreenWizzard.Presentation.ViewModels.Shell;
 using Paper.ScreenWizzard.Presentation.Views.Shell;
 using Paper.ScreenWizzard.Presentation.Views.Shell.Services;
-using Paper.ScreenWizzard.UseCases.Common.Models;
-using Paper.ScreenWizzard.UseCases.Common.Ports;
+using Paper.ScreenWizzard.UseCases.Capture.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Ports;
 using Paper.ScreenWizzard.UseCases.Shell.Models;
 using Paper.ScreenWizzard.UseCases.Shell.Ports;
 

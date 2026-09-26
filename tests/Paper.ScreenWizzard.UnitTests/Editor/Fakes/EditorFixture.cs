@@ -5,11 +5,11 @@ using Paper.ScreenWizzard.Domain.Editor;
 using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.UnitTests.Capture.Fakes;
-using Paper.ScreenWizzard.UseCases.Common.Implements;
-using Paper.ScreenWizzard.UseCases.Common.Models;
-using Paper.ScreenWizzard.UseCases.Common.Ports;
-using Paper.ScreenWizzard.UseCases.Editor.Implements;
 using Paper.ScreenWizzard.UseCases.Editor.Ports;
+using Paper.ScreenWizzard.UseCases.Editor.UseCases;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.UseCases;
 
 namespace Paper.ScreenWizzard.UnitTests.Editor.Fakes;
 

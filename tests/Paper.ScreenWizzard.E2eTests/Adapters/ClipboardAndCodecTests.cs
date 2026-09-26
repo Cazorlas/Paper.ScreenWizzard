@@ -5,7 +5,7 @@ using NUnit.Framework;
 using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.E2eTests.Support;
 using Paper.ScreenWizzard.Infrastructure.Common;
-using Paper.ScreenWizzard.UseCases.Common.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 
 namespace Paper.ScreenWizzard.E2eTests.Adapters;
 

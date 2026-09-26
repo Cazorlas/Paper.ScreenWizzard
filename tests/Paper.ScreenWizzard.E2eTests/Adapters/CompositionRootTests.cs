@@ -6,8 +6,8 @@ using Paper.ScreenWizzard.Infrastructure.Shell;
 using Paper.ScreenWizzard.Presentation.ViewModels.Capture;
 using Paper.ScreenWizzard.Presentation.ViewModels.Editor;
 using Paper.ScreenWizzard.UseCases.Capture.Ports;
-using Paper.ScreenWizzard.UseCases.Common.Ports;
 using Paper.ScreenWizzard.UseCases.Editor.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.Ports;
 using Paper.ScreenWizzard.UseCases.Shell.Ports;
 
 namespace Paper.ScreenWizzard.E2eTests.Adapters;

@@ -8,9 +8,9 @@ using Paper.ScreenWizzard.Presentation.ViewModels.Editor;
 using Paper.ScreenWizzard.Presentation.ViewModels.Shell;
 using Paper.ScreenWizzard.UiTests.ScreenCapture;
 using Paper.ScreenWizzard.UiTests.Shell;
-using Paper.ScreenWizzard.UseCases.Common.Models;
 using Paper.ScreenWizzard.UseCases.Editor.Models;
 using Paper.ScreenWizzard.UseCases.Editor.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 
 // The namespace is not ...UiTests.Editor on purpose: a namespace of that name would hide the Presentation.Views.Editor and
 // ViewModels.Editor namespaces' short names, the same trap the capture lane met with FlaUI's Capture class.

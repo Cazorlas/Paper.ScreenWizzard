@@ -4,11 +4,10 @@ using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.UseCases.Capture.Models;
 using Paper.ScreenWizzard.UseCases.Capture.Ports;
-using Paper.ScreenWizzard.UseCases.Common.Models;
-using Paper.ScreenWizzard.UseCases.Common.Ports;
-using Paper.ScreenWizzard.UseCases.Shell.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Ports;
 
-namespace Paper.ScreenWizzard.UseCases.Capture.Implements;
+namespace Paper.ScreenWizzard.UseCases.Capture.UseCases;
 
 /// <summary>Everything the capture feature decides (SPEC capture): the countdown, the snapshot, one session at a time, where an image goes.</summary>
 public sealed class CaptureInteractor : ICaptureInteractor

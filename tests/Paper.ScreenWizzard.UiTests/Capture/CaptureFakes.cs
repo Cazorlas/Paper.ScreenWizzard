@@ -6,7 +6,7 @@ using Paper.ScreenWizzard.Presentation.ViewModels.Shell;
 using Paper.ScreenWizzard.UiTests.Shell;
 using Paper.ScreenWizzard.UseCases.Capture.Models;
 using Paper.ScreenWizzard.UseCases.Capture.Ports;
-using Paper.ScreenWizzard.UseCases.Common.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 
 // The namespace is not ...UiTests.Capture on purpose: FlaUI has a class called Capture, and a namespace of that name in
 // Paper.ScreenWizzard.UiTests would hide it from Support/WindowSession.cs.

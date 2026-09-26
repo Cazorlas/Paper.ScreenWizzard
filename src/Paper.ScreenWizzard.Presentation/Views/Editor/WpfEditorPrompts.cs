@@ -1,7 +1,7 @@
 using Paper.ScreenWizzard.Presentation.ViewModels.Editor;
 using Paper.ScreenWizzard.Presentation.ViewModels.Shell;
 using Paper.ScreenWizzard.Presentation.Views.Shell.Services;
-using Paper.ScreenWizzard.UseCases.Common.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 
 namespace Paper.ScreenWizzard.Presentation.Views.Editor;
 

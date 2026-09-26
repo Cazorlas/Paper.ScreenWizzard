@@ -3,12 +3,12 @@ using System.Runtime.CompilerServices;
 using Paper.ScreenWizzard.Domain.Editor;
 using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
-using Paper.ScreenWizzard.UseCases.Common.Models;
-using Paper.ScreenWizzard.UseCases.Common.Ports;
 using Paper.ScreenWizzard.UseCases.Editor.Models;
 using Paper.ScreenWizzard.UseCases.Editor.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Ports;
 
-namespace Paper.ScreenWizzard.UseCases.Editor.Implements;
+namespace Paper.ScreenWizzard.UseCases.Editor.UseCases;
 
 /// <summary>
 /// Everything the editor decides (SPEC editor): opening, the Shift rules, the empty text, where Ctrl+S goes, what a failed save

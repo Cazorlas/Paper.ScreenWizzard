@@ -10,7 +10,7 @@ using Paper.ScreenWizzard.Presentation.Rendering;
 using Paper.ScreenWizzard.Presentation.ViewModels.Editor;
 using Paper.ScreenWizzard.UiTests.ScreenCapture;
 using Paper.ScreenWizzard.UiTests.Support;
-using Paper.ScreenWizzard.UseCases.Common.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 using Paper.ScreenWizzard.UseCases.Shell.Models;
 
 namespace Paper.ScreenWizzard.UiTests.ImageEditor;

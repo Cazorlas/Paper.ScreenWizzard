@@ -1,7 +1,7 @@
 using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
-using Paper.ScreenWizzard.UseCases.Shell.Implements;
+using Paper.ScreenWizzard.UseCases.Shell.UseCases;
 
 namespace Paper.ScreenWizzard.UnitTests.Shell.Fakes;
 

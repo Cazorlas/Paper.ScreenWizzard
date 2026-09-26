@@ -1,5 +1,5 @@
 using Paper.ScreenWizzard.UseCases.Capture.Models;
-using Paper.ScreenWizzard.UseCases.Common.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 
 namespace Paper.ScreenWizzard.Presentation.ViewModels.Capture;
 

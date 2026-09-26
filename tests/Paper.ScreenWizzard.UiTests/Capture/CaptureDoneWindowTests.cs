@@ -11,7 +11,7 @@ using Paper.ScreenWizzard.Presentation.Views.Capture;
 using Paper.ScreenWizzard.UiTests.Shell;
 using Paper.ScreenWizzard.UiTests.Support;
 using Paper.ScreenWizzard.UseCases.Capture.Models;
-using Paper.ScreenWizzard.UseCases.Common.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 using Paper.ScreenWizzard.UseCases.Shell.Models;
 
 namespace Paper.ScreenWizzard.UiTests.ScreenCapture;

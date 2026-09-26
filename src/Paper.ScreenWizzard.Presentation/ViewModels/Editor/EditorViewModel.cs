@@ -7,9 +7,9 @@ using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.Presentation.Mvvm;
 using Paper.ScreenWizzard.Presentation.Rendering;
 using Paper.ScreenWizzard.Presentation.ViewModels.Editor.Commands;
-using Paper.ScreenWizzard.UseCases.Common.Models;
 using Paper.ScreenWizzard.UseCases.Editor.Models;
 using Paper.ScreenWizzard.UseCases.Editor.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 
 namespace Paper.ScreenWizzard.Presentation.ViewModels.Editor;
 

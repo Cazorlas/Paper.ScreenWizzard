@@ -6,8 +6,8 @@ using Paper.ScreenWizzard.Presentation.ViewModels.Capture.Commands;
 using Paper.ScreenWizzard.Presentation.ViewModels.Shell;
 using Paper.ScreenWizzard.UseCases.Capture.Models;
 using Paper.ScreenWizzard.UseCases.Capture.Ports;
-using Paper.ScreenWizzard.UseCases.Common.Models;
-using Paper.ScreenWizzard.UseCases.Common.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Ports;
 
 namespace Paper.ScreenWizzard.Presentation.ViewModels.Capture;
 

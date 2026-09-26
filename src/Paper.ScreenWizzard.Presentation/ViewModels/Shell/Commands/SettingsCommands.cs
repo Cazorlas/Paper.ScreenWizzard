@@ -1,6 +1,6 @@
 using Paper.ScreenWizzard.Presentation.Mvvm;
-using Paper.ScreenWizzard.UseCases.Common.Models;
-using Paper.ScreenWizzard.UseCases.Common.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Ports;
 using Paper.ScreenWizzard.UseCases.Shell.Models;
 using Paper.ScreenWizzard.UseCases.Shell.Ports;
 

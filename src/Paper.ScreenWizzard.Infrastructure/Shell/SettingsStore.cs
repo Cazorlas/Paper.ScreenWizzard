@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
-using Paper.ScreenWizzard.UseCases.Common.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 using Paper.ScreenWizzard.UseCases.Shell.Models;
 using Paper.ScreenWizzard.UseCases.Shell.Ports;
 

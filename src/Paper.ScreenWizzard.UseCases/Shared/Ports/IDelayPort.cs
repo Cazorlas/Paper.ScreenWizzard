@@ -1,0 +1,7 @@
+namespace Paper.ScreenWizzard.UseCases.Shared.Ports;
+
+/// <summary>Waiting, so a countdown is a fake in a test and not five real seconds.</summary>
+public interface IDelayPort
+{
+    Task DelayAsync(TimeSpan duration, CancellationToken cancellationToken);
+}

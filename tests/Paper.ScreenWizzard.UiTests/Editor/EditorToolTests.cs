@@ -4,8 +4,8 @@ using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Presentation.ViewModels.Editor;
 using Paper.ScreenWizzard.UiTests.ScreenCapture;
 using Paper.ScreenWizzard.UiTests.Support;
-using Paper.ScreenWizzard.UseCases.Common.Models;
 using Paper.ScreenWizzard.UseCases.Editor.Models;
+using Paper.ScreenWizzard.UseCases.Shared.Models;
 
 namespace Paper.ScreenWizzard.UiTests.ImageEditor;
 
