@@ -92,27 +92,27 @@ refactor không có mock UI mới để viết đỏ trước; bộ `ui` có s�
 
 ### 1. Test hình thư mục và phép so — đỏ trước
 
-- [ ] T1 [red][unit] `Architecture/FolderShapeTests.cs` theo mục 5 và 6 của test mẫu kit, đọc `.slnx`: `NoSplitDomain_KeepsARoleFolderAtItsTop` (Domain, UseCases), `EveryLayerFolder_NamesADomain` (UseCases, Infrastructure, Presentation; `NotADomain` = `Shared`, `Mvvm`, `Resources`), `OuterProject_StaysThin` (App), `EveryPortsFolder_HoldsOnlyInterfaces`, `EveryInteractor_HasItsInterfaceInItsDomainsPorts`, `NoPort_EndsInPort`, `NoDomain_KeepsItsContractsInAServicesFolder`, mỗi test có test canh danh sách không rỗng; sửa `LayerTests.EveryInteractor_…` nhận `Ports` ở cấp hai — xong khi, trên cây hiện tại, các test mới đỏ ở **assertion** (CI hoặc máy Hùng) {files: tests/Paper.ScreenWizzard.UnitTests/Architecture/**}
-- [ ] T2 Script `parity.py` (so dòng code và kho XAML như Decisions) — xong khi (a) chạy trên cây chưa đổi báo 0 khác biệt, và (b) đổi thử một hằng số trong một file thì nó báo đúng dòng đó, rồi hoàn lại {files: docs/features/shell/harness/**}
+- [x] T1 [red][unit] `Architecture/FolderShapeTests.cs` theo mục 5 và 6 của test mẫu kit, đọc `.slnx`: `NoSplitDomain_KeepsARoleFolderAtItsTop` (Domain, UseCases), `EveryLayerFolder_NamesADomain` (UseCases, Infrastructure, Presentation; `NotADomain` = `Shared`, `Mvvm`, `Resources`), `OuterProject_StaysThin` (App), `EveryPortsFolder_HoldsOnlyInterfaces`, `EveryInteractor_HasItsInterfaceInItsDomainsPorts`, `NoPort_EndsInPort`, `NoDomain_KeepsItsContractsInAServicesFolder`, mỗi test có test canh danh sách không rỗng; sửa `LayerTests.EveryInteractor_…` nhận `Ports` ở cấp hai — xong khi, trên cây hiện tại, các test mới đỏ ở **assertion** (CI hoặc máy Hùng) {files: tests/Paper.ScreenWizzard.UnitTests/Architecture/**}
+- [x] T2 Script `parity.py` (so dòng code và kho XAML như Decisions) — xong khi (a) chạy trên cây chưa đổi báo 0 khác biệt, và (b) đổi thử một hằng số trong một file thì nó báo đúng dòng đó, rồi hoàn lại {files: docs/features/shell/harness/**}
 
 ### 2. Chuyển từng tầng — lane unit, nối tiếp
 
-- [ ] T3 [unit] Domain: `Common/` + `Geometry/` → `Shared/`, namespace `…Domain.Shared`; sửa `using` khắp `src/`, `tests/` — xong khi `parity.py` 0 khác biệt {files: src/**, tests/**}
-- [ ] T4 [unit] UseCases: `Implements/` → `UseCases/`, `Common/` → `Shared/`, tách mỗi file `*Ports.cs` thành một file một interface, record/enum trong `Ports/` sang `Models/`, `IMonitorCatalogPort` sang `Capture/Ports/` — xong khi `parity.py` 0 khác biệt {files: src/**, tests/**}
-- [ ] T5 [unit] Đổi tên port và fake theo bảng — xong khi `grep -rE "\bI\w+Port\b" src tests` rỗng và `parity.py` 0 khác biệt {files: src/**, tests/**}
-- [ ] T6 [unit] Infrastructure: `Common/` → `Shared/` — xong khi `parity.py` 0 khác biệt {files: src/**, tests/**}
-- [ ] T7 [unit] Presentation: `<D>/{ViewModels, Commands, Views}`, `Rendering/` → `Editor/Rendering/`, `Services/` gộp vào `Views/`; `x:Class` và `clr-namespace` trong XAML — xong khi `parity.py` 0 khác biệt cả phần XAML {files: src/**, tests/**}
-- [ ] T8 [unit] App: `Startup/*` về gốc, namespace `Paper.ScreenWizzard.App` — xong khi `parity.py` 0 khác biệt và cây thư mục khớp bảng chuyển {files: src/**, tests/**}
+- [x] T3 [unit] Domain: `Common/` + `Geometry/` → `Shared/`, namespace `…Domain.Shared`; sửa `using` khắp `src/`, `tests/` — xong khi `parity.py` 0 khác biệt {files: src/**, tests/**}
+- [x] T4 [unit] UseCases: `Implements/` → `UseCases/`, `Common/` → `Shared/`, tách mỗi file `*Ports.cs` thành một file một interface, record/enum trong `Ports/` sang `Models/`, `IMonitorCatalogPort` sang `Capture/Ports/` — xong khi `parity.py` 0 khác biệt {files: src/**, tests/**}
+- [x] T5 [unit] Đổi tên port và fake theo bảng — xong khi `grep -rE "\bI\w+Port\b" src tests` rỗng và `parity.py` 0 khác biệt {files: src/**, tests/**}
+- [x] T6 [unit] Infrastructure: `Common/` → `Shared/` — xong khi `parity.py` 0 khác biệt {files: src/**, tests/**}
+- [x] T7 [unit] Presentation: `<D>/{ViewModels, Commands, Views}`, `Rendering/` → `Editor/Rendering/`, `Services/` gộp vào `Views/`; `x:Class` và `clr-namespace` trong XAML — xong khi `parity.py` 0 khác biệt cả phần XAML {files: src/**, tests/**}
+- [x] T8 [unit] App: `Startup/*` về gốc, namespace `Paper.ScreenWizzard.App` — xong khi `parity.py` 0 khác biệt và cây thư mục khớp bảng chuyển {files: src/**, tests/**}
 
 ### 3. Dựng và chạy trên Windows
 
-- [ ] T9 Đẩy nhánh; CI `windows-latest` dựng Release (0 cảnh báo) và chạy unit — xong khi xanh, số test đã chạy ≥ 329 cộng số test T1 thêm, và mọi test của T1 xanh (cần một PR để CI chạy: hỏi Hùng trước khi mở)
+- [x] T9 Đẩy nhánh; CI `windows-latest` dựng Release (0 cảnh báo) và chạy unit — xong khi xanh, số test đã chạy ≥ 329 cộng số test T1 thêm, và mọi test của T1 xanh (cần một PR để CI chạy: hỏi Hùng trước khi mở)
 - [ ] T10 Trên máy Hùng: `paperflow build`, `paperflow test`, `paperflow ui`, `dotnet test tests/Paper.ScreenWizzard.E2eTests -c Debug` — xong khi 0 cảnh báo, và số test đạt bằng lần chạy đầy đủ trước (ui 441, e2e 112), không test nào bị bỏ qua mới
 
 ### Last. Close
 
-- [ ] T11 `CLAUDE.md` (bảng tầng: `I<Feature>Interactor`, port `I<X>`, đường dẫn mới; mục Việc đang làm), `CODEMAP.md` gốc và của năm project; `check-code-map` sạch {files: CLAUDE.md, CODEMAP.md, src/**/CODEMAP.md}
-- [ ] T12 `find-bug`: **không áp dụng** — không dòng `SPEC.md` nào đổi; phép so của T2 và bộ test của T9, T10 thay nó. Xong khi dòng bằng chứng ghi lý do này
+- [x] T11 `CLAUDE.md` (bảng tầng: `I<Feature>Interactor`, port `I<X>`, đường dẫn mới; mục Việc đang làm), `CODEMAP.md` gốc và của năm project; `check-code-map` sạch {files: CLAUDE.md, CODEMAP.md, src/**/CODEMAP.md}
+- [x] T12 `find-bug`: **không áp dụng** — không dòng `SPEC.md` nào đổi; phép so của T2 và bộ test của T9, T10 thay nó. Xong khi dòng bằng chứng ghi lý do này
 - [ ] T13 Agent `architecture-reviewer` trên danh sách file review (mọi file đổi) — xong khi đọc N/N và 0 vi phạm mục 1-10 (một vi phạm là fail: về `/task-do`)
 - [ ] T14 `check-spec` sạch (không `SPEC.md` nào đổi); `parity.py` chạy lần cuối 0 khác biệt, rồi xoá nó cùng thư mục `harness/` — xong khi hai lệnh exit 0 {files: docs/features/shell/harness/**}
 
@@ -128,3 +128,14 @@ Không gọi member mới nào của WPF hay Win32: chỉ dời file và đổi 
 
 | Task | Lệnh / id / giá trị đọc lại | Verdict |
 |---|---|---|
+| T1 | `FolderShapeTests.cs`, 9 test (12 case). Đỏ trước: phát lại bằng Python trên commit gốc `1c9d5c8` → 8 case đỏ; trên cây mới 12/12 xanh. Xanh thật: CI run 36239890722, `FolderShapeTests` nằm trong 341/341 | pass |
+| T2 | `parity.py` trên cây chưa đổi: 0 khác biệt; đổi thử `Math.Max(1, tries)` → `Math.Max(2, tries)` trong `ClipboardService.cs`: báo đúng 2 dòng; hoàn lại: 0 | pass |
+| T3 | commit `df4fad9`; `parity.py` 0 khác biệt | pass |
+| T4 | commit `5245960`; `parity.py` 0; script kiểm tầm `using` (so với gốc, thử bằng cách xoá một `using` thì bắt được): 0 mới | pass |
+| T5 | commit `38876d2`; `grep -rE "\bI\w+Port\b" src tests` rỗng; `parity.py` 0 | pass |
+| T6 | commit `3ef8cf5` (+ `ca0c0d1`: `IDelay`, `TaskDelay` về Capture, xem Decisions); `parity.py` 0 | pass |
+| T7 | commit `8c41c63`; `parity.py` 0 ngoài 6 khác biệt được phép (đường dẫn test, chú thích); 11/11 `x:Class` khớp namespace code-behind | pass |
+| T8 | commit `5db4b23`; `parity.py` 0 ngoài 8 được phép (thêm pack URI `AppStrings`) | pass |
+| T9 | CI run 36239890722 (job 108398296679) trên `56f15ba`: Release build `0 Warning(s) 0 Error(s)`; unit `Passed 341, Failed 0, Skipped 0, Total 341` (329 cũ + 12 mới) | pass |
+| T11 | commit `56f15ba`; `check_code_map.py`: 6 CODEMAP, 80 symbol, 0 stale; mọi đường dẫn trong bảng Map tồn tại | pass |
+| T12 | không áp dụng: không dòng `SPEC.md` nào đổi; `parity.py` (T2) và bộ test (T9, T10) thay `find-bug` | pass |
