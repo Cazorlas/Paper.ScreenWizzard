@@ -7,8 +7,9 @@ name: release
 # - pushing a tag `vX.Y.Z`;
 # - a manual run (workflow_dispatch) with `draft_release` ticked: the draft names the tag `vX.Y.Z` on the commit that was built, and
 #   GitHub creates that tag when the draft is published. This is the way when no one can push a tag (an agent's cloud session cannot).
-# Nothing here publishes a release by itself, and an agent starts a release only when the owner says so (CLAUDE.md, Deploy). A manual
-# run without `draft_release` builds and verifies the same files and keeps them as a workflow artifact, without touching releases.
+# - a manual run with `publish` ticked goes one step further: once every check passed, the release vX.Y.Z is published at once and
+#   GitHub creates the tag with it (the owner asked on 2026-09-26 that an agent can carry a release to the end: CLAUDE.md, Deploy).
+# A manual run with neither builds and verifies the same files and keeps them as a workflow artifact, without touching releases.
 on:
   push:
     tags: ['v*']
@@ -20,6 +21,11 @@ on:
         default: '0.0.1'
       draft_release:
         description: 'Also leave a DRAFT release vX.Y.Z of the built commit (the tag is created when the draft is published)'
+        type: boolean
+        required: false
+        default: false
+      publish:
+        description: 'Publish the release vX.Y.Z at once, not as a draft (the tag is created with it)'
         type: boolean
         required: false
         default: false
@@ -71,8 +77,8 @@ jobs:
             artifacts/SHA256SUMS.txt
           if-no-files-found: error
 
-      - name: Draft release (a tag, or a manual run with draft_release)
-        if: github.event_name == 'push' || inputs.draft_release
+      - name: Release (a draft for a tag or draft_release; published for publish)
+        if: github.event_name == 'push' || inputs.draft_release || inputs.publish
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
@@ -85,7 +91,8 @@ jobs:
             if ('${{ github.event_name }}' -eq 'push') { "The release $tag already exists: nothing to draft."; exit 0 }
             throw "The release $tag already exists: choose another version."
           }
-          gh release create $tag --draft --generate-notes --target '${{ github.sha }}' --title 'Paper.ScreenWizzard ${{ steps.version.outputs.version }}' `
+          $draft = if ('${{ inputs.publish }}' -eq 'true') { @() } else { @('--draft') }
+          gh release create $tag @draft --generate-notes --target '${{ github.sha }}' --title 'Paper.ScreenWizzard ${{ steps.version.outputs.version }}' `
             'artifacts/Paper.ScreenWizzard-${{ steps.version.outputs.version }}-win-x64-Setup.exe' `
             'artifacts/Paper.ScreenWizzard-${{ steps.version.outputs.version }}-win-x64.zip' `
             'artifacts/SHA256SUMS.txt'

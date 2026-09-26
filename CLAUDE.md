@@ -93,8 +93,9 @@ Luật chung ở skill `paper-wpf-style`, `references/build-and-deploy.md`; đâ
 - **Phát hành:** đẩy thẻ `v<x.y.z>` → `.github/workflows/release.yml` dựng, chạy unit, dựng gói, chạy `verify-installer.ps1` rồi tạo
   **bản nháp** release kèm ba file. Chạy tay (`workflow_dispatch`) chỉ dựng và kiểm; chạy tay có chọn `draft_release` thì cũng tạo
   bản nháp `v<x.y.z>` trên commit vừa dựng, và GitHub tạo thẻ lúc bản nháp được Publish — đó là đường của agent, vì phiên cloud
-  không đẩy được thẻ (Hùng đồng ý 2026-09-26). **Agent không tự đẩy thẻ, tạo bản nháp release hay bấm Publish** — chỉ khi Hùng nói
-  trong phiên đó (2026-09-21: bản đầu và thẻ đầu; 2026-09-26: "làm bản 0.1.2"). Publish luôn do Hùng bấm.
+  không đẩy được thẻ (Hùng đồng ý 2026-09-26); chọn thêm `publish` thì release được đăng công khai ngay khi mọi kiểm tra đạt, GitHub
+  tạo thẻ cùng lúc. **Agent chỉ bắt đầu một bản phát hành khi Hùng nói trong phiên đó** (2026-09-21: bản đầu; 2026-09-26: "làm bản
+  0.1.2", rồi "bạn tự làm hết các bước lun đi"): khi Hùng đã nói, agent đi hết đường, kể cả `publish`.
 - **Chưa có (nợ, chưa quyết):** ký số (cần chứng chỉ), cập nhật tự động, MSI. Mỗi thứ là một ADR riêng.
 
 ## Việc đang làm
