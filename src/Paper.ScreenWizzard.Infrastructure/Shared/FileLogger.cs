@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Text;
 using Paper.ScreenWizzard.UseCases.Shared.Ports;
 
-namespace Paper.ScreenWizzard.Infrastructure.Common;
+namespace Paper.ScreenWizzard.Infrastructure.Shared;
 
 /// <summary>
 /// Appends one line per message to <c>&lt;dataRoot&gt;\logs\yyyy-MM-dd.log</c>. A log must never be the reason the app fails, so

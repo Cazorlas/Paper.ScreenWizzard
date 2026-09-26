@@ -4,7 +4,7 @@ using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.UseCases.Shared.Models;
 using Paper.ScreenWizzard.UseCases.Shared.Ports;
 
-namespace Paper.ScreenWizzard.Infrastructure.Common;
+namespace Paper.ScreenWizzard.Infrastructure.Shared;
 
 /// <summary>
 /// PNG, JPG and BMP through the WPF codecs. Decoding reads the frame's size from the header first (the cache option is

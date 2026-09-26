@@ -2,7 +2,7 @@ using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.Infrastructure.Capture;
-using Paper.ScreenWizzard.Infrastructure.Common;
+using Paper.ScreenWizzard.Infrastructure.Shared;
 using Paper.ScreenWizzard.Infrastructure.Shell;
 using Paper.ScreenWizzard.Presentation.Rendering;
 using Paper.ScreenWizzard.Presentation.ViewModels.Capture;

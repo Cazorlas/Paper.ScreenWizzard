@@ -1,7 +1,7 @@
 using Paper.ScreenWizzard.UseCases.Shared.Models;
 using Paper.ScreenWizzard.UseCases.Shared.Ports;
 
-namespace Paper.ScreenWizzard.Infrastructure.Common;
+namespace Paper.ScreenWizzard.Infrastructure.Shared;
 
 /// <summary>
 /// System.IO behind the file port. It decides nothing: no folder is created for a write, nothing is renamed to avoid a clash. Every failure

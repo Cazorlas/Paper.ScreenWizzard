@@ -6,7 +6,7 @@ using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.UseCases.Shared.Models;
 using Paper.ScreenWizzard.UseCases.Shared.Ports;
 
-namespace Paper.ScreenWizzard.Infrastructure.Common;
+namespace Paper.ScreenWizzard.Infrastructure.Shared;
 
 /// <summary>
 /// The Windows clipboard through WPF's <c>Clipboard</c>, which must be used on an STA thread (the UI thread). Another program may hold
