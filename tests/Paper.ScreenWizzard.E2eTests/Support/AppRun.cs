@@ -6,6 +6,7 @@ using FlaUI.Core.Tools;
 using FlaUI.UIA3;
 using NUnit.Framework;
 using Paper.ScreenWizzard.Domain.Capture;
+using Paper.ScreenWizzard.Domain.Recorder;
 using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.Infrastructure.Shell;
@@ -55,6 +56,8 @@ public sealed class AppRun : IDisposable
             AppLanguage.Vietnamese,
             AppTheme.Light,
             defaultBarPlace ? new PixelPoint(primary.Bounds.X + 40, primary.Bounds.Y + 40) : null,
+            SettingsDefaults.RecordHotkeys,
+            RecorderRules.Defaults(_scratch.Path),
             // A driven copy never asks GitHub: the test would depend on the network and on what is published.
             false);
         Seeded = tweak is null ? settings : tweak(settings);

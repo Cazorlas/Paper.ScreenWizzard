@@ -116,7 +116,14 @@ public sealed class AppShell : IDisposable
             picturesFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Pictures");
         }
 
-        var started = _shell.Start(new ShellStartInput(first, picturesFolder, cultureName, monitors, first ? MeasureCaptureBar(monitors) : default));
+        var videosFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
+        var started = _shell.Start(new ShellStartInput(
+            first,
+            picturesFolder,
+            cultureName,
+            monitors,
+            first ? MeasureCaptureBar(monitors) : default,
+            string.IsNullOrWhiteSpace(videosFolder) ? null : videosFolder));
         if (!started.ContinueRunning)
         {
             // A second copy: tell the first one and leave. No window, no message (SPEC shell F6).

@@ -16,6 +16,9 @@ public interface IShellInteractor
 
     HotkeyChangeResult ChangeHotkey(AppSettings current, CaptureKind kind, HotkeyChord proposed);
 
+    /// <summary>Changes a recording hotkey by the same rules as a capture one (SPEC recorder, Inputs; SPEC shell, "Phím tắt").</summary>
+    HotkeyChangeResult ChangeRecordHotkey(AppSettings current, RecordHotkey key, HotkeyChord proposed);
+
     /// <summary>Saves settings the user changed; reports a failed save instead of hiding it (SPEC shell F2).</summary>
     SettingsApplyResult Apply(AppSettings settings);
 

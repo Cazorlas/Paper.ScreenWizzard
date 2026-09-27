@@ -76,6 +76,18 @@ public sealed class ShellInteractor : IShellInteractor
             }
         }
 
+        foreach (var key in Enum.GetValues<RecordHotkey>())
+        {
+            var chord = settings.RecordHotkeys[key];
+            var result = _hotkeys.Register(key, chord);
+            if (!result.Success)
+            {
+                // A recording key another program holds leaves the capture keys and the recording bar working (SPEC recorder F8).
+                unavailable.Add(HotkeyRules.Format(chord));
+                _log.Warning($"Hotkey {HotkeyRules.Format(chord)} for recording {key} was not registered: {result.Detail}");
+            }
+        }
+
         if (unavailable.Count > 0)
         {
             notices.Add(NotificationMessage.Of("Shell.HotkeyUnavailableAtStart", string.Join(", ", unavailable)));
@@ -101,16 +113,9 @@ public sealed class ShellInteractor : IShellInteractor
             return Refuse(current, HotkeyIssue.NeedsModifier, null, NotificationMessage.Of("Shell.HotkeyNeedsModifier", text));
         }
 
-        foreach (var other in current.Hotkeys)
+        if (Conflict(current, kind, null, proposed) is { } conflict)
         {
-            if (other.Key != kind && HotkeyRules.AreSame(other.Value, proposed))
-            {
-                return Refuse(
-                    current,
-                    HotkeyIssue.UsedByOtherKind,
-                    other.Key,
-                    NotificationMessage.Of("Shell.HotkeyUsedByOtherKind", other.Key.ToString()));
-            }
+            return conflict;
         }
 
         var registration = _hotkeys.Register(kind, proposed);
@@ -123,6 +128,32 @@ public sealed class ShellInteractor : IShellInteractor
         var hotkeys = new Dictionary<CaptureKind, HotkeyChord>(current.Hotkeys) { [kind] = proposed };
         var changed = current with { Hotkeys = hotkeys };
 
+        var saved = Persist(changed);
+        NotificationMessage? message = saved.Success ? null : NotSaved(saved);
+        return new HotkeyChangeResult(true, HotkeyIssue.None, null, changed, message);
+    }
+
+    public HotkeyChangeResult ChangeRecordHotkey(AppSettings current, RecordHotkey key, HotkeyChord proposed)
+    {
+        var text = HotkeyRules.Format(proposed);
+        if (!HotkeyRules.IsSafe(proposed))
+        {
+            return Refuse(current, HotkeyIssue.NeedsModifier, null, NotificationMessage.Of("Shell.HotkeyNeedsModifier", text));
+        }
+
+        if (Conflict(current, null, key, proposed) is { } conflict)
+        {
+            return conflict;
+        }
+
+        var registration = _hotkeys.Register(key, proposed);
+        if (!registration.Success)
+        {
+            _log.Warning($"Hotkey {text} for recording {key} was refused: {registration.Detail}");
+            return Refuse(current, HotkeyIssue.HeldByAnotherProgram, null, NotificationMessage.Of("Shell.HotkeyHeldByAnotherProgram", text));
+        }
+
+        var changed = current with { RecordHotkeys = current.RecordHotkeys.With(key, proposed) };
         var saved = Persist(changed);
         NotificationMessage? message = saved.Success ? null : NotSaved(saved);
         return new HotkeyChangeResult(true, HotkeyIssue.None, null, changed, message);
@@ -230,6 +261,32 @@ public sealed class ShellInteractor : IShellInteractor
         return _settingsStore.Save(settings);
     }
 
+    // One chord is one action of the app: taken by another capture kind or by a recording hotkey, it is refused (SPEC shell F4).
+    private static HotkeyChangeResult? Conflict(AppSettings current, CaptureKind? kind, RecordHotkey? key, HotkeyChord proposed)
+    {
+        foreach (var other in current.Hotkeys)
+        {
+            if (other.Key != kind && HotkeyRules.AreSame(other.Value, proposed))
+            {
+                return Refuse(
+                    current,
+                    HotkeyIssue.UsedByOtherKind,
+                    other.Key,
+                    NotificationMessage.Of("Shell.HotkeyUsedByOtherKind", other.Key.ToString()));
+            }
+        }
+
+        foreach (var other in Enum.GetValues<RecordHotkey>())
+        {
+            if (other != key && HotkeyRules.AreSame(current.RecordHotkeys[other], proposed))
+            {
+                return Refuse(current, HotkeyIssue.UsedByOtherKind, null, NotificationMessage.Of("Shell.HotkeyUsedByRecording", other.ToString()));
+            }
+        }
+
+        return null;
+    }
+
     private static NotificationMessage NotSaved(PortResult result) =>
         NotificationMessage.Of("Shell.SettingsNotSaved", result.Detail ?? string.Empty);
 
@@ -273,7 +330,21 @@ public sealed class ShellInteractor : IShellInteractor
             notices.Add(NotificationMessage.Of("Shell.HotkeyUnsafeAtStart", HotkeyRules.Format(chord)));
         }
 
-        return repaired is null ? settings : settings with { Hotkeys = repaired };
+        var result = repaired is null ? settings : settings with { Hotkeys = repaired };
+        foreach (var key in Enum.GetValues<RecordHotkey>())
+        {
+            var chord = result.RecordHotkeys[key];
+            if (HotkeyRules.IsSafe(chord))
+            {
+                continue;
+            }
+
+            result = result with { RecordHotkeys = result.RecordHotkeys.With(key, SettingsDefaults.RecordHotkeys[key]) };
+            _log.Warning($"Hotkey {HotkeyRules.Format(chord)} for recording {key} in the settings is not safe; the default is used.");
+            notices.Add(NotificationMessage.Of("Shell.HotkeyUnsafeAtStart", HotkeyRules.Format(chord)));
+        }
+
+        return result;
     }
 
     // The start-with-Windows entry is the user's list of startup programs, which the user (or a moved exe) can change behind our back;
@@ -296,7 +367,7 @@ public sealed class ShellInteractor : IShellInteractor
     {
         var loaded = _settingsStore.Load();
         _settingsUnreadable = loaded.Status == SettingsLoadStatus.Unreadable;
-        var defaults = CreateDefaultSettings(input.PicturesFolder);
+        var defaults = SettingsDefaults.Create(input.PicturesFolder, input.VideosFolder);
         if (loaded.Status == SettingsLoadStatus.Loaded && loaded.Stored is { } stored)
         {
             var completion = SettingsRules.Complete(stored, defaults);

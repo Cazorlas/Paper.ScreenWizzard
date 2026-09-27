@@ -82,6 +82,7 @@
   <sys:String x:Key="Shell.UpdateCheckFailed">Không kiểm được bản mới: {0}. Thử lại sau.</sys:String>
   <sys:String x:Key="Shell.HotkeyNeedsModifier">Phím {0} đứng một mình sẽ cướp việc gõ chữ. Hãy thêm Ctrl, Alt hoặc Shift. Phím cũ được giữ nguyên.</sys:String>
   <sys:String x:Key="Shell.HotkeyUsedByOtherKind">Phím này đã dùng cho kiểu chụp "{0}". Phím cũ được giữ nguyên.</sys:String>
+  <sys:String x:Key="Shell.HotkeyUsedByRecording">Phím này đã dùng cho việc quay màn hình. Phím cũ được giữ nguyên.</sys:String>
   <sys:String x:Key="Shell.HotkeyHeldByAnotherProgram">Không đăng ký được phím {0}: Windows hoặc ứng dụng khác đang giữ phím này. Phím cũ được giữ nguyên.</sys:String>
   <sys:String x:Key="Shell.SettingsUnreadable">Không đọc được tập tin cài đặt ({0}) nên ứng dụng dùng cài đặt mặc định. Tập tin không bị đổi; hãy đóng chương trình đang giữ nó rồi mở lại ứng dụng.</sys:String>
   <sys:String x:Key="Shell.HotkeyUnsafeAtStart">Phím tắt {0} trong cài đặt là một phím trơn, sẽ chặn mọi lần bấm phím đó, nên ứng dụng dùng phím mặc định thay thế.</sys:String>

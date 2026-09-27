@@ -24,12 +24,14 @@ public enum SettingsLoadStatus
 public sealed record SettingsLoadResult(StoredSettings? Stored, SettingsLoadStatus Status, string? Detail);
 
 /// <summary>What <c>Start</c> needs from the outside world, gathered by the entry point.</summary>
+/// <param name="VideosFolder">The user's Videos folder, for the recorder's default; null takes it beside the Pictures folder.</param>
 public sealed record ShellStartInput(
     bool IsFirstInstance,
     string PicturesFolder,
     string SystemCultureName,
     IReadOnlyList<MonitorInfo> Monitors,
-    PixelSize CaptureBarSize);
+    PixelSize CaptureBarSize,
+    string? VideosFolder = null);
 
 public sealed record ShellStartResult(
     bool ContinueRunning,
@@ -54,7 +56,7 @@ public enum HotkeyIssue
     HeldByAnotherProgram,
 }
 
-/// <param name="ConflictingKind">The kind that already has the chord, for the message, when the issue is UsedByOtherKind.</param>
+/// <param name="ConflictingKind">The kind that already has the chord, for the message, when the issue is UsedByOtherKind; null when a recording hotkey has it.</param>
 public sealed record HotkeyChangeResult(
     bool Accepted,
     HotkeyIssue Issue,

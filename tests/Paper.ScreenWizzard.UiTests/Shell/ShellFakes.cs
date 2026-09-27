@@ -1,4 +1,5 @@
 using Paper.ScreenWizzard.Domain.Capture;
+using Paper.ScreenWizzard.Domain.Recorder;
 using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.Presentation.Shell.ViewModels;
@@ -34,7 +35,9 @@ public static class ShellTestData
         false,
         AppLanguage.System,
         AppTheme.System,
-        null);
+        null,
+        SettingsDefaults.RecordHotkeys,
+        RecorderRules.Defaults(@"C:\Users\An\Videos"));
 }
 
 /// <summary>
@@ -72,6 +75,9 @@ public sealed class FakeShellInteractor : IShellInteractor
     public ShellStartResult Start(ShellStartInput input) => throw new NotSupportedException("Settings never starts the shell");
 
     public AppSettings CreateDefaultSettings(string picturesFolder) => ShellTestData.DefaultSettings();
+
+    public HotkeyChangeResult ChangeRecordHotkey(AppSettings current, RecordHotkey key, HotkeyChord proposed) =>
+        new(true, HotkeyIssue.None, null, current with { RecordHotkeys = current.RecordHotkeys.With(key, proposed) }, null);
 
     public HotkeyChangeResult ChangeHotkey(AppSettings current, CaptureKind kind, HotkeyChord proposed)
     {

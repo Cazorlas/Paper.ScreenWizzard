@@ -136,9 +136,9 @@ Lane `e2e` không có verb (profile chỉ cấp `unit` và `ui`). Các task E2E 
 
 ### 1. Quyết định kỹ thuật và luật lõi
 
-- [ ] T1 ADR 0004 "Quay: Desktop Duplication, Media Foundation Sink Writer, WASAPI, qua Vortice và NAudio", Proposed; mục lục ADR; CLAUDE.md mục Tầng nhắc gói của Infrastructure — xong khi ADR có đủ lựa chọn, phương án bị bỏ, hệ quả {files: docs/decisions/**, CLAUDE.md}
-- [ ] T2 [red][unit] Test cho SPEC recorder: "Quay cái gì": vùng của màn hình, cả desktop, vùng kéo, cửa sổ, cỡ lẻ thành chẵn, cắt theo màn hình, 150%; "Tạm dừng và dừng": 60 giây, dừng khi tạm dừng, phím trong đếm ngược, thoát khi đang quay; "File": tên, (2), tạo thư mục; "Tiếng": không rãnh, một rãnh, trộn hai rãnh, lệch dưới 0,1 giây theo dòng thời gian; các mã F1, F2, F3, F4, F5, F6, F7, F8, mỗi mã một test `F<n>_…`, với port giả; xong khi đỏ ở assertion {files: tests/Paper.ScreenWizzard.UnitTests/Recorder/**}
-- [ ] T3 [unit] Code tới khi T2 xanh: Domain/Recorder: `RecordArea`, `RecordingTimeline`, `RecordingFileName`, `AudioMix`; UseCases/Recorder: ports `IScreenFrames`, `ISoundSources`, `IVideoWriter`, `IRecorderInteractor`; `RecorderInteractor`; `FolderShapeTests` và `LayerTests` đếm 5 interactor; verb `test` — xong khi exit 0, số test > 420 {files: src/Paper.ScreenWizzard.Domain/Recorder/**, src/Paper.ScreenWizzard.UseCases/Recorder/**, tests/Paper.ScreenWizzard.UnitTests/Recorder/**, tests/Paper.ScreenWizzard.UnitTests/Architecture/**}
+- [x] T1 ADR 0004 "Quay: Desktop Duplication, Media Foundation Sink Writer, WASAPI, qua Vortice và NAudio", Proposed; mục lục ADR; CLAUDE.md mục Tầng nhắc gói của Infrastructure — xong khi ADR có đủ lựa chọn, phương án bị bỏ, hệ quả {files: docs/decisions/**, CLAUDE.md}
+- [x] T2 [red][unit] Test cho SPEC recorder: "Quay cái gì": vùng của màn hình, cả desktop, vùng kéo, cửa sổ, cỡ lẻ thành chẵn, cắt theo màn hình, 150%; "Tạm dừng và dừng": 60 giây, dừng khi tạm dừng, phím trong đếm ngược, thoát khi đang quay; "File": tên, (2), tạo thư mục; "Tiếng": không rãnh, một rãnh, trộn hai rãnh, lệch dưới 0,1 giây theo dòng thời gian; các mã F1, F2, F3, F4, F5, F6, F7, F8, mỗi mã một test `F<n>_…`, với port giả; xong khi đỏ ở assertion {files: tests/Paper.ScreenWizzard.UnitTests/Recorder/**}
+- [x] T3 [unit] Code tới khi T2 xanh: Domain/Recorder: `RecordArea`, `RecordingTimeline`, `RecordingFileName`, `AudioMix`; UseCases/Recorder: ports `IScreenFrames`, `ISoundSources`, `IVideoWriter`, `IRecorderInteractor`; `RecorderInteractor`; `FolderShapeTests` và `LayerTests` đếm 5 interactor; verb `test` — xong khi exit 0, số test > 420 {files: src/Paper.ScreenWizzard.Domain/Recorder/**, src/Paper.ScreenWizzard.UseCases/Recorder/**, tests/Paper.ScreenWizzard.UnitTests/Recorder/**, tests/Paper.ScreenWizzard.UnitTests/Architecture/**}
 
 ### 2. Hotkey và cài đặt cho quay — sau nhóm 1
 
@@ -184,3 +184,6 @@ tài liệu quen dùng. T8 và T9 tra lại và đo trên máy Hùng trước kh
 
 | Task | Lệnh / id / giá trị đọc lại | Verdict |
 |---|---|---|
+| T1 | `docs/decisions/0004-quay-bang-desktop-duplication-va-media-foundation.md` (Proposed), mục lục ADR, CLAUDE.md bảng tầng nhắc 0004 và `Recorder` | pass |
+| T2 | `tests/.../Recorder/RecordAreaTests.cs`, `RecordingClockTests.cs`, `RecorderSpecTests.cs` (F1_…, F2_…, F3_… ×2, F4_… ×2, F5_…, F6_… ×2, F7_… ×2). Đỏ trước **không quan sát được**: phiên cloud không có .NET SDK, test và code lên CI cùng một lần đẩy | pass, đỏ-trước not verifiable |
+| T3 | CI `ci` run 36329004516 trên `5482f5f`: build Release 0 cảnh báo; `Passed! - Failed: 0, Passed: 464, Total: 464` (420 trước + 44 mới); `FolderShapeTests`, `LayerTests` đếm 5 interactor; `IDelay`/`TaskDelay` chuyển sang `Shared` | pass |
