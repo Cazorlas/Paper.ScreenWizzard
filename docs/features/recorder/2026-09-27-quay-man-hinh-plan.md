@@ -142,8 +142,8 @@ Lane `e2e` không có verb (profile chỉ cấp `unit` và `ui`). Các task E2E 
 
 ### 2. Hotkey và cài đặt cho quay — sau nhóm 1
 
-- [ ] T4 [red][unit] Test: `HotkeyAction` và hai phím quay mặc định Ctrl+Alt+R, Ctrl+Alt+P; tập tin cài đặt 0.1.3 (chỉ bốn phím chụp, không mục quay) đọc được và lấy mặc định; F8 recorder: phím quay bị giữ thì báo và các phím khác vẫn chạy; các mục quay trong `SettingsRules` (fps 15/30/60, đếm ngược 0/3/5, ngoài miền là hỏng); xong khi đỏ ở assertion {files: tests/Paper.ScreenWizzard.UnitTests/Shell/**}
-- [ ] T5 [unit] Code: `HotkeyAction` thay `CaptureKind` ở `IHotkeys`, `AppSettings.Hotkeys`, `StoredSettings`; `RecorderSettings` trong `AppSettings`; `SettingsRules.Complete`; `SettingsStore` document; `HotkeyService`; verb `test` — xong khi exit 0 và mọi test cũ vẫn xanh {files: src/Paper.ScreenWizzard.Domain/Shell/**, src/Paper.ScreenWizzard.UseCases/Shell/**, src/Paper.ScreenWizzard.Infrastructure/Shell/**, tests/Paper.ScreenWizzard.UnitTests/Shell/**}
+- [x] T4 [red][unit] Test: `HotkeyAction` và hai phím quay mặc định Ctrl+Alt+R, Ctrl+Alt+P; tập tin cài đặt 0.1.3 (chỉ bốn phím chụp, không mục quay) đọc được và lấy mặc định; F8 recorder: phím quay bị giữ thì báo và các phím khác vẫn chạy; các mục quay trong `SettingsRules` (fps 15/30/60, đếm ngược 0/3/5, ngoài miền là hỏng); xong khi đỏ ở assertion {files: tests/Paper.ScreenWizzard.UnitTests/Shell/**}
+- [x] T5 [unit] Code: `HotkeyAction` thay `CaptureKind` ở `IHotkeys`, `AppSettings.Hotkeys`, `StoredSettings`; `RecorderSettings` trong `AppSettings`; `SettingsRules.Complete`; `SettingsStore` document; `HotkeyService`; verb `test` — xong khi exit 0 và mọi test cũ vẫn xanh {files: src/Paper.ScreenWizzard.Domain/Shell/**, src/Paper.ScreenWizzard.UseCases/Shell/**, src/Paper.ScreenWizzard.Infrastructure/Shell/**, tests/Paper.ScreenWizzard.UnitTests/Shell/**}
 
 ### 3. Giao diện trên dữ liệu giả — sau nhóm 2
 
@@ -157,13 +157,13 @@ Lane `e2e` không có verb (profile chỉ cấp `unit` và `ui`). Các task E2E 
 
 ### 5. Ghép vào ứng dụng — sau nhóm 4
 
-- [ ] T10 `AppShell`, `CompositionRoot`, `TrayIcon`: mở thanh quay; phím quay; thoát khi đang quay thì dừng và lưu trước; `WDA_EXCLUDEFROMCAPTURE` cho thanh, viền, đếm ngược, toast; xong khi CI dựng 0 cảnh báo {files: src/Paper.ScreenWizzard.App/**, src/Paper.ScreenWizzard.Presentation/Shared/Views/**}
+- [x] T10 `AppShell`, `CompositionRoot`, `TrayIcon`: mở thanh quay; phím quay; thoát khi đang quay thì dừng và lưu trước; `WDA_EXCLUDEFROMCAPTURE` cho thanh, viền, đếm ngược, toast; xong khi CI dựng 0 cảnh báo {files: src/Paper.ScreenWizzard.App/**, src/Paper.ScreenWizzard.Presentation/Shared/Views/**}
 - [ ] T11 E2E chạy exe: phím Ctrl+Alt+R bắt đầu, lại lần nữa thì dừng, file ra ở thư mục video của bản chạy thử (biến `PAPER_SCREENWIZZARD_DATA`), thoát khi đang quay vẫn có file — xong khi xanh trên máy Hùng {files: tests/Paper.ScreenWizzard.E2eTests/Drive/**}
 
 ### Last. Close
 
-- [ ] T12 SPEC shell (hai ngôn ngữ) ghi dòng khay "Quay màn hình…", nút Quay của thanh chụp, nhóm quay trong Cài đặt; roadmap: đợt 2a xong, 2b webcam, 2c icon lên mặt — xong khi `check-spec` sạch {files: docs/**}
-- [ ] T13 `find-bug` trên SPEC recorder — xong khi mọi phát hiện có input đã thành test hoặc vào báo cáo
+- [x] T12 SPEC shell (hai ngôn ngữ) ghi dòng khay "Quay màn hình…", nút Quay của thanh chụp, nhóm quay trong Cài đặt; roadmap: đợt 2a xong, 2b webcam, 2c icon lên mặt — xong khi `check-spec` sạch {files: docs/**}
+- [x] T13 `find-bug` trên SPEC recorder — xong khi mọi phát hiện có input đã thành test hoặc vào báo cáo
 - [ ] T14 Agent `architecture-reviewer` trên mọi file plan này đổi — xong khi 0 vi phạm
 - [ ] T15 Đóng SPEC.md (gỡ banner); CODEMAP cho `Recorder` ở năm project; `check-spec`, `check-code-map` sạch — xong khi hai lệnh exit 0 {files: docs/features/recorder/SPEC.md, src/**/CODEMAP.md}
 
@@ -187,3 +187,13 @@ tài liệu quen dùng. T8 và T9 tra lại và đo trên máy Hùng trước kh
 | T1 | `docs/decisions/0004-quay-bang-desktop-duplication-va-media-foundation.md` (Proposed), mục lục ADR, CLAUDE.md bảng tầng nhắc 0004 và `Recorder` | pass |
 | T2 | `tests/.../Recorder/RecordAreaTests.cs`, `RecordingClockTests.cs`, `RecorderSpecTests.cs` (F1_…, F2_…, F3_… ×2, F4_… ×2, F5_…, F6_… ×2, F7_… ×2). Đỏ trước **không quan sát được**: phiên cloud không có .NET SDK, test và code lên CI cùng một lần đẩy | pass, đỏ-trước not verifiable |
 | T3 | CI `ci` run 36329004516 trên `5482f5f`: build Release 0 cảnh báo; `Passed! - Failed: 0, Passed: 464, Total: 464` (420 trước + 44 mới); `FolderShapeTests`, `LayerTests` đếm 5 interactor; `IDelay`/`TaskDelay` chuyển sang `Shared` | pass |
+| T4 | `tests/.../UnitTests/Shell/RecordingSettingsTests.cs` (11 test: hai phím mặc định, tập tin 0.1.3 không mục quay thì lấy mặc định, F8 phím quay bị giữ, fps/đếm ngược ngoài miền là hỏng); `SettingsRulesTests.Chosen` có các mục quay. Đỏ trước **không quan sát được** (lý do như T2). Plan viết `HotkeyAction`; code giữ `CaptureKind` cho phím chụp và thêm `RecordHotkey` riêng (`IHotkeys.Register(RecordHotkey)`), để tập tin cũ và mọi chỗ gọi cũ không đổi | pass, đỏ-trước not verifiable |
+| T5 | CI `ci` run 36330862665 trên `da629f2`: `Build succeeded. 0 Warning(s) 0 Error(s)`; `Passed! - Failed: 0, Passed: 484, Skipped: 0, Total: 484` | pass |
+| T6 | `tests/.../UiTests/Recorder/RecorderWindowsTests.cs` (5 test), `TrayMenuTests` (10 dòng, dòng quay khi đang quay), `CaptureBarTests` (`RecordButton`), `SettingsWindowTests` (thứ tự Tab có nhóm quay), `LanguageAndThemeTests` (khoá chuỗi). CI dựng được; **chưa chạy**: lane `ui` cần màn hình rảnh, chạy trên máy Hùng | chờ máy Hùng |
+| T7 | Code ở `Presentation/Recorder/**`, khay, thanh chụp, Cài đặt; CI dựng 0 cảnh báo (run 36330862665). Ảnh chụp so với wireframe **chưa có**: cần chạy `ui` trên máy Hùng | chờ máy Hùng |
+| T8 | `tests/.../E2eTests/Recorder/RecorderAdapterTests.cs` (4 test), `Mp4Probe.cs`; CI dựng được; chưa chạy (cần desktop) | chờ máy Hùng |
+| T9 | `Infrastructure/Recorder/**` (DesktopDuplicationFrames, PointerPainter, WasapiSoundSources, SoundConverter, MediaFoundationVideoWriter), gói Vortice 3.8.3 và NAudio.Wasapi 2.2.1; CI dựng 0 cảnh báo | chờ máy Hùng (T8 xanh) |
+| T10 | `AppShell` (mở thanh quay, phím quay, ẩn thanh khi quay và khi chụp, khay đỏ có thời gian, thoát thì dừng và lưu trước), `CompositionRoot`, `TrayIcon.ShowRecording`, `CaptureExclusion`; CI run 36330862665: 0 cảnh báo | pass |
+| T11 | `tests/.../E2eTests/Drive/RecordingDriveTests.cs` (3 test: phím bắt đầu/dừng ra file và thanh ẩn rồi hiện lại, tooltip khay; tạm dừng không làm dài video; thoát khi đang quay vẫn có file, không còn `.part`); phím thử là Ctrl+Alt+Shift+F17/F18, thư mục video là thư mục tạm. `ShellDriveTests` cập nhật tên dòng menu khay (Quay màn hình…, Kiểm bản mới) | chờ máy Hùng |
+| T12 | SPEC shell hai ngôn ngữ: dòng khay, nút Quay, nhóm "Quay màn hình" trong Cài đặt, hàng Inputs; roadmap: 2a đang làm, 2b webcam, 2c icon lên mặt; `check_spec.py`: `5 SPEC.md, 0 problems` | pass |
+| T13 | find-bug trên SPEC recorder, hai phát hiện, cả hai đã sửa ở `AppShell`: (1) chọn Thoát đúng lúc bản quay tự dừng vì F1/F2 (trạng thái `Finishing`) thì ứng dụng không chờ, file có thể còn `.part` → giờ chờ mọi trạng thái khác `Idle`; (2) đang quay mà mở Cài đặt thì phím Dừng/Tạm dừng bị bỏ qua → giờ chỉ chặn việc bắt đầu bản quay mới. Cả hai chỉ kiểm được bằng E2E (T11 phủ đường thoát). Nghi ngờ, chưa thành phát hiện: bấm phím bắt đầu/dừng lúc đang kéo vùng thì không huỷ việc kéo | pass |

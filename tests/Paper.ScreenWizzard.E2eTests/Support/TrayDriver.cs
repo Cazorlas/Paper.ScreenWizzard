@@ -14,6 +14,9 @@ public sealed class TrayDriver
 {
     public const string IconName = "Paper.ScreenWizzard";
 
+    // While recording the icon's name is its tooltip, "Đang quay 00:03" or "Tạm dừng quay 00:03" (SPEC recorder, "What the user does" 4).
+    private static readonly string[] _recordingNames = ["Đang quay ", "Tạm dừng quay "];
+
     private readonly AppRun _app;
 
     public TrayDriver(AppRun app)
@@ -72,7 +75,7 @@ public sealed class TrayDriver
 
                     var found = _app.Automation.FromHandle(handle)
                         .FindAllDescendants(cf => cf.ByAutomationId("NotifyItemIcon"))
-                        .FirstOrDefault(b => string.Equals(b.Name?.Trim(), IconName, StringComparison.Ordinal));
+                        .FirstOrDefault(b => IsOurs(b.Name));
                     if (found is not null)
                     {
                         return found;
@@ -83,6 +86,15 @@ public sealed class TrayDriver
             },
             TimeSpan.FromSeconds(seconds),
             TimeSpan.FromMilliseconds(400)).Result;
+    }
+
+    /// <summary>The icon's name now: "Paper.ScreenWizzard", or the recording tooltip.</summary>
+    public string? IconText() => FindIcon()?.Name?.Trim();
+
+    private static bool IsOurs(string? name)
+    {
+        var text = name?.Trim() ?? string.Empty;
+        return string.Equals(text, IconName, StringComparison.Ordinal) || _recordingNames.Any(start => text.StartsWith(start, StringComparison.Ordinal));
     }
 
     /// <summary>Right-clicks the icon and returns the menu the exe drew.</summary>

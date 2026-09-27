@@ -227,8 +227,9 @@ public sealed class AppShell : IDisposable
         _exiting = true;
         SaveCaptureBarPosition();
 
-        // A recording is stopped and saved first (SPEC recorder, "Pause and stop").
-        if (_recording.IsRecording)
+        // A recording is stopped and saved first (SPEC recorder, "Pause and stop"); one that is already finishing by itself (F1, F2) is
+        // waited for, so the process never ends half way through writing the file, and a countdown is called off.
+        if (_recording.State != RecorderState.Idle)
         {
             try
             {
@@ -539,7 +540,8 @@ public sealed class AppShell : IDisposable
 
     private async void OnRecordHotkeyPressed(RecordHotkey key)
     {
-        if (_settingsWindow is not null)
+        // Settings being open holds back a new recording, not the control of one that runs (SPEC recorder, "What the user does" 4).
+        if (_settingsWindow is not null && !_recording.IsBusy)
         {
             return;
         }
