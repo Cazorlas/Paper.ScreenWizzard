@@ -23,11 +23,11 @@ tài liệu, lần nào cũng vậy) -> task-do -> task-verify, chạy bằng sk
 | --- | --- | --- | --- | --- |
 | `Paper.ScreenWizzard.Domain` | `net10.0` | kiểu giá trị (điểm, hình chữ nhật, vùng chọn, ghi chú vẽ), luật thuần | không gì | 0001, 0003 |
 | `Paper.ScreenWizzard.UseCases` | `net10.0` | `<Domain>/Ports` (mỗi file một interface: `I<Feature>Interactor`, port `I<X>` đặt tên theo thứ nó cung cấp), `<Domain>/UseCases` (interactor), `<Domain>/Models` (record vào / plan ra) | Domain | 0001, 0003 |
-| `Paper.ScreenWizzard.Infrastructure` | `net10.0-windows10.0.19041.0` | adapter: chụp, danh sách cửa sổ / màn hình, clipboard, phím tắt, file, cài đặt, khởi động cùng Windows | UseCases, Domain | 0001, 0003 |
+| `Paper.ScreenWizzard.Infrastructure` | `net10.0-windows10.0.19041.0` | adapter: chụp, quay (Desktop Duplication, Media Foundation, WASAPI qua gói Vortice và NAudio, chỉ ở đây), danh sách cửa sổ / màn hình, clipboard, phím tắt, file, cài đặt, khởi động cùng Windows | UseCases, Domain | 0001, 0003, 0004 |
 | `Paper.ScreenWizzard.Presentation` | `net10.0-windows10.0.19041.0` | `<Domain>/{ViewModels, Commands, Views}`, `Resources/` (giao diện sáng/tối, chuỗi vi/en), `Mvvm/` | UseCases, Domain — **không Infrastructure** | 0001, 0003 |
 | `Paper.ScreenWizzard.App` | `net10.0-windows10.0.19041.0` (WinExe) | entry host: `App.xaml`, khay hệ thống, gốc ghép DI; mọi file ở gốc project, không thư mục | mọi tầng | 0001, 0003 |
 
-- **Trong mỗi project, thư mục cấp một là domain** (`Capture`, `Editor`, `Shell`, và `Shared` cho cái hai domain trở lên cần), vai là
+- **Trong mỗi project, thư mục cấp một là domain** (`Capture`, `Editor`, `Recorder`, `Shell`, và `Shared` cho cái hai domain trở lên cần), vai là
   cấp hai; port nằm trong domain dùng nó (lõi hay màn hình), ở `Shared/` khi hai domain dùng; domain chỉ nhìn chính nó và
   `Shared/`, trừ `Shell` là domain điều phối (ADR 0003). `tests/.../Architecture/FolderShapeTests.cs` canh hình này.
 - **Mọi quyết định ở UseCases và Domain**, chạy trong unit test không cần Windows. Ví dụ: chuẩn hoá vùng kéo,
