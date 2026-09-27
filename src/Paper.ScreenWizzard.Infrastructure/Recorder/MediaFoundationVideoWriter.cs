@@ -181,10 +181,7 @@ public sealed class MediaFoundationVideoWriter : IVideoWriter, IDisposable
         try
         {
             using var buffer = MediaFactory.MFCreateMemoryBuffer(length);
-            var pointer = IntPtr.Zero;
-            var max = 0;
-            var current = 0;
-            buffer.Lock(ref pointer, ref max, ref current);
+            buffer.Lock(out var pointer, out _, out _);
             try
             {
                 fill(pointer);

@@ -4,7 +4,7 @@ using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.Presentation.Recorder.ViewModels;
 using Paper.ScreenWizzard.Presentation.Recorder.Views;
-using Paper.ScreenWizzard.UiTests.Capture;
+using Paper.ScreenWizzard.UiTests.ScreenCapture;
 using Paper.ScreenWizzard.UiTests.Support;
 using Paper.ScreenWizzard.UseCases.Recorder.Models;
 using Paper.ScreenWizzard.UseCases.Shared.Models;

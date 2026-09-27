@@ -28,9 +28,16 @@ the domains every other layer reuses (ADR 0003); `Shared/` is what two or more o
 | `Shell/StoredSettings.cs` | the settings file as written, a missing setting as null |
 | `Shell/SettingsRules.cs` | the limits of each setting; a missing one takes its default, one out of range breaks the file |
 | `Shell/AppVersion.cs`, `Shell/UpdateRules.cs` | x.y.z of a release tag and of the exe, and their order; when to look for a new version and the release page of one |
+| `Recorder/RecordArea.cs` | every recording choice as one even rectangle of the desktop, clipped to the monitors; 16 × 16 at least (F7) |
+| `Recorder/RecordingTimeline.cs` | video time of what was taken, pauses cut out; `FrameClock`: fixed frames a second, gaps filled, extras dropped |
+| `Recorder/AudioMixer.cs` | two sounds added at their video time, a silent source counted as silence 200 ms behind, padded to the last picture |
+| `Recorder/RecordingFileName.cs`, `Recorder/RecorderTypes.cs` | "Recording yyyy-MM-dd HH.mm.ss.mp4" and " (2)"; `RecorderSettings`, `RecorderRules` (15/30/60 fps, 0/3/5 s) |
+| `Shared/WindowInfo.cs` | a top-level window and `WindowPicking.TopmostAt`, the window under the pointer (capture and recorder) |
 
 ## Flow
 
 No flow of its own: `CaptureSession` (UseCases) calls `CaptureGeometry` and `PixelImageOps`; `ImageDelivery` calls `ScreenshotNaming`;
 `EditorSession` and `EditorInteractor` call `AnnotationOps`, `AnnotationHit`, `AnnotationFactory`, `EditorGeometry` and `Mosaic`; the renderer in Presentation reads `AnnotationMetrics`; `ShellInteractor` calls
 `HotkeyRules`, `SettingsDefaults` and `SettingsRules.Complete`; `UpdateInteractor` calls `AppVersion.TryParse` and `UpdateRules.ReleasePage`.
+
+Recorder: `RecorderInteractor` calls `RecordArea.Resolve`, `RecordingTimeline`, `FrameClock`, `AudioMixer` and `RecordingFileName`.

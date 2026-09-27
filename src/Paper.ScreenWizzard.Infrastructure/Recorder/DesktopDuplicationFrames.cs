@@ -205,8 +205,8 @@ public sealed class DesktopDuplicationFrames : IScreenFrames, IDisposable
                 DriverType.Unknown,
                 DeviceCreationFlags.BgraSupport,
                 new[] { FeatureLevel.Level_11_0, FeatureLevel.Level_10_1, FeatureLevel.Level_10_0 },
-                out var device,
-                out var context).CheckError();
+                out ID3D11Device device,
+                out ID3D11DeviceContext context).CheckError();
             using var output1 = output.QueryInterface<IDXGIOutput1>();
             var duplication = output1.DuplicateOutput(device);
             var staging = device.CreateTexture2D(new Texture2DDescription

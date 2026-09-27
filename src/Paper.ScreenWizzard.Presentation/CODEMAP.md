@@ -24,6 +24,9 @@ are not a domain.
 | `Shared/Views/LanguageService.cs`, `NotificationPresenter.cs`, `ToastWindow`, `ErrorDialogWindow` | text in the language in use; toasts and error boxes for every domain |
 | `Shared/Views/PhysicalWindowPlacer.cs` | the only place that positions a window in physical pixels |
 | `Editor/Views/EditorWindowPlacement.cs` | keeps the editor inside the monitor that holds the pointer |
+| `Recorder/ViewModels/` | `RecordingBarViewModel`, `RecordedViewModel`, `RecordingFlow` (pick, outline and countdown, record, "Recorded"), `IRecorderViews` |
+| `Recorder/Views/` | `RecordingBarWindow`, `RecordedWindow`, `RecordingOutlineWindow` (click-through, countdown), `AreaPickerWindow` (drag a region or click a window), `WpfRecorderViews` |
+| `Shared/Views/CaptureExclusion.cs` | `WDA_EXCLUDEFROMCAPTURE`: the app's own windows are never in a recording or a screenshot |
 
 ## Flow
 
@@ -31,3 +34,5 @@ Capture: `CaptureFlow.StartAsync` -> `ICaptureInteractor.BeginAsync` -> `Selecti
 `CaptureFlow.HandleCaptured` -> `CaptureDoneViewModel` or `EditorFlow`.
 Editor: `EditorFlow` -> `EditorWindow` / `EditorViewModel` -> `IEditorInteractor` -> `WpfImageFlattener.Flatten` when saving or copying.
 Shell: `SettingsViewModel` -> `IShellInteractor.Apply` -> `LanguageService`, `ThemeService`.
+
+Recorder: `RecordingBarViewModel.RecordRequested` -> `RecordingFlow.StartAsync` -> `IRecorderViews.PickRegionAsync` / `PickWindowAsync` -> `IRecorderInteractor.ResolveArea` -> `OpenOutline` -> `IRecorderInteractor.StartAsync`; `Finished` -> `OpenRecorded`.

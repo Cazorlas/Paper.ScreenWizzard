@@ -21,6 +21,8 @@ interfaces; Infrastructure implements the ports.
 | `Editor/UseCases/EditorSession.cs` | the history: one step per change, redo branch, dirty tracking, crop, blur render |
 | `Editor/UseCases/EditorInteractor.cs` | open from file or clipboard, Shift constraint, text, `HitTest`, where Ctrl+S goes, close decision |
 | `*/Models/*.cs` | the plain records and issue enums each domain returns (`Capture/Models/ScreenCaptureModels.cs`, `Shared/Models/DeliveryModels.cs` too) |
+| `Recorder/Ports/` | `IRecorderInteractor` and the ports of recording: `IScreenFrames`, `ISoundSources`, `IVideoWriter`, `IMonotonicClock`, `IWindowPresence`, `IFileLauncher` |
+| `Recorder/UseCases/RecorderInteractor.cs` | countdown, one recording at a time, the loop that places pictures and sound on the video clock and writes them, why it stops (F1-F7) |
 
 ## Flow
 
@@ -29,3 +31,5 @@ Capture: `CaptureInteractor.BeginAsync` -> `IDelay` countdown -> `IScreenSource`
 Editor: `EditorInteractor.OpenFile` -> `EditorSession` -> `EditorInteractor.DecideSave` -> `EditorInteractor.Save` -> `ImageDelivery.SaveToPath`.
 Shell: `ShellInteractor.Start` -> `ISettingsStore.Load` -> `IHotkeys.Register` -> notices for what could not be registered.
 New version: `UpdateInteractor.CheckAsync` -> `IReleaseFeed.GetLatestAsync` -> `AppVersion` compare -> offer and notice; `OpenDownloadPage` -> `IBrowser.Open`.
+
+Recorder: `RecorderInteractor.StartAsync` -> `IDelay` countdown -> `IScreenFrames.Open`, `ISoundSources.Start`, `IVideoWriter.Open` -> loop on its own thread: `IScreenFrames.Next` -> `RecordingTimeline` -> `FrameClock` -> `IVideoWriter.WriteVideo`, `AudioMixer.Drain` -> `WriteSound` -> `StopAsync` -> `IVideoWriter.Finish` (or `Abandon`, F3).
