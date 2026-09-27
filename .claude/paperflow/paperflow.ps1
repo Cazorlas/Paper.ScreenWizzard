@@ -33,6 +33,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'verb-plan.ps1')
+. (Join-Path $PSScriptRoot 'profile-map.ps1')
 
 $ProfileRel = '.claude/paper.profile.json'
 
@@ -57,30 +58,15 @@ Exit: 0 done | 1 failed | 2 invalid request or broken profile | 3 host restart n
 '@
 }
 
-# ConvertFrom-Json returns PSCustomObject on PowerShell 5.1 (-AsHashtable arrived in 6.0), and the plan
-# indexes its input like a map. Convert once, here, so the plan stays pure and testable with literals.
-function ConvertTo-PaperMap($Value) {
-    if ($null -eq $Value) { return $null }
-    if ($Value -is [System.Collections.IDictionary]) { return $Value }
-    if ($Value -isnot [psobject]) { return $Value }
-    $map = @{}
-    foreach ($prop in $Value.PSObject.Properties) {
-        if ($prop.Name.StartsWith('$')) { continue }   # $comment and friends are documentation
-        $map[$prop.Name] = ConvertTo-PaperMap $prop.Value
-    }
-    return $map
-}
-
+# The profile as a map; $null when there is none; exit 2 when it is not valid JSON - the runner will not
+# guess at a verb from a file it cannot read. The reading is Read-PaperProfileFile (profile-map.ps1).
 function Read-PaperProfile([string] $RepoRoot) {
-    $file = Join-Path $RepoRoot ($ProfileRel -replace '/', '\')
-    if (-not (Test-Path -LiteralPath $file)) { return $null }
-    try {
-        return ConvertTo-PaperMap (Get-Content -LiteralPath $file -Raw -Encoding UTF8 | ConvertFrom-Json)
-    }
-    catch {
-        [Console]::Error.WriteLine("paperflow: $ProfileRel is not valid JSON - $($_.Exception.Message)")
+    $read = Read-PaperProfileFile $RepoRoot
+    if ($read.Error) {
+        [Console]::Error.WriteLine("paperflow: $ProfileRel is not valid JSON - $($read.Error)")
         exit 2
     }
+    return $read.Map
 }
 
 # Writes with [Console]::Out, not Write-Output: this is called as a statement whose caller then exits,

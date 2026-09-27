@@ -60,14 +60,19 @@ try {
     $docs = Join-Path $root ($docsRel.Replace('/', '\'))
     if (-not (Test-Path -LiteralPath $docs -PathType Container)) { exit 0 }
 
-    # Only an approved plan is read line by line: the others are judged on their status line and their
-    # date, and a Stop hook has no time to open every plan a repository ever wrote.
+    # The status line is found wherever the gate finds it - Get-PaperPlanStatusLine, the gate's own reader.
+    # Reading the first 15 lines only, a plan with a longer title block was "no approved plan" here while
+    # the gate approved it. Only an approved plan's lines are handed on: the others are judged on their
+    # status and their date. ReadAllLines, not Get-Content: every plan is read now, and Get-Content builds
+    # one object per line.
     $plans = New-Object System.Collections.Generic.List[psobject]
     foreach ($plan in @(Get-ChildItem -LiteralPath $docs -Recurse -File -Filter '*-plan.md' -ErrorAction SilentlyContinue)) {
-        $status = Get-PaperPlanStatus $plan.FullName
-        if (-not $status) { continue }
+        $all = @([System.IO.File]::ReadAllLines($plan.FullName, [System.Text.Encoding]::UTF8))
+        $statusLine = Get-PaperPlanStatusLine $all
+        if ($null -eq $statusLine) { continue }
+        $status = $statusLine.State
         $lines = @()
-        if ($status -eq 'Approved') { $lines = @(Get-Content -LiteralPath $plan.FullName -Encoding UTF8) }
+        if ($status -eq 'Approved') { $lines = $all }
         $plans.Add([pscustomobject]@{
                 Path    = (Get-PaperRelative $root $plan.FullName)
                 Status  = $status

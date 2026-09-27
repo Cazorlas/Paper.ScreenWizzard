@@ -69,15 +69,17 @@ The verify task after green is the loop below, measured the same way, until the 
    an unchanged attempt. Three failures on the same hypothesis: `đổi giả thuyết: <old> -> <new>`.
 6. **Clean up** what the run created. Leave nothing unsaved-but-changed behind without naming it.
 
-## Why you are not in a worktree
+## Why you are not in a worktree of your own
 
 The logic and UI lanes each get their own git worktree, because they only write files and two of them
-writing one folder is a real collision. You do not, and that is deliberate: you publish into the host
-session that is **already open**, and that host is bound to one deployed build and to the user's real
-document. Publishing out of a second checkout would put a build the user never asked for in front of the
-model they have open, and reading the result back would no longer say which tree produced it.
+writing one folder is a real collision. You do not, and that is deliberate: you publish into a running host,
+and a host is bound to **one** checkout - the one this session works in, the main checkout or the session's
+task worktree (`task-worktree/references/one-host-per-worktree.md`). A worktree of your own has no
+host bound to it, so a build from it would reach no host, or reach one that belongs to another checkout, and
+reading the result back would no longer say which tree produced it.
 
-So you work in the main checkout, and you are the reason the UI lane never runs beside you.
+So you work in the session's checkout, against the host bound to it, and you are the reason the UI lane
+never runs beside you.
 
 ## Never
 

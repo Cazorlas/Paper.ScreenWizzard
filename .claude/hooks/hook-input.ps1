@@ -3,14 +3,22 @@
 #
 # ASCII only: PowerShell 5.1 reads a .ps1 without a BOM as ANSI.
 
+. (Join-Path $PSScriptRoot '..\paperflow\profile-map.ps1')
+
 function Read-PaperHookPayload {
     # stdin as UTF-8 BYTES. PowerShell 5.1 decodes [Console]::In with the OEM codepage, so a path through
     # a Vietnamese folder ("Thuc hanh_Cap thoat nuoc" with its diacritics) arrives mangled and never exists
     # on disk - the guard would silently pass every edit in that folder.
+    # Under a dispatcher (pre-tool.ps1, post-tool.ps1) stdin was read once already and is handed over in
+    # $global:PaperHookRaw, so every guard of the group sees the same payload (ADR-0021). Test-Path, not a
+    # read: a caller under Set-StrictMode (session-anchor through kit-version-plan) throws on an unset variable.
     try {
-        $stream = [Console]::OpenStandardInput()
-        $reader = New-Object System.IO.StreamReader($stream, (New-Object System.Text.UTF8Encoding $false))
-        $raw = $reader.ReadToEnd()
+        if (Test-Path -LiteralPath 'variable:global:PaperHookRaw') { $raw = [string] $global:PaperHookRaw }
+        else {
+            $stream = [Console]::OpenStandardInput()
+            $reader = New-Object System.IO.StreamReader($stream, (New-Object System.Text.UTF8Encoding $false))
+            $raw = $reader.ReadToEnd()
+        }
         if ([string]::IsNullOrWhiteSpace($raw)) { return $null }
         $payload = $raw | ConvertFrom-Json
         # Codex reports file edits as apply_patch with the patch in tool_input.command. The current Paper
@@ -42,26 +50,27 @@ function Read-PaperHookPayload {
     catch { return $null }
 }
 
-function ConvertTo-PaperHookMap($Value) {
-    if ($null -eq $Value -or $Value -is [string] -or $Value -is [ValueType]) { return $Value }
-    if ($Value -is [System.Collections.IDictionary]) { return $Value }
-    if ($Value -is [System.Collections.IEnumerable]) { return , @($Value | ForEach-Object { ConvertTo-PaperHookMap $_ }) }
-    $map = @{}
-    foreach ($p in $Value.PSObject.Properties) { $map[$p.Name] = ConvertTo-PaperHookMap $p.Value }
-    return $map
-}
 
+# The profile as a map, or $null - missing and unreadable alike, so a hook lets the turn through (F10).
+# The reading itself is Read-PaperProfileFile in paperflow/profile-map.ps1, shared with the runner.
 function Read-PaperProfile([string] $ProjectDir) {
-    if (-not $ProjectDir) { return $null }
-    $file = Join-Path $ProjectDir '.claude\paper.profile.json'
-    if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { return $null }
-    try { return ConvertTo-PaperHookMap (Get-Content -LiteralPath $file -Raw -Encoding UTF8 | ConvertFrom-Json) }
-    catch { return $null }
+    return (Read-PaperProfileFile $ProjectDir).Map
 }
 
+# Path relative to the project, / separators - the form a {files:} glob and a rule's path are written in.
+# The one helper for this in the hooks (session-state's Get-PaperRelative forwards here).
+#
+# Outside the project, and for the project folder itself, the answer is $null: that path has no name inside
+# the project. The callers that can meet one (layer-guard, live-first-guard) read $null as "not this
+# project's file" and stay quiet; handing back the absolute path instead, as a second copy of this once did,
+# gives a string a glob such as **/*.cs matches. A path that cannot be resolved at all is $null too.
 function Get-PaperRelativePath([string] $ProjectDir, [string] $Path) {
-    $full = [System.IO.Path]::GetFullPath($Path)
-    $root = [System.IO.Path]::GetFullPath($ProjectDir).TrimEnd('\', '/') + '\'
+    if ([string]::IsNullOrWhiteSpace($ProjectDir) -or [string]::IsNullOrWhiteSpace($Path)) { return $null }
+    try {
+        $full = [System.IO.Path]::GetFullPath($Path)
+        $root = [System.IO.Path]::GetFullPath($ProjectDir).TrimEnd('\', '/') + '\'
+    }
+    catch { return $null }
     if ($full.StartsWith($root, [StringComparison]::OrdinalIgnoreCase)) { return $full.Substring($root.Length).Replace('\', '/') }
     return $null
 }
@@ -121,7 +130,7 @@ function Write-PaperHookText([string] $Text, [switch] $ToError) {
     catch { }
 }
 
-# One value of a profile map, or $null. The profile arrives as nested hashtables (ConvertTo-PaperHookMap).
+# One value of a profile map, or $null. The profile arrives as nested hashtables (ConvertTo-PaperMap in paperflow/profile-map.ps1).
 function Get-PaperProfileValue($Map, [string[]] $Keys) {
     $v = $Map
     foreach ($k in $Keys) {

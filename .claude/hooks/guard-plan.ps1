@@ -25,30 +25,10 @@
 #
 # ASCII only: PowerShell 5.1 reads a .ps1 without a BOM as ANSI.
 
-function Split-PaperCommandSegments([string] $Command) {
-    $segments = New-Object System.Collections.Generic.List[string]
-    $current = New-Object System.Text.StringBuilder
-    $quote = [char]0
-    for ($i = 0; $i -lt $Command.Length; $i++) {
-        $ch = $Command[$i]
-        if ($quote -ne [char]0) {
-            if ($ch -eq $quote) { $quote = [char]0 }
-            [void] $current.Append($ch)
-            continue
-        }
-        if ($ch -eq '"' -or $ch -eq "'") { $quote = $ch; [void] $current.Append($ch); continue }
-        $pair = if ($i + 1 -lt $Command.Length) { $Command.Substring($i, 2) } else { '' }
-        if ($pair -eq '&&' -or $pair -eq '||') { $segments.Add($current.ToString()); [void] $current.Clear(); $i++; continue }
-        if ($ch -eq ';' -or $ch -eq '|' -or $ch -eq "`r" -or $ch -eq "`n") { $segments.Add($current.ToString()); [void] $current.Clear(); continue }
-        [void] $current.Append($ch)
-    }
-    $segments.Add($current.ToString())
-    return , @($segments | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | ForEach-Object { $_.Trim() })
-}
-
-# The same scan as Split-PaperCommandSegments, kept apart so test-guard and build-guard read exactly what
-# they always read: one string[] per pipeline, its stages in order. ; && || and a line break end a pipeline,
-# | ends a stage.
+# The one quote-aware scan of a command line: one string[] per pipeline, its stages in order, trimmed, empty
+# stages dropped. ; && || and a line break end a pipeline, | ends a stage, and none of them splits inside
+# quotes. Split-PaperCommandSegments is built from it, so a fix to quoting reaches every guard at once - the
+# two once carried a scan each.
 function Split-PaperCommandPipelines([string] $Command) {
     $pipelines = New-Object System.Collections.Generic.List[object]
     $stages = New-Object System.Collections.Generic.List[string]
@@ -79,6 +59,13 @@ function Split-PaperCommandPipelines([string] $Command) {
         }
     }
     return , $pipelines.ToArray()
+}
+
+# Every stage of every pipeline, in order: what test-guard and build-guard read, one command at a time.
+function Split-PaperCommandSegments([string] $Command) {
+    $segments = New-Object System.Collections.Generic.List[string]
+    foreach ($pipeline in (Split-PaperCommandPipelines $Command)) { $segments.AddRange([string[]] $pipeline) }
+    return , $segments.ToArray()
 }
 
 # Quoted text the way a destructive rule reads it. A quoted string that is an argument stays as written: one

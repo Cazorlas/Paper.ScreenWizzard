@@ -37,7 +37,7 @@ try {
     foreach ($h in $names) {
         $file = Join-Path $routeDir "$h.json"
         if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { continue }
-        try { $routes[[string] $h] = ConvertTo-PaperHookMap ([IO.File]::ReadAllText($file, [Text.Encoding]::UTF8) | ConvertFrom-Json) } catch { }
+        try { $routes[[string] $h] = ConvertTo-PaperMap ([IO.File]::ReadAllText($file, [Text.Encoding]::UTF8) | ConvertFrom-Json) } catch { }
     }
 
     $docsRel = [string] (Get-PaperProfileValue $profileMap @('featureDocs'))

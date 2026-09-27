@@ -17,6 +17,9 @@
 # Each render runs with a throwaway browser profile, so an open browser window is neither used nor touched,
 # and writes to a temporary file first, so a failed render leaves the old PNG in place.
 #
+# The sizing and the PNG header check are render-shapes-plan.ps1 (pure, tested); this file finds the files and
+# the browser, runs it and moves the picture into place.
+#
 # Exit: 0 every drawing rendered | 1 a render failed | 2 bad arguments | 4 no browser: not verifiable
 [CmdletBinding()]
 param(
@@ -28,6 +31,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'render-shapes-plan.ps1')
 try { [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding $false } catch { }
 
 function Say([string] $line) { [Console]::Out.WriteLine($line) }
@@ -83,67 +87,15 @@ if (-not $browser) {
     Fail 4 "render-shapes: not verifiable - $where; pass -BrowserPath to a Chromium browser. Nothing was written."
 }
 
-# ---------------------------------------------------------------- sizing
-
-$PxPerUnit = @{ '' = 1.0; 'px' = 1.0; 'mm' = 96 / 25.4; 'cm' = 96 / 2.54; 'in' = 96.0; 'pt' = 96 / 72; 'pc' = 16.0 }
-
-# A length attribute in CSS pixels, or $null for a percentage, an unknown unit or nothing.
-function ConvertTo-Px([string] $value) {
-    if (-not $value) { return $null }
-    $m = [regex]::Match($value.Trim(), '^([0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)\s*([a-zA-Z]*)$')
-    if (-not $m.Success) { return $null }
-    $unit = $m.Groups[2].Value.ToLowerInvariant()
-    if (-not $PxPerUnit.ContainsKey($unit)) { return $null }
-    return [double]::Parse($m.Groups[1].Value, [Globalization.CultureInfo]::InvariantCulture) * $PxPerUnit[$unit]
-}
-
-# The window for one SVG, as @(width, height) in whole CSS pixels, or a reason string when it has no size.
-function Get-SvgWindow([string] $file) {
-    $settings = New-Object System.Xml.XmlReaderSettings
-    $settings.DtdProcessing = [System.Xml.DtdProcessing]::Ignore
-    $settings.XmlResolver = $null
-    $reader = [System.Xml.XmlReader]::Create($file, $settings)
-    try {
-        $doc = New-Object System.Xml.XmlDocument
-        $doc.Load($reader)
-    }
-    finally { $reader.Dispose() }
-    $svg = $doc.DocumentElement
-    if ($svg.LocalName -ne 'svg') { return "the root element is <$($svg.LocalName)>, not <svg>" }
-
-    $w = ConvertTo-Px $svg.GetAttribute('width')
-    $h = ConvertTo-Px $svg.GetAttribute('height')
-    if ($w -and $h) { return @([int][math]::Ceiling($w), [int][math]::Ceiling($h)) }
-
-    $box = @($svg.GetAttribute('viewBox') -split '[\s,]+' | Where-Object { $_ })
-    if ($box.Count -ne 4) { return 'no width and height, and no viewBox' }
-    $inv = [Globalization.CultureInfo]::InvariantCulture
-    $bw = [double]::Parse($box[2], $inv)
-    $bh = [double]::Parse($box[3], $inv)
-    if ($bw -le 0 -or $bh -le 0) { return "viewBox '$($svg.GetAttribute('viewBox'))' has no area" }
-    $grow = [math]::Max(1.0, 800 / [math]::Max($bw, $bh))
-    return @([int][math]::Ceiling($bw * $grow), [int][math]::Ceiling($bh * $grow))
-}
-
-# Width and height of a PNG from its header, or $null when the file is not a PNG.
-function Get-PngSize([string] $file) {
-    $bytes = [IO.File]::ReadAllBytes($file)
-    if ($bytes.Length -lt 24 -or $bytes[0] -ne 137 -or $bytes[1] -ne 80 -or $bytes[2] -ne 78 -or $bytes[3] -ne 71) { return $null }
-    # Each byte widened to int first: a byte shifted left stays a byte in PowerShell and loses its bits.
-    $w = ([int] $bytes[16] -shl 24) -bor ([int] $bytes[17] -shl 16) -bor ([int] $bytes[18] -shl 8) -bor [int] $bytes[19]
-    $h = ([int] $bytes[20] -shl 24) -bor ([int] $bytes[21] -shl 16) -bor ([int] $bytes[22] -shl 8) -bor [int] $bytes[23]
-    return @($w, $h)
-}
-
 # ---------------------------------------------------------------- rendering
 
 $failed = 0
 foreach ($svg in $svgs) {
     $png = [IO.Path]::ChangeExtension($svg, '.png')
-    try { $window = Get-SvgWindow $svg }
-    catch { $window = "not readable as XML: $($_.Exception.Message)" }
-    if ($window -is [string]) {
-        [Console]::Error.WriteLine("  FAIL  $svg - $window")
+    try { $window = Get-PaperSvgWindow ([IO.File]::ReadAllBytes($svg)) }
+    catch { $window = [pscustomobject]@{ Width = 0; Height = 0; Reason = "not readable: $($_.Exception.Message)" } }
+    if ($window.Reason) {
+        [Console]::Error.WriteLine("  FAIL  $svg - $($window.Reason)")
         $failed++
         continue
     }
@@ -156,7 +108,7 @@ foreach ($svg in $svgs) {
         $arguments = @(
             '--headless=new', '--disable-gpu', '--hide-scrollbars', '--no-first-run', '--no-default-browser-check',
             '--disable-extensions', "--user-data-dir=`"$work\profile`"", "--force-device-scale-factor=$Scale",
-            "--window-size=$($window[0]),$($window[1])", "--screenshot=`"$shot`"", "`"$url`""
+            "--window-size=$($window.Width),$($window.Height)", "--screenshot=`"$shot`"", "`"$url`""
         ) -join ' '
         $psi = New-Object System.Diagnostics.ProcessStartInfo $browser, $arguments
         $psi.UseShellExecute = $false
@@ -172,7 +124,7 @@ foreach ($svg in $svgs) {
             $failed++
             continue
         }
-        $size = if (Test-Path -LiteralPath $shot) { Get-PngSize $shot } else { $null }
+        $size = if (Test-Path -LiteralPath $shot) { Get-PaperPngSize ([IO.File]::ReadAllBytes($shot)) } else { $null }
         if (-not $size) {
             $detail = ($errText.Result -split "`r?`n" | Where-Object { $_ } | Select-Object -Last 2) -join ' / '
             [Console]::Error.WriteLine("  FAIL  $svg - no PNG written (browser exit $($process.ExitCode)) $detail")
@@ -180,7 +132,7 @@ foreach ($svg in $svgs) {
             continue
         }
         Move-Item -LiteralPath $shot -Destination $png -Force
-        Say ("  ok    {0} -> {1} ({2} x {3} px, window {4} x {5} at scale {6})" -f $svg, [IO.Path]::GetFileName($png), $size[0], $size[1], $window[0], $window[1], $Scale)
+        Say ("  ok    {0} -> {1} ({2} x {3} px, window {4} x {5} at scale {6})" -f $svg, [IO.Path]::GetFileName($png), $size.Width, $size.Height, $window.Width, $window.Height, $Scale)
     }
     finally {
         Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue

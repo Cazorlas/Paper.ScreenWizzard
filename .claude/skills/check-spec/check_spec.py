@@ -32,7 +32,9 @@ import unicodedata
 
 sys.stdout.reconfigure(encoding="utf-8")
 _HERE = os.path.dirname(os.path.abspath(__file__))
-os.chdir(os.path.join(_HERE, "..", "..", ".."))
+# Vendored at <project>/.claude/skills/check-spec, so the project root is three folders up. main() moves
+# there; importing this file for one function changes nothing.
+PROJECT_ROOT = os.path.abspath(os.path.join(_HERE, "..", "..", ".."))
 sys.path.insert(0, os.path.join(_HERE, "..", "check-code-map"))
 
 from check_code_map import EXTERNAL, TICKED, walk  # noqa: E402
@@ -52,7 +54,15 @@ RENDER_SLACK_SECONDS = 2.0
 # store the same letters decomposed.
 DRAFT_BANNER = "ban nhap cho duyet"
 CHANGE_MARKER = "cho kiem"
-FINISHED = re.compile(r"^(xong|done)\b")
+# A plan's status line, read the way the task gate reads it. These three lists mirror, word for word,
+# $script:PaperPlanStatusLabels, $script:PaperPlanApprovedWords and $script:PaperPlanDoneWords in
+# paperflow/tasks-gate-plan.ps1 - the PowerShell side is the source, since the gate, the tick reminder and
+# live-first all read the status there - and tests/kit-mirrors.tests.ps1 holds the two equal. Change both.
+STATUS_LABELS = ("trang thai", "status")
+APPROVED_WORDS = ("da duyet", "approved")
+DONE_WORDS = ("xong", "done")
+STATUS_LINE = re.compile(r"^\*\*(" + "|".join(map(re.escape, STATUS_LABELS)) + r"):?\*\*:?\s*(.*)$")
+CODE_FENCE = re.compile(r"^\s{0,3}(`{3,}|~{3,})")
 # The brief or plan a marker names: 2026-09-17-task, 2026-09-17-task.md or 2026-09-17-task-plan.md.
 DATED_NAME = re.compile(r"(\d{4}-\d{2}-\d{2}-[\w.-]+?)(?:-plan)?(?:\.md)?(?=[)\]\s,;]|$)")
 STROKED_D = chr(0x111)
@@ -166,12 +176,34 @@ def plain_words(text):
     return "".join(c for c in text if unicodedata.category(c) != "Mn")
 
 
-def plan_status(path):
-    """The plan's status value in plain words, or None when it has no status line."""
+def opens_with(value, words):
+    return any(re.match(r"^" + re.escape(word) + r"\b", value) for word in words)
+
+
+def plan_state(path):
+    """Approved, Done or Pending for a plan, or None when it has no status line - Get-PaperPlanStatusLine
+    in paperflow/tasks-gate-plan.ps1, line for line: the first line outside a code block that opens with the
+    bold label, and the word must open the value ("not approved yet" is Pending)."""
+    fence = ""
     for line in io.open(path, encoding="utf-8-sig").read().split("\n"):
-        match = re.match(r"^(?:trang thai|status)\s*:\s*(.*)$", plain_words(line).replace("*", "").strip())
-        if match:
-            return match.group(1).strip()
+        line = line.rstrip("\r")
+        opened = CODE_FENCE.match(line)
+        if opened:
+            marker = opened.group(1)
+            if not fence:
+                fence = marker
+            elif marker[0] == fence[0] and len(marker) >= len(fence) and line.strip() == marker:
+                fence = ""
+            continue
+        if fence or not line.startswith("**"):
+            continue
+        match = STATUS_LINE.match(plain_words(line))
+        if not match:
+            continue
+        value = match.group(2).strip()
+        if opens_with(value, DONE_WORDS):
+            return "Done"
+        return "Approved" if opens_with(value, APPROVED_WORDS) else "Pending"
     return None
 
 
@@ -182,9 +214,9 @@ def check_markers(folder, text):
     naming its brief or plan is judged by that plan. One naming neither is judged by the folder: it is left
     over when no plan there is still open and at least one is finished."""
     plans = {os.path.basename(p): p for p in glob.glob(os.path.join(folder, "*-plan.md"))}
-    statuses = {name: plan_status(path) for name, path in plans.items()}
-    finished = sorted(n for n, s in statuses.items() if s is not None and FINISHED.match(s))
-    still_open = [n for n, s in statuses.items() if s is not None and not FINISHED.match(s)]
+    states = {name: plan_state(path) for name, path in plans.items()}
+    finished = sorted(n for n, s in states.items() if s == "Done")
+    still_open = [n for n, s in states.items() if s is not None and s != "Done"]
 
     problems = []
     fenced = False
@@ -206,6 +238,7 @@ def check_markers(folder, text):
 
 def main():
     started = time.time()
+    os.chdir(PROJECT_ROOT)
     specs = find_specs()
     groups = [
         ("SPEC - a requirement written in the code's words (a test name counts):", []),

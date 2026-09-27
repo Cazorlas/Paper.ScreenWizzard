@@ -1,6 +1,6 @@
 # Shared session half of the kit's Stop hooks: when this session began, which files it changed, which
 # CODEMAP.md covers a file, what a plan's status line says, which tests a runner reported red.
-# Dot-sourced; declares no param() block.
+# Dot-sourced after hook-input.ps1 (it calls Get-PaperRelativePath); declares no param() block.
 #
 # Why a stamp and modification times, not `git status`: the dirty working tree holds whatever was sitting
 # uncommitted when the session opened, and a Stop hook that reads it re-fires on every stop of a session
@@ -11,7 +11,11 @@
 # or by stripping diacritics first.
 
 # Folders that hold build output, caches or other tools' state - never source someone edited by hand.
-$script:PaperPrunedDirs = @('.git', '.vs', '.idea', 'bin', 'obj', 'node_modules', 'packages', 'TestResults', '__pycache__', '.venv', 'venv')
+# check-code-map walks a project too, and SKIP_DIRS in skills/check-code-map/check_code_map.py mirrors this
+# list name for name (tests/kit-mirrors.tests.ps1 holds them equal): the two once differed, so one walked
+# __pycache__ and .venv and the other graphify-out and artifacts. Change both or neither.
+$script:PaperPrunedDirs = @('.git', '.vs', '.idea', 'bin', 'obj', 'node_modules', 'packages', 'TestResults',
+    '__pycache__', '.venv', 'venv', 'graphify-out', '.codegraph', 'artifacts', '.superpowers')
 
 function Get-PaperSessionStampPath([string] $SessionId) {
     $id = ([string] $SessionId) -replace '[^A-Za-z0-9\-_]', ''
@@ -146,10 +150,11 @@ function Get-PaperChangedFiles([string] $Root, [datetime] $Since, [string[]] $Ex
     return @($found)
 }
 
+# The older name of Get-PaperRelativePath (hook-input.ps1), kept because code-map-nag and verify-on-stop
+# still call it. It had its own body once, and outside the root it handed back the absolute path where the
+# other said $null - see Get-PaperRelativePath for why $null is the answer.
 function Get-PaperRelative([string] $Root, [string] $Path) {
-    $r = $Root.TrimEnd('\', '/') + '\'
-    if ($Path.StartsWith($r, [StringComparison]::OrdinalIgnoreCase)) { return $Path.Substring($r.Length).Replace('\', '/') }
-    return $Path.Replace('\', '/')
+    return Get-PaperRelativePath $Root $Path
 }
 
 # The CODEMAP.md nearest above a file, never above Root. $null when no folder on the way has one.
@@ -165,29 +170,13 @@ function Get-PaperNearestCodeMap([string] $Root, [string] $FilePath) {
     return $null
 }
 
-function Get-PaperPlainStatus([string] $Text) {
-    if ([string]::IsNullOrEmpty($Text)) { return '' }
-    $sb = New-Object System.Text.StringBuilder
-    foreach ($ch in $Text.Normalize([System.Text.NormalizationForm]::FormD).ToCharArray()) {
-        if ([System.Globalization.CharUnicodeInfo]::GetUnicodeCategory($ch) -ne [System.Globalization.UnicodeCategory]::NonSpacingMark) { [void] $sb.Append($ch) }
-    }
-    # d with stroke has no decomposition.
-    return $sb.ToString().Replace([char]0x0111, 'd').Replace([char]0x0110, 'D').ToLowerInvariant()
-}
-
-# Approved | Done | Pending | $null for a plan's status line, read the way the task gate reads it.
+# Approved | Done | Pending | $null for a plan file: the reading half only. What the status line says is
+# Get-PaperPlanStatusLine in paperflow/tasks-gate-plan.ps1, the gate's own reader, which every caller of
+# this (plan-nag, live-first-guard) dot-sources already; a copy here once read the first 15 lines only.
 function Get-PaperPlanStatus([string] $PlanPath) {
-    $lines = @(Get-Content -LiteralPath $PlanPath -Encoding UTF8 -TotalCount 15)
-    foreach ($line in $lines) {
-        $plain = Get-PaperPlainStatus $line
-        if ($plain -match '^\*\*(trang thai|status):?\*\*:?\s*(.*)$') {
-            $s = $Matches[2].Trim()
-            if ($s -match '^(xong|done)\b') { return 'Done' }
-            if ($s -match '^(da duyet|approved)\b') { return 'Approved' }
-            return 'Pending'
-        }
-    }
-    return $null
+    $line = Get-PaperPlanStatusLine @([System.IO.File]::ReadAllLines($PlanPath, [System.Text.Encoding]::UTF8))
+    if ($null -eq $line) { return $null }
+    return $line.State
 }
 
 # Test names a runner printed as failed: "failed Name" (Microsoft.Testing.Platform), "  Failed Name [3 ms]"

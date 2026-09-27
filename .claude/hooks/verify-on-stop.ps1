@@ -18,6 +18,9 @@
 # stop_hook_active exits 0, so a test that stays red cannot loop the agent. PAPER_SKIP_VERIFY=1 turns it
 # off. Unreadable input, no stamp, a broken profile, a missing verb-plan.ps1, any error: exit 0.
 #
+# What a finished run means is decided by Get-PaperStopVerdict in paperflow/verb-plan.ps1 (pure, tested in
+# tests/stop-verdict.tests.ps1); this file reads the profile and the baseline, runs the verbs and writes.
+#
 # ASCII only: PowerShell 5.1 reads a .ps1 without a BOM as ANSI.
 
 $ErrorActionPreference = 'Stop'
@@ -28,29 +31,6 @@ $ErrorActionPreference = 'Stop'
 function Invoke-PaperVerbCommand([string] $Root, [string] $Command, [int] $TimeoutSeconds, [scriptblock] $OnStarted) {
     $run = Invoke-PaperProjectCommand -Directory $Root -Command $Command -TimeoutSeconds $TimeoutSeconds -OnStarted $OnStarted
     return [pscustomobject]@{ Code = $run.Code; Lines = @($run.Lines | Where-Object { $_ -ne '' }) }
-}
-
-# True when a failed build named errors and every one of them is a held output file (the compiler's own
-# "cannot write", or MSBuild's copy failing), never when one real compile error is mixed in.
-# MSBuild's closing "    2 Error(s)" count is not an error line: it names no file, and counting it made this
-# answer False for every held-file failure (measured 2026-09-18, with the host holding a built DLL).
-# The terminal logger (dotnet build -tl:on) closes each project with "<name> <tfm> failed with N error(s)"
-# and the build with "Build failed with N error(s) ... in 1.0s" - summaries too. A built project's line
-# ("<name> -> <path>", or "<name> <tfm> succeeded ... <arrow> <path>") is a success even when the project's
-# name holds the word Error.
-function Test-PaperLockOnlyBuildFailure([string[]] $Lines) {
-    $errors = @($Lines | Where-Object {
-            $_ -match '(?i)\berror\b' -and
-            $_ -notmatch '(?i)^\s*\d+\s+Error\(s\)\s*$' -and
-            $_ -notmatch '(?i)\bfailed with \d+ error\(s\)' -and
-            $_ -notmatch '^\s*[\w.\-]+ -> \S' -and
-            $_ -notmatch '(?i)^\s*[\w.\-]+(?:\s+[\w.\-]+)?\s+succeeded\b'
-        })
-    if ($errors.Count -eq 0) { return $false }
-    foreach ($line in $errors) {
-        if ($line -notmatch '(?i)CS2012|MSB3021|MSB3026|MSB3027|being used by another process|locked by') { return $false }
-    }
-    return $true
 }
 
 try {
@@ -119,8 +99,6 @@ try {
 
     try {
         $deadline = (Get-Date).AddSeconds(570)
-        $newFailures = @()
-        $knownRed = @()
         foreach ($verb in @('build', 'test')) {
             $plan = Get-PaperVerbPlan -ProjectProfile $profileMap -Verb $verb
             if ($plan.ExitCode -eq 5 -or $plan.Internal) { continue }
@@ -134,57 +112,25 @@ try {
             $run = Invoke-PaperVerbCommand $root $plan.Command $left $onStarted
             if ($null -eq $run.Code) { Write-PaperHookText -ToError "verify-on-stop: $verb did not finish in time; nothing verified."; exit 0 }
 
-            if ($verb -eq 'build') {
-                if ($run.Code -eq 0) { continue }
-                $errors = @($run.Lines | Where-Object { $_ -match '(?i)\berror\b' } | Select-Object -First 12)
-                if ($errors.Count -eq 0) { $errors = @($run.Lines | Select-Object -Last 12) }
-
-                # A build whose every error is a held output file says nothing about the code: a test run, a
-                # harness or an IDE still owns the file. Reported as "does not build" it sends the agent
-                # hunting for a compile error that is not there - measured in a real project as 7 of 17
-                # blocking stops. Still exit 2: nothing was verified either way.
-                if (Test-PaperLockOnlyBuildFailure $run.Lines) {
-                    Write-PaperHookText -ToError ("verify-on-stop: NOT VERIFIED - another process still holds the build output; this is not a compile error.`n`n  " + (@($errors | Select-Object -First 3) -join "`n  ") + "`n`nStop whatever holds them (a UI test run, a harness, a test host, an IDE build), then let this run again.")
-                    exit 2
-                }
-                Write-PaperHookText -ToError ("verify-on-stop: the build verb failed (exit $($run.Code)) - this work does not build yet.`n`n  " + ($errors -join "`n  ") + "`n`n  command: $($plan.Command)`nFix the build before reporting this work as done.")
-                exit 2
-            }
-
-            # F5: the same verdict the flow runner and the worktree baseline read. A run that executed no test
-            # proved nothing, whatever it exited, and is never remembered as verified.
-            $runVerdict = Get-PaperTestRunVerdict -ExitCode $run.Code -Output $run.Lines
-            if ($runVerdict.ExitCode -eq 4) {
-                Write-PaperHookText -ToError ("verify-on-stop: NOT VERIFIED (verdict: not verifiable) - $($runVerdict.Reason).`n`n  " + (@($run.Lines | Select-Object -Last 10) -join "`n  ") + "`n`n  command: $($plan.Command)")
-                exit 2
-            }
-            $failed = Get-PaperFailedTestNames $run.Lines
-            if ($run.Code -ne 0 -and $failed.Count -eq 0) {
-                Write-PaperHookText -ToError ("verify-on-stop: NOT VERIFIED - the test verb exited $($run.Code) without naming a failing test.`n`n  " + (@($run.Lines | Select-Object -Last 10) -join "`n  ") + "`n`n  command: $($plan.Command)")
-                exit 2
-            }
-            # A {config} baseline is one file per build configuration; which one is the configuration the verbs
-            # build, named by verify.configuration, else PAPERFLOW_CONFIGURATION. Reading the template as a file
-            # name found no baseline, so every known failure blocked the stop.
-            $configuration = [string] (Get-PaperProfileValue $profileMap @('verify', 'configuration'))
-            if ([string]::IsNullOrWhiteSpace($configuration)) { $configuration = [string] $env:PAPERFLOW_CONFIGURATION }
-            $baselineRel = Get-PaperKnownFailuresPath -ProjectProfile $profileMap -Configuration $configuration
-            $template = [string] (Get-PaperProfileValue $profileMap @('knownFailures'))
+            # What the run means - held build output, red build, F5, new versus known failures, the prune
+            # notice - is Get-PaperStopVerdict in verb-plan.ps1, pure and tested. Here: the reads it needs.
+            $failed = @()
             $baseline = @()
-            if ($baselineRel) { $baseline = @(Read-PaperKnownFailures (Join-Path $root ($baselineRel.Replace('/', '\')))) }
-            $newFailures = @($failed | Where-Object { $baseline -notcontains $_ })
-            $knownRed = @($failed | Where-Object { $baseline -contains $_ })
-            if ($newFailures.Count -gt 0) {
-                $baselineNote = if ($baselineRel) { "not in $baselineRel" }
-                    elseif ($template) { 'no baseline read: knownFailures is per configuration and neither verify.configuration nor PAPERFLOW_CONFIGURATION names one' }
-                    else { 'the profile declares no knownFailures' }
-                Write-PaperHookText -ToError ("verify-on-stop: $($newFailures.Count) test(s) red ($baselineNote):`n`n  " + ($newFailures -join "`n  ") + "`n`n  command: $($plan.Command)`nFix them, or show they were red before this session, before reporting this work as done.")
-                exit 2
+            $baselineRel = ''
+            $template = ''
+            if ($verb -eq 'test') {
+                $failed = @(Get-PaperFailedTestNames $run.Lines)
+                # A {config} baseline is one file per build configuration; which one is the configuration the
+                # verbs build, named by verify.configuration, else PAPERFLOW_CONFIGURATION.
+                $configuration = [string] (Get-PaperProfileValue $profileMap @('verify', 'configuration'))
+                if ([string]::IsNullOrWhiteSpace($configuration)) { $configuration = [string] $env:PAPERFLOW_CONFIGURATION }
+                $baselineRel = [string] (Get-PaperKnownFailuresPath -ProjectProfile $profileMap -Configuration $configuration)
+                $template = [string] (Get-PaperProfileValue $profileMap @('knownFailures'))
+                if ($baselineRel) { $baseline = @(Read-PaperKnownFailures (Join-Path $root ($baselineRel.Replace('/', '\')))) }
             }
-            $fixed = @($baseline | Where-Object { $failed -notcontains $_ })
-            if ($run.Code -eq 0 -and $fixed.Count -gt 0 -and $fixed.Count -lt 50) {
-                Write-PaperHookText -ToError ("verify-on-stop: on the known-failure list and now passing - prune ${baselineRel}:`n  " + ($fixed -join "`n  "))
-            }
+            $stop = Get-PaperStopVerdict -Verb $verb -ExitCode $run.Code -Lines $run.Lines -Command $plan.Command -Failed $failed -Baseline $baseline -BaselinePath $baselineRel -KnownFailures $template
+            if ($stop.Message) { Write-PaperHookText -ToError "verify-on-stop: $($stop.Message)" }
+            if ($stop.ExitCode -ne 0) { exit $stop.ExitCode }
         }
 
         try { [System.IO.File]::WriteAllText($cache, $signature) } catch { }

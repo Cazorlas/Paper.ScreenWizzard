@@ -24,8 +24,9 @@ import sys
 
 sys.stdout.reconfigure(encoding="utf-8")
 _HERE = os.path.dirname(os.path.abspath(__file__))
-# Vendored at <project>/.claude/skills/spec-changes, so the project root is three folders up.
-os.chdir(os.path.join(_HERE, "..", "..", ".."))
+# Vendored at <project>/.claude/skills/spec-changes, so the project root is three folders up. main() moves
+# there before asking git anything; importing this file for one function changes nothing.
+PROJECT_ROOT = os.path.abspath(os.path.join(_HERE, "..", "..", ".."))
 
 RULE_START = re.compile(r"^(?:[-*+] |\d+[.)] |\||!\[)")
 HEADING = re.compile(r"^(#{1,4}) +(.+?)\s*#*\s*$")
@@ -239,6 +240,7 @@ def main(argv):
     names = [a for a in argv if not a.startswith("--")]
     base_ref = names[0] if names else "origin/main"
 
+    os.chdir(PROJECT_ROOT)
     try:
         root = git("rev-parse", "--show-toplevel").strip()
         os.chdir(root)

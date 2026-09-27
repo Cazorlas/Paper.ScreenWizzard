@@ -40,6 +40,7 @@ param(
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'worktree-plan.ps1')
 . (Join-Path $PSScriptRoot 'verb-plan.ps1')
+. (Join-Path $PSScriptRoot 'profile-map.ps1')
 
 # Paths git prints may be non-ASCII; without this a redirected child reads them in the OEM codepage.
 try { [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding $false } catch { }
@@ -61,25 +62,12 @@ function Invoke-PaperGit {
     return [pscustomobject]@{ Code = $LASTEXITCODE; Lines = $lines; Text = ($lines -join "`n") }
 }
 
-function ConvertTo-PaperWorktreeMap($Value) {
-    if ($null -eq $Value) { return $null }
-    if ($Value -is [System.Collections.IDictionary]) { return $Value }
-    if ($Value -is [System.Array]) { return @($Value | ForEach-Object { ConvertTo-PaperWorktreeMap $_ }) }
-    if ($Value -isnot [System.Management.Automation.PSCustomObject]) { return $Value }
-    $map = @{}
-    foreach ($prop in $Value.PSObject.Properties) {
-        if ($prop.Name.StartsWith('$')) { continue }
-        $map[$prop.Name] = ConvertTo-PaperWorktreeMap $prop.Value
-    }
-    return $map
-}
 
 # $null when the folder has no .claude/paper.profile.json; exit 2 when it is not valid JSON.
 function Read-PaperWorktreeProfile([string] $Dir) {
-    $file = Join-Path $Dir '.claude\paper.profile.json'
-    if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { return $null }
-    try { return ConvertTo-PaperWorktreeMap (Get-Content -LiteralPath $file -Raw -Encoding UTF8 | ConvertFrom-Json) }
-    catch { Fail 2 "worktree: $file is not valid JSON - $($_.Exception.Message)" }
+    $read = Read-PaperProfileFile $Dir
+    if ($read.Error) { Fail 2 "worktree: $([IO.Path]::Combine($Dir, '.claude', 'paper.profile.json')) is not valid JSON - $($read.Error)" }
+    return $read.Map
 }
 
 # Runs one of the project's command lines in a folder, echoing each line as it comes and keeping them.
@@ -227,34 +215,31 @@ switch ($Command) {
         elseif (-not (Test-Path -LiteralPath $dir -PathType Container)) { Fail 2 "worktree: folder not found: $dir" }
 
         $projectProfile = Read-PaperWorktreeProfile $dir
-        if ($null -eq $projectProfile) { Fail 5 "worktree: baseline not applicable - no .claude/paper.profile.json in $dir" }
-        $plans = [ordered]@{}
-        foreach ($verb in @('build', 'test')) {
-            $plans[$verb] = Get-PaperVerbPlan -ProjectProfile $projectProfile -Verb $verb
-            if ($plans[$verb].ExitCode -eq 2) { Fail 2 "worktree: $($plans[$verb].Reason)" }
+        $plans = @{ build = $null; test = $null }
+        if ($null -ne $projectProfile) {
+            foreach ($verb in @('build', 'test')) { $plans[$verb] = Get-PaperVerbPlan -ProjectProfile $projectProfile -Verb $verb }
         }
-        if ($plans['build'].ExitCode -ne 0 -and $plans['test'].ExitCode -ne 0) {
-            Fail 5 'worktree: baseline not applicable - the profile declares neither build nor test'
-        }
+        $steps = Get-PaperWorktreeBaselinePlan -ProfileFound ($null -ne $projectProfile) -Build $plans['build'] -Test $plans['test'] -Dir $dir
+        if ($steps.ExitCode -ne 0) { Fail $steps.ExitCode "worktree: $($steps.Reason)" }
 
-        if ($plans['build'].ExitCode -eq 0) {
+        if ($steps.RunBuild) {
             Say "baseline: build -> $($plans['build'].Command)"
             $build = Invoke-PaperCommandLine $dir $plans['build'].Command
             if ($build.Code -ne 0) { Fail 1 "baseline: build failed (exit $($build.Code)) in $dir" }
         }
         else { Say "baseline: build not applicable - $($plans['build'].Reason)" }
 
-        if ($plans['test'].ExitCode -ne 0) {
+        if (-not $steps.RunTest) {
             Say "baseline: test not applicable - $($plans['test'].Reason)"
             exit 0
         }
         Say "baseline: test -> $($plans['test'].Command)"
         $run = Invoke-PaperCommandLine $dir $plans['test'].Command
-        $count = Get-PaperTestCountLine -Lines $run.Lines
-        if ($count) { Say "baseline: tests: $count" }
         # F5: a run that executed no test has proved nothing, whatever it exited - and the caller reads the
-        # exit code, not the wording, so the verdict has to reach it. 0 pass, 1 red, 4 not verifiable.
+        # exit code, not the wording, so the verdict has to reach it. 0 pass, 1 red, 4 not verifiable. The
+        # count line shown is the one the verdict read its total from, so what is shown is what is judged.
         $testVerdict = Get-PaperTestRunVerdict -ExitCode $run.Code -Output $run.Lines
+        if ($testVerdict.Line) { Say "baseline: tests: $($testVerdict.Line)" }
         if ($testVerdict.ExitCode -eq 4) { Fail 4 "baseline: not verifiable in $dir - $($testVerdict.Reason)" }
         if ($testVerdict.ExitCode -ne 0) { Fail 1 "baseline: test is red in $dir ($($testVerdict.Reason)) - record the red tests as this task's baseline" }
         Say "baseline: green in $dir"
@@ -316,11 +301,10 @@ switch ($Command) {
             }
             Say "worktree: test on $base -> $testLine"
             $run = Invoke-PaperCommandLine $main $testLine
-            $countLine = Get-PaperTestCountLine -Lines $run.Lines
-            if ($countLine) { Say "worktree: tests: $countLine" }
             # F5, as in baseline: a run that executed no test proved nothing, and the worktree must not be
             # thrown away on it.
             $mergeVerdict = Get-PaperTestRunVerdict -ExitCode $run.Code -Output $run.Lines
+            if ($mergeVerdict.Line) { Say "worktree: tests: $($mergeVerdict.Line)" }
             if ($mergeVerdict.ExitCode -eq 4) {
                 Fail 4 "worktree: merged, but the test on $base is not verifiable ($($mergeVerdict.Reason)) - worktree kept at $path, branch $branch kept"
             }

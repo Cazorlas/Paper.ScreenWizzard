@@ -175,6 +175,67 @@ function Get-PaperPlainText([string] $Text) {
     return $sb.ToString().Replace([char]0x0111, 'd').Replace([char]0x0110, 'D').ToLowerInvariant()
 }
 
+# ---- the status line ---------------------------------------------------------------------------------
+#
+# Its words, in plain text (Get-PaperPlainText has stripped the diacritics). The one list: the gate, the tick
+# reminder and live-first read a plan's status through Get-PaperPlanStatusLine, and check-spec's plan_state
+# (skills/check-spec/check_spec.py) mirrors these three lists word for word - Python cannot dot-source a
+# .ps1 - with tests/kit-mirrors.tests.ps1 holding the two equal. Add a word here and there, never one side.
+$script:PaperPlanStatusLabels = @('trang thai', 'status')
+$script:PaperPlanApprovedWords = @('da duyet', 'approved')
+$script:PaperPlanDoneWords = @('xong', 'done')
+
+# One line through the code-fence state: Fence is the marker still open after it ('' when none), Fenced
+# whether the line itself is code. The outline and the status reader share it, so a status line or a heading
+# quoted in a fenced example is text to both.
+function Step-PaperCodeFence([string] $Text, [string] $Fence) {
+    if ($Text -match '^\s{0,3}(`{3,}|~{3,})') {
+        $marker = $Matches[1]
+        if (-not $Fence) { $Fence = $marker }
+        elseif ($marker[0] -eq $Fence[0] -and $marker.Length -ge $Fence.Length -and $Text.Trim() -eq $marker) { $Fence = '' }
+        return [pscustomobject]@{ Fence = $Fence; Fenced = $true }
+    }
+    return [pscustomobject]@{ Fence = $Fence; Fenced = [bool] $Fence }
+}
+
+function Get-PaperPlanStatusLine {
+    <#
+    .SYNOPSIS
+    A plan's status line, or $null when it has none: Index (0-based line), Line (as written), Value (what
+    follows the label, in plain words) and State - Approved | Done | Pending.
+
+    .DESCRIPTION
+    The first line outside a code block that opens with the bold label - "**Trang thai:**" (the colon sits
+    inside the bold in the template), "**Status:**" or "**Status**:" - wherever it sits in the file. The word
+    must OPEN the value: matched anywhere, "not approved yet" read as approved. The tick reminder once read the
+    first 15 lines only, so a plan with a longer title block had no status for it while the gate approved it.
+    It stops at the status line, so a Stop hook reading every plan pays for a few lines each, not the file.
+    #>
+    param([AllowEmptyString()][string[]] $Lines = @())
+
+    $labels = ($script:PaperPlanStatusLabels | ForEach-Object { [regex]::Escape($_) }) -join '|'
+    $pattern = '^\*\*(' + $labels + '):?\*\*:?\s*(.*)$'
+    $fence = ''
+    $index = -1
+    foreach ($line in @($Lines)) {
+        $index++
+        $text = [string] $line
+        $step = Step-PaperCodeFence $text $fence
+        $fence = $step.Fence
+        if ($step.Fenced -or -not $text.StartsWith('**')) { continue }
+        $plain = Get-PaperPlainText $text
+        if ($plain -notmatch $pattern) { continue }
+        $value = $Matches[2].Trim()
+        $state = 'Pending'
+        foreach ($word in $script:PaperPlanDoneWords) { if ($value -match ('^' + [regex]::Escape($word) + '\b')) { $state = 'Done' } }
+        if ($state -eq 'Pending') {
+            foreach ($word in $script:PaperPlanApprovedWords) { if ($value -match ('^' + [regex]::Escape($word) + '\b')) { $state = 'Approved' } }
+        }
+        return [pscustomobject]@{ Index = $index; Line = $text; Value = $value; State = $state }
+    }
+    return $null
+}
+
 # ---- the shape of a plan ----------------------------------------------------------------------------
 #
 # One row per line: the section it sits in (head | tasks | evidence | other), the "### n." group inside
@@ -199,14 +260,9 @@ function Get-PaperPlanOutline([string[]] $Lines) {
     $fence = ''
     foreach ($line in @($Lines)) {
         $text = [string] $line
-        if ($text -match '^\s{0,3}(`{3,}|~{3,})') {
-            $marker = $Matches[1]
-            if (-not $fence) { $fence = $marker }
-            elseif ($marker[0] -eq $fence[0] -and $marker.Length -ge $fence.Length -and $text.Trim() -eq $marker) { $fence = ''; }
-            $rows.Add([pscustomobject]@{ Line = $text; Section = $section; Group = $group; Heading = $false; Fenced = $true })
-            continue
-        }
-        if ($fence) {
+        $step = Step-PaperCodeFence $text $fence
+        $fence = $step.Fence
+        if ($step.Fenced) {
             $rows.Add([pscustomobject]@{ Line = $text; Section = $section; Group = $group; Heading = $false; Fenced = $true })
             continue
         }
@@ -270,10 +326,13 @@ function Get-PaperSpecHash {
     # an empty string".
     param([AllowEmptyString()][string[]] $Lines = @())
 
+    # Any line opening with a status label is left out, not only the first: a hash frozen in an older file
+    # was computed this way, and changing what is hashed would call every one of them edited.
+    $statusLabel = '^\*\*(' + (($script:PaperPlanStatusLabels | ForEach-Object { [regex]::Escape($_) }) -join '|') + ')'
     $body = New-Object System.Collections.Generic.List[string]
     foreach ($line in $Lines) {
         $plain = Get-PaperPlainText $line
-        if ($plain -match '^\*\*(trang thai|status)') { continue }
+        if ($plain -match $statusLabel) { continue }
         if ($plain -match '^#+\s*\d*\.?\s*(tasks|task)\b') { break }
         if ([string]::IsNullOrWhiteSpace($line)) { continue }
         $body.Add($line.Trim())
@@ -321,15 +380,24 @@ function Get-PaperTaskGateVerdict {
     # ---- read the file once ------------------------------------------------------------------
     # Sections, groups and code blocks come from Get-PaperPlanOutline, and the tasks from Get-PaperPlanTasks:
     # the tick reminder reads a plan through the same two, so it cannot count a task the gate does not.
+    # The status line comes from Get-PaperPlanStatusLine, the reader the tick reminder and live-first use too,
+    # so the three cannot disagree on whether a plan is approved.
+    $statusLine = Get-PaperPlanStatusLine $Lines
     $status = $null
     $specHash = $null
+    if ($null -ne $statusLine) {
+        $status = $statusLine.Value
+        if ($statusLine.Line -match 'spec-hash:\s*([0-9a-f]{6,})') { $specHash = $Matches[1] }
+    }
     $tasksHeadingSeen = $false
     $evidenceHeadingSeen = $false
     $cases = New-Object System.Collections.Generic.List[psobject]
     $tasks = @(Get-PaperPlanTasks $Lines $LaneAliases)
     $evidenceIds = New-Object System.Collections.Generic.List[string]
 
+    $index = -1
     foreach ($row in (Get-PaperPlanOutline $Lines)) {
+        $index++
         $line = $row.Line
         $section = $row.Section
         if ($row.Heading) {
@@ -338,15 +406,8 @@ function Get-PaperTaskGateVerdict {
             continue
         }
         if ($row.Fenced) { continue }
+        if ($null -ne $statusLine -and $index -eq $statusLine.Index) { continue }
         $plain = Get-PaperPlainText $line
-
-        # The colon sits INSIDE the bold in the template - "**Trang thai:**" - so it is matched before
-        # the closing asterisks, not after them.
-        if ($null -eq $status -and $plain -match '^\*\*(trang thai|status):?\*\*:?\s*(.*)$') {
-            $status = $Matches[2].Trim()
-            if ($line -match 'spec-hash:\s*([0-9a-f]{6,})') { $specHash = $Matches[1] }
-            continue
-        }
 
         # The work-type line. "**Loai:**" alone is an ordinary Vietnamese word ("kind"), so it names a work
         # type only in the older spelling "**Loai:** dung hinh"; any other "**Loai:**" line is text.
@@ -504,11 +565,8 @@ function Get-PaperTaskGateVerdict {
     }
 
     # ---- approval (rule 10) and the freeze (rule 13) -----------------------------------------
-    $plainStatus = Get-PaperPlainText $status
-    # The word opens the status, as plan-nag and check-spec read it: matched anywhere, "not approved yet" was
-    # approved here and /task-do could start on a plan nobody approved.
-    $isApproved = $plainStatus -match '^\s*(da duyet|approved|xong|done)\b'
-    if (-not $isApproved) {
+    # Done is approved too: a finished plan was approved before it was finished.
+    if ($statusLine.State -eq 'Pending') {
         return (New-Verdict 4 "not approved yet (status: $status) - nothing may be read or changed until the user approves" @())
     }
 

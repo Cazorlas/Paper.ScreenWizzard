@@ -35,9 +35,12 @@ REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")
 # in any other repository it found 0 maps and reported CLEAN: a silent pass nobody would ever notice.
 SOLUTION = "."
 
+# Folders never walked: build output, caches, other tools' state. Mirrors $script:PaperPrunedDirs in
+# hooks/session-state.ps1 name for name - the hooks walk a project for changed files the same way - and
+# tests/kit-mirrors.tests.ps1 holds the two equal. Change both or neither.
 SKIP_DIRS = {
-    ".git", ".vs", ".idea", "bin", "obj", "graphify-out", ".codegraph", "artifacts", "packages",
-    "node_modules", "TestResults", ".superpowers",
+    ".git", ".vs", ".idea", "bin", "obj", "node_modules", "packages", "TestResults",
+    "__pycache__", ".venv", "venv", "graphify-out", ".codegraph", "artifacts", ".superpowers",
 }
 # .lsp and .scr: script files a host loads by name, so a map may name a routine defined only there.
 SOURCE_EXT = (".cs", ".xaml", ".csproj", ".props", ".targets", ".json", ".ps1", ".sln", ".slnx",

@@ -15,6 +15,9 @@ hỏng hay test đỏ · **2** sai tham số · **5** không áp dụng (ghi l�
 bản checkout **bên dưới** kho, và mọi đường dẫn tương đối tính từ gốc kho — tham chiếu build, thư mục
 dùng chung — trỏ sai chỗ từ đó.
 
+Việc có lane `live` trong worktree thì worktree có **host riêng của nó**: luật chọn host, gắn host và điều
+một bản publish chưa cô lập được nằm ở [references/one-host-per-worktree.md](references/one-host-per-worktree.md).
+
 ## 1. Tạo
 
 Slug kebab-case theo việc (`fix-join-order`), thường là slug của plan.

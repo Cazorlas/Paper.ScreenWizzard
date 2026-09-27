@@ -1,5 +1,7 @@
 # The decision half of worktree.ps1, with no git, no file system and no process: where a task's worktree
-# goes, which arguments make sense, whether two files carry the same content, and what `done` may do.
+# goes, which arguments make sense, whether two files carry the same content, whether `baseline` applies,
+# and what `done` may do. How many tests a run counted is not decided here: that is Get-PaperTestRunVerdict
+# in verb-plan.ps1, the one parser the Stop hook and worktree.ps1 both read.
 # Dot-source it; tests/worktree.tests.ps1 covers it.
 #
 # THIS FILE STAYS ASCII (PowerShell 5.1 reads a .ps1 without a BOM in the ANSI codepage).
@@ -39,11 +41,13 @@ function Get-PaperWorktreePath {
         [Parameter(Mandatory = $true)][string] $Slug,
         [bool] $WorktreesDirExists
     )
+    # [IO.Path], not Split-Path and Join-Path: those go through the PowerShell provider, which throws
+    # "Cannot find drive" for a drive letter this machine does not have - and a plan must not touch drives.
     $main = $MainRoot.TrimEnd('\', '/')
-    $parent = Split-Path $main -Parent
-    $name = Split-Path $main -Leaf
-    if ($WorktreesDirExists) { return (Join-Path (Join-Path $parent '_worktrees') "$name-$Slug") }
-    return (Join-Path $parent "$name-$Slug")
+    $parent = [System.IO.Path]::GetDirectoryName($main)
+    $name = [System.IO.Path]::GetFileName($main)
+    if ($WorktreesDirExists) { return [System.IO.Path]::Combine($parent, '_worktrees', "$name-$Slug") }
+    return [System.IO.Path]::Combine($parent, "$name-$Slug")
 }
 
 function Test-PaperWorktreeCopyPath([string] $Path) {
@@ -150,24 +154,30 @@ function Get-PaperWorktreeDoneVerdict {
     return New-PaperWorktreeVerdict 0 "$Branch has nothing left to merge into $Base" 'remove'
 }
 
-function Get-PaperTestCountLine {
+function Get-PaperWorktreeBaselinePlan {
     <#
     .SYNOPSIS
-    The last line of a test run's output that states how many tests ran, or '' when none does.
+    Whether `baseline` applies to a folder, and which of its two steps run.
     .DESCRIPTION
-    Shapes it knows: "Total: 12" / "Total tests: 12" (dotnet), "Passed: 12", "Tests run: 12", and
-    "12 run" / "12 passed" / "12 tests". An exit 0 with no such line is not a pass: it may have run nothing.
+    Build and Test are the flow runner's plans for the build and test verbs (Get-PaperVerbPlan), or $null
+    when there is no profile. A broken plan (2) stops everything: running the half of a profile that
+    happens to parse would report a baseline of a project nobody configured. Neither verb declared is not
+    applicable (5), never a green baseline; one of them declared runs that one alone.
+    .PARAMETER ProfileFound
+    Whether the folder has a .claude/paper.profile.json at all.
     #>
-    param([AllowEmptyString()][AllowEmptyCollection()][string[]] $Lines = @())
-    $patterns = @(
-        '(?i)\b(total( tests)?|passed|failed|tests run)\s*[:=]\s*\d+',
-        '(?i)\b\d+\s+(tests?|passed|failed|run)\b'
-    )
-    $found = ''
-    foreach ($line in $Lines) {
-        foreach ($p in $patterns) {
-            if ($line -match $p) { $found = $line.Trim(); break }
-        }
+    param([bool] $ProfileFound, $Build, $Test, [string] $Dir)
+
+    function New-BaselinePlan([int] $code, [string] $reason, [bool] $runBuild = $false, [bool] $runTest = $false) {
+        return [pscustomobject]@{ ExitCode = $code; Reason = $reason; RunBuild = $runBuild; RunTest = $runTest }
     }
-    return $found
+    if (-not $ProfileFound) { return New-BaselinePlan 5 "baseline not applicable - no .claude/paper.profile.json in $Dir" }
+    # Build first, as the steps run: its reason is the one to read when both are broken.
+    foreach ($plan in @($Build, $Test)) {
+        if ($null -ne $plan -and $plan.ExitCode -eq 2) { return New-BaselinePlan 2 ([string] $plan.Reason) }
+    }
+    $runBuild = $null -ne $Build -and $Build.ExitCode -eq 0
+    $runTest = $null -ne $Test -and $Test.ExitCode -eq 0
+    if (-not $runBuild -and -not $runTest) { return New-BaselinePlan 5 'baseline not applicable - the profile declares neither build nor test' }
+    return New-BaselinePlan 0 'ok' $runBuild $runTest
 }

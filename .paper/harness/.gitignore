@@ -1,0 +1,3 @@
+# What the harness records while sessions run - per machine, never committed. harness.ps1 and schema/ are the kit's.
+runs/
+sessions/
