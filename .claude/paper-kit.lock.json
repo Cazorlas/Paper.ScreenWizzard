@@ -1,6 +1,6 @@
 {
-  "version": "1.36.0",
-  "payloadHash": "3a65b3dc9eadcb4d87095356396bd429e0f2858c007e3cb275d5ad73a8d3d257",
+  "version": "1.37.0",
+  "payloadHash": "c8d7a3263c88ecd55517f0d0a1ef549f9b89a0dc7a09a28c67005a09dbbaa593",
   "hosts": ["desktop"],
   "files": {
     ".agents/skills/adr/SKILL.md": "9f5c1354130c9771373656307a9c3e22d13d7e49213f7ed5ecacb6e24eb29e1c",
@@ -17,7 +17,7 @@
     ".agents/skills/diagram/SKILL.md": "c8b1242c31f474b0c6e88cf594f6539c7ea812c2f73c895ddf37153a028ee8c6",
     ".agents/skills/drive-wpf/SKILL.md": "197da8549aee0d7dc10165f38f00a41839dace145885caebb19a3820d2c4dcf8",
     ".agents/skills/find-bug/SKILL.md": "3f608c9ca110e42551377fdeb71ec8d272fc15be707d0ab9049c5d1151d55b5a",
-    ".agents/skills/model-task/SKILL.md": "0f81e10c7ee1b5d675ec08788a31b87794714cc1b19927e29530621db0d1d4bf",
+    ".agents/skills/model-task/SKILL.md": "a5f0af6da10274e60b563ba6fdb33217d0721a469b2ce4837143d626b851c19c",
     ".agents/skills/model-task/reference-template.md": "ef417cd311badf5dcbeb97d312ed8ee143f40148186766e1a56b0330168e6efc",
     ".agents/skills/model-task/rule-template.md": "1a57b570be4d72bfef06f092d0ebcb8c93dbdb6a331e6a7d426cb19832857dff",
     ".agents/skills/model-task/sample-template.md": "a9377b643db515f451ccf0b94b02b463c5380114b7e1500ce1e7700bd7067150",
@@ -124,7 +124,7 @@
     ".claude/skills/diagram/SKILL.md": "c8b1242c31f474b0c6e88cf594f6539c7ea812c2f73c895ddf37153a028ee8c6",
     ".claude/skills/drive-wpf/SKILL.md": "197da8549aee0d7dc10165f38f00a41839dace145885caebb19a3820d2c4dcf8",
     ".claude/skills/find-bug/SKILL.md": "3f608c9ca110e42551377fdeb71ec8d272fc15be707d0ab9049c5d1151d55b5a",
-    ".claude/skills/model-task/SKILL.md": "0f81e10c7ee1b5d675ec08788a31b87794714cc1b19927e29530621db0d1d4bf",
+    ".claude/skills/model-task/SKILL.md": "a5f0af6da10274e60b563ba6fdb33217d0721a469b2ce4837143d626b851c19c",
     ".claude/skills/model-task/reference-template.md": "ef417cd311badf5dcbeb97d312ed8ee143f40148186766e1a56b0330168e6efc",
     ".claude/skills/model-task/rule-template.md": "1a57b570be4d72bfef06f092d0ebcb8c93dbdb6a331e6a7d426cb19832857dff",
     ".claude/skills/model-task/sample-template.md": "a9377b643db515f451ccf0b94b02b463c5380114b7e1500ce1e7700bd7067150",

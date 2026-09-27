@@ -61,7 +61,7 @@ duyệt hay học được. Chụp trên view hay layout sẵn có, trả lại 
 ## 3. Một yêu cầu dựng hình — SPEC, brief, plan, rồi dừng
 
 1. **Đọc trước**: mọi file `rules`, `samples`, `references` khớp với vùng việc này; SPEC.md của feature và
-   README của `harness/`.
+   README của `harness/`; và bản đồ lớp của bản vẽ nếu gói host có (skill model của host).
 2. **SPEC.md** (skill `spec`): tạo mới với banner `Bản nháp chờ duyệt` hay sửa với dấu `Đổi bởi <brief>,
    chờ kiểm` — vùng đó phải thoả gì, lời và số của người dùng, không code.
 3. **Brief** từ `spec/brief-template.md`: yêu cầu nguyên văn, ảnh hay bản vẽ đi kèm, id phần tử được đụng.
