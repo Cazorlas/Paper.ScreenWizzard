@@ -1,6 +1,6 @@
 # Quay màn hình ra MP4 (đợt 2a) — plan — 2026-09-27
 
-**Trạng thái:** chờ duyệt
+**Trạng thái:** đã duyệt 2026-09-27 ("1 --> duyte65, 2 --> ok, 3 --> Ok"; kèm "với cái giao diện khi chụp hay tắt thì ẩn cái giao diện ban đầu đi nha, dống fastron hoạt động ý")
 **Loại việc:** code
 
 Domain mới `Recorder` trong cả năm project:
@@ -93,6 +93,10 @@ Brief: [2026-09-27-quay-man-hinh.md](2026-09-27-quay-man-hinh.md) · Luật: [SP
 - **Cài đặt mới:** thư mục video, fps, đếm ngược, lựa chọn cuối của thanh quay (cái để quay, màn hình nào, ba công tắc), hai phím
   tắt. Nhóm "Quay màn hình" trong Cài đặt.
 
+- **Spec bổ sung 2026-09-27 (cùng lượt duyệt):** thanh quay và thanh chụp ẩn khi bấm Quay, hiện lại sau khi dừng; trong lúc quay
+  điều khiển ở biểu tượng khay (đỏ, tooltip thời gian, menu Tạm dừng/Tiếp tục, Dừng) và phím tắt; khi chụp ảnh thì thanh quay ẩn như
+  thanh chụp. Thanh quay không còn dạng "đang quay"; T6, T7, T10 phủ các dòng này.
+
 ## UI wireframe
 
 ```
@@ -102,10 +106,11 @@ Thanh quay (luôn trên cùng, kéo được, không có trong video):
 └──────────────────────────────────────────────────────────────────────────┘
    Màn hình ▾ → 1 (1920×1080, chính) · 2 (2560×1440)
 
-Đang quay (cùng thanh, nội dung đổi):
-┌───────────────────────────────────────────┐
-│ ● 00:01:23   [❚❚ Tạm dừng]  [■ Dừng]       │
-└───────────────────────────────────────────┘
+Đang quay: thanh quay ẩn. Biểu tượng khay đỏ, tooltip "Đang quay 00:01:23", menu khay:
+  ❚❚ Tạm dừng   Ctrl+Alt+P
+  ■ Dừng        Ctrl+Alt+R
+  ──────────
+  (các dòng chụp, Cài đặt, Thoát như cũ)
 Vùng quay: viền đỏ 2 px nét đứt ngay ngoài vùng (không có trong video).
 
 Đã quay:
@@ -120,7 +125,8 @@ Vùng quay: viền đỏ 2 px nét đứt ngay ngoài vùng (không có trong vi
   "màn hình nào" nằm trong menu thả, vì nó chỉ có khi có hơn một màn hình.
 - **Công tắc tiếng và con trỏ nằm cạnh nút Quay** (Fitts: quyết định cuối trước khi bấm ở gần nút bấm; Gestalt: tách khỏi nhóm
   "cái để quay" bằng vạch). Chúng kéo ngược với sự gọn của thanh; giữ vì Hùng muốn bật tắt từng cái.
-- **Khi đang quay, thanh chỉ còn thời gian, Tạm dừng, Dừng** (hiện trạng thái hệ thống, tối giản). Không đổi cái để quay giữa chừng.
+- **Khi đang quay, thanh ẩn; trạng thái và nút nằm ở khay** (Hùng muốn như FastStone; hiện trạng thái hệ thống qua biểu tượng đỏ
+  và tooltip; không che nội dung đang quay). Kéo ngược: nút ở khay xa hơn (Fitts) → bù bằng phím tắt.
 - **Cửa sổ "Đã quay" dùng cùng khuôn với "Đã chụp"** (nhất quán): file đã lưu, nên không có nút Bỏ.
 
 ## Tasks

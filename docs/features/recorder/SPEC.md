@@ -1,4 +1,4 @@
-> Bản nháp chờ duyệt 2026-09-27. Brief: [2026-09-27-quay-man-hinh.md](2026-09-27-quay-man-hinh.md) · Plan: [2026-09-27-quay-man-hinh-plan.md](2026-09-27-quay-man-hinh-plan.md)
+> Bản nháp, duyệt 2026-09-27, đang làm. Brief: [2026-09-27-quay-man-hinh.md](2026-09-27-quay-man-hinh.md) · Plan: [2026-09-27-quay-man-hinh-plan.md](2026-09-27-quay-man-hinh-plan.md)
 
 # Quay màn hình — SPEC
 
@@ -21,9 +21,12 @@ with my voice and the computer's sound, into an MP4 I can send at once, without 
 2. On the recording bar picks what to record: **one monitor** (which one, when there are several), **a region** dragged on the
    live screen, **a window** (click it), or **the whole desktop** (every monitor). Switches system sound, microphone and pointer
    on or off, each on its own.
-3. Presses Record. The chosen area is outlined, a countdown shows 3, 2, 1, and recording starts.
-4. While recording, the bar shows the elapsed time and has Pause/Resume and Stop. The hotkeys do the same without the bar.
-5. Presses Stop. The MP4 is saved in the video folder and a "Recorded" window offers Open video, Show in folder and Close.
+3. Presses Record. The recording bar **hides**, as FastStone's does; the chosen area is outlined, a countdown shows 3, 2, 1, and
+   recording starts.
+4. While recording, nothing of the app stays in the way: the tray icon turns red and shows the elapsed time when the pointer rests
+   on it, and its menu has Pause/Resume and Stop. The hotkeys do the same.
+5. Presses Stop. The MP4 is saved in the video folder, a "Recorded" window offers Open video, Show in folder and Close, and the
+   recording bar comes back.
 
 ## Inputs
 
@@ -64,8 +67,12 @@ Recording bar, area to record, monitor, region, window, system sound, microphone
 - Given a region dragged partly outside every monitor → only the part on a monitor is recorded
 - Given a monitor set to 150% → the video has the monitor's **real pixels** (a region of 300 × 200 as seen is 450 × 300)
 
-**The app never records itself.**
+**The app never records itself, and gets out of the way.**
 
+- Given Record pressed → the recording bar and the capture bar **are hidden** until the recording stops; the bars that were open
+  come back after it
+- Given a screenshot taken (any kind) while the recording bar is open → the recording bar **is hidden** during the capture and
+  comes back after, as the capture bar does
 - Given the recording bar, the outline of the area and the countdown on screen → **none of them** is in the video
 - Given a notice or the "Recorded" window of the app shown while recording → it is **not** in the video
 
@@ -119,7 +126,7 @@ Recording bar, area to record, monitor, region, window, system sound, microphone
 - Windows 10 version 2004 or later (the app's windows are kept out of the video by a Windows feature that version brings).
 - A recording of 10 minutes at 1920 × 1080 and 30 frames per second takes at most about 300 MB.
 - Protected content (some video players, DRM) may record as black; that is Windows' choice and not a failure.
-- The recorded area is fixed at the start; a window that moves is not followed. (The narrowest reading; Hùng has not reviewed it.)
+- The recorded area is fixed at the start; a window that moves is not followed.
 - The default hotkeys are a first choice; the user can change them in Settings like the capture hotkeys.
 
 ## Clarifications
@@ -130,7 +137,10 @@ Recording bar, area to record, monitor, region, window, system sound, microphone
   the whole desktop; system sound and microphone on and off independently; countdown; hotkeys; MP4.
 - Q: webcam and face stickers? (Hùng 2026-09-27: "Chưa có thể hiện webcame nhỉ, rùi làm thêm mí filter icon chèn mặt dc ko") ->
   A: yes, as rounds 2b (webcam on the video) and 2c (icons that follow the face), after this one ships.
-- Unanswered: should a recorded window be followed when it moves? This SPEC keeps the area fixed.
+- Q: should a recorded window be followed when it moves? -> A: no, the area stays where the window was (Hùng: "ok").
+- Q: the default hotkeys Ctrl+Alt+R and Ctrl+Alt+P? -> A: yes (Hùng: "Ok").
+- Q: the app's own windows while capturing or recording? (Hùng: "với cái giao diện khi chụp hay tắt thì ẩn cái giao diện ban đầu đi
+  nha, dống fastron hoạt động ý") -> A: they hide, and the tray icon carries the controls while recording.
 
 ## What it does not do yet
 
@@ -151,9 +161,10 @@ một file MP4 gửi được ngay, không phải cài thêm gì.
 1. Chọn Quay màn hình… trong menu khay, bấm nút Quay trên thanh chụp, hoặc bấm phím tắt bắt đầu/dừng. Một thanh quay nhỏ mở ra.
 2. Trên thanh quay chọn cái để quay: **một màn hình** (màn hình nào, khi có nhiều cái), **một vùng** kéo trên màn hình đang chạy,
    **một cửa sổ** (bấm vào nó), hoặc **cả desktop** (mọi màn hình). Bật tắt tiếng hệ thống, micro và con trỏ, mỗi cái riêng.
-3. Bấm Quay. Vùng đã chọn có viền bao, đếm ngược 3, 2, 1, rồi bắt đầu quay.
-4. Trong lúc quay, thanh quay hiện thời gian đã quay, có Tạm dừng/Tiếp tục và Dừng. Phím tắt làm được y vậy mà không cần thanh.
-5. Bấm Dừng. File MP4 được lưu vào thư mục video và cửa sổ "Đã quay" cho chọn Mở video, Mở thư mục, Đóng.
+3. Bấm Quay. Thanh quay **ẩn đi**, như FastStone; vùng đã chọn có viền bao, đếm ngược 3, 2, 1, rồi bắt đầu quay.
+4. Trong lúc quay, không gì của ứng dụng chắn trên màn hình: biểu tượng khay chuyển đỏ và hiện thời gian đã quay khi rê chuột lên,
+   menu của nó có Tạm dừng/Tiếp tục và Dừng. Phím tắt làm được y vậy.
+5. Bấm Dừng. File MP4 được lưu vào thư mục video, cửa sổ "Đã quay" cho chọn Mở video, Mở thư mục, Đóng, và thanh quay hiện lại.
 
 ## Inputs
 
@@ -193,8 +204,10 @@ Thanh quay, vùng quay, màn hình, vùng, cửa sổ, tiếng hệ thống, mic
 - Cho vùng kéo lấn ra ngoài mọi màn hình → chỉ phần nằm trên màn hình được quay
 - Cho màn hình đặt 150% → video có **pixel thật** của màn hình (vùng nhìn thấy 300 × 200 thành 450 × 300)
 
-**Ứng dụng không bao giờ quay chính nó.**
+**Ứng dụng không bao giờ quay chính nó, và tránh sang một bên.**
 
+- Cho bấm Quay → thanh quay và thanh chụp **ẩn đi** tới khi dừng quay; thanh nào đang mở thì hiện lại sau đó
+- Cho chụp ảnh (kiểu nào cũng vậy) khi thanh quay đang mở → thanh quay **ẩn đi** trong lúc chụp rồi hiện lại, như thanh chụp
 - Cho thanh quay, viền vùng quay và số đếm ngược đang hiện → **không cái nào** có trong video
 - Cho một thông báo hay cửa sổ "Đã quay" của ứng dụng hiện ra trong lúc quay → nó **không** có trong video
 
@@ -244,7 +257,7 @@ Thanh quay, vùng quay, màn hình, vùng, cửa sổ, tiếng hệ thống, mic
 - Windows 10 bản 2004 trở lên (cửa sổ của ứng dụng được loại khỏi video nhờ một tính năng Windows có từ bản đó).
 - 10 phút quay ở 1920 × 1080, 30 khung hình mỗi giây, tốn nhiều nhất khoảng 300 MB.
 - Nội dung có bảo vệ (một số trình phát video, DRM) có thể ra màu đen; đó là Windows chặn, không phải lỗi.
-- Vùng quay cố định từ lúc bắt đầu; cửa sổ di chuyển thì không bám theo. (Cách hiểu nhỏ nhất; Hùng chưa xem lại.)
+- Vùng quay cố định từ lúc bắt đầu; cửa sổ di chuyển thì không bám theo.
 - Phím tắt mặc định là lựa chọn đầu; người dùng đổi được trong Cài đặt như phím tắt chụp.
 
 ## Clarifications
@@ -255,7 +268,10 @@ Thanh quay, vùng quay, màn hình, vùng, cửa sổ, tiếng hệ thống, mic
   desktop; tiếng hệ thống và micro bật tắt riêng; đếm ngược; phím tắt; MP4.
 - Q: webcam và icon dán lên mặt? (Hùng 2026-09-27: "Chưa có thể hiện webcame nhỉ, rùi làm thêm mí filter icon chèn mặt dc ko") ->
   A: có, thành đợt 2b (webcam chồng lên video) và 2c (icon bám theo khuôn mặt), sau khi đợt này phát hành.
-- Chưa trả lời: cửa sổ đang quay mà di chuyển thì có bám theo không? SPEC này giữ vùng cố định.
+- Q: cửa sổ đang quay mà di chuyển thì có bám theo không? -> A: không, vùng giữ ở chỗ cửa sổ nằm lúc bắt đầu (Hùng: "ok").
+- Q: phím mặc định Ctrl+Alt+R và Ctrl+Alt+P? -> A: được (Hùng: "Ok").
+- Q: cửa sổ của ứng dụng khi chụp hay quay? (Hùng: "với cái giao diện khi chụp hay tắt thì ẩn cái giao diện ban đầu đi nha, dống
+  fastron hoạt động ý") -> A: chúng ẩn đi, và biểu tượng khay giữ các nút điều khiển trong lúc quay.
 
 ## What it does not do yet
 
