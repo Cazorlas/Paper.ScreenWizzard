@@ -40,6 +40,30 @@ try {
         catch { return '' }
     }
 
+    # The payload hashes behind the versions (Compare-PaperKitPayload): the lock's, and the marketplace
+    # kit's payload.manifest.json. '' when either is missing, and then the version decides.
+    function Get-PaperVendoredPayloadHash([string] $root) {
+        try {
+            $lock = Join-Path (Join-Path $root '.claude') 'paper-kit.lock.json'
+            if (-not (Test-Path -LiteralPath $lock)) { return '' }
+            $p = (Get-Content -LiteralPath $lock -Raw | ConvertFrom-Json).PSObject.Properties['payloadHash']
+            if ($null -eq $p) { return '' }
+            return [string] $p.Value
+        }
+        catch { return '' }
+    }
+
+    function Get-PaperMarketplacePayloadHash {
+        try {
+            $market = Get-PaperMarketplaceKitPath
+            if (-not $market) { return '' }
+            $manifest = Join-Path $market 'paper-kit\payload.manifest.json'
+            if (-not (Test-Path -LiteralPath $manifest)) { return '' }
+            return [string] ((Get-Content -LiteralPath $manifest -Raw | ConvertFrom-Json).hash)
+        }
+        catch { return '' }
+    }
+
     function Get-PaperMarketplaceKitVersion {
         try {
             $market = Get-PaperMarketplaceKitPath
@@ -93,7 +117,8 @@ Restart Claude Code from the git root that holds .claude/paper.profile.json (or 
     # any of these files may be absent on a machine that installed the kit another way, and a session
     # start is not the place to fail over a missing file.
     $notice = Get-PaperKitVersionNotice (Get-PaperVendoredKitVersion $anchor) `
-        (Get-PaperMarketplaceKitVersion) (Get-PaperMarketplaceKitPath)
+        (Get-PaperMarketplaceKitVersion) (Get-PaperMarketplaceKitPath) `
+        -VendoredHash (Get-PaperVendoredPayloadHash $anchor) -SourceHash (Get-PaperMarketplacePayloadHash)
     if ($notice.Message) { $line = $line + [Environment]::NewLine + $notice.Message }
 
     Write-PaperHookText $line

@@ -1,5 +1,6 @@
 {
-  "version": "1.35.0",
+  "version": "1.36.0",
+  "payloadHash": "3a65b3dc9eadcb4d87095356396bd429e0f2858c007e3cb275d5ad73a8d3d257",
   "hosts": ["desktop"],
   "files": {
     ".agents/skills/adr/SKILL.md": "9f5c1354130c9771373656307a9c3e22d13d7e49213f7ed5ecacb6e24eb29e1c",
@@ -72,7 +73,7 @@
     ".claude/hooks/hook-dispatch-plan.ps1": "bd31b79ba31ea10bcded4bfffa0ef3fc86aac8f7f6da688754ba8e3735a19ade",
     ".claude/hooks/hook-dispatch.ps1": "033adbefc39a8f458363899dcb151b60146ca6b96d6ce2faaed900ca128278b0",
     ".claude/hooks/hook-input.ps1": "8489dc643ddec977d864ff980cfcf134b815fada8f4b940d22f0efef0f762eee",
-    ".claude/hooks/kit-version-plan.ps1": "d2102a1dfd618ddf5eec122993c8ef4bc0992c20c633fff743698b3aac33a466",
+    ".claude/hooks/kit-version-plan.ps1": "0f5eea5ebe97e62dd77994dbd1017d794ec46de898813fde0273e069fc66413d",
     ".claude/hooks/layer-guard.ps1": "7691346abc16a0daeec19fa82fa4b8c5e16d2e6f170c49dac4d5bdea73179f2a",
     ".claude/hooks/link-nag-plan.ps1": "f0f1dcfb23aea63e55a274344e7023c3326571881c7c853202597b849807f3c2",
     ".claude/hooks/link-nag.ps1": "dfa4e8187a5d64384898d5f284bc6146d09e3bd2e99a42bf98926b3f7025b11f",
@@ -85,7 +86,7 @@
     ".claude/hooks/plan-nag.ps1": "ef19e7de2eb8854687e9b383718174c258bf2f960e1bddedf35ce6f3679d1878",
     ".claude/hooks/post-tool.ps1": "c4b2a7c6be3cf388bc20a0604b6d5084e8d04618e267c67ec24ab32195319b60",
     ".claude/hooks/pre-tool.ps1": "4dcd0ffef2d8cf13123e2e9a5870f80083c20a6c8b12bb61e17e3794a01ba4c8",
-    ".claude/hooks/session-anchor.ps1": "f9d4a31c33686f7886479879f1ea2142f781243ce839b85d18683316990fbd68",
+    ".claude/hooks/session-anchor.ps1": "2e344fde92b93efcd226f8e15de350bb79351b8fbc23c1c07e86e34dc5fa5b1d",
     ".claude/hooks/session-state.ps1": "6f396b239062e76b9b7923a4fd3d3859ee9471671c4a3b56dcfeae14ca2bbe87",
     ".claude/hooks/test-guard.ps1": "ae0ea07f559b5ab8660d51a5e55d88cd6b88d964a0c23fc9acbac400f3c06583",
     ".claude/hooks/verify-on-stop.ps1": "cd45e9eb41d54f044e9b0206eb348d421dffb48fd3e585bbde899d086a7a26d4",

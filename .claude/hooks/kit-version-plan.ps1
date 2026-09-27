@@ -39,6 +39,28 @@ function Compare-PaperVersion {
 
 <#
 .SYNOPSIS
+    Whether a vendored copy is behind, current or ahead of a kit: -1, 0 or 1, like Compare-PaperVersion.
+.DESCRIPTION
+    The version is a label and the payload hash is the bytes (payload.manifest.json, written into the lock
+    by vendor.ps1). When both sides carry a hash, the bytes decide: a bump that changed no payload file - a
+    fix to vendor.ps1, a doc - asks no project to set up again, and a payload fixed without a bump (KIT-002)
+    no longer reads as current. A vendored label NEWER than the kit is still "ahead" whatever the bytes: that
+    is an edit made in the project, which the hash would hide. A lock from before the hash: the version.
+#>
+function Compare-PaperKitPayload {
+    param([string] $VendoredVersion, [string] $KitVersion, [string] $VendoredHash = '', [string] $KitHash = '')
+
+    $order = Compare-PaperVersion $VendoredVersion $KitVersion
+    if ($order -gt 0) { return 1 }
+    if (-not [string]::IsNullOrWhiteSpace($VendoredHash) -and -not [string]::IsNullOrWhiteSpace($KitHash)) {
+        if ($VendoredHash.Trim() -eq $KitHash.Trim()) { return 0 }
+        return -1
+    }
+    return $order
+}
+
+<#
+.SYNOPSIS
     What to tell the reader at session start about the vendored kit.
 .PARAMETER Vendored
     The version in this project's .claude/paper-kit.lock.json, or empty when the project has no lock.
@@ -52,14 +74,16 @@ function Get-PaperKitVersionNotice {
     param(
         [string] $Vendored,
         [string] $Source,
-        [string] $SourcePath = ''
+        [string] $SourcePath = '',
+        [string] $VendoredHash = '',
+        [string] $SourceHash = ''
     )
 
     if ([string]::IsNullOrWhiteSpace($Vendored) -or [string]::IsNullOrWhiteSpace($Source)) {
         return [pscustomobject]@{ Status = 'unknown'; Message = '' }
     }
 
-    $order = Compare-PaperVersion $Vendored $Source
+    $order = Compare-PaperKitPayload $Vendored $Source $VendoredHash $SourceHash
 
     if ($order -lt 0) {
         $where = if ([string]::IsNullOrWhiteSpace($SourcePath)) { 'the marketplace' } else { $SourcePath }
