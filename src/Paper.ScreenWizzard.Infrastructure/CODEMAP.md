@@ -10,8 +10,8 @@ decision is made here. Each adapter sits in the folder of its port's domain (ADR
 | --- | --- |
 | `NativeMethods.cs` | every P/Invoke of the project (GDI, DWM, monitors, cursor, hotkey) |
 | `Capture/ScreenSource.cs` | `BitBlt` of the virtual desktop into a DIB, the cursor drawn in |
-| `Capture/WindowCatalog.cs` | top-level windows top to bottom with the DWM visible frame |
-| `Capture/TaskDelay.cs` | the countdown's wait |
+| `Shared/WindowCatalog.cs` | top-level windows top to bottom with the DWM visible frame (capture and recorder) |
+| `Shared/TaskDelay.cs` | the countdown's wait (capture and recorder) |
 | `Shell/HotkeyService.cs` | `RegisterHotKey` through a message-only window; atomic re-register, F12 refused |
 | `Shell/SettingsStore.cs` | `settings.json` read as written (missing settings null), the `.bak` of a file it cannot read or the use case calls broken, the path in every failure |
 | `Shell/AutostartService.cs` | the HKCU Run value |

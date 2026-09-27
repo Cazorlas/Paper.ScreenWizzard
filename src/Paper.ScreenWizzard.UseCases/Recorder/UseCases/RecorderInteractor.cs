@@ -23,6 +23,8 @@ public sealed class RecorderInteractor : IRecorderInteractor
     private readonly IVideoWriter _writer;
     private readonly IMonotonicClock _ticks;
     private readonly IWindowPresence _windows;
+    private readonly IWindowCatalog _catalog;
+    private readonly IFileLauncher _launcher;
     private readonly IDelay _delay;
     private readonly IClock _clock;
     private readonly IFileStore _files;
@@ -39,6 +41,8 @@ public sealed class RecorderInteractor : IRecorderInteractor
         IVideoWriter writer,
         IMonotonicClock ticks,
         IWindowPresence windows,
+        IWindowCatalog catalog,
+        IFileLauncher launcher,
         IDelay delay,
         IClock clock,
         IFileStore files,
@@ -49,6 +53,8 @@ public sealed class RecorderInteractor : IRecorderInteractor
         _writer = writer;
         _ticks = ticks;
         _windows = windows;
+        _catalog = catalog;
+        _launcher = launcher;
         _delay = delay;
         _clock = clock;
         _files = files;
@@ -82,6 +88,14 @@ public sealed class RecorderInteractor : IRecorderInteractor
             }
         }
     }
+
+    public IReadOnlyList<WindowInfo> ListWindows() => _catalog.GetWindows();
+
+    public WindowInfo? WindowAt(IReadOnlyList<WindowInfo> windows, PixelPoint pointer) => WindowPicking.TopmostAt(windows, pointer);
+
+    public NotificationMessage? OpenVideo(string path) => Launched(_launcher.Open(path), path);
+
+    public NotificationMessage? ShowInFolder(string path) => Launched(_launcher.ShowInFolder(path), path);
 
     public RecordAreaResult ResolveArea(RecordTargetKind kind, int? monitorIndex, PixelRect? picked, IReadOnlyList<MonitorInfo> monitors, PixelPoint pointer) =>
         RecordArea.Resolve(kind, monitorIndex, picked, monitors, pointer);
@@ -493,6 +507,17 @@ public sealed class RecorderInteractor : IRecorderInteractor
         }
 
         _frames.Close();
+    }
+
+    private NotificationMessage? Launched(PortResult result, string path)
+    {
+        if (result.Success)
+        {
+            return null;
+        }
+
+        _log.Warning($"{path} could not be opened: {result.Detail}");
+        return NotificationMessage.Of("Recorder.CannotOpen", path, result.Detail ?? string.Empty);
     }
 
     private void SetIdle()

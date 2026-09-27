@@ -13,6 +13,17 @@ public interface IRecorderInteractor
     /// <summary>The video time recorded so far, pauses left out.</summary>
     TimeSpan Elapsed { get; }
 
+    /// <summary>The windows on screen now, for picking one to record.</summary>
+    IReadOnlyList<WindowInfo> ListWindows();
+
+    /// <summary>The window a click at <paramref name="pointer"/> records: the topmost one there (SPEC recorder, "What is recorded").</summary>
+    WindowInfo? WindowAt(IReadOnlyList<WindowInfo> windows, PixelPoint pointer);
+
+    /// <summary>Opens the saved video; a failure is said (null when it opened).</summary>
+    NotificationMessage? OpenVideo(string path);
+
+    NotificationMessage? ShowInFolder(string path);
+
     RecordAreaResult ResolveArea(RecordTargetKind kind, int? monitorIndex, PixelRect? picked, IReadOnlyList<MonitorInfo> monitors, PixelPoint pointer);
 
     /// <summary>

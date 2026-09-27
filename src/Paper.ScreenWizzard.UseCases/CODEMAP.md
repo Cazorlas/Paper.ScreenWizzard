@@ -12,7 +12,7 @@ interfaces; Infrastructure implements the ports.
 | `Shell/Ports/` | `IShellInteractor` and the ports of the shell: `ISettingsStore`, `IHotkeys`, `IAutostart`, `ISingleInstance`; `IUpdateInteractor` and its ports `IReleaseFeed`, `IBrowser` |
 | `Shell/UseCases/ShellInteractor.cs` | start-up (load or default settings, register the hotkeys, notices), hotkey change, apply, autostart, bar placement |
 | `Shell/UseCases/UpdateInteractor.cs` | whether a newer version is out (check on, running x.y.z, newest tag), said once per version; the check asked from the tray (`CheckNowAsync`), always answered; opens the release page |
-| `Capture/Ports/` | `ICaptureInteractor`, `ICaptureSession`, `IScreenSource`, `IWindowCatalog`, `IDelay` |
+| `Capture/Ports/` | `ICaptureInteractor`, `ICaptureSession`, `IScreenSource` (the window list `IWindowCatalog` and the wait `IDelay` are in `Shared/Ports`) |
 | `Capture/UseCases/CaptureInteractor.cs` | countdown, snapshot, one session at a time, where a captured image goes |
 | `Capture/UseCases/CaptureSession.cs` | choosing on the frozen snapshot: rectangle, freeform, window hit-test, full screen |
 | `Shared/Ports/` | `IMonitorCatalog` (capture and the editor's window placement), `IClock`, `ILog`, `INotifications`, `IClipboard`, `IFileStore`, `IImageCodec`, `IImageDelivery` |

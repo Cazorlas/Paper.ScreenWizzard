@@ -184,6 +184,34 @@ public sealed class FakeWindowPresence : IWindowPresence
     public bool IsOpen(long windowHandle) => Open;
 }
 
+public sealed class FakeWindowCatalog : IWindowCatalog
+{
+    public List<WindowInfo> Windows { get; } = [];
+
+    public IReadOnlyList<WindowInfo> GetWindows() => Windows;
+}
+
+public sealed class FakeLauncher : IFileLauncher
+{
+    public PortResult Result { get; set; } = PortResult.Ok;
+
+    public List<string> Opened { get; } = [];
+
+    public List<string> Shown { get; } = [];
+
+    public PortResult Open(string path)
+    {
+        Opened.Add(path);
+        return Result;
+    }
+
+    public PortResult ShowInFolder(string path)
+    {
+        Shown.Add(path);
+        return Result;
+    }
+}
+
 /// <summary>A countdown second that passes at once, or never (until cancelled) when <see cref="Hold"/> is set.</summary>
 public sealed class FakeCountdown : IDelay
 {
@@ -259,7 +287,7 @@ public sealed class RecorderRig
     public RecorderRig()
     {
         Frames = new FakeScreenFrames(Ticks);
-        Recorder = new RecorderInteractor(Frames, Sounds, Writer, Ticks, Windows, Countdown, Wall, Files, Log);
+        Recorder = new RecorderInteractor(Frames, Sounds, Writer, Ticks, Windows, Catalog, Launcher, Countdown, Wall, Files, Log);
         Recorder.Notice += Notices.Add;
         Files.Directories.Add(Folder);
     }
@@ -275,6 +303,10 @@ public sealed class RecorderRig
     public FakeWindowPresence Windows { get; } = new();
 
     public FakeCountdown Countdown { get; } = new();
+
+    public FakeWindowCatalog Catalog { get; } = new();
+
+    public FakeLauncher Launcher { get; } = new();
 
     public FakeWallClock Wall { get; } = new();
 

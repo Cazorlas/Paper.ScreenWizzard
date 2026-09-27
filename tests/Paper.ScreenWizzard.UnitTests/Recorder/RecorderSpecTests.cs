@@ -387,3 +387,47 @@ public sealed class RecorderSpecTests
         public void Report(int value) => report(value);
     }
 }
+
+/// <summary>SPEC recorder, "What the user does" 2 and 5: picking a window, and the buttons of the "Recorded" window.</summary>
+[TestFixture]
+public sealed class RecorderWindowAndFileTests
+{
+    [Test]
+    public void AClickOnTwoOverlappingWindows_PicksTheOneOnTop()
+    {
+        var rig = new RecorderRig();
+        var back = new WindowInfo(1, "Back", new PixelRect(0, 0, 800, 600), true, false, false, false, 1);
+        var front = new WindowInfo(2, "Front", new PixelRect(400, 300, 800, 600), true, false, false, false, 0);
+        var hidden = new WindowInfo(3, "Hidden", new PixelRect(0, 0, 1920, 1080), true, true, false, false, 0);
+        rig.Catalog.Windows.AddRange([back, front, hidden]);
+
+        var windows = rig.Recorder.ListWindows();
+
+        Assert.That(rig.Recorder.WindowAt(windows, new PixelPoint(500, 400)), Is.EqualTo(front));
+        Assert.That(rig.Recorder.WindowAt(windows, new PixelPoint(100, 100)), Is.EqualTo(back), "a minimised window is never picked");
+        Assert.That(rig.Recorder.WindowAt(windows, new PixelPoint(1500, 1000)), Is.Null);
+    }
+
+    [Test]
+    public void OpenVideo_AndShowInFolder_AskWindows()
+    {
+        var rig = new RecorderRig();
+
+        Assert.That(rig.Recorder.OpenVideo(@"C:\v.mp4"), Is.Null);
+        Assert.That(rig.Recorder.ShowInFolder(@"C:\v.mp4"), Is.Null);
+        Assert.That(rig.Launcher.Opened, Is.EqualTo(new[] { @"C:\v.mp4" }));
+        Assert.That(rig.Launcher.Shown, Is.EqualTo(new[] { @"C:\v.mp4" }));
+    }
+
+    [Test]
+    public void AVideoThatDoesNotOpen_IsSaid_WithItsPath()
+    {
+        var rig = new RecorderRig();
+        rig.Launcher.Result = PortResult.Fail("No app is associated with .mp4.");
+
+        var message = rig.Recorder.OpenVideo(@"C:\v.mp4");
+
+        Assert.That(message?.Key, Is.EqualTo("Recorder.CannotOpen"));
+        Assert.That(message!.Arguments, Is.EqualTo(new[] { @"C:\v.mp4", "No app is associated with .mp4." }));
+    }
+}
