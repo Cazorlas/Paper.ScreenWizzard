@@ -84,6 +84,10 @@ Brief: [2026-09-27-quay-man-hinh.md](2026-09-27-quay-man-hinh.md) · Luật: [SP
   - việc này thuộc ngoại lệ đặt cửa sổ ở Presentation, như `PhysicalWindowPlacer`.
 - **Hotkey:**
   - `IHotkeys` đổi từ `CaptureKind` sang một `HotkeyAction`, gồm bốn kiểu chụp cộng `RecordStartStop` và `RecordPause`;
+  - **Lệch khi làm (2026-09-27, chờ Hùng đồng ý):** code giữ `CaptureKind` cho bốn phím chụp và thêm kiểu `RecordHotkey` (StartStop,
+    Pause) với `IHotkeys.Register/Unregister(RecordHotkey)` và sự kiện `RecordPressed`. Lý do: mọi chỗ gọi, test và tập tin cài đặt của
+    phím chụp giữ nguyên; phím quay được lưu ở mục riêng `recordHotkeys`. Hệ quả giống nhau: tập tin 0.1.3 đọc được, hai phím quay có
+    mặc định, kiểm trùng dùng chung một luật. Nếu Hùng muốn đúng `HotkeyAction` thì là một lượt đổi tên riêng;
   - `AppSettings.Hotkeys` đọc tập tin cũ không có hai mục mới thì lấy mặc định (F8 của shell);
   - mã hoá JSON giữ nguyên tên của bốn kiểu chụp, nên tập tin cũ vẫn đọc được.
 - **File ghi dở:**

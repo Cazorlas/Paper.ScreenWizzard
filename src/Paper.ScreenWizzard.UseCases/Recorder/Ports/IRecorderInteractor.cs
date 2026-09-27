@@ -24,7 +24,8 @@ public interface IRecorderInteractor
 
     NotificationMessage? ShowInFolder(string path);
 
-    RecordAreaResult ResolveArea(RecordTargetKind kind, int? monitorIndex, PixelRect? picked, IReadOnlyList<MonitorInfo> monitors, PixelPoint pointer);
+    /// <summary>The rectangle a choice records, fixed now (SPEC recorder, "What is recorded"); a refusal carries its message (F7).</summary>
+    RecordAreaAnswer ResolveArea(RecordTargetKind kind, int? monitorIndex, PixelRect? picked, IReadOnlyList<MonitorInfo> monitors, PixelPoint pointer);
 
     /// <summary>
     /// Counts down (reporting the seconds left), then starts recording and returns. Stopping during the countdown records nothing and
@@ -35,6 +36,15 @@ public interface IRecorderInteractor
     void Pause();
 
     void Resume();
+
+    /// <summary>The pause hotkey: pauses a recording, resumes a paused one, and does nothing otherwise; returns the state after it.</summary>
+    RecorderState TogglePause();
+
+    /// <summary>
+    /// The start/stop hotkey's first half: stops a countdown or a recording (saving it) and returns true, or returns false when nothing
+    /// was running, so a new recording may start (SPEC recorder, Inputs).
+    /// </summary>
+    Task<bool> StopIfActiveAsync();
 
     /// <summary>Stops a countdown or a recording; a recording is saved first (also when the app exits).</summary>
     Task<RecordingResult?> StopAsync();

@@ -97,8 +97,17 @@ public sealed class RecorderInteractor : IRecorderInteractor
 
     public NotificationMessage? ShowInFolder(string path) => Launched(_launcher.ShowInFolder(path), path);
 
-    public RecordAreaResult ResolveArea(RecordTargetKind kind, int? monitorIndex, PixelRect? picked, IReadOnlyList<MonitorInfo> monitors, PixelPoint pointer) =>
-        RecordArea.Resolve(kind, monitorIndex, picked, monitors, pointer);
+    public RecordAreaAnswer ResolveArea(RecordTargetKind kind, int? monitorIndex, PixelRect? picked, IReadOnlyList<MonitorInfo> monitors, PixelPoint pointer)
+    {
+        var area = RecordArea.Resolve(kind, monitorIndex, picked, monitors, pointer);
+        var message = area.Issue switch
+        {
+            RecordAreaIssue.None => null,
+            RecordAreaIssue.TooSmall => NotificationMessage.Of("Recorder.AreaTooSmall"),
+            _ => NotificationMessage.Of("Recorder.AreaOffScreen"),
+        };
+        return new RecordAreaAnswer(area.Area, area.Issue, message);
+    }
 
     public async Task<RecordStartResult> StartAsync(RecordRequest request, IProgress<int>? countdown, CancellationToken cancellationToken)
     {
@@ -171,6 +180,37 @@ public sealed class RecorderInteractor : IRecorderInteractor
                 _state = RecorderState.Recording;
             }
         }
+    }
+
+    public RecorderState TogglePause()
+    {
+        lock (_lock)
+        {
+            if (_state == RecorderState.Recording)
+            {
+                Pause();
+            }
+            else if (_state == RecorderState.Paused)
+            {
+                Resume();
+            }
+
+            return _state;
+        }
+    }
+
+    public async Task<bool> StopIfActiveAsync()
+    {
+        lock (_lock)
+        {
+            if (_state == RecorderState.Idle)
+            {
+                return false;
+            }
+        }
+
+        await StopAsync();
+        return true;
     }
 
     public async Task<RecordingResult?> StopAsync()

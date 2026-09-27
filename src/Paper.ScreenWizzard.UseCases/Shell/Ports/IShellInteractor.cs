@@ -1,4 +1,5 @@
 using Paper.ScreenWizzard.Domain.Capture;
+using Paper.ScreenWizzard.Domain.Recorder;
 using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.UseCases.Shared.Models;
@@ -21,6 +22,12 @@ public interface IShellInteractor
 
     /// <summary>Saves settings the user changed; reports a failed save instead of hiding it (SPEC shell F2).</summary>
     SettingsApplyResult Apply(AppSettings settings);
+
+    /// <summary>
+    /// Keeps the recording bar's choices for the next recording and the next start (SPEC recorder, Inputs): saved when they differ from
+    /// <paramref name="current"/>, null when there was nothing to keep.
+    /// </summary>
+    SettingsApplyResult? KeepRecorderChoices(AppSettings current, RecorderSettings choices);
 
     AutostartChangeResult SetAutostart(AppSettings current, bool enabled);
 

@@ -24,7 +24,7 @@ public sealed class RecordedViewModel : BindableBase
         _localizer = localizer;
         FilePath = result.FilePath ?? string.Empty;
         FileName = Path.GetFileName(FilePath);
-        var duration = result.Duration.TotalHours >= 1 ? result.Duration.ToString(@"h\:mm\:ss", CultureInfo.InvariantCulture) : result.Duration.ToString(@"mm\:ss", CultureInfo.InvariantCulture);
+        var duration = RecordingTimeText.Format(result.Duration);
         var megabytes = (result.Bytes / 1024d / 1024d).ToString("0.#", CultureInfo.CurrentCulture);
         Details = string.Create(CultureInfo.InvariantCulture, $"{result.Size.Width} × {result.Size.Height} · {duration} · {megabytes} MB");
         OpenVideoCommand = new OpenRecordedVideoCommand(this);

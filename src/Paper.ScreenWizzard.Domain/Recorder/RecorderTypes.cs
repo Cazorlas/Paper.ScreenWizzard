@@ -1,3 +1,5 @@
+using Paper.ScreenWizzard.Domain.Shared;
+
 namespace Paper.ScreenWizzard.Domain.Recorder;
 
 /// <summary>What the recording bar records (SPEC recorder, Inputs).</summary>
@@ -42,11 +44,21 @@ public static class RecorderRules
 
     public const int Channels = 2;
 
+    /// <summary>The AAC sound track: 192 kbit/s.</summary>
+    public const int SoundBytesPerSecond = 24_000;
+
     public static IReadOnlyList<int> FrameRates { get; } = [15, 30, 60];
 
     public static IReadOnlyList<int> Countdowns { get; } = [0, 3, 5];
 
     public static bool IsFrameRate(int fps) => FrameRates.Contains(fps);
+
+    /// <summary>
+    /// The H.264 bitrate: a sixteenth of a bit a pixel a frame, between 1 and 40 Mbit/s. 1920 × 1080 at 30 fps is about 3.9 Mbit/s, which
+    /// with the sound keeps 10 minutes near the 300 MB of SPEC recorder (Assumptions).
+    /// </summary>
+    public static long VideoBitsPerSecond(PixelSize size, int framesPerSecond) =>
+        Math.Clamp((long)size.Width * size.Height * framesPerSecond / 16, 1_000_000L, 40_000_000L);
 
     public static bool IsCountdown(int seconds) => Countdowns.Contains(seconds);
 

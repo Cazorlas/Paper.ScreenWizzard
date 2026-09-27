@@ -20,7 +20,6 @@ public sealed class MediaFoundationVideoWriter : IVideoWriter, IDisposable
     private static readonly Lazy<int> _started = new(() => MediaFactory.MFStartup(true).Code);
 
     private const uint InterlaceProgressive = 2;
-    private const int AacBytesPerSecond = 24_000; // 192 kbit/s
 
     private IMFSinkWriter? _writer;
     private int _videoStream;
@@ -49,7 +48,7 @@ public sealed class MediaFoundationVideoWriter : IVideoWriter, IDisposable
             using (var input = MediaFactory.MFCreateMediaType())
             {
                 SetVideo(output, VideoFormatGuids.H264, size, framesPerSecond);
-                output.Set(MediaTypeAttributeKeys.AvgBitrate, (uint)Bitrate(size, framesPerSecond));
+                output.Set(MediaTypeAttributeKeys.AvgBitrate, (uint)RecorderRules.VideoBitsPerSecond(size, framesPerSecond));
                 SetVideo(input, VideoFormatGuids.Rgb32, size, framesPerSecond);
                 _videoStream = _writer.AddStream(output);
                 _writer.SetInputMediaType(_videoStream, input, null!);
@@ -60,7 +59,7 @@ public sealed class MediaFoundationVideoWriter : IVideoWriter, IDisposable
             {
                 using var output = MediaFactory.MFCreateMediaType();
                 using var input = MediaFactory.MFCreateMediaType();
-                SetSound(output, AudioFormatGuids.Aac, AacBytesPerSecond);
+                SetSound(output, AudioFormatGuids.Aac, RecorderRules.SoundBytesPerSecond);
                 SetSound(input, AudioFormatGuids.Pcm, RecorderRules.SampleRate * RecorderRules.Channels * 2);
                 input.Set(MediaTypeAttributeKeys.AudioBlockAlignment, (uint)(RecorderRules.Channels * 2));
                 input.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1u);
@@ -224,10 +223,6 @@ public sealed class MediaFoundationVideoWriter : IVideoWriter, IDisposable
         type.Set(MediaTypeAttributeKeys.AudioNumChannels, (uint)RecorderRules.Channels);
         type.Set(MediaTypeAttributeKeys.AudioAvgBytesPerSecond, (uint)bytesPerSecond);
     }
-
-    // About 0.1 bit a pixel a frame: 1920 × 1080 at 30 fps is about 6 Mbit/s, which keeps 10 minutes near the 300 MB of SPEC recorder.
-    private static long Bitrate(PixelSize size, int framesPerSecond) =>
-        Math.Clamp((long)size.Width * size.Height * framesPerSecond / 10, 1_000_000L, 40_000_000L);
 
     private static ulong Pack(uint high, uint low) => ((ulong)high << 32) | low;
 

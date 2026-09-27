@@ -193,4 +193,21 @@ public sealed class RecordingSettingsTests
 
         Assert.That(result.Issue, Is.EqualTo(HotkeyIssue.NeedsModifier));
     }
+
+    [Test]
+    public void TheRecordingBarsChoices_AreKeptWhenTheyChanged_AndNothingIsWrittenWhenTheyDidNot()
+    {
+        var shell = _fixture.Create();
+        var current = ShellData.SpecDefaults();
+
+        Assert.That(shell.KeepRecorderChoices(current, current.Recorder), Is.Null);
+        Assert.That(_fixture.Store.Saved, Is.Empty, "the same choices write nothing");
+
+        var choices = current.Recorder with { Target = RecordTargetKind.Region, Microphone = true };
+        var kept = shell.KeepRecorderChoices(current, choices);
+
+        Assert.That(kept!.Saved, Is.True);
+        Assert.That(kept.Settings.Recorder, Is.EqualTo(choices));
+        Assert.That(_fixture.Store.Saved.Single().Recorder, Is.EqualTo(choices), "kept for the next start of the app (SPEC recorder, Inputs)");
+    }
 }

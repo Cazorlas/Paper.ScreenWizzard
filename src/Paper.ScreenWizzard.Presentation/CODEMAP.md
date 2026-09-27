@@ -24,7 +24,7 @@ are not a domain.
 | `Shared/Views/LanguageService.cs`, `NotificationPresenter.cs`, `ToastWindow`, `ErrorDialogWindow` | text in the language in use; toasts and error boxes for every domain |
 | `Shared/Views/PhysicalWindowPlacer.cs` | the only place that positions a window in physical pixels |
 | `Editor/Views/EditorWindowPlacement.cs` | keeps the editor inside the monitor that holds the pointer |
-| `Recorder/ViewModels/` | `RecordingBarViewModel`, `RecordedViewModel`, `RecordingFlow` (pick, outline and countdown, record, "Recorded"), `IRecorderViews` |
+| `Recorder/ViewModels/` | `RecordingBarViewModel`, `RecordedViewModel`, `RecordingFlow` (pick, outline and countdown, record, "Recorded"), `IRecorderViews`, `RecordingTimeText` (the time in the tray tooltip and "Recorded") |
 | `Recorder/Views/` | `RecordingBarWindow`, `RecordedWindow`, `RecordingOutlineWindow` (click-through, countdown), `AreaPickerWindow` (drag a region or click a window), `WpfRecorderViews` |
 | `Shared/Views/CaptureExclusion.cs` | `WDA_EXCLUDEFROMCAPTURE`: the app's own windows are never in a recording or a screenshot |
 

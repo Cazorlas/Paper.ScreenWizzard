@@ -8,6 +8,12 @@ namespace Paper.ScreenWizzard.UseCases.Recorder.Models;
 /// <param name="WindowHandle">The recorded window, watched so that closing it stops the recording (F1); null for any other choice.</param>
 public sealed record RecordRequest(PixelRect Area, long? WindowHandle, RecorderSettings Settings);
 
+/// <summary>The area a choice records, or why it cannot be recorded and what the recording bar says (F7).</summary>
+public sealed record RecordAreaAnswer(PixelRect Area, RecordAreaIssue Issue, NotificationMessage? Message)
+{
+    public bool IsUsable => Issue == RecordAreaIssue.None;
+}
+
 public enum RecorderState
 {
     Idle,

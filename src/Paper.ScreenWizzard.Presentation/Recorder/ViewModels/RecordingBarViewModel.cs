@@ -34,12 +34,10 @@ public sealed class RecordingBarViewModel : BindableBase, IDisposable
         _systemSound = settings.SystemSound;
         _microphone = settings.Microphone;
         _pointer = settings.Pointer;
-        Monitors = monitors
-            .OrderBy(m => m.Bounds.X)
-            .ThenBy(m => m.Bounds.Y)
+        Monitors = RecordArea.InBarOrder(monitors)
             .Select((m, i) => new MonitorChoice(m.Index, Label(i + 1, m)))
             .ToList();
-        _monitorIndex = Monitors.Any(m => m.Index == settings.MonitorIndex) ? settings.MonitorIndex : null;
+        _monitorIndex = RecordArea.KnownMonitor(settings.MonitorIndex, monitors);
         SelectTargetCommand = new SelectRecordTargetCommand(this);
         RecordCommand = new StartRecordingCommand(this);
         CloseCommand = new CloseRecordingBarCommand(this);

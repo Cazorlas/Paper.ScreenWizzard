@@ -486,7 +486,7 @@ public sealed class AppShell : IDisposable
     // last Record did not go on (F7).
     private void OpenRecordingBar(NotificationMessage? message)
     {
-        if (_recording.IsRecording)
+        if (!_recording.MayOpenBar)
         {
             return;
         }
@@ -520,9 +520,8 @@ public sealed class AppShell : IDisposable
     {
         try
         {
-            if (choices != _settings.Current.Recorder)
+            if (_shell.KeepRecorderChoices(_settings.Current, choices) is { } kept)
             {
-                var kept = _shell.Apply(_settings.Current with { Recorder = choices });
                 _settings.Current = kept.Settings;
                 if (!kept.Saved && kept.Message is not null)
                 {
@@ -540,12 +539,6 @@ public sealed class AppShell : IDisposable
 
     private async void OnRecordHotkeyPressed(RecordHotkey key)
     {
-        // Settings being open holds back a new recording, not the control of one that runs (SPEC recorder, "What the user does" 4).
-        if (_settingsWindow is not null && !_recording.IsBusy)
-        {
-            return;
-        }
-
         try
         {
             if (key == RecordHotkey.Pause)
@@ -554,7 +547,7 @@ public sealed class AppShell : IDisposable
             }
             else
             {
-                await _recording.StartOrStopAsync(_settings.Current.Recorder);
+                await _recording.StartOrStopAsync(_settings.Current.Recorder, mayStart: _settingsWindow is null);
             }
         }
         catch (Exception exception)
@@ -628,11 +621,9 @@ public sealed class AppShell : IDisposable
             return;
         }
 
-        var elapsed = _recording.Elapsed;
-        var time = elapsed.TotalHours >= 1 ? elapsed.ToString(@"h\:mm\:ss", CultureInfo.InvariantCulture) : elapsed.ToString(@"mm\:ss", CultureInfo.InvariantCulture);
-        var key = _recording.State == RecorderState.Paused ? "Tray.TooltipPaused" : "Tray.TooltipRecording";
-        _tray?.ShowRecording(string.Format(CultureInfo.CurrentCulture, _language.GetString(key), time));
-        _trayMenu?.SetRecording(true, _recording.State == RecorderState.Paused);
+        var paused = _recording.State == RecorderState.Paused;
+        _tray?.ShowRecording(RecordingTimeText.Tooltip(_language, paused, _recording.Elapsed));
+        _trayMenu?.SetRecording(true, paused);
     }
 
     // ---- a new version ----

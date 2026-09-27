@@ -65,6 +65,14 @@ public static class RecordArea
             : new RecordAreaResult(even, RecordAreaIssue.None);
     }
 
+    /// <summary>The monitors as the recording bar numbers them 1, 2, …: left to right, then top to bottom.</summary>
+    public static IReadOnlyList<MonitorInfo> InBarOrder(IReadOnlyList<MonitorInfo> monitors) =>
+        monitors.OrderBy(m => m.Bounds.X).ThenBy(m => m.Bounds.Y).ToList();
+
+    /// <summary>The kept monitor choice while that monitor is still there; null ("the monitor under the pointer") once it is gone.</summary>
+    public static int? KnownMonitor(int? monitorIndex, IReadOnlyList<MonitorInfo> monitors) =>
+        monitors.Any(m => m.Index == monitorIndex) ? monitorIndex : null;
+
     /// <summary>The chosen monitor, else the one under the pointer, else the primary one.</summary>
     public static MonitorInfo ChooseMonitor(int? monitorIndex, IReadOnlyList<MonitorInfo> monitors, PixelPoint pointer) =>
         monitors.FirstOrDefault(m => m.Index == monitorIndex)

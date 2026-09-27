@@ -91,6 +91,9 @@ public sealed class FakeShellInteractor : IShellInteractor
         return new HotkeyChangeResult(true, HotkeyIssue.None, null, current with { Hotkeys = hotkeys }, null);
     }
 
+    public SettingsApplyResult? KeepRecorderChoices(AppSettings current, RecorderSettings choices) =>
+        choices == current.Recorder ? null : Apply(current with { Recorder = choices });
+
     public SettingsApplyResult Apply(AppSettings settings)
     {
         Applied.Add(settings);

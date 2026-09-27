@@ -1,4 +1,5 @@
 using Paper.ScreenWizzard.Domain.Capture;
+using Paper.ScreenWizzard.Domain.Recorder;
 using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.UseCases.Shared.Models;
@@ -158,6 +159,9 @@ public sealed class ShellInteractor : IShellInteractor
         NotificationMessage? message = saved.Success ? null : NotSaved(saved);
         return new HotkeyChangeResult(true, HotkeyIssue.None, null, changed, message);
     }
+
+    public SettingsApplyResult? KeepRecorderChoices(AppSettings current, RecorderSettings choices) =>
+        choices == current.Recorder ? null : Apply(current with { Recorder = choices });
 
     public SettingsApplyResult Apply(AppSettings settings)
     {

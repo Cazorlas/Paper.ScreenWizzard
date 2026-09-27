@@ -63,6 +63,9 @@ public sealed class RecordingFlow
 
     public bool IsRecording => _recorder.State is RecorderState.Recording or RecorderState.Paused;
 
+    /// <summary>The recording bar opens only while nothing records: a recording is controlled from the tray (SPEC recorder, step 4).</summary>
+    public bool MayOpenBar => !IsRecording;
+
     /// <summary>Records with <paramref name="choices"/>; the task ends once recording runs, or it gave up.</summary>
     public async Task StartAsync(RecorderSettings choices)
     {
@@ -87,16 +90,20 @@ public sealed class RecordingFlow
         }
     }
 
-    /// <summary>The start/stop hotkey: stops what runs, or records with the last choices (SPEC recorder, Inputs).</summary>
-    public async Task StartOrStopAsync(RecorderSettings lastChoices)
+    /// <summary>
+    /// The start/stop hotkey: stops what runs, or records with the last choices (SPEC recorder, Inputs). While Settings is open
+    /// (<paramref name="mayStart"/> false) it still stops a recording but starts none, since the key may be being typed into a hotkey box.
+    /// </summary>
+    public async Task StartOrStopAsync(RecorderSettings lastChoices, bool mayStart = true)
     {
-        if (_recorder.State == RecorderState.Idle && !_busy)
+        if (await _recorder.StopIfActiveAsync())
+        {
+            return;
+        }
+
+        if (mayStart)
         {
             await StartAsync(lastChoices);
-        }
-        else
-        {
-            await StopAsync();
         }
     }
 
@@ -108,15 +115,7 @@ public sealed class RecordingFlow
 
     public void TogglePause()
     {
-        if (_recorder.State == RecorderState.Recording)
-        {
-            _recorder.Pause();
-        }
-        else if (_recorder.State == RecorderState.Paused)
-        {
-            _recorder.Resume();
-        }
-
+        _recorder.TogglePause();
         StateChanged?.Invoke(this, EventArgs.Empty);
     }
 
@@ -153,7 +152,11 @@ public sealed class RecordingFlow
         if (!area.IsUsable)
         {
             // F7: nothing starts; the bar comes back and says why.
-            AreaRefused?.Invoke(NotificationMessage.Of(area.Issue == RecordAreaIssue.TooSmall ? "Recorder.AreaTooSmall" : "Recorder.AreaOffScreen"));
+            if (area.Message is { } refused)
+            {
+                AreaRefused?.Invoke(refused);
+            }
+
             return false;
         }
 
