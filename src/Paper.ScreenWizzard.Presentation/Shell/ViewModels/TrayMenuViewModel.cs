@@ -71,7 +71,12 @@ public sealed class TrayMenuViewModel : BindableBase
     /// <summary>The "Tải bản mới…" line was chosen.</summary>
     public event EventHandler? UpdateRequested;
 
-    /// <summary>Capture x4, Open image, Capture bar, Settings, then "Tải bản mới…" while a newer version is out, then Exit.</summary>
+    /// <summary>The "Kiểm bản mới" line was chosen.</summary>
+    public event EventHandler? CheckForUpdatesRequested;
+
+    /// <summary>
+    /// Capture x4, Open image, Capture bar, Settings, Kiểm bản mới, then "Tải bản mới…" while a newer version is out, then Exit.
+    /// </summary>
     public IReadOnlyList<TrayMenuItemViewModel> Items => _items;
 
     /// <summary>Redraws the shortcut texts after a hotkey changed in Settings.</summary>
@@ -117,6 +122,8 @@ public sealed class TrayMenuViewModel : BindableBase
 
     internal void RaiseUpdateRequested() => UpdateRequested?.Invoke(this, EventArgs.Empty);
 
+    internal void RaiseCheckForUpdatesRequested() => CheckForUpdatesRequested?.Invoke(this, EventArgs.Empty);
+
     private static string ShortcutOf(IReadOnlyDictionary<CaptureKind, HotkeyChord> hotkeys, CaptureKind kind) =>
         hotkeys.TryGetValue(kind, out var chord) ? HotkeyChordFormatter.Format(chord) : string.Empty;
 
@@ -132,6 +139,7 @@ public sealed class TrayMenuViewModel : BindableBase
             new("Tray.OpenImage", string.Empty, new TrayOpenImageCommand(this), false, false),
             new("Tray.CaptureBar", string.Empty, new TrayToggleCaptureBarCommand(this), true, _captureBarVisible),
             new("Tray.Settings", string.Empty, new TraySettingsCommand(this), false, false),
+            new("Tray.CheckForUpdates", string.Empty, new TrayCheckForUpdatesCommand(this), false, false),
             new("Tray.Exit", string.Empty, new TrayExitCommand(this), false, false),
         ];
         if (_updateAvailable)

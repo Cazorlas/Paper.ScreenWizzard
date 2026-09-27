@@ -22,6 +22,7 @@
   <sys:String x:Key="Tray.OpenImage">Open image…</sys:String>
   <sys:String x:Key="Tray.CaptureBar">Capture bar</sys:String>
   <sys:String x:Key="Tray.Settings">Settings</sys:String>
+  <sys:String x:Key="Tray.CheckForUpdates">Check for updates</sys:String>
   <sys:String x:Key="Tray.Update">Download the new version…</sys:String>
   <sys:String x:Key="Tray.Exit">Exit</sys:String>
   <sys:String x:Key="Tray.Tooltip">Paper.ScreenWizzard</sys:String>
@@ -76,6 +77,9 @@
   <sys:String x:Key="Shell.UpdateAvailable.Title">A new version is out</sys:String>
   <sys:String x:Key="Shell.UpdateAvailable">Paper.ScreenWizzard {0} is out. Click here to open the download page.</sys:String>
   <sys:String x:Key="Shell.UpdatePageNotOpened">Could not open the download page of the new version: {0}. The page is {1}.</sys:String>
+  <sys:String x:Key="Shell.UpdateCheck.Title">Check for updates</sys:String>
+  <sys:String x:Key="Shell.UpToDate">You have the newest version ({0}).</sys:String>
+  <sys:String x:Key="Shell.UpdateCheckFailed">Could not check for a new version: {0}. Try again later.</sys:String>
   <sys:String x:Key="Shell.HotkeyNeedsModifier">The key {0} on its own would steal your typing. Add Ctrl, Alt or Shift. The old hotkey is kept.</sys:String>
   <sys:String x:Key="Shell.HotkeyUsedByOtherKind">This hotkey is already used by the "{0}" capture. The old hotkey is kept.</sys:String>
   <sys:String x:Key="Shell.HotkeyHeldByAnotherProgram">Could not register {0}: Windows or another program already holds it. The old hotkey is kept.</sys:String>

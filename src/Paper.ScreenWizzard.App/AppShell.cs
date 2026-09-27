@@ -138,6 +138,7 @@ public sealed class AppShell : IDisposable
         _trayMenu.SettingsRequested += (_, _) => OpenSettings();
         _trayMenu.ExitRequested += (_, _) => Exit();
         _trayMenu.UpdateRequested += (_, _) => OpenUpdatePage();
+        _trayMenu.CheckForUpdatesRequested += async (_, _) => await CheckForUpdateNowAsync();
         _tray = new TrayIcon(_trayMenu, _language, ShowCaptureBar);
 
         // What went wrong at start (a corrupt settings file, a hotkey another program holds) is said once the language is right.
@@ -447,8 +448,7 @@ public sealed class AppShell : IDisposable
     {
         try
         {
-            var running = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-            var result = await _updates.CheckAsync(_settings.Current, running, CancellationToken.None);
+            var result = await _updates.CheckAsync(_settings.Current, RunningVersion(), CancellationToken.None);
             if (_exiting || result.Offer is not { } offer)
             {
                 return;
@@ -467,6 +467,38 @@ public sealed class AppShell : IDisposable
             _log.Error("The update check failed", exception);
         }
     }
+
+    // "Kiểm bản mới" in the tray: asked now, and the answer is always said - newer (click to open its page), newest, or why not.
+    private async Task CheckForUpdateNowAsync()
+    {
+        try
+        {
+            var result = await _updates.CheckNowAsync(RunningVersion(), CancellationToken.None);
+            if (_exiting || result.Notice is not { } notice)
+            {
+                return;
+            }
+
+            Action? clicked = null;
+            var title = _language.GetString("Shell.UpdateCheck.Title");
+            if (result.Offer is { } offer)
+            {
+                _update = offer;
+                _trayMenu?.SetUpdateAvailable(true);
+                clicked = OpenUpdatePage;
+                title = _language.GetString("Shell.UpdateAvailable.Title");
+            }
+
+            _tray?.ShowNotice(title, _language.Format(notice), clicked);
+        }
+        catch (Exception exception)
+        {
+            ReportFailure(exception, "check for updates");
+        }
+    }
+
+    private static string? RunningVersion() =>
+        Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
 
     private void OpenUpdatePage()
     {

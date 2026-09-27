@@ -1,4 +1,4 @@
-> Đợt 1 đã làm xong 2026-09-21 (SPEC được duyệt 2026-09-20). Việc làm và bằng chứng: [2026-09-20-m1-chup-va-sua-anh-plan.md](2026-09-20-m1-chup-va-sua-anh-plan.md). Tập tin cài đặt thiếu mục: [2026-09-26-cai-dat-thieu-muc-plan.md](2026-09-26-cai-dat-thieu-muc-plan.md). Báo bản mới: [2026-09-26-bao-ban-moi-plan.md](2026-09-26-bao-ban-moi-plan.md)
+> Đợt 1 đã làm xong 2026-09-21 (SPEC được duyệt 2026-09-20). Việc làm và bằng chứng: [2026-09-20-m1-chup-va-sua-anh-plan.md](2026-09-20-m1-chup-va-sua-anh-plan.md). Tập tin cài đặt thiếu mục: [2026-09-26-cai-dat-thieu-muc-plan.md](2026-09-26-cai-dat-thieu-muc-plan.md). Báo bản mới: [2026-09-26-bao-ban-moi-plan.md](2026-09-26-bao-ban-moi-plan.md), kiểm ngay từ khay: [2026-09-27-kiem-ban-moi-ngay-plan.md](2026-09-27-kiem-ban-moi-ngay-plan.md)
 
 # Khung ứng dụng — SPEC
 
@@ -19,7 +19,8 @@ taskbar, comes up with one key, and lets me set the keys, the save folder, and w
 1. Opens the app. Its icon appears in the notification area and the capture bar comes up (the first time). No main window takes the
    screen.
 2. Right-clicks the tray icon: the menu has Capture rectangle, Capture freeform, Capture window, Capture full screen, Open image…,
-   Capture bar (show or hide), Settings, Exit; while a newer version is out, also Download the new version…. Double-clicking the
+   Capture bar (show or hide), Settings, Check for updates, Exit; while a newer version is out, also Download the new version….
+   Double-clicking the
    icon shows the capture bar.
 3. The capture bar is a small window always on top, with one button per kind of capture and a Settings button. It can be dragged
    anywhere; next time it opens exactly there.
@@ -114,6 +115,9 @@ Tray icon, capture bar, settings, hotkey, the running copy of the app, a new ver
   page, until the app exits
 - Given the same version found again while the app runs → **no second notification**; a version newer still is announced again
 - Given the running version is the newest (or newer, a build not yet published) → **nothing** is shown
+- Given "Check for updates" chosen in the tray menu → GitHub is asked **at once**, even with the daily check off, and the answer is
+  **always said** in a Windows notification: the newer version (a click opens its page, as above), or "You have the newest version
+  (0.1.3)", or that it could not check and why
 - Given the check turned off in Settings → the app **asks GitHub nothing**; nothing leaves the PC
 - The app only opens a page of its own releases on GitHub. It **downloads and installs nothing by itself**: the user downloads the
   Setup from that page and runs it, which installs over the old version and keeps the settings (release SPEC).
@@ -142,7 +146,7 @@ Tray icon, capture bar, settings, hotkey, the running copy of the app, a new ver
 | F6 | the app is opened a second time | no new copy; the first one shows the capture bar; no error notice |
 | F7 | a hotkey cannot be registered at start | a small notice that fades names the key (no box to close, since on a machine where a key is held it would come up at every start); the app and the other keys keep working |
 | F8 | the settings file lacks a setting | that setting takes its default and the others are kept; no notice (a missing setting is normal after an update), only a line in the log |
-| F9 | the new-version check gets no answer (no network, GitHub refuses or is slow) | nothing is shown; a line in the log; the next check, a day later or at the next start, tries again |
+| F9 | the new-version check gets no answer (no network, GitHub refuses or is slow) | the daily check shows nothing, only a line in the log, and the next one tries again; a check the user asked for from the tray says it could not check and why |
 | F10 | the release page does not open (no browser) | a notice names the reason and the page's address, to open by hand |
 
 ## Assumptions
@@ -174,6 +178,11 @@ Tray icon, capture bar, settings, hotkey, the running copy of the app, a new ver
   user cài ko", with "làm nốt lun đi") -> A: yes, it says so and opens the download page; installing stays the user's step
   (the agent's choice, under "cho toàn quyền với bạn").
 
+### Session 2026-09-27
+
+- Q: can the user check for a new version at once, from the tray? (Hùng: "Khi chuột phải này ko có option check updates (là check
+  liền lun) nhỉ", then "làm đi" to the proposal) -> A: yes, "Check for updates", which always answers.
+
 ## What it does not do yet
 
 - A hotkey the app itself holds cannot be typed into the key box of Settings (Windows gives the key to the app, not to the box);
@@ -196,8 +205,8 @@ bằng một phím, và tôi tự đặt được phím, thư mục lưu, và vi
 
 1. Mở ứng dụng. Biểu tượng hiện ở khay hệ thống, thanh chụp hiện lên (lần đầu). Không có cửa sổ chính chiếm màn hình.
 2. Bấm chuột phải biểu tượng khay: menu có Chụp vùng chữ nhật, Chụp vùng tự do, Chụp cửa sổ, Chụp toàn màn hình,
-   Mở ảnh…, Thanh chụp (hiện hoặc ẩn), Cài đặt, Thoát; khi có bản mới thì có thêm Tải bản mới…. Bấm đúp biểu tượng thì hiện
-   thanh chụp.
+   Mở ảnh…, Thanh chụp (hiện hoặc ẩn), Cài đặt, Kiểm bản mới, Thoát; khi có bản mới thì có thêm Tải bản mới…. Bấm đúp biểu tượng
+   thì hiện thanh chụp.
 3. Thanh chụp là một cửa sổ nhỏ luôn nằm trên cùng, có một nút cho mỗi kiểu chụp và nút Cài đặt. Kéo nó đi đâu cũng
    được; lần sau mở lại nó ở đúng chỗ đó.
 4. Trong Cài đặt, người dùng đổi: phím tắt của từng kiểu chụp, việc làm sau khi chụp, thư mục lưu, định dạng file, độ
@@ -290,6 +299,9 @@ Biểu tượng khay, thanh chụp, cài đặt, phím tắt, phiên bản đang
 - Cho thông báo tắt mà không bấm → menu khay **giữ dòng "Tải bản mới…"** mở cùng trang đó, tới khi thoát ứng dụng
 - Cho lần kiểm sau lại thấy đúng bản đó khi ứng dụng còn chạy → **không báo lần hai**; một bản mới hơn nữa thì báo lại
 - Cho bản đang chạy là bản mới nhất (hay mới hơn, bản dựng chưa phát hành) → **không hiện gì**
+- Cho chọn "Kiểm bản mới" ở menu khay → ứng dụng hỏi GitHub **ngay**, kể cả khi đã tắt kiểm hằng ngày, và **luôn trả lời** bằng
+  một thông báo của Windows: bản mới hơn (bấm vào mở trang của nó, như trên), hoặc "Bạn đang dùng bản mới nhất (0.1.3)", hoặc
+  không kiểm được và vì sao
 - Cho tắt kiểm bản mới trong Cài đặt → ứng dụng **không hỏi GitHub gì cả**; không gì rời khỏi máy
 - Ứng dụng chỉ mở trang phát hành của chính nó trên GitHub. Nó **không tự tải, không tự cài**: người dùng tải file Setup từ trang
   đó và chạy, file cài đè lên bản cũ và giữ cài đặt (SPEC file cài).
@@ -317,7 +329,7 @@ Biểu tượng khay, thanh chụp, cài đặt, phím tắt, phiên bản đang
 | F6 | mở ứng dụng lần hai | không có bản mới; bản đầu hiện thanh chụp; không có thông báo lỗi |
 | F7 | không đăng ký được một phím tắt lúc khởi động | một thông báo nhỏ tự tắt nêu phím nào (không có hộp phải đóng, vì trên máy có phím bị giữ thì lần nào mở cũng gặp); ứng dụng và các phím khác vẫn chạy |
 | F8 | tập tin cài đặt thiếu một mục | mục đó lấy giá trị mặc định, các mục khác giữ nguyên; không thông báo (thiếu một mục là chuyện thường sau khi cập nhật), chỉ ghi một dòng vào nhật ký |
-| F9 | lần kiểm bản mới không có trả lời (không mạng, GitHub từ chối hay chậm) | không hiện gì; một dòng trong nhật ký; lần kiểm sau, một ngày sau hay lần mở sau, thử lại |
+| F9 | lần kiểm bản mới không có trả lời (không mạng, GitHub từ chối hay chậm) | lần kiểm hằng ngày không hiện gì, chỉ ghi một dòng vào nhật ký, và lần sau thử lại; lần kiểm người dùng bấm từ khay thì báo không kiểm được và vì sao |
 | F10 | không mở được trang phát hành (không có trình duyệt) | thông báo nêu lý do và địa chỉ trang, để mở tay |
 
 ## Assumptions
@@ -347,6 +359,11 @@ Biểu tượng khay, thanh chụp, cài đặt, phím tắt, phiên bản đang
 - Q: ứng dụng có tự biết có bản mới để báo người dùng cài không? (Hùng: "nếu có bản update mới thì có tự động biết để báo user cài
   ko", kèm "làm nốt lun đi") -> A: có, nó báo và mở trang tải; cài vẫn là bước của người dùng (agent chọn, theo "cho toàn quyền với
   bạn").
+
+### Session 2026-09-27
+
+- Q: người dùng có kiểm bản mới ngay từ khay được không? (Hùng: "Khi chuột phải này ko có option check updates (là check liền lun)
+  nhỉ", rồi "làm đi" với đề xuất) -> A: có, "Kiểm bản mới", lần nào cũng trả lời.
 
 ## What it does not do yet
 

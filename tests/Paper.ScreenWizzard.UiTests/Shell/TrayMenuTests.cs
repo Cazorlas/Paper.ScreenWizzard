@@ -15,7 +15,7 @@ public sealed class TrayMenuTests : UiTestBase
         new(ShellTestData.DefaultHotkeys, captureBarVisible);
 
     [Test]
-    public void Menu_HoldsTheEightLinesOfTheSpecInOrder()
+    public void Menu_HoldsTheNineLinesOfTheSpecInOrder()
     {
         var menu = Create();
 
@@ -30,6 +30,7 @@ public sealed class TrayMenuTests : UiTestBase
                 "Tray.OpenImage",
                 "Tray.CaptureBar",
                 "Tray.Settings",
+                "Tray.CheckForUpdates",
                 "Tray.Exit",
             }));
     }
@@ -43,9 +44,21 @@ public sealed class TrayMenuTests : UiTestBase
 
         menu.SetUpdateAvailable(true);
 
-        Assert.That(menu.Items.Select(item => item.TextKey).TakeLast(3), Is.EqualTo(new[] { "Tray.Settings", "Tray.Update", "Tray.Exit" }));
+        Assert.That(menu.Items.Select(item => item.TextKey).TakeLast(3), Is.EqualTo(new[] { "Tray.CheckForUpdates", "Tray.Update", "Tray.Exit" }));
         menu.Items.Single(item => item.TextKey == "Tray.Update").Command.Execute(null);
         Assert.That(raised, Is.EqualTo(1), "the line asks the shell to open the download page");
+    }
+
+    [Test]
+    public void Menu_CheckForUpdatesLine_AsksTheShellToCheckNow()
+    {
+        var menu = Create();
+        var raised = 0;
+        menu.CheckForUpdatesRequested += (_, _) => raised++;
+
+        menu.Items.Single(item => item.TextKey == "Tray.CheckForUpdates").Command.Execute(null);
+
+        Assert.That(raised, Is.EqualTo(1));
     }
 
     [Test]

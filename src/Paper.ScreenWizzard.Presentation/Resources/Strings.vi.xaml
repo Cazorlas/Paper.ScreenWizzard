@@ -22,6 +22,7 @@
   <sys:String x:Key="Tray.OpenImage">Mở ảnh…</sys:String>
   <sys:String x:Key="Tray.CaptureBar">Thanh chụp</sys:String>
   <sys:String x:Key="Tray.Settings">Cài đặt</sys:String>
+  <sys:String x:Key="Tray.CheckForUpdates">Kiểm bản mới</sys:String>
   <sys:String x:Key="Tray.Update">Tải bản mới…</sys:String>
   <sys:String x:Key="Tray.Exit">Thoát</sys:String>
   <sys:String x:Key="Tray.Tooltip">Paper.ScreenWizzard</sys:String>
@@ -76,6 +77,9 @@
   <sys:String x:Key="Shell.UpdateAvailable.Title">Có bản mới</sys:String>
   <sys:String x:Key="Shell.UpdateAvailable">Paper.ScreenWizzard {0} đã có. Bấm vào đây để mở trang tải.</sys:String>
   <sys:String x:Key="Shell.UpdatePageNotOpened">Không mở được trang tải bản mới: {0}. Trang ở {1}.</sys:String>
+  <sys:String x:Key="Shell.UpdateCheck.Title">Kiểm bản mới</sys:String>
+  <sys:String x:Key="Shell.UpToDate">Bạn đang dùng bản mới nhất ({0}).</sys:String>
+  <sys:String x:Key="Shell.UpdateCheckFailed">Không kiểm được bản mới: {0}. Thử lại sau.</sys:String>
   <sys:String x:Key="Shell.HotkeyNeedsModifier">Phím {0} đứng một mình sẽ cướp việc gõ chữ. Hãy thêm Ctrl, Alt hoặc Shift. Phím cũ được giữ nguyên.</sys:String>
   <sys:String x:Key="Shell.HotkeyUsedByOtherKind">Phím này đã dùng cho kiểu chụp "{0}". Phím cũ được giữ nguyên.</sys:String>
   <sys:String x:Key="Shell.HotkeyHeldByAnotherProgram">Không đăng ký được phím {0}: Windows hoặc ứng dụng khác đang giữ phím này. Phím cũ được giữ nguyên.</sys:String>
