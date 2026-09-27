@@ -5,14 +5,18 @@ using System.Windows.Interop;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using Paper.ScreenWizzard.Domain.Capture;
+using Paper.ScreenWizzard.Domain.Recorder;
 using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.Infrastructure.Shell;
 using Paper.ScreenWizzard.Presentation.Capture.ViewModels;
 using Paper.ScreenWizzard.Presentation.Editor.ViewModels;
+using Paper.ScreenWizzard.Presentation.Recorder.ViewModels;
+using Paper.ScreenWizzard.Presentation.Recorder.Views;
 using Paper.ScreenWizzard.Presentation.Shared.Views;
 using Paper.ScreenWizzard.Presentation.Shell.ViewModels;
 using Paper.ScreenWizzard.Presentation.Shell.Views;
+using Paper.ScreenWizzard.UseCases.Recorder.Models;
 using Paper.ScreenWizzard.UseCases.Shared.Models;
 using Paper.ScreenWizzard.UseCases.Shared.Ports;
 using Paper.ScreenWizzard.UseCases.Shell.Models;
@@ -42,6 +46,7 @@ public sealed class AppShell : IDisposable
     private readonly ILog _log;
     private readonly CaptureFlow _captureFlow;
     private readonly EditorFlow _editorFlow;
+    private readonly RecordingFlow _recording;
     private readonly SettingsHolder _settings;
     private readonly IFolderPickerService _folderPicker;
     private readonly ISettingsPrompts _prompts;
@@ -55,6 +60,10 @@ public sealed class AppShell : IDisposable
     private bool _disposed;
     private bool _reportingFailure;
     private DispatcherTimer? _updateTimer;
+    private DispatcherTimer? _recordingTicker;
+    private RecordingBarWindow? _recordingBar;
+    private bool _captureBarBeforeRecording;
+    private bool _recordingBarBeforeRecording;
     private UpdateOffer? _update;
 
     public AppShell(
@@ -71,6 +80,7 @@ public sealed class AppShell : IDisposable
         ILog log,
         CaptureFlow captureFlow,
         EditorFlow editorFlow,
+        RecordingFlow recording,
         SettingsHolder settings,
         IFolderPickerService folderPicker,
         ISettingsPrompts prompts,
@@ -89,6 +99,7 @@ public sealed class AppShell : IDisposable
         _log = log;
         _captureFlow = captureFlow;
         _editorFlow = editorFlow;
+        _recording = recording;
         _settings = settings;
         _folderPicker = folderPicker;
         _prompts = prompts;
@@ -136,6 +147,11 @@ public sealed class AppShell : IDisposable
         _appearance.ApplyTheme(started.Settings.Theme);
         _singleInstance.SecondInstanceLaunched += OnSecondInstanceLaunched;
         _hotkeys.Pressed += OnHotkeyPressed;
+        _hotkeys.RecordPressed += OnRecordHotkeyPressed;
+        _recording.Began += (_, _) => StepAsideForRecording();
+        _recording.Ended += (_, _) => ComeBackAfterRecording();
+        _recording.StateChanged += (_, _) => ShowRecordingState();
+        _recording.AreaRefused += message => OpenRecordingBar(message);
         _captureFlow.EditRequested += image => _editorFlow.Open(image, null);
 
         _trayMenu = new TrayMenuViewModel(started.Settings.Hotkeys, false);
@@ -146,6 +162,10 @@ public sealed class AppShell : IDisposable
         _trayMenu.ExitRequested += (_, _) => Exit();
         _trayMenu.UpdateRequested += (_, _) => OpenUpdatePage();
         _trayMenu.CheckForUpdatesRequested += async (_, _) => await CheckForUpdateNowAsync();
+        _trayMenu.RecordRequested += (_, _) => OpenRecordingBar(null);
+        _trayMenu.RecordPauseRequested += (_, _) => _recording.TogglePause();
+        _trayMenu.RecordStopRequested += async (_, _) => await StopRecordingAsync();
+        _trayMenu.SetRecordHotkeys(started.Settings.RecordHotkeys);
         _tray = new TrayIcon(_trayMenu, _language, ShowCaptureBar);
 
         // What went wrong at start (a corrupt settings file, a hotkey another program holds) is said once the language is right.
@@ -197,7 +217,7 @@ public sealed class AppShell : IDisposable
         }
     }
 
-    public void Exit()
+    public async void Exit()
     {
         if (_exiting)
         {
@@ -206,6 +226,20 @@ public sealed class AppShell : IDisposable
 
         _exiting = true;
         SaveCaptureBarPosition();
+
+        // A recording is stopped and saved first (SPEC recorder, "Pause and stop").
+        if (_recording.IsRecording)
+        {
+            try
+            {
+                await _recording.StopAsync();
+            }
+            catch (Exception exception)
+            {
+                _log.Error("The recording could not be stopped at exit", exception);
+            }
+        }
+
         _shutdown();
     }
 
@@ -218,6 +252,7 @@ public sealed class AppShell : IDisposable
 
         _disposed = true;
         _updateTimer?.Stop();
+        _recordingTicker?.Stop();
         _tray?.Dispose();
         if (_hotkeys is IDisposable hotkeys)
         {
@@ -364,6 +399,8 @@ public sealed class AppShell : IDisposable
         // The bar is not part of a screenshot: it steps aside until the snapshot is taken (the flow returns once the overlay is up).
         var restoreBar = _bar is { IsVisible: true } bar ? bar : null;
         restoreBar?.Hide();
+        var restoreRecordingBar = _recordingBar is { IsVisible: true } recordingBar ? recordingBar : null;
+        restoreRecordingBar?.Hide();
         try
         {
             await _captureFlow.StartAsync(kind);
@@ -377,6 +414,11 @@ public sealed class AppShell : IDisposable
             if (restoreBar is not null && ReferenceEquals(_bar, restoreBar) && !_exiting)
             {
                 restoreBar.Show();
+            }
+
+            if (restoreRecordingBar is not null && ReferenceEquals(_recordingBar, restoreRecordingBar) && !_exiting && !_recording.IsBusy)
+            {
+                restoreRecordingBar.Show();
             }
         }
     }
@@ -408,6 +450,7 @@ public sealed class AppShell : IDisposable
             // whether the window closed with Save or with Esc.
             _settings.Current = viewModel.Current;
             _trayMenu?.SetHotkeys(viewModel.Current.Hotkeys);
+            _trayMenu?.SetRecordHotkeys(viewModel.Current.RecordHotkeys);
             _settingsWindow = null;
         };
         window.Show();
@@ -434,6 +477,160 @@ public sealed class AppShell : IDisposable
         {
             _editorFlow.OpenFile(path);
         }
+    }
+
+    // ---- recording ----
+
+    // The recording bar (SPEC recorder, "What the user does" 1 and 2): one at a time; opened again, it comes forward. A message is why the
+    // last Record did not go on (F7).
+    private void OpenRecordingBar(NotificationMessage? message)
+    {
+        if (_recording.IsRecording)
+        {
+            return;
+        }
+
+        if (_recordingBar is { } open)
+        {
+            (open.DataContext as RecordingBarViewModel)?.ShowMessage(message);
+            open.Show();
+            open.Activate();
+            return;
+        }
+
+        var viewModel = new RecordingBarViewModel(_settings.Current.Recorder, _monitors.GetMonitors(), _language);
+        viewModel.ShowMessage(message);
+        viewModel.RecordRequested += choices => StartRecording(choices);
+        var bar = new RecordingBarWindow(viewModel) { WindowStartupLocation = WindowStartupLocation.CenterScreen };
+        _recordingBar = bar;
+        bar.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(_recordingBar, bar))
+            {
+                _recordingBar = null;
+            }
+        };
+        bar.Show();
+        bar.Activate();
+    }
+
+    // The bar's choices are kept for the next recording and the next start (SPEC recorder, Inputs), then the flow records with them.
+    private async void StartRecording(RecorderSettings choices)
+    {
+        try
+        {
+            if (choices != _settings.Current.Recorder)
+            {
+                var kept = _shell.Apply(_settings.Current with { Recorder = choices });
+                _settings.Current = kept.Settings;
+                if (!kept.Saved && kept.Message is not null)
+                {
+                    _notifications.ShowError(kept.Message);
+                }
+            }
+
+            await _recording.StartAsync(choices);
+        }
+        catch (Exception exception)
+        {
+            ReportFailure(exception, "recording");
+        }
+    }
+
+    private async void OnRecordHotkeyPressed(RecordHotkey key)
+    {
+        if (_settingsWindow is not null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (key == RecordHotkey.Pause)
+            {
+                _recording.TogglePause();
+            }
+            else
+            {
+                await _recording.StartOrStopAsync(_settings.Current.Recorder);
+            }
+        }
+        catch (Exception exception)
+        {
+            ReportFailure(exception, "recording hotkey");
+        }
+    }
+
+    private async Task StopRecordingAsync()
+    {
+        try
+        {
+            await _recording.StopAsync();
+        }
+        catch (Exception exception)
+        {
+            ReportFailure(exception, "stop recording");
+        }
+    }
+
+    // While recording nothing of the app stays on screen (SPEC recorder, "What the user does" 3, as FastStone does).
+    private void StepAsideForRecording()
+    {
+        _captureBarBeforeRecording = _bar is { IsVisible: true };
+        _recordingBarBeforeRecording = _recordingBar is { IsVisible: true };
+        _bar?.Hide();
+        _recordingBar?.Hide();
+    }
+
+    private void ComeBackAfterRecording()
+    {
+        if (_exiting)
+        {
+            return;
+        }
+
+        if (_captureBarBeforeRecording)
+        {
+            _bar?.Show();
+        }
+
+        if (_recordingBarBeforeRecording)
+        {
+            _recordingBar?.Show();
+        }
+    }
+
+    // The tray tells a recording: a red icon, the time recorded in its tooltip, Pause and Stop in its menu (SPEC recorder, "What the user does" 4).
+    private void ShowRecordingState()
+    {
+        var recording = _recording.IsRecording;
+        var paused = _recording.State == RecorderState.Paused;
+        _trayMenu?.SetRecording(recording, paused);
+        if (recording)
+        {
+            _recordingTicker ??= new DispatcherTimer(TimeSpan.FromSeconds(1), DispatcherPriority.Background, (_, _) => ShowRecordingTime(), Dispatcher.CurrentDispatcher);
+            _recordingTicker.Start();
+            ShowRecordingTime();
+        }
+        else
+        {
+            _recordingTicker?.Stop();
+            _tray?.ShowRecording(null);
+        }
+    }
+
+    private void ShowRecordingTime()
+    {
+        if (!_recording.IsRecording)
+        {
+            return;
+        }
+
+        var elapsed = _recording.Elapsed;
+        var time = elapsed.TotalHours >= 1 ? elapsed.ToString(@"h\:mm\:ss", CultureInfo.InvariantCulture) : elapsed.ToString(@"mm\:ss", CultureInfo.InvariantCulture);
+        var key = _recording.State == RecorderState.Paused ? "Tray.TooltipPaused" : "Tray.TooltipRecording";
+        _tray?.ShowRecording(string.Format(CultureInfo.CurrentCulture, _language.GetString(key), time));
+        _trayMenu?.SetRecording(true, _recording.State == RecorderState.Paused);
     }
 
     // ---- a new version ----

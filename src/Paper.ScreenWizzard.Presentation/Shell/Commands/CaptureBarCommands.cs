@@ -38,6 +38,19 @@ public sealed class RequestSettingsFromBarCommand : CommandBase
     public override void Execute(object? parameter) => _owner.RaiseSettingsRequested();
 }
 
+/// <summary>The Record button of the bar.</summary>
+public sealed class RequestRecordingFromBarCommand : CommandBase
+{
+    private readonly CaptureBarViewModel _owner;
+
+    public RequestRecordingFromBarCommand(CaptureBarViewModel owner)
+    {
+        _owner = owner;
+    }
+
+    public override void Execute(object? parameter) => _owner.RaiseRecordRequested();
+}
+
 /// <summary>The X of the bar.</summary>
 public sealed class RequestCloseBarCommand : CommandBase
 {

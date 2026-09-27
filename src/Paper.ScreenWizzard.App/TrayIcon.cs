@@ -18,6 +18,7 @@ internal sealed class TrayIcon : IDisposable
     private readonly TrayMenuViewModel _viewModel;
     private readonly ILocalizer _localizer;
     private readonly System.Drawing.Icon _image;
+    private System.Drawing.Icon? _recordingImage;
     private readonly List<(TrayMenuItemViewModel Item, WinForms.ToolStripMenuItem Entry)> _entries = [];
     private Action? _balloonClicked;
     private bool _disposed;
@@ -60,6 +61,30 @@ internal sealed class TrayIcon : IDisposable
         _icon.ShowBalloonTip(10_000, title, text, WinForms.ToolTipIcon.Info);
     }
 
+    /// <summary>
+    /// While recording the icon carries a red dot and the tooltip says the time recorded (SPEC recorder, "What the user does" 4); null
+    /// puts the usual icon and tooltip back.
+    /// </summary>
+    public void ShowRecording(string? tooltip)
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        if (tooltip is null)
+        {
+            _icon.Icon = _image;
+            _icon.Text = _localizer.GetString("Tray.Tooltip");
+            DisposeRecordingImage();
+            return;
+        }
+
+        _recordingImage ??= WithRecordingDot(_image);
+        _icon.Icon = _recordingImage;
+        _icon.Text = tooltip.Length > 120 ? tooltip[..120] : tooltip;
+    }
+
     public void Dispose()
     {
         if (_disposed)
@@ -74,6 +99,7 @@ internal sealed class TrayIcon : IDisposable
         _icon.Dispose();
         _menu.Dispose();
         _image.Dispose();
+        DisposeRecordingImage();
     }
 
     private void OnViewModelChanged(object? sender, PropertyChangedEventArgs e)
@@ -134,6 +160,39 @@ internal sealed class TrayIcon : IDisposable
             }
         }
     }
+
+    // The app's icon with a red dot in its lower right corner, the colour of a recording light.
+    private static System.Drawing.Icon WithRecordingDot(System.Drawing.Icon icon)
+    {
+        using var bitmap = icon.ToBitmap();
+        using (var graphics = System.Drawing.Graphics.FromImage(bitmap))
+        using (var red = new System.Drawing.SolidBrush(System.Drawing.Color.FromArgb(255, 196, 43, 28)))
+        using (var ring = new System.Drawing.Pen(System.Drawing.Color.White, Math.Max(1f, bitmap.Width / 16f)))
+        {
+            graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            var size = bitmap.Width * 0.55f;
+            var x = bitmap.Width - size - 0.5f;
+            var y = bitmap.Height - size - 0.5f;
+            graphics.FillEllipse(red, x, y, size, size);
+            graphics.DrawEllipse(ring, x, y, size, size);
+        }
+
+        var handle = bitmap.GetHicon();
+        using var owned = System.Drawing.Icon.FromHandle(handle);
+        var copy = (System.Drawing.Icon)owned.Clone();
+        DestroyIcon(handle);
+        return copy;
+    }
+
+    private void DisposeRecordingImage()
+    {
+        _recordingImage?.Dispose();
+        _recordingImage = null;
+    }
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+    private static extern bool DestroyIcon(IntPtr icon);
 
     // The resource text may end with "…" (Open image…), which a menu item shows as it is.
     private string TextOf(TrayMenuItemViewModel item) => _localizer.GetString(item.TextKey);

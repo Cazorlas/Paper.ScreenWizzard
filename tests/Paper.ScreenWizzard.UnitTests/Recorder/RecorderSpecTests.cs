@@ -97,6 +97,7 @@ public sealed class RecorderSpecTests
         Assert.That(start.Started, Is.True);
         Assert.That(result!.Saved, Is.True);
         Assert.That(_rig.Writer.FinishedAs, Is.EqualTo(result.FilePath));
+        Assert.That(result.Bytes, Is.EqualTo(42 * 1024 * 1024), "the size the Recorded window shows");
         Assert.That(_rig.Recorder.State, Is.EqualTo(RecorderState.Idle));
     }
 

@@ -397,7 +397,7 @@ public sealed class RecorderInteractor : IRecorderInteractor
             _ => null,
         };
         _log.Info($"Recorded {duration} to {run.FinalPath} ({end})");
-        return new RecordingResult(end ?? RecordingEnd.Stopped, run.FinalPath, run.Size, duration, message);
+        return new RecordingResult(end ?? RecordingEnd.Stopped, run.FinalPath, run.Size, duration, message, finished.Bytes);
     }
 
     // One step of the loop: the picture (or, when the screen did not change, the previous one) goes into every frame slot up to now,

@@ -66,12 +66,14 @@ public enum RecordingEnd
 
 /// <param name="FilePath">The saved video; null when nothing was saved (F3).</param>
 /// <param name="Message">What the "Recorded" window or the notice says besides the file (F1, F2, F3).</param>
+/// <param name="Bytes">The size of the saved file.</param>
 public sealed record RecordingResult(
     RecordingEnd End,
     string? FilePath,
     PixelSize Size,
     TimeSpan Duration,
-    NotificationMessage? Message)
+    NotificationMessage? Message,
+    long Bytes = 0)
 {
     public bool Saved => FilePath is not null;
 }
@@ -106,7 +108,8 @@ public enum VideoWriterIssue
     Encoder,
 }
 
-public sealed record VideoWriterResult(VideoWriterIssue Issue, string? Detail)
+/// <param name="Bytes">After <c>Finish</c>: the size of the completed file.</param>
+public sealed record VideoWriterResult(VideoWriterIssue Issue, string? Detail, long Bytes = 0)
 {
     public static VideoWriterResult Ok { get; } = new(VideoWriterIssue.None, null);
 

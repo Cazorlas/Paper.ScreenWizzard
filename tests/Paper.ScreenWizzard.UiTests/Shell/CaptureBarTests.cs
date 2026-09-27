@@ -20,6 +20,7 @@ public sealed class CaptureBarTests : UiTestBase
         "CaptureButton.Freeform",
         "CaptureButton.Window",
         "CaptureButton.FullScreen",
+        "RecordButton",
         "SettingsButton",
         "CloseButton",
     ];
@@ -103,6 +104,21 @@ public sealed class CaptureBarTests : UiTestBase
             session.Click(buttonId);
 
             Assert.That(requested, Is.EqualTo(new[] { expected }), "one click asks for one capture of that kind, and the bar captures nothing itself");
+        }
+    }
+
+    [Test]
+    public void Buttons_Record_AsksForTheRecordingBar()
+    {
+        var (viewModel, session) = Open();
+        using (session)
+        {
+            var raised = 0;
+            WpfHost.Instance.Invoke(() => viewModel.RecordRequested += (_, _) => raised++);
+
+            session.Click("RecordButton");
+
+            Assert.That(raised, Is.EqualTo(1));
         }
     }
 

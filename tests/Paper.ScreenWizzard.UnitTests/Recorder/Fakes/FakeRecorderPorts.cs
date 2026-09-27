@@ -171,7 +171,7 @@ public sealed class FakeVideoWriter : IVideoWriter
     public VideoWriterResult Finish(string finalPath)
     {
         FinishedAs = finalPath;
-        return VideoWriterResult.Ok;
+        return new VideoWriterResult(VideoWriterIssue.None, null, 42 * 1024 * 1024);
     }
 
     public void Abandon() => Abandoned = true;
