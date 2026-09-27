@@ -36,25 +36,6 @@ public enum AfterCaptureAction
     ClipboardAndFile,
 }
 
-/// <summary>
-/// A top-level window at the moment of the snapshot.
-/// </summary>
-/// <param name="Handle">The window handle as a number; the port's, never dereferenced here.</param>
-/// <param name="VisibleFrame">The frame the user sees, without the invisible resize border and shadow.</param>
-/// <param name="ZOrder">0 is the topmost window; larger is further back.</param>
-/// <param name="IsOwnOverlay">True for this app's own selection overlay, which is never a target.</param>
-/// <param name="IsDesktop">True for the desktop's own windows (Progman, WorkerW): as big as every monitor together, never a target.</param>
-public sealed record WindowInfo(
-    long Handle,
-    string Title,
-    PixelRect VisibleFrame,
-    bool IsVisible,
-    bool IsMinimized,
-    bool IsCloaked,
-    bool IsOwnOverlay,
-    int ZOrder,
-    bool IsDesktop = false);
-
 /// <summary>Everything the selection needs, taken at one instant, so what the user sees stays still while they choose.</summary>
 /// <param name="VirtualScreen">The bounding rectangle of all monitors.</param>
 /// <param name="Image">The pixels of <paramref name="VirtualScreen"/>.</param>
