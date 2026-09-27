@@ -227,18 +227,15 @@ public sealed class AppShell : IDisposable
         _exiting = true;
         SaveCaptureBarPosition();
 
-        // A recording is stopped and saved first (SPEC recorder, "Pause and stop"); one that is already finishing by itself (F1, F2) is
-        // waited for, so the process never ends half way through writing the file, and a countdown is called off.
-        if (_recording.State != RecorderState.Idle)
+        // A recording is stopped and saved first (SPEC recorder, "Pause and stop"); the use case also waits for one finishing by itself
+        // (F1, F2), calls a countdown off, and does nothing when nothing records.
+        try
         {
-            try
-            {
-                await _recording.StopAsync();
-            }
-            catch (Exception exception)
-            {
-                _log.Error("The recording could not be stopped at exit", exception);
-            }
+            await _recording.StopAsync();
+        }
+        catch (Exception exception)
+        {
+            _log.Error("The recording could not be stopped at exit", exception);
         }
 
         _shutdown();

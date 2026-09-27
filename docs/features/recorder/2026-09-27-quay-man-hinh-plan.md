@@ -147,7 +147,7 @@ Lane `e2e` không có verb (profile chỉ cấp `unit` và `ui`). Các task E2E 
 ### 2. Hotkey và cài đặt cho quay — sau nhóm 1
 
 - [x] T4 [red][unit] Test: `HotkeyAction` và hai phím quay mặc định Ctrl+Alt+R, Ctrl+Alt+P; tập tin cài đặt 0.1.3 (chỉ bốn phím chụp, không mục quay) đọc được và lấy mặc định; F8 recorder: phím quay bị giữ thì báo và các phím khác vẫn chạy; các mục quay trong `SettingsRules` (fps 15/30/60, đếm ngược 0/3/5, ngoài miền là hỏng); xong khi đỏ ở assertion {files: tests/Paper.ScreenWizzard.UnitTests/Shell/**}
-- [x] T5 [unit] Code: `HotkeyAction` thay `CaptureKind` ở `IHotkeys`, `AppSettings.Hotkeys`, `StoredSettings`; `RecorderSettings` trong `AppSettings`; `SettingsRules.Complete`; `SettingsStore` document; `HotkeyService`; verb `test` — xong khi exit 0 và mọi test cũ vẫn xanh {files: src/Paper.ScreenWizzard.Domain/Shell/**, src/Paper.ScreenWizzard.UseCases/Shell/**, src/Paper.ScreenWizzard.Infrastructure/Shell/**, tests/Paper.ScreenWizzard.UnitTests/Shell/**}
+- [x] T5 [unit] Code (làm khác: `RecordHotkey` bên cạnh `CaptureKind`, xem Decisions, "Lệch khi làm"): `HotkeyAction` thay `CaptureKind` ở `IHotkeys`, `AppSettings.Hotkeys`, `StoredSettings`; `RecorderSettings` trong `AppSettings`; `SettingsRules.Complete`; `SettingsStore` document; `HotkeyService`; verb `test` — xong khi exit 0 và mọi test cũ vẫn xanh {files: src/Paper.ScreenWizzard.Domain/Shell/**, src/Paper.ScreenWizzard.UseCases/Shell/**, src/Paper.ScreenWizzard.Infrastructure/Shell/**, tests/Paper.ScreenWizzard.UnitTests/Shell/**}
 
 ### 3. Giao diện trên dữ liệu giả — sau nhóm 2
 
@@ -168,7 +168,7 @@ Lane `e2e` không có verb (profile chỉ cấp `unit` và `ui`). Các task E2E 
 
 - [x] T12 SPEC shell (hai ngôn ngữ) ghi dòng khay "Quay màn hình…", nút Quay của thanh chụp, nhóm quay trong Cài đặt; roadmap: đợt 2a xong, 2b webcam, 2c icon lên mặt — xong khi `check-spec` sạch {files: docs/**}
 - [x] T13 `find-bug` trên SPEC recorder — xong khi mọi phát hiện có input đã thành test hoặc vào báo cáo
-- [ ] T14 Agent `architecture-reviewer` trên mọi file plan này đổi — xong khi 0 vi phạm
+- [x] T14 Agent `architecture-reviewer` trên mọi file plan này đổi — xong khi 0 vi phạm
 - [ ] T15 Đóng SPEC.md (gỡ banner); CODEMAP cho `Recorder` ở năm project; `check-spec`, `check-code-map` sạch — xong khi hai lệnh exit 0 {files: docs/features/recorder/SPEC.md, src/**/CODEMAP.md}
 
 ## API đã tra
@@ -201,3 +201,5 @@ tài liệu quen dùng. T8 và T9 tra lại và đo trên máy Hùng trước kh
 | T11 | `tests/.../E2eTests/Drive/RecordingDriveTests.cs` (3 test: phím bắt đầu/dừng ra file và thanh ẩn rồi hiện lại, tooltip khay; tạm dừng không làm dài video; thoát khi đang quay vẫn có file, không còn `.part`); phím thử là Ctrl+Alt+Shift+F17/F18, thư mục video là thư mục tạm. `ShellDriveTests` cập nhật tên dòng menu khay (Quay màn hình…, Kiểm bản mới) | chờ máy Hùng |
 | T12 | SPEC shell hai ngôn ngữ: dòng khay, nút Quay, nhóm "Quay màn hình" trong Cài đặt, hàng Inputs; roadmap: 2a đang làm, 2b webcam, 2c icon lên mặt; `check_spec.py`: `5 SPEC.md, 0 problems` | pass |
 | T13 | find-bug trên SPEC recorder, hai phát hiện, cả hai đã sửa ở `AppShell`: (1) chọn Thoát đúng lúc bản quay tự dừng vì F1/F2 (trạng thái `Finishing`) thì ứng dụng không chờ, file có thể còn `.part` → giờ chờ mọi trạng thái khác `Idle`; (2) đang quay mà mở Cài đặt thì phím Dừng/Tạm dừng bị bỏ qua → giờ chỉ chặn việc bắt đầu bản quay mới. Cả hai chỉ kiểm được bằng E2E (T11 phủ đường thoát). Nghi ngờ, chưa thành phát hiện: bấm phím bắt đầu/dừng lúc đang kéo vùng thì không huỷ việc kéo | pass |
+| T14 | Agent `architecture-reviewer`, lượt 1: 9 vi phạm (thông báo F7, bắt đầu/dừng, tạm dừng và thứ tự màn hình quyết ở Presentation; bitrate ở adapter; giữ lựa chọn, guard phím và tooltip ở `AppShell`; `IRecorderViews` không có fake; lệch `HotkeyAction`). Sửa ở `22ab9c6`: `RecordAreaAnswer`, `TogglePause`, `StopIfActiveAsync`, `RecordArea.InBarOrder`/`KnownMonitor`, `RecorderRules.VideoBitsPerSecond` (tách ra thì lộ lỗi: 0,1 bit/pixel cho 10 phút 1080p30 là ~470 MB, SPEC nói ~300 MB; nay 1/16 bit, test canh), `IShellInteractor.KeepRecorderChoices`, `RecordingTimeText`, `RecordingFlowTests` (8 test, fake views); lệch hotkey ghi ở Decisions. Lượt 2 (77/77 file): 1 vi phạm, guard `State != Idle` lúc thoát ở `AppShell`; đã bỏ, use case tự quyết. CI run 36331686612 trên `22ab9c6`: `Passed: 497, Total: 497`, 0 cảnh báo | pass |
+| T15 | CODEMAP năm project có `Recorder`; `check_code_map.py`: `6 CODEMAP.md, 0 stale`; `check_spec.py`: `5 SPEC.md, 0 problems`. **Banner SPEC chưa gỡ:** gỡ khi `ui` (T6, T7) và E2E (T8, T9, T11) xanh trên máy Hùng | chờ máy Hùng |

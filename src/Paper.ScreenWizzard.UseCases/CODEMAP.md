@@ -1,6 +1,6 @@
 # Paper.ScreenWizzard.UseCases
 
-Every decision of the three features, on `net10.0` with no Windows: each domain folder holds `Ports/` (one interface per file:
+Every decision of the four features, on `net10.0` with no Windows: each domain folder holds `Ports/` (one interface per file:
 `I<Feature>Interactor`, the session, and the ports it needs, named after what they provide, plain data only), `UseCases/` (the
 interactor and the session) and `Models/` (the records that cross them). `Shared/` holds what two or more domains call (ADR 0003). The Presentation flows call the
 interfaces; Infrastructure implements the ports.

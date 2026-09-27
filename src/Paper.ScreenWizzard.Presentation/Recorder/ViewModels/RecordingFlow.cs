@@ -63,8 +63,11 @@ public sealed class RecordingFlow
 
     public bool IsRecording => _recorder.State is RecorderState.Recording or RecorderState.Paused;
 
-    /// <summary>The recording bar opens only while nothing records: a recording is controlled from the tray (SPEC recorder, step 4).</summary>
-    public bool MayOpenBar => !IsRecording;
+    /// <summary>
+    /// The recording bar opens only while nothing records, counts down or finishes: a recording is controlled from the tray (SPEC
+    /// recorder, step 4).
+    /// </summary>
+    public bool MayOpenBar => _recorder.State == RecorderState.Idle;
 
     /// <summary>Records with <paramref name="choices"/>; the task ends once recording runs, or it gave up.</summary>
     public async Task StartAsync(RecorderSettings choices)
