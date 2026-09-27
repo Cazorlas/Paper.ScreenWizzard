@@ -32,6 +32,19 @@ public sealed class TrayOpenImageCommand : CommandBase
     public override void Execute(object? parameter) => _owner.RaiseOpenImageRequested();
 }
 
+/// <summary>"Kiểm bản mới": asks for the newest version now.</summary>
+public sealed class TrayCheckForUpdatesCommand : CommandBase
+{
+    private readonly TrayMenuViewModel _owner;
+
+    public TrayCheckForUpdatesCommand(TrayMenuViewModel owner)
+    {
+        _owner = owner;
+    }
+
+    public override void Execute(object? parameter) => _owner.RaiseCheckForUpdatesRequested();
+}
+
 /// <summary>"Tải bản mới…": the line that is there only while a newer version is out.</summary>
 public sealed class TrayUpdateCommand : CommandBase
 {

@@ -77,6 +77,10 @@ public sealed class LanguageAndThemeTests : UiTestBase
         "Shell.UpdateAvailable.Title",
         "Shell.UpdateAvailable",
         "Shell.UpdatePageNotOpened",
+        "Tray.CheckForUpdates",
+        "Shell.UpdateCheck.Title",
+        "Shell.UpToDate",
+        "Shell.UpdateCheckFailed",
         "Settings.Save",
         "Settings.Cancel",
     ];

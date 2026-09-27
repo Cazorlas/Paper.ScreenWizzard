@@ -126,6 +126,80 @@ public sealed class UpdateSpecTests
     }
 
     [Test]
+    public async Task CheckNow_ANewerRelease_IsSaid_EvenIfTheDailyCheckSaidItAlready()
+    {
+        _feed.Answer = new ReleaseFeedResult("v0.1.4", null);
+        var updates = Create();
+        await updates.CheckAsync(On(), "0.1.3", CancellationToken.None);
+
+        var now = await updates.CheckNowAsync("0.1.3", CancellationToken.None);
+
+        Assert.That(now.Offer?.Version, Is.EqualTo(new AppVersion(0, 1, 4)));
+        Assert.That(now.Notice?.Key, Is.EqualTo("Shell.UpdateAvailable"), "the user asked, so the answer is said again");
+    }
+
+    [Test]
+    public async Task CheckNow_ThenTheDailyCheck_DoesNotSayTheSameVersionTwice()
+    {
+        _feed.Answer = new ReleaseFeedResult("v0.1.4", null);
+        var updates = Create();
+        await updates.CheckNowAsync("0.1.3", CancellationToken.None);
+
+        var daily = await updates.CheckAsync(On(), "0.1.3", CancellationToken.None);
+
+        Assert.That(daily.Offer, Is.Not.Null);
+        Assert.That(daily.Notice, Is.Null);
+    }
+
+    [TestCase("v0.1.3")]
+    [TestCase("v0.1.2")]
+    public async Task CheckNow_TheNewestAlready_SaysSo_WithTheRunningVersion(string tag)
+    {
+        _feed.Answer = new ReleaseFeedResult(tag, null);
+
+        var now = await Create().CheckNowAsync("0.1.3", CancellationToken.None);
+
+        Assert.That(now.Offer, Is.Null);
+        Assert.That(now.Notice?.Key, Is.EqualTo("Shell.UpToDate"));
+        Assert.That(now.Notice!.Arguments, Is.EqualTo(new[] { "0.1.3" }));
+    }
+
+    [Test]
+    public async Task CheckNow_NoAnswer_SaysWhy()
+    {
+        _feed.Answer = new ReleaseFeedResult(null, "No such host is known.");
+
+        var now = await Create().CheckNowAsync("0.1.3", CancellationToken.None);
+
+        Assert.That(now.Offer, Is.Null);
+        Assert.That(now.Notice?.Key, Is.EqualTo("Shell.UpdateCheckFailed"));
+        Assert.That(now.Notice!.Arguments, Is.EqualTo(new[] { "No such host is known." }));
+    }
+
+    [TestCase("latest", null)]
+    [TestCase("v0.1.4", "1.0")]
+    public async Task CheckNow_ATagOrABuildWithoutAVersion_IsAFailedCheck(string tag, string? running)
+    {
+        _feed.Answer = new ReleaseFeedResult(tag, null);
+
+        var now = await Create().CheckNowAsync(running ?? "0.1.3", CancellationToken.None);
+
+        Assert.That(now.Offer, Is.Null);
+        Assert.That(now.Notice?.Key, Is.EqualTo("Shell.UpdateCheckFailed"));
+    }
+
+    [Test]
+    public async Task CheckNow_AsksGitHub_EvenWithTheDailyCheckOff()
+    {
+        // CheckNowAsync takes no settings: the user's click is the permission.
+        _feed.Answer = new ReleaseFeedResult("v0.1.3", null);
+
+        await Create().CheckNowAsync("0.1.3", CancellationToken.None);
+
+        Assert.That(_feed.Calls, Is.EqualTo(1));
+    }
+
+    [Test]
     public void TheDownloadPage_OpensInTheBrowser()
     {
         var offer = new UpdateOffer(new AppVersion(0, 1, 3), UpdateRules.ReleasePage(new AppVersion(0, 1, 3)));

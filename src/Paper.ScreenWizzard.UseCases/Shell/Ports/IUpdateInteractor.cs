@@ -13,6 +13,12 @@ public interface IUpdateInteractor
     /// </summary>
     Task<UpdateCheckResult> CheckAsync(AppSettings settings, string? runningVersion, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// The check the user asked for from the tray: made even with the daily check off, and always answered - the newer version, "this is
+    /// the newest" (Shell.UpToDate), or why it could not tell (Shell.UpdateCheckFailed).
+    /// </summary>
+    Task<UpdateCheckResult> CheckNowAsync(string? runningVersion, CancellationToken cancellationToken);
+
     /// <summary>Opens the release page of the offered version; a page that did not open is said, with its address.</summary>
     NotificationMessage? OpenDownloadPage(UpdateOffer offer);
 }

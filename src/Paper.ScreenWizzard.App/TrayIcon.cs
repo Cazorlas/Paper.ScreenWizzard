@@ -52,9 +52,9 @@ internal sealed class TrayIcon : IDisposable
 
     /// <summary>
     /// A Windows notification from the tray icon (on Windows 10 and 11 it is a toast and goes to the notification centre). A click on it
-    /// runs <paramref name="clicked"/>; one that closes unclicked forgets it.
+    /// runs <paramref name="clicked"/> (none: a click does nothing); one that closes unclicked forgets it.
     /// </summary>
-    public void ShowNotice(string title, string text, Action clicked)
+    public void ShowNotice(string title, string text, Action? clicked)
     {
         _balloonClicked = clicked;
         _icon.ShowBalloonTip(10_000, title, text, WinForms.ToolTipIcon.Info);
@@ -90,7 +90,7 @@ internal sealed class TrayIcon : IDisposable
         Rebuild();
     }
 
-    // Capture x4, a line, Open image / Capture bar / Settings (/ Tải bản mới… while a newer version is out), a line, Exit.
+    // Capture x4, a line, Open image / Capture bar / Settings / Kiểm bản mới (/ Tải bản mới… while a newer version is out), a line, Exit.
     private void Rebuild()
     {
         foreach (var (item, _) in _entries)
