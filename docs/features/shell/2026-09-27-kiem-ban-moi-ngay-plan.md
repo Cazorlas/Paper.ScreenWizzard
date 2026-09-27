@@ -40,3 +40,5 @@ Luật: [SPEC.md](SPEC.md), nhóm "Báo bản mới" và F9 · Đợt trước: 
 
 | Task | Lệnh / id / giá trị đọc lại | Verdict |
 |---|---|---|
+| T1, T2, T3 | CI `ci` run 36285800594 on `a7620b6`: `dotnet build -c Release` `0 Warning(s) 0 Error(s)`; `Passed! - Failed: 0, Passed: 420, Total: 420` (412 before + 8 new `CheckNow_*` cases) | pass (unit and compile); `ui` open (T4) |
+| T5 | `check_spec.py` 4 SPEC.md 0 problems; `check_code_map.py` 0 stale | pass |
