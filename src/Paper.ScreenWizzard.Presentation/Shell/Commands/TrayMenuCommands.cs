@@ -32,6 +32,45 @@ public sealed class TrayOpenImageCommand : CommandBase
     public override void Execute(object? parameter) => _owner.RaiseOpenImageRequested();
 }
 
+/// <summary>"Quay màn hình…".</summary>
+public sealed class TrayRecordCommand : CommandBase
+{
+    private readonly TrayMenuViewModel _owner;
+
+    public TrayRecordCommand(TrayMenuViewModel owner)
+    {
+        _owner = owner;
+    }
+
+    public override void Execute(object? parameter) => _owner.RaiseRecordRequested();
+}
+
+/// <summary>"Tạm dừng quay" / "Tiếp tục quay".</summary>
+public sealed class TrayRecordPauseCommand : CommandBase
+{
+    private readonly TrayMenuViewModel _owner;
+
+    public TrayRecordPauseCommand(TrayMenuViewModel owner)
+    {
+        _owner = owner;
+    }
+
+    public override void Execute(object? parameter) => _owner.RaiseRecordPauseRequested();
+}
+
+/// <summary>"Dừng quay".</summary>
+public sealed class TrayRecordStopCommand : CommandBase
+{
+    private readonly TrayMenuViewModel _owner;
+
+    public TrayRecordStopCommand(TrayMenuViewModel owner)
+    {
+        _owner = owner;
+    }
+
+    public override void Execute(object? parameter) => _owner.RaiseRecordStopRequested();
+}
+
 /// <summary>"Kiểm bản mới": asks for the newest version now.</summary>
 public sealed class TrayCheckForUpdatesCommand : CommandBase
 {

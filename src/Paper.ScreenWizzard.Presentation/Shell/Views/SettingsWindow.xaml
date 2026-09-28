@@ -244,6 +244,72 @@
                            IsChecked="{Binding Theme, Converter={StaticResource Choice}, ConverterParameter=Dark}" />
             </WrapPanel>
           </StackPanel>
+
+          <!-- Quay màn hình (SPEC recorder, Inputs): the two hotkeys, the video folder, frames per second, the countdown. -->
+          <StackPanel Style="{StaticResource Style.Group}">
+            <TextBlock Style="{StaticResource Style.GroupHeader}" Text="{DynamicResource Settings.Group.Recording}" />
+            <Grid Margin="0,0,0,8">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="150" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+              </Grid.RowDefinitions>
+              <TextBlock Grid.Row="0" Style="{StaticResource Style.Label}" Text="{DynamicResource Settings.RecordHotkey.StartStop}" />
+              <local:HotkeyCaptureBox Grid.Row="0" Grid.Column="1" Margin="0,3"
+                                      Style="{StaticResource Style.TextBox}"
+                                      AutomationProperties.AutomationId="RecordHotkeyBox.StartStop"
+                                      AutomationProperties.Name="{DynamicResource Settings.RecordHotkey.StartStop}"
+                                      Chord="{Binding RecordStartStop, Mode=TwoWay}" />
+              <TextBlock Grid.Row="1" Style="{StaticResource Style.Label}" Text="{DynamicResource Settings.RecordHotkey.Pause}" />
+              <local:HotkeyCaptureBox Grid.Row="1" Grid.Column="1" Margin="0,3"
+                                      Style="{StaticResource Style.TextBox}"
+                                      AutomationProperties.AutomationId="RecordHotkeyBox.Pause"
+                                      AutomationProperties.Name="{DynamicResource Settings.RecordHotkey.Pause}"
+                                      Chord="{Binding RecordPause, Mode=TwoWay}" />
+            </Grid>
+
+            <TextBlock Style="{StaticResource Style.Label}" Margin="0,0,0,4" Text="{DynamicResource Settings.VideoFolder}" />
+            <Grid Margin="0,0,0,12">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <TextBox AutomationProperties.AutomationId="VideoFolderBox"
+                       AutomationProperties.Name="{DynamicResource Settings.VideoFolder}"
+                       Text="{Binding VideoFolder, UpdateSourceTrigger=PropertyChanged}" />
+              <Button Grid.Column="1" Margin="8,0,0,0"
+                      AutomationProperties.AutomationId="BrowseVideoFolderButton"
+                      AutomationProperties.Name="{DynamicResource Settings.BrowseVideoFolder}"
+                      Content="{DynamicResource Settings.Browse}"
+                      Command="{Binding BrowseVideoFolderCommand}" />
+            </Grid>
+
+            <TextBlock Style="{StaticResource Style.Label}" Margin="0,0,0,2" Text="{DynamicResource Settings.FramesPerSecond}" />
+            <WrapPanel Style="{StaticResource Style.RadioRow}" Margin="0,0,0,6">
+              <RadioButton Style="{StaticResource Style.RadioRowItem}" GroupName="Fps" AutomationProperties.AutomationId="Fps.15" Content="15"
+                           IsChecked="{Binding FramesPerSecond, Converter={StaticResource Choice}, ConverterParameter=15}" />
+              <RadioButton Style="{StaticResource Style.RadioRowItem}" GroupName="Fps" AutomationProperties.AutomationId="Fps.30" Content="30"
+                           IsChecked="{Binding FramesPerSecond, Converter={StaticResource Choice}, ConverterParameter=30}" />
+              <RadioButton Style="{StaticResource Style.RadioRowItem}" GroupName="Fps" AutomationProperties.AutomationId="Fps.60" Content="60"
+                           IsChecked="{Binding FramesPerSecond, Converter={StaticResource Choice}, ConverterParameter=60}" />
+            </WrapPanel>
+
+            <TextBlock Style="{StaticResource Style.Label}" Margin="0,0,0,2" Text="{DynamicResource Settings.RecordCountdown}" />
+            <WrapPanel Style="{StaticResource Style.RadioRow}">
+              <RadioButton Style="{StaticResource Style.RadioRowItem}" GroupName="RecordCountdown" AutomationProperties.AutomationId="RecordCountdown.0"
+                           Content="{DynamicResource Settings.Delay.0}"
+                           IsChecked="{Binding RecordCountdown, Converter={StaticResource Choice}, ConverterParameter=0}" />
+              <RadioButton Style="{StaticResource Style.RadioRowItem}" GroupName="RecordCountdown" AutomationProperties.AutomationId="RecordCountdown.3"
+                           Content="{DynamicResource Settings.Delay.3}"
+                           IsChecked="{Binding RecordCountdown, Converter={StaticResource Choice}, ConverterParameter=3}" />
+              <RadioButton Style="{StaticResource Style.RadioRowItem}" GroupName="RecordCountdown" AutomationProperties.AutomationId="RecordCountdown.5"
+                           Content="{DynamicResource Settings.Delay.5}"
+                           IsChecked="{Binding RecordCountdown, Converter={StaticResource Choice}, ConverterParameter=5}" />
+            </WrapPanel>
+          </StackPanel>
         </StackPanel>
       </Grid>
     </ScrollViewer>

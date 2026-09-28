@@ -1,5 +1,6 @@
 using System.Globalization;
 using Paper.ScreenWizzard.Domain.Capture;
+using Paper.ScreenWizzard.Domain.Recorder;
 
 namespace Paper.ScreenWizzard.Domain.Shell;
 
@@ -94,6 +95,43 @@ public static class SettingsRules
             return SettingsCompletion.Broken(string.Create(CultureInfo.InvariantCulture, $"the delay {delaySeconds} is not between 0 and {DelaySecondsMax} seconds"));
         }
 
+        var recordHotkeys = defaults.RecordHotkeys;
+        if (stored.RecordHotkeys is null)
+        {
+            defaulted.Add("recordHotkeys");
+        }
+        else
+        {
+            foreach (var (name, chord) in stored.RecordHotkeys)
+            {
+                if (!Enum.GetNames<RecordHotkey>().Contains(name) || !Enum.TryParse<RecordHotkey>(name, out var key))
+                {
+                    return SettingsCompletion.Broken($"'{name}' is not a recording hotkey");
+                }
+
+                if (chord is null || string.IsNullOrWhiteSpace(chord.Key))
+                {
+                    return SettingsCompletion.Broken($"the recording hotkey {name} has no key");
+                }
+
+                recordHotkeys = recordHotkeys.With(key, new HotkeyChord(chord.Modifiers ?? HotkeyModifiers.None, chord.Key));
+            }
+
+            foreach (var key in Enum.GetValues<RecordHotkey>())
+            {
+                if (!stored.RecordHotkeys.ContainsKey(key.ToString()))
+                {
+                    defaulted.Add("recordHotkeys." + key);
+                }
+            }
+        }
+
+        var recorder = CompleteRecorder(stored.Recorder, defaults.Recorder, defaulted, out var recorderProblem);
+        if (recorder is null)
+        {
+            return SettingsCompletion.Broken(recorderProblem!);
+        }
+
         var settings = new AppSettings(
             hotkeys,
             Take(stored.AfterCapture, defaults.AfterCapture, "afterCapture"),
@@ -108,8 +146,69 @@ public static class SettingsRules
             Take(stored.Theme, defaults.Theme, "theme"),
             // Where the bar was dragged; a file that never saw a drag has none, which is the default too.
             stored.CaptureBarPosition,
+            recordHotkeys,
+            recorder,
             Take(stored.CheckForUpdates, defaults.CheckForUpdates, "checkForUpdates"));
         return new SettingsCompletion(settings, null, defaulted);
+    }
+
+    // The recording settings (SPEC recorder, Inputs): missing ones take their default, one outside its choices breaks the file.
+    private static RecorderSettings? CompleteRecorder(StoredRecorder? stored, RecorderSettings defaults, List<string> defaulted, out string? problem)
+    {
+        problem = null;
+        if (stored is null)
+        {
+            defaulted.Add("recorder");
+            return defaults;
+        }
+
+        T Take<T>(T? value, T fallback, string name)
+            where T : struct
+        {
+            if (value is { } present)
+            {
+                return present;
+            }
+
+            defaulted.Add("recorder." + name);
+            return fallback;
+        }
+
+        var fps = Take(stored.FramesPerSecond, defaults.FramesPerSecond, "framesPerSecond");
+        if (!RecorderRules.IsFrameRate(fps))
+        {
+            problem = string.Create(CultureInfo.InvariantCulture, $"{fps} frames a second is not one of {string.Join(", ", RecorderRules.FrameRates)}");
+            return null;
+        }
+
+        var countdown = Take(stored.CountdownSeconds, defaults.CountdownSeconds, "countdownSeconds");
+        if (!RecorderRules.IsCountdown(countdown))
+        {
+            problem = string.Create(CultureInfo.InvariantCulture, $"a countdown of {countdown} seconds is not one of {string.Join(", ", RecorderRules.Countdowns)}");
+            return null;
+        }
+
+        var folder = stored.VideoFolder;
+        if (folder is null)
+        {
+            folder = defaults.VideoFolder;
+            defaulted.Add("recorder.videoFolder");
+        }
+        else if (string.IsNullOrWhiteSpace(folder))
+        {
+            problem = "the video folder is empty";
+            return null;
+        }
+
+        return new RecorderSettings(
+            Take(stored.Target, defaults.Target, "target"),
+            stored.MonitorIndex,
+            Take(stored.SystemSound, defaults.SystemSound, "systemSound"),
+            Take(stored.Microphone, defaults.Microphone, "microphone"),
+            Take(stored.Pointer, defaults.Pointer, "pointer"),
+            countdown,
+            fps,
+            folder);
     }
 }
 

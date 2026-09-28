@@ -35,7 +35,7 @@ public sealed class ShellDriveTests : DriveBase
         var tray = new TrayDriver(App);
         var menu = tray.OpenMenu();
         var names = TrayDriver.ItemNames(menu);
-        Assert.That(names, Is.EqualTo(new[] { "Chụp vùng chữ nhật", "Chụp vùng tự do", "Chụp cửa sổ", "Chụp toàn màn hình", "Mở ảnh…", "Thanh chụp", "Cài đặt", "Thoát" }), "the tray menu of SPEC shell step 2, read from the running exe");
+        Assert.That(names, Is.EqualTo(new[] { "Chụp vùng chữ nhật", "Chụp vùng tự do", "Chụp cửa sổ", "Chụp toàn màn hình", "Mở ảnh…", "Quay màn hình…", "Thanh chụp", "Cài đặt", "Kiểm bản mới", "Thoát" }), "the tray menu of SPEC shell step 2, read from the running exe");
         var barItem = menu.FindAllDescendants(cf => cf.ByName("Thanh chụp")).First();
         Assert.That((Convert.ToUInt32(barItem.Patterns.LegacyIAccessible.Pattern.State.Value) & 0x10) != 0, Is.True, "'Thanh chụp' is ticked while the bar is shown");
         var shot = Desk.ShotPath("drive-tray-menu");

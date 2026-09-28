@@ -26,7 +26,8 @@ public sealed class HotkeyService : IHotkeys, IDisposable
     private const int VirtualKeyF12 = 0x7B;
 
     private readonly HwndSource _window;
-    private readonly Dictionary<CaptureKind, (int Id, HotkeyChord Chord)> _registered = [];
+    // A capture kind or a recording hotkey: both live in one table, so one chord is never held twice by this app.
+    private readonly Dictionary<Slot, (int Id, HotkeyChord Chord)> _registered = [];
     private int _nextId = FirstId;
     private bool _disposed;
 
@@ -45,7 +46,17 @@ public sealed class HotkeyService : IHotkeys, IDisposable
 
     public event Action<CaptureKind>? Pressed;
 
-    public PortResult Register(CaptureKind kind, HotkeyChord chord)
+    public event Action<RecordHotkey>? RecordPressed;
+
+    public PortResult Register(CaptureKind kind, HotkeyChord chord) => Register(Slot.Of(kind), chord);
+
+    public PortResult Register(RecordHotkey key, HotkeyChord chord) => Register(Slot.Of(key), chord);
+
+    public void Unregister(CaptureKind kind) => Unregister(Slot.Of(kind));
+
+    public void Unregister(RecordHotkey key) => Unregister(Slot.Of(key));
+
+    private PortResult Register(Slot kind, HotkeyChord chord)
     {
         var text = HotkeyRules.Format(chord);
         if (_disposed)
@@ -91,7 +102,7 @@ public sealed class HotkeyService : IHotkeys, IDisposable
         return PortResult.Ok;
     }
 
-    public void Unregister(CaptureKind kind)
+    private void Unregister(Slot kind)
     {
         if (_disposed || !_registered.Remove(kind, out var entry))
         {
@@ -201,15 +212,29 @@ public sealed class HotkeyService : IHotkeys, IDisposable
         if (message == NativeMethods.WmHotkey)
         {
             var id = wParam.ToInt32();
-            var match = _registered.Where(pair => pair.Value.Id == id).Select(pair => (CaptureKind?)pair.Key).FirstOrDefault();
-            if (match is { } kind)
+            var match = _registered.Where(pair => pair.Value.Id == id).Select(pair => (Slot?)pair.Key).FirstOrDefault();
+            if (match is { } slot)
             {
                 // Raised after the lookup, not inside it: a handler may register another chord and change the dictionary.
                 handled = true;
-                Pressed?.Invoke(kind);
+                if (slot.Capture is { } kind)
+                {
+                    Pressed?.Invoke(kind);
+                }
+                else if (slot.Record is { } key)
+                {
+                    RecordPressed?.Invoke(key);
+                }
             }
         }
 
         return IntPtr.Zero;
+    }
+
+    private readonly record struct Slot(CaptureKind? Capture, RecordHotkey? Record)
+    {
+        public static Slot Of(CaptureKind kind) => new(kind, null);
+
+        public static Slot Of(RecordHotkey key) => new(null, key);
     }
 }

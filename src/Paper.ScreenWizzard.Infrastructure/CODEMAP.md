@@ -10,8 +10,8 @@ decision is made here. Each adapter sits in the folder of its port's domain (ADR
 | --- | --- |
 | `NativeMethods.cs` | every P/Invoke of the project (GDI, DWM, monitors, cursor, hotkey) |
 | `Capture/ScreenSource.cs` | `BitBlt` of the virtual desktop into a DIB, the cursor drawn in |
-| `Capture/WindowCatalog.cs` | top-level windows top to bottom with the DWM visible frame |
-| `Capture/TaskDelay.cs` | the countdown's wait |
+| `Shared/WindowCatalog.cs` | top-level windows top to bottom with the DWM visible frame (capture and recorder) |
+| `Shared/TaskDelay.cs` | the countdown's wait (capture and recorder) |
 | `Shell/HotkeyService.cs` | `RegisterHotKey` through a message-only window; atomic re-register, F12 refused |
 | `Shell/SettingsStore.cs` | `settings.json` read as written (missing settings null), the `.bak` of a file it cannot read or the use case calls broken, the path in every failure |
 | `Shell/AutostartService.cs` | the HKCU Run value |
@@ -22,6 +22,10 @@ decision is made here. Each adapter sits in the folder of its port's domain (ADR
 | `Shared/ImageCodec.cs` | decode PNG/JPG/BMP (size checked first), encode PNG/JPG |
 | `Shared/MonitorCatalog.cs` | monitors with DPI, the pointer, the layout signature |
 | `Shared/FileStore.cs`, `FileLogger.cs`, `SystemClock.cs` | the small ports |
+| `Recorder/DesktopDuplicationFrames.cs`, `Recorder/PointerPainter.cs` | DXGI Desktop Duplication of each monitor under the area into one BGRA picture; the cursor drawn with `DrawIconEx` (ADR 0004) |
+| `Recorder/WasapiSoundSources.cs`, `Recorder/SoundConverter.cs` | WASAPI loopback and microphone through NAudio, converted to 48 kHz stereo floats |
+| `Recorder/MediaFoundationVideoWriter.cs` | the Media Foundation Sink Writer: H.264 and AAC into `.mp4.part`, renamed when complete |
+| `Recorder/MonotonicClock.cs`, `Recorder/WindowPresence.cs`, `Recorder/FileLauncher.cs` | the shared clock of pictures and sound; `IsWindow`; open a file or show it in Explorer |
 
 ## Flow
 

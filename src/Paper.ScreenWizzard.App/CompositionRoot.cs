@@ -2,6 +2,7 @@ using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.Infrastructure.Capture;
+using Paper.ScreenWizzard.Infrastructure.Recorder;
 using Paper.ScreenWizzard.Infrastructure.Shared;
 using Paper.ScreenWizzard.Infrastructure.Shell;
 using Paper.ScreenWizzard.Presentation.Capture.ViewModels;
@@ -9,6 +10,8 @@ using Paper.ScreenWizzard.Presentation.Capture.Views;
 using Paper.ScreenWizzard.Presentation.Editor.Rendering;
 using Paper.ScreenWizzard.Presentation.Editor.ViewModels;
 using Paper.ScreenWizzard.Presentation.Editor.Views;
+using Paper.ScreenWizzard.Presentation.Recorder.ViewModels;
+using Paper.ScreenWizzard.Presentation.Recorder.Views;
 using Paper.ScreenWizzard.Presentation.Shared.ViewModels;
 using Paper.ScreenWizzard.Presentation.Shared.Views;
 using Paper.ScreenWizzard.Presentation.Shell.ViewModels;
@@ -17,6 +20,8 @@ using Paper.ScreenWizzard.UseCases.Capture.Ports;
 using Paper.ScreenWizzard.UseCases.Capture.UseCases;
 using Paper.ScreenWizzard.UseCases.Editor.Ports;
 using Paper.ScreenWizzard.UseCases.Editor.UseCases;
+using Paper.ScreenWizzard.UseCases.Recorder.Ports;
+using Paper.ScreenWizzard.UseCases.Recorder.UseCases;
 using Paper.ScreenWizzard.UseCases.Shared.Ports;
 using Paper.ScreenWizzard.UseCases.Shared.UseCases;
 using Paper.ScreenWizzard.UseCases.Shell.Ports;
@@ -56,12 +61,19 @@ public static class CompositionRoot
         services.AddSingleton(_ => new SingleInstance(options.InstanceName));
         services.AddSingleton<IReleaseFeed>(_ => new GitHubReleaseFeed("Paper.ScreenWizzard"));
         services.AddSingleton<IBrowser, Browser>();
+        services.AddSingleton<IMonotonicClock, MonotonicClock>();
+        services.AddSingleton<IScreenFrames, DesktopDuplicationFrames>();
+        services.AddSingleton<ISoundSources, WasapiSoundSources>();
+        services.AddSingleton<IVideoWriter, MediaFoundationVideoWriter>();
+        services.AddSingleton<IWindowPresence, WindowPresence>();
+        services.AddSingleton<IFileLauncher, FileLauncher>();
         services.AddSingleton<ISingleInstance>(sp => sp.GetRequiredService<SingleInstance>());
 
         // Use cases.
         services.AddSingleton<IImageDelivery, ImageDelivery>();
         services.AddSingleton<IShellInteractor, ShellInteractor>();
         services.AddSingleton<IUpdateInteractor, UpdateInteractor>();
+        services.AddSingleton<IRecorderInteractor, RecorderInteractor>();
         services.AddSingleton<ICaptureInteractor, CaptureInteractor>();
         services.AddSingleton<IEditorInteractor, EditorInteractor>();
 
@@ -97,6 +109,8 @@ public static class CompositionRoot
             sp.GetRequiredService<ILocalizer>(),
             sp.GetRequiredService<Func<AppSettings>>()));
         services.AddSingleton<EditorFlow>();
+        services.AddSingleton<IRecorderViews, WpfRecorderViews>();
+        services.AddSingleton<RecordingFlow>();
         services.AddSingleton<AppShell>();
 
         return services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });

@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using Paper.ScreenWizzard.Domain.Capture;
+using Paper.ScreenWizzard.Domain.Recorder;
 using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.UnitTests.Shell.Fakes;
@@ -38,6 +39,8 @@ public sealed class SettingsRulesTests
         Theme = AppTheme.Dark,
         CaptureBarPosition = new PixelPoint(-800, 20),
         CheckForUpdates = false,
+        RecordHotkeys = new RecordingHotkeys(ShellData.Chord(HotkeyModifiers.Shift, "F9"), ShellData.Chord(HotkeyModifiers.Shift, "F10")),
+        Recorder = new RecorderSettings(RecordTargetKind.Window, 1, false, true, false, 0, 15, @"E:\Quay"),
     };
 
     [Test]
