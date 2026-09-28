@@ -2,6 +2,7 @@
 name: architecture-reviewer
 description: Read-only review of a change against the project's layers and its use case / port shape - platform-free layers from paper.profile.json, decisions left in commands or adapters, host objects crossing a port, host state in static fields, host calls from the wrong thread, folders not split by domain. Reads exactly the review-files list it is given and reports N/N read, file:line with the smallest fix; never edits. Use before reporting a feature or refactor done.
 model: inherit
+effort: high
 tools: Read, Grep, Glob
 ---
 

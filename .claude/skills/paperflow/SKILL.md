@@ -54,12 +54,11 @@ Mười một luật này đúng cho mọi chặng dưới đây, và mỗi lu�
 9. **Mời người dùng đọc gì thì đưa liên kết bấm được tới đúng chỗ đó** — không chỉ lúc xin duyệt, mà
    mọi lần mời xem, kiểm hay chốt: mỗi tài liệu một dòng `[tên](<đường dẫn tuyệt đối>)`, số dòng ghi trong
    chữ của liên kết, không bao giờ `#L` trong đích — cả hai đều không mở được từ terminal. Luật đủ: `references/approval-links.md`. *Xong khi:* mỗi tài liệu được nhắc có một liên kết. Có hook Stop `link-nag` giữ lượt khi thiếu.
-10. **Model mạnh để nghĩ, model đang set để làm.** Phần *nghĩ* (suy luận, `SPEC.md`, plan, chia task, rà
-   soát) chạy trên model mạnh nhất; phần *làm* (code, task, build, test, lái host) chạy trên model người
-   dùng đang set. Hai cổng, và mặc định nghiêng về **không đổi**: tài khoản phải khớp
-   `models.strongOnAccount` của profile (máy có thể đang ở tài khoản công ty — hạn mức đó là tiền người
-   khác trả), rồi mới tới hạn mức của model mạnh. Đổi ở ranh giới phiên (mục 2), không giữa phiên đang lớn. Luật đủ: `references/model-switch.md`. *Xong khi:* báo
-   cáo nói model nào cho phần nghĩ và phần làm, hay `mặc định — sai tài khoản` / `— không khả dụng`.
+10. **Effort cao để nghĩ, effort đang set để làm; model không đổi.** Phần *nghĩ* (suy luận, `SPEC.md`,
+   plan, chia task, rà soát) chạy ở effort ít nhất `high` — đang `high` thì lên `xhigh`, đang cao hơn thì giữ;
+   phần *làm* (code, task, build, test, lái host) chạy ở effort người dùng đang set. Model người dùng chọn chạy
+   cả hai phần, mọi host, mọi loại việc (ADR-0026). Session xin `/effort` một câu rồi đi tiếp, không dừng lượt.
+   Luật đủ: `references/effort-switch.md`. *Xong khi:* báo cáo nói effort nào cho phần nghĩ và phần làm.
 11. **Host kiểm được thì đo trước, rồi mới đỏ.** Profile khai `live.loop` nghĩa là host tự kiểm được một
    thay đổi code: thứ tự là **ensure → đo trên host (dòng `baseline`) → test đỏ viết từ số đo → xanh → đo
    lại, lặp tới khi đạt**. Không khai thì đỏ trước như cũ. Luật đủ: skill `task-do`, "Host kiểm được thì đo
@@ -108,7 +107,7 @@ duyệt, không bao giờ vì agent tự sửa dòng trạng thái.
 
 **Mỗi plan một phiên** (ADR-0023): plan là bản bàn giao, còn phiên viết spec thì đã dài. In liên kết tới plan
 và hai lệnh `/clear` rồi `/task-do <đường dẫn plan>` cho phiên mới, rồi **kết thúc lượt**; hook `session-anchor`
-nhắc plan đang dở khi phiên mới mở. Model đổi ở đúng ranh giới này (luật 10). Người dùng nói "làm luôn" thì
+nhắc plan đang dở khi phiên mới mở. Effort đổi ở đây nếu đổi effort vỡ cache (luật 10). Người dùng nói "làm luôn" thì
 đi tiếp ngay trong phiên này, và ghi một dòng Decisions.
 
 ## 3. Worktree

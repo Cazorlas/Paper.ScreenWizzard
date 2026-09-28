@@ -19,6 +19,13 @@ Two checks on the folder a SPEC.md sits in ride along, because they are about th
       shape differs: other sections, other acceptance lines, other F codes. The owner reads Vietnamese
       and the code's people read English, so a requirement is approved in both.
 
+A long requirement is a tree (ADR-0025): SPEC.md is the index and each part a file spec/<part>.md beside it,
+with the F table only in the index. Every check above holds for a part too, and two more for the tree:
+  F30 a part file the index does not link, or an index link to a part that is not there;
+  F31 one F code on two rows of the index (per language part), or an F table in a part.
+An unsplit SPEC.md longer than SPLIT_AT lines is a reminder to split, never a problem: splitting is its own
+task the user opens.
+
 Exit code 0 when clean, 1 when any check finds a problem.
 """
 
@@ -74,6 +81,12 @@ LANGUAGE_PARTS = {"english": "English", "tieng viet": "Tiếng Việt"}
 # write Given too). Counted, never compared word for word - the two languages share only the shape.
 ACCEPTANCE = re.compile(r"^\s*[-*]\s+(?:cho|given)\b", re.IGNORECASE)
 F_CODE = re.compile(r"^\s*\|\s*(F\d+)\s*\|")
+# The tree: parts live in this folder beside SPEC.md; the index links each one.
+PARTS_DIR = "spec"
+PART_LINK = re.compile(r"\]\(\s*(?:\./)?" + PARTS_DIR + r"/([^)#\s]+\.md)")
+# Above this many lines an unsplit SPEC.md is reminded to split; below it an index plus one part costs
+# as much as one file (ADR-0025).
+SPLIT_AT = 300
 
 
 def find_specs():
@@ -82,6 +95,52 @@ def find_specs():
         if "SPEC.md" in filenames:
             out.append(os.path.join(dirpath, "SPEC.md").replace("\\", "/"))
     return sorted(out)
+
+
+def find_parts(spec_path):
+    """The part files of a split SPEC.md: every .md under spec/ beside it, subfolders included, sorted;
+    empty when it is not split."""
+    folder = os.path.join(os.path.dirname(spec_path), PARTS_DIR)
+    return sorted(p.replace("\\", "/") for p in glob.glob(os.path.join(folder, "**", "*.md"), recursive=True))
+
+
+def check_tree(index_text, part_names):
+    """F30 - every part file is linked from the index, and every part the index links is there."""
+    linked = sorted(set(PART_LINK.findall(index_text)))
+    problems = [(0, f"{PARTS_DIR}/{name} is not linked from SPEC.md - add it to the table of parts")
+                for name in part_names if name not in linked]
+    problems += [(0, f"SPEC.md links {PARTS_DIR}/{name}, which is not there") for name in linked if name not in part_names]
+    return problems
+
+
+def f_rows(text):
+    """(line number, F code) of every F table row outside a fenced block."""
+    rows, fenced = [], False
+    for lineno, line in enumerate(text.split("\n"), 1):
+        if line.strip().startswith("```"):
+            fenced = not fenced
+        match = None if fenced else F_CODE.match(line)
+        if match:
+            rows.append((lineno, match.group(1)))
+    return rows
+
+
+def check_f_codes(index_text, parts):
+    """F31 - one F code is one row of the index, per language part; a part carries no F table."""
+    problems = []
+    parts_of_index = language_parts(index_text) or {"": index_text}
+    for name, text in parts_of_index.items():
+        seen = {}
+        for lineno, code in f_rows(text):
+            seen.setdefault(code, []).append(lineno)
+        where = f" in {name}" if name else ""
+        problems += [(0, f"{code} is on {len(lines)} rows{where} - one code, one case")
+                     for code, lines in seen.items() if len(lines) > 1]
+    for path, text in parts:
+        codes = sorted({code for _, code in f_rows(text)}, key=lambda c: int(c[1:]))
+        if codes:
+            problems.append((0, f"{os.path.basename(path)} has an F table ({', '.join(codes)}) - the F table lives only in SPEC.md"))
+    return problems
 
 
 def language_parts(text):
@@ -127,7 +186,7 @@ def check_languages(text):
         if not has_marker(text):
             return []
         wanted = " and ".join(f'"# {name}"' for name in missing)
-        return [(0, f"SPEC.md is being written or changed and has no {wanted} part - one file, both languages")]
+        return [(0, f"it is being written or changed and has no {wanted} part - one file, both languages")]
     en, vi = shape(parts["English"]), shape(parts["Tiếng Việt"])
     problems = []
     if en[0] != vi[0]:
@@ -232,7 +291,7 @@ def check_markers(folder, text):
         owners = [n for n in (m + "-plan.md" for m in DATED_NAME.findall(line)) if n in plans]
         done = [n for n in owners if n in finished] if owners else (finished if not still_open else [])
         if done:
-            problems.append((lineno, f"{kind} still here while plan {', '.join(done)} is finished - close SPEC.md"))
+            problems.append((lineno, f"{kind} still here while plan {', '.join(done)} is finished - close the requirement"))
     return problems
 
 
@@ -245,14 +304,34 @@ def main():
         ("F6 - a drawing whose rendered picture is missing or older than its source:", []),
         ("F7 - a draft banner or change marker left behind by a finished plan:", []),
         ("F26 - a SPEC under change without both language parts, or with two parts of another shape:", []),
+        ("F30 - a part file the index does not link, or an index link to no part:", []),
+        ("F31 - an F code on two rows, or an F table in a part file:", []),
     ]
+    reminders = []
+    part_count = 0
     for path in specs:
         text = io.open(path, encoding="utf-8-sig").read()
         folder = os.path.dirname(path)
-        found = (check_spec(text), check_shapes(folder), check_markers(folder, text), check_languages(text))
-        for (_, bad), problems in zip(groups, found):
+        part_paths = find_parts(path)
+        part_count += len(part_paths)
+        parts = [(p, io.open(p, encoding="utf-8-sig").read()) for p in part_paths]
+        # Each file of the tree - the index, then every part - is held to the checks of one SPEC.md.
+        for file_path, file_text in [(path, text)] + parts:
+            found = (check_spec(file_text), [], check_markers(folder, file_text), check_languages(file_text), [], [])
+            for (_, bad), problems in zip(groups, found):
+                if problems:
+                    bad.append((file_path, problems))
+        tree = ([], check_shapes(folder), [], [],
+                check_tree(text, [os.path.relpath(p, os.path.join(folder, PARTS_DIR)).replace("\\", "/")
+                                  for p in part_paths]) if part_paths or PART_LINK.search(text) else [],
+                # F31 is the split requirement's rule: an unsplit SPEC.md may list a code in a second table.
+                check_f_codes(text, parts) if part_paths else [])
+        for (_, bad), problems in zip(groups, tree):
             if problems:
                 bad.append((path, problems))
+        lines = text.count("\n") + (0 if text.endswith("\n") else 1)
+        if not part_paths and lines > SPLIT_AT:
+            reminders.append((path, lines))
 
     count = 0
     for title, bad in groups:
@@ -266,7 +345,13 @@ def main():
                 count += 1
         print()
 
-    print(f"{len(specs)} SPEC.md, {count} problems - {time.time() - started:.1f}s")
+    if reminders:
+        print(f"Long - over {SPLIT_AT} lines and not split into spec/ parts (a reminder, not a problem; splitting is its own task):\n")
+        for path, lines in reminders:
+            print(f"  {path}  {lines} lines")
+        print()
+
+    print(f"{len(specs)} SPEC.md, {part_count} part files, {count} problems - {time.time() - started:.1f}s")
     return 1 if count else 0
 
 

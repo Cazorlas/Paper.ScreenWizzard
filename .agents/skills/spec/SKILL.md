@@ -56,6 +56,11 @@ Beside `<featureDocs>`, in its parent folder `<docs>` (default `docs`), two ledg
 ## What it does not do yet deliberately deferred; code can never say this
 ```
 
+**A long requirement is a tree.** Over 300 lines, `SPEC.md` becomes an index - story, flow, inputs,
+outputs, entities, a table of parts, the whole F table - and each part a file `spec/<part>.md` beside it,
+with its rules and acceptance lines. Splitting is its own task. The shape, the rules and how to split:
+[references/split-spec.md](references/split-spec.md).
+
 **What the user does** is numbered and user-level: where it is started, what is picked, what appears,
 what is clicked, what the user sees at the end.
 
@@ -113,21 +118,9 @@ its neck outside the duct.
 
 ## Hình và sơ đồ
 
-**A shape is drawn; a flow is written as a text diagram.** Neither is a screenshot.
-
-- **A shape**: `shapes/<case>.svg` beside SPEC.md, in millimetres - the outline as given, and dashed,
-  where the rule puts the result - so one drawing states the case and its expected result.
-  Render it to the PNG beside it and link the PNG (`![the case in words](shapes/<case>.png)`); many
-  markdown viewers, pull requests included, will not show an SVG.
-- **Keep the SVG** - it is the source. Moving a label is a one-line diff in it; a PNG alone means
-  redrawing, and a reviewer sees only a changed binary.
-- **Render after every edit**: `.claude/paperflow/render-shapes.ps1 -Path docs/features/<slug>` sizes a
-  headless browser to the drawing; exit 4 means no browser, so the picture is not verifiable - say so.
-  **Open the PNG and look at it before committing**: a label over an outline or a cut-off caption shows
-  only there. Skill `check-spec` reports an SVG newer than its PNG, or one with no PNG.
-- **A flow or a sequence** is a Mermaid block in the document itself. In SPEC.md it draws only what the
-  user sees happen - steps, choices, messages, never a class, method or file. Plans, code maps and
-  decision records may draw the code with it.
+**A shape is drawn; a flow is written as a text diagram.** Neither is a screenshot. A shape is
+`shapes/<case>.svg` in millimetres, rendered to the PNG the spec links, and looked at before committing;
+a flow is a Mermaid block of what the user sees. The detail: [references/drawings.md](references/drawings.md).
 
 ## Never name the code
 
@@ -152,8 +145,8 @@ second. It cannot catch a class name written as plain prose, nor read the brief;
 
 A spec gap is never closed by changing the code first and writing the spec to match.
 
-1. Read the whole `SPEC.md` (or run `spec-backfill` when the feature has none), the request, the
-   applicable instructions, source, tests and live evidence.
+1. Read `SPEC.md` - a split one: the index and only the parts the task touches - (or run `spec-backfill`
+   when the feature has none), the request, the applicable instructions, source, tests and live evidence.
 2. **Write or edit `SPEC.md`**: the story, the flow, inputs, outputs, and a `Cho … →` line for every rule
    the task touches.
    - A **new** `SPEC.md` opens with the banner
@@ -183,7 +176,8 @@ correcting task and a Decisions line.
 
 ## After verification - close SPEC.md
 
-1. Remove the `Bản nháp chờ duyệt` banner and every `chờ kiểm` marker this task put in, in both parts.
+1. Remove the `Bản nháp chờ duyệt` banner and every `chờ kiểm` marker this task put in, in both language
+   parts, in the index and in every `spec/<part>.md` the task changed.
 2. **Delete the lines a verified line replaced**, and any line the work proved wrong.
 3. Update `Inputs`, `When it does not do the job` and `What it does not do yet` if they moved. A new
    failure row takes the next unused `F` number; a row that no longer exists is deleted, its number
@@ -191,7 +185,8 @@ correcting task and a Decisions line.
    is unlinked there and kept in `<docs>/bugs/`.
 4. Run skill `check-spec`.
 5. For the pull request, a person may ask for skill `spec-changes`: the rules this branch added, changed
-   and removed, section by section. Offer it once; never run it unasked.
+   and removed, section by section, or its `--view` page of the whole requirement with the changes marked.
+   Offer it once; never run it unasked.
 
 `SPEC.md` then describes what the feature does - verified behaviour, not intended or build-only
 behaviour. A banner or marker still there once the plan is `xong` is drift: `check-spec` and `/sync-docs`

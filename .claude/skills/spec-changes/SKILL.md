@@ -14,6 +14,8 @@ one unasked.
 python .claude/skills/spec-changes/spec_changes.py --preview          # print, write nothing
 python .claude/skills/spec-changes/spec_changes.py                    # write the files, print the PR table
 python .claude/skills/spec-changes/spec_changes.py --preview main     # another base; default origin/main
+python .claude/skills/spec-changes/spec_changes.py --view             # the review page of every changed feature
+python .claude/skills/spec-changes/spec_changes.py --view docs/features/<slug> main   # one feature, changed or not
 ```
 
 Both compare the **working copy** (uncommitted edits included) with the merge base of the branch and the
@@ -24,10 +26,14 @@ Exit `0` done - "No SPEC.md changed" included - and `2` when the base or the rep
 | --- | --- | --- |
 | to see what the spec changes are | `--preview` | show the output; nothing is written |
 | to record them, usually when the pull request is ready | no flag | show the table; commit only if asked |
+| to read the requirement, or review it on a page | `--view` | give the path of the page; publish it only if asked |
 
 ## What it writes
 
-For each `SPEC.md` the branch changed, one file beside it:
+For each feature whose `SPEC.md` or any `spec/<part>.md` of a split one the branch changed, one file beside
+`SPEC.md` - a split requirement is one feature, its rules pooled by section name across the index and the
+parts, so a rule moved word for word from `SPEC.md` into a part is no change, and the index's table of
+parts is navigation, not a rule:
 `docs/features/<slug>/spec-changes/<date of the branch's first commit>-<last part of the branch name>.md`
 (a branch `task/stair-width` whose first commit is dated 2026-09-17 writes a file named
 2026-09-17-stair-width.md). The name is the same on every run, so a second run rewrites the file. In name order the folder is the feature's requirement history,
@@ -58,3 +64,18 @@ as it is now: **give a changed drawing a new file name** when old records must k
 
 The printed table goes into the pull request description - **the person posts it**; this skill never
 writes to the pull request.
+
+## The review page - `--view`
+
+One self-contained HTML page per feature, built from `SPEC.md` and its parts: a side column with the index and
+every part, each F row linked to the part that covers it, and the rules this branch added (green), changed (new
+words bold, the old rule struck under it) and removed (struck at the end of their section) - marked with the
+same comparison as the record, so the two never disagree. Drawings are embedded, so the page travels as one
+file; a Mermaid block is drawn when the browser is online and stays readable text when not.
+
+- Written to `.paper/spec-view/<slug>.html` - outside git, rebuilt on every run; never commit it and never
+  edit it: the text is the source.
+- A folder with no `SPEC.md` exits `2` and writes nothing (F32); with no base the named feature's page is
+  still built, nothing marked.
+- Open it in a browser. In Claude Code the person may ask to publish it as an artifact; the page is a single
+  HTML file, so it publishes as it is.

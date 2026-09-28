@@ -58,7 +58,8 @@ run as incomplete until the plan's independent verification evidence is availabl
    bằng chứng của plan, và báo cáo nói rõ danh sách đó **không do máy lập**. Exit **5** (không thay đổi nào)
    → phần "đã xem N/N" của bước 2 và 3 `không áp dụng`; `find-bug` vẫn đối chiếu `SPEC.md`.
 
-   **Thử làm nó sai** bằng skill `find-bug` trên đúng danh sách đó, đối chiếu với `SPEC.md` của feature —
+   **Thử làm nó sai** bằng skill `find-bug` trên đúng danh sách đó, đối chiếu với `SPEC.md` của feature (đã tách thì mục lục và
+   các file `spec/<phần>.md` việc này chạm) —
    trước hết các mục mang banner nháp hay dấu `chờ kiểm` mà việc này đặt vào: case đối xứng, chỗ gọi thứ
    hai, return sớm. Một nghi ngờ không có input thì đưa vào báo cáo, không đuổi theo.
 
@@ -102,7 +103,8 @@ run as incomplete until the plan's independent verification evidence is availabl
    `không đạt` là fail: task sửa, về `/task-do`. Mã `không đo được` phải có lý do.
 
 4. **Đóng `SPEC.md`** (skill `spec`), chỉ khi bước 0, 1, 2 và 3 sạch:
-   - gỡ banner `Bản nháp chờ duyệt` và mọi dấu `chờ kiểm` mà việc này đặt vào;
+   - gỡ banner `Bản nháp chờ duyệt` và mọi dấu `chờ kiểm` mà việc này đặt vào — yêu cầu đã tách thì ở mục
+     lục và ở từng file `spec/<phần>.md` việc này đổi;
    - xoá dòng đã bị một dòng vừa kiểm thay thế, và dòng mà việc làm chứng minh là sai;
    - cập nhật `Inputs`, `When it does not do the job` và `What it does not do yet` nếu chúng đã dịch —
      mã `F<n>` không bao giờ đánh số lại, dòng bỏ đi để lại khoảng trống;

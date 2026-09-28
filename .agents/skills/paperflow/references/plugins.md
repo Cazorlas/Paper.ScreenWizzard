@@ -18,6 +18,7 @@ Cái còn bật chỉ chạy khi được gọi đích danh — lệnh, agent, h
 | Tra API | `api-lookup` + `docsSource` của host | `context7` cho **gói bên thứ ba**; không dùng cho API của host. `microsoft-docs` đã tắt: nó tự nhận mọi task C# và giành chỗ của `api-lookup` |
 | Đọc/hiểu code C# | — | `csharp-lsp` tự do: nó không chạm vòng đời |
 | E2E, giao diện web | verb `e2e`, skill style của host | `playwright` **chỉ** cho host `web`. `frontend-design` đã tắt tới khi có host `web`: nó tự nhận mọi cửa sổ WPF, mà chủ thật là skill style của host cộng wireframe đã duyệt |
+| UI/UX design review | wireframe in the plan, the host's style skill | `/design-critique`, `/accessibility-review`, `/ux-copy`, `/design-system`, `/ui-ux-pro-max` ship in the kit as **manual-only** skills (`disable-model-invocation`, ADR-0024): they run only when the user types them, and a finding that should change the UI becomes a task in the plan, never an edit outside it |
 
 Một plugin ngoài chạy ngoài ô của nó là một lần đi tắt: kết quả không có dòng nào trong plan, và cổng
 `tasks` không thấy nó.

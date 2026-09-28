@@ -39,6 +39,10 @@ A backfill that comes before a change is the first step of `/task-spec`, not a s
 recovered `SPEC.md` carries the `Bản nháp chờ duyệt` banner until the user confirms it, and the change
 then edits it in place with `chờ kiểm` markers, before the brief and the plan are written.
 
+A recovered contract over 300 lines is written as a tree from the start - `SPEC.md` the index and one
+`spec/<part>.md` per group of rules, the F table only in the index (skill `spec`,
+`spec/references/split-spec.md`).
+
 Before finishing, verify that the flow includes failure reporting, all inputs include defaults, every
 rule has a measurable acceptance case or is labeled an assumption, and no code symbol appears in the
 contract.

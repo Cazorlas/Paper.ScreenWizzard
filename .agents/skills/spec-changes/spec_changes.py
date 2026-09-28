@@ -1,10 +1,20 @@
 """Record what this branch changed in each SPEC.md, section by section.
 
     python .claude/skills/spec-changes/spec_changes.py [--preview] [base]      base defaults to origin/main
+    python .claude/skills/spec-changes/spec_changes.py --view [docs/features/<slug>] [base]
 
 Compares every SPEC.md of the working copy - uncommitted edits included - with the merge base of the
 branch and `base`. Only rules are compared: a bullet, a numbered step, a table row, a drawing. A paragraph
 explains a rule and is left out, reworded or not.
+
+A long requirement is a tree (ADR-0025): SPEC.md is the index and each part a file spec/<part>.md beside it.
+The tree is one feature: it changed when SPEC.md or any part changed, and its rules are pooled by section
+heading across the files, so a rule moved word for word from SPEC.md into a part is no change. The index's
+table of parts is navigation, not a rule. Links in a part are read relative to the feature folder, so a
+drawing shows from spec-changes/ wherever it was written.
+
+--view builds the review page instead of the record - spec_view.py, written to .paper/spec-view/<slug>.html -
+for the named feature, or for every feature the branch changed.
 
 --preview prints the record and writes nothing. Without it, each changed SPEC.md gets
     <folder of SPEC.md>/spec-changes/<date of the branch's first commit>-<last part of the branch name>.md
@@ -16,6 +26,7 @@ Exit code 0 done (nothing changed included), 2 when the base or the repository c
 
 import datetime
 import difflib
+import glob
 import io
 import os
 import re
@@ -36,6 +47,10 @@ SAME_RULE = 0.6
 # languages"). Both have a "History" or a "Log"; without the part in the key, the rules of the two would
 # be pooled under one section and a change in one language would read as a change in both.
 LANGUAGE_PART = re.compile(r"^(english|ti[eế]ng vi[eệ]t)$", re.IGNORECASE)
+# The tree's parts, beside SPEC.md; a row of the index that links one is navigation, not a rule.
+PARTS_DIR = "spec"
+PART_LINK = re.compile(r"\]\(\s*(?:\./)?" + PARTS_DIR + r"/[^)]+\.md\s*\)")
+RELATIVE_LINK = re.compile(r"\]\((?![a-zA-Z][a-zA-Z0-9+.-]*:|/|#)([^)\s]+)")
 
 
 def git(*args, check=True):
@@ -121,6 +136,31 @@ def rules_by_section(text):
             current.append(stripped)
     close_section()
     return order, {h: [re.sub(r"\s+", " ", r) for r in sections[h]] for h in order}
+
+
+def from_part_folder(rule, part_dir):
+    """A link in a part is relative to its folder under spec/; rewrite it relative to the feature folder,
+    like SPEC.md's."""
+    def feature_relative(match):
+        return "](" + os.path.normpath(os.path.join(part_dir, match.group(1))).replace("\\", "/")
+    return RELATIVE_LINK.sub(feature_relative, rule)
+
+
+def rules_of_tree(index_text, parts):
+    """rules_by_section over SPEC.md and its parts - (path under spec/, text) - as one requirement:
+    sections pooled by heading, part links made feature-relative, the index's links to its parts dropped."""
+    order, sections = [], {}
+    for part_path, text in [(None, index_text)] + list(parts):
+        file_order, file_rules = rules_by_section(text)
+        part_dir = os.path.dirname(os.path.join(PARTS_DIR, part_path)) if part_path else None
+        for heading in file_order:
+            rules = [from_part_folder(r, part_dir) if part_dir else r
+                     for r in file_rules[heading] if not PART_LINK.search(r)]
+            if heading not in sections:
+                order.append(heading)
+                sections[heading] = []
+            sections[heading].extend(rules)
+    return order, sections
 
 
 # ------------------------------------------------------------------ comparing
@@ -225,10 +265,70 @@ def section_lines(heading, note, added, changed, removed):
 # ------------------------------------------------------------------ the branch
 
 
+def spec_of(path):
+    """The SPEC.md a changed file belongs to: itself, or the index of the part it is; None otherwise."""
+    if path == "SPEC.md" or path.endswith("/SPEC.md"):
+        return path
+    if not path.endswith(".md"):
+        return None
+    pieces = path.split("/")[:-1]
+    # The nearest folder called spec above the file; its parent holds the SPEC.md.
+    for at in range(len(pieces) - 1, -1, -1):
+        if pieces[at] == PARTS_DIR:
+            return "/".join(pieces[:at] + ["SPEC.md"])
+    return None
+
+
 def changed_specs(base):
     tracked = git("diff", "--name-only", base, "--").split("\n")
     untracked = git("ls-files", "--others", "--exclude-standard").split("\n")
-    return sorted({p for p in tracked + untracked if p == "SPEC.md" or p.endswith("/SPEC.md")})
+    # A folder called spec holds a requirement's parts only beside a SPEC.md, now or at the base; a skill
+    # named spec is not one.
+    def is_spec(path):
+        return os.path.isfile(path) or subprocess.run(
+            ["git", "cat-file", "-e", f"{base}:{path}"], capture_output=True).returncode == 0
+    return sorted({s for s in map(spec_of, tracked + untracked) if s and is_spec(s)})
+
+
+def parts_folder(spec_path):
+    return "/".join(p for p in (os.path.dirname(spec_path), PARTS_DIR) if p)
+
+
+def base_tree(base, spec_path):
+    """SPEC.md and its part files as they were at the base."""
+    folder = parts_folder(spec_path)
+    listed = git("ls-tree", "-r", "--name-only", f"{base}:{folder}", check=False).split("\n")
+    parts = [(n, git("show", f"{base}:{folder}/{n}", check=False)) for n in sorted(listed) if n.endswith(".md")]
+    return rules_of_tree(git("show", f"{base}:{spec_path}", check=False), parts)
+
+
+def working_parts(spec_path):
+    """(path under spec/, text) of every part file in the working copy, subfolders included, sorted."""
+    folder = parts_folder(spec_path)
+    names = sorted(os.path.relpath(p, folder).replace("\\", "/")
+                   for p in glob.glob(os.path.join(folder, "**", "*.md"), recursive=True))
+    return [(n, read_working(f"{folder}/{n}")) for n in names]
+
+
+def working_tree(spec_path):
+    """SPEC.md and its part files in the working copy, uncommitted edits included."""
+    return rules_of_tree(read_working(spec_path), working_parts(spec_path))
+
+
+def write_view(spec_path, base, note):
+    """--view: the review page of one requirement, written to .paper/spec-view/<slug>.html (spec_view.py)."""
+    import spec_view
+    folder = os.path.dirname(spec_path) or "."
+    old_order, old = base_tree(base, spec_path) if base else working_tree(spec_path)
+    new_order, new = working_tree(spec_path)
+    page, counts = spec_view.build(folder, read_working(spec_path), working_parts(spec_path),
+                                   old_order, old, new_order, new, note)
+    slug = os.path.basename(os.path.abspath(folder))
+    target = os.path.join(".paper", "spec-view", slug + ".html")
+    os.makedirs(os.path.dirname(target), exist_ok=True)
+    with io.open(target, "w", encoding="utf-8", newline="\n") as f:
+        f.write(page)
+    print(f"wrote {target.replace(os.sep, '/')} - {counts[0]} added, {counts[1]} changed, {counts[2]} removed")
 
 
 def read_working(path):
@@ -237,7 +337,21 @@ def read_working(path):
 
 def main(argv):
     preview = "--preview" in argv
+    view = "--view" in argv
     names = [a for a in argv if not a.startswith("--")]
+    # --view takes a feature folder, read from where the command was typed; any other name is the base.
+    started_in = os.getcwd()
+    feature = None
+    if view:
+        # A folder only when it is one: a base such as origin/main or release/main has a slash too.
+        folders = [a for a in names if os.path.isdir(os.path.join(started_in, a))]
+        names = [a for a in names if a not in folders]
+        if folders:
+            feature = os.path.abspath(os.path.join(started_in, folders[0]))
+            if not os.path.isfile(os.path.join(feature, "SPEC.md")):
+                # F32: never a blank page that reads like a requirement with no rules.
+                print(f"spec-changes: {folders[0]} has no SPEC.md - no page written.", file=sys.stderr)
+                return 2
     base_ref = names[0] if names else "origin/main"
 
     os.chdir(PROJECT_ROOT)
@@ -246,9 +360,25 @@ def main(argv):
         os.chdir(root)
         base = git("merge-base", base_ref, "HEAD").strip()
     except RuntimeError as error:
+        if feature:
+            # One named feature is still worth a page with no base: shown as it is, nothing marked.
+            write_view(os.path.relpath(os.path.join(feature, "SPEC.md")).replace("\\", "/"), None,
+                       f"no base '{base_ref}' - nothing marked")
+            return 0
         print(f"spec-changes: cannot compare with '{base_ref}' - {error}. "
               "Fetch it (git fetch origin main) or name the base as the last argument.", file=sys.stderr)
         return 2
+
+    if view:
+        branch = git("rev-parse", "--abbrev-ref", "HEAD").strip()
+        note = f"branch {branch} against {base_ref} ({base[:9]})"
+        specs = [os.path.relpath(os.path.join(feature, "SPEC.md")).replace("\\", "/")] if feature else changed_specs(base)
+        if not specs:
+            print(f"No SPEC.md changed on this branch since {base_ref} - no page to build.")
+            return 0
+        for spec_path in specs:
+            write_view(spec_path, base, note)
+        return 0
 
     branch = git("rev-parse", "--abbrev-ref", "HEAD").strip()
     history = [l for l in git("log", "--reverse", "--format=%cs|%s", f"{base}..HEAD").split("\n") if l]
@@ -260,8 +390,8 @@ def main(argv):
 
     summary = []
     for path in changed_specs(base):
-        old_order, old = rules_by_section(git("show", f"{base}:{path}", check=False))
-        new_order, new = rules_by_section(read_working(path))
+        old_order, old = base_tree(base, path)
+        new_order, new = working_tree(path)
         body, headings, totals = [], [], [0, 0, 0]
         for heading in new_order + [h for h in old_order if h not in new]:
             added, changed, removed = compare(old.get(heading, []), new.get(heading, []))
@@ -280,7 +410,7 @@ def main(argv):
         counts = f"{totals[0]} added, {totals[1]} changed, {totals[2]} removed"
         text = "\n".join([f"# Spec changes - {feature}", "", f"**{subject}**", "",
                           f"{started} - branch `{branch}` - {len(headings)} sections: {counts}.", "",
-                          "*Written by the spec-changes script from SPEC.md itself - never edit it by hand.*", ""]
+                          "*Written by the spec-changes script from SPEC.md and its parts - never edit it by hand.*", ""]
                          + body)
         text = re.sub(r"\n{3,}", "\n\n", text).rstrip("\n") + "\n"
         summary.append(f"| [{feature}]({target}) | {', '.join(headings)} | {totals[0]} | {totals[1]} | {totals[2]} |")

@@ -8,7 +8,9 @@ description: Turn a request into the requirement first - the work type (code or 
 Viết yêu cầu, brief và plan — theo đúng thứ tự đó — rồi kết thúc lượt. Nó không sửa một dòng code nào.
 
 1. **Đọc trước khi viết.** `CLAUDE.md` của kho và của project con, `CODEMAP.md`, `SPEC.md` của
-   feature (skill `spec-backfill` nếu feature đã có mà chưa có spec), source và test của nó. Tài liệu
+   feature — yêu cầu đã tách thì đọc mục lục `SPEC.md` rồi **chỉ** các file `spec/<phần>.md` mà việc chạm
+   (skill `spec`, `spec/references/split-spec.md`); skill `spec-backfill` nếu feature đã có mà chưa có spec —
+   source và test của nó. Tài liệu
    người dùng đưa (video, ảnh, file dữ liệu) đọc trước và chép nguyên vẹn vào `<featureDocs>/<slug>/input/`.
    Rồi hai sổ cạnh `<featureDocs>` (thư mục cha `<docs>`): các dòng `đã nhận → <file>` của
    `<docs>/retro/README.md` chạm tới việc này — bài học chủ dự án đã nhận là luật phải theo, dòng
@@ -36,7 +38,7 @@ Viết yêu cầu, brief và plan — theo đúng thứ tự đó — rồi kế
    **Viết cả hai ngôn ngữ trong một file**: phần `# English` và phần `# Tiếng Việt`, cùng mục, cùng dòng
    nghiệm thu, cùng mã `F`, đổi cùng lúc — skill `spec`, mục "Two languages".
 5. **Viết brief `<featureDocs>/<slug>/YYYY-MM-DD-<task>.md` từ `spec/brief-template.md`**: ai hỏi gì, vì
-   sao, tài liệu đi kèm, mục nào của `SPEC.md` đổi, model và id được đụng tới. Không tên code, không task.
+   sao, tài liệu đi kèm, mục nào của `SPEC.md` đổi (và file phần nào, khi yêu cầu đã tách), model và id được đụng tới. Không tên code, không task.
 6. **Viết plan `<featureDocs>/<slug>/YYYY-MM-DD-<task>-plan.md` từ `spec/plan-template.md`**: Context,
    Rules that apply, Decisions, wireframe khi có giao diện (plan model: khối "Plan model" của khuôn), rồi
    Tasks. Plan được phép nêu tên code.
