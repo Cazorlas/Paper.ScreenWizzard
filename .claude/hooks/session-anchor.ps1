@@ -121,6 +121,40 @@ Restart Claude Code from the git root that holds .claude/paper.profile.json (or 
         -VendoredHash (Get-PaperVendoredPayloadHash $anchor) -SourceHash (Get-PaperMarketplacePayloadHash)
     if ($notice.Message) { $line = $line + [Environment]::NewLine + $notice.Message }
 
+    # And the approved plans still open, so a fresh session picks one up (ADR-0023). Read through the gate's
+    # own readers, so this line and the gate cannot disagree on what "approved" and "open" mean. Best
+    # effort: without the gate file, or on any error, the heartbeat above still goes out.
+    try {
+        $gatePlan = Join-Path $PSScriptRoot '..\paperflow\tasks-gate-plan.ps1'
+        if (Test-Path -LiteralPath $gatePlan -PathType Leaf) {
+            . $gatePlan
+            . (Join-Path $PSScriptRoot 'open-plans-plan.ps1')
+            $docsRel = [string] (Get-PaperProfileValue $profileMap @('featureDocs'))
+            if (-not $docsRel) { $docsRel = 'docs/features' }
+            $docs = Join-Path $anchor ($docsRel.Replace('/', '\'))
+            if (Test-Path -LiteralPath $docs -PathType Container) {
+                $aliases = Get-PaperProfileValue $profileMap @('laneAliases')
+                $plans = New-Object System.Collections.Generic.List[psobject]
+                foreach ($file in @(Get-ChildItem -LiteralPath $docs -Recurse -File -Filter '*-plan.md' -ErrorAction SilentlyContinue)) {
+                    $all = @([System.IO.File]::ReadAllLines($file.FullName, [System.Text.Encoding]::UTF8))
+                    $status = Get-PaperPlanStatusLine $all
+                    if ($null -eq $status) { continue }
+                    $tasks = @()
+                    if ($status.State -eq 'Approved') { $tasks = @(Get-PaperPlanTasks $all $aliases) }
+                    $plans.Add([pscustomobject]@{
+                            Path    = (Get-PaperRelative $anchor $file.FullName)
+                            Written = $file.LastWriteTime
+                            State   = $status.State
+                            Tasks   = $tasks
+                        })
+                }
+                $open = Get-PaperOpenPlanNotice -Plans $plans.ToArray()
+                if ($open) { $line = $line + [Environment]::NewLine + $open }
+            }
+        }
+    }
+    catch { }
+
     Write-PaperHookText $line
     exit 0
 }

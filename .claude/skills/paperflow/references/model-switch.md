@@ -33,6 +33,16 @@ Không có công cụ nào cho nó làm việc đó. Nó **xin một câu**, đ�
 Xin rồi thì đi tiếp theo câu trả lời. **Không dừng lượt vì chuyện này**: nó không có dòng nào trong bảng
 "Khi nào dừng", và một lượt dừng lại để chờ đổi model là một lần bỏ việc giữa chừng.
 
+**Chỗ đổi tốt nhất là ranh giới giữa hai phiên** (ADR-0023). Mỗi model có cache riêng: đổi model giữa một
+phiên đã lớn thì lời gọi kế tiếp đọc lại **toàn bộ** hội thoại không có cache. Với luật "mỗi plan một phiên",
+phần nghĩ là phiên viết spec và phần làm là phiên `/task-do` mới — xin đổi model ngay đầu phiên mới, lúc
+context còn nhỏ. Người dùng đã bảo "làm luôn" trong phiên cũ thì **không đổi model** giữa chừng: giữ model đang
+chạy và ghi `mặc định — phiên lớn` vào báo cáo.
+
+Effort thì khác: trên Opus 5.5 và Fable 5.1, qua API key hay gói Claude, đổi effort **giữ cache** (tài liệu
+prompt caching của Claude Code, tra 2026-09-28). Trên model và đường khác, đổi effort cũng vỡ cache như đổi
+model.
+
 ## 4. Subagent thì đổi được, nên phải đổi đúng
 
 - Agent **suy luận và rà soát** được gọi kèm `model` mạnh — khi hai cổng trên cho phép.

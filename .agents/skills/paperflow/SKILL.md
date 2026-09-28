@@ -14,16 +14,17 @@ này và trên phiên host **đang mở** — và chỉ thế. Phần còn lại
 
 ## Khi nào dừng
 
-Bốn dòng này là **danh sách đầy đủ** những lần `/paperflow` được dừng. Không có dòng thứ năm.
+Năm dòng này là **danh sách đầy đủ** những lần `/paperflow` được dừng. Không có dòng thứ năm.
 
 | Lúc | Hỏi gì |
 | --- | --- |
 | Loại việc không rõ, hay không thuộc `workTypes` (F16) | **một** câu chọn loại việc, rồi dừng |
 | Sau chặng 1 | duyệt SPEC.md + plan — **lần dừng theo kế hoạch duy nhất** |
+| Vừa ghi `đã duyệt` | không hỏi gì: **mỗi plan một phiên** — in khối bàn giao (mục 2) rồi kết thúc lượt; người dùng đã bảo "làm luôn" thì đi tiếp |
 | Giữa chừng hoá ra SPEC.md sai (spec gap) | duyệt lại dòng luật mới |
 | Sắp chạm thứ **không hoàn tác được**: commit, push, gộp nhánh, bỏ worktree; lưu hay đồng bộ model/bản vẽ/dữ liệu của người dùng; xoá hay ghi đè thứ nằm ngoài repo; mở/tắt/khởi động lại host kể cả bản copy (verb trả 3); phát hành | xin phép, nói rõ sắp chạm cái gì và vì sao |
 
-Từ lúc plan được duyệt tới báo cáo chặng 7 là **một lượt liền mạch**: không báo tiến độ rồi chờ, không
+Từ lúc `/task-do` bắt đầu (phiên mới, hay ngay sau "làm luôn") tới báo cáo chặng 7 là **một lượt liền mạch**: không báo tiến độ rồi chờ, không
 hỏi "có làm tiếp không", không dừng vì một nhóm task vừa xong. Hết việc mới dừng.
 
 ## Luật vận hành
@@ -57,7 +58,7 @@ Mười một luật này đúng cho mọi chặng dưới đây, và mỗi lu�
    soát) chạy trên model mạnh nhất; phần *làm* (code, task, build, test, lái host) chạy trên model người
    dùng đang set. Hai cổng, và mặc định nghiêng về **không đổi**: tài khoản phải khớp
    `models.strongOnAccount` của profile (máy có thể đang ở tài khoản công ty — hạn mức đó là tiền người
-   khác trả), rồi mới tới hạn mức của model mạnh. Luật đủ: `references/model-switch.md`. *Xong khi:* báo
+   khác trả), rồi mới tới hạn mức của model mạnh. Đổi ở ranh giới phiên (mục 2), không giữa phiên đang lớn. Luật đủ: `references/model-switch.md`. *Xong khi:* báo
    cáo nói model nào cho phần nghĩ và phần làm, hay `mặc định — sai tài khoản` / `— không khả dụng`.
 11. **Host kiểm được thì đo trước, rồi mới đỏ.** Profile khai `live.loop` nghĩa là host tự kiểm được một
    thay đổi code: thứ tự là **ensure → đo trên host (dòng `baseline`) → test đỏ viết từ số đo → xanh → đo
@@ -105,6 +106,11 @@ dòng luật mới hay đổi, task theo nhóm, và câu nào còn cần trả l
 `**Trạng thái:** đã duyệt <ngày> ("lời họ nói")` vào plan. **Cổng:** exit không còn là 4 vì người dùng đã
 duyệt, không bao giờ vì agent tự sửa dòng trạng thái.
 
+**Mỗi plan một phiên** (ADR-0023): plan là bản bàn giao, còn phiên viết spec thì đã dài. In liên kết tới plan
+và hai lệnh `/clear` rồi `/task-do <đường dẫn plan>` cho phiên mới, rồi **kết thúc lượt**; hook `session-anchor`
+nhắc plan đang dở khi phiên mới mở. Model đổi ở đúng ranh giới này (luật 10). Người dùng nói "làm luôn" thì
+đi tiếp ngay trong phiên này, và ghi một dòng Decisions.
+
 ## 3. Worktree
 Lane `unit` và lane `ui` **luôn** chạy trong worktree riêng của chúng (`isolation: worktree`) và trả việc
 về bằng một nhánh; `/task-do` mục 3 giữ luật gộp. Lane `live` và lane `model` ở lại cây chính, vì host chỉ
@@ -150,34 +156,8 @@ Bằng ngôn ngữ của người dùng, ngắn:
 
 ## Plugin ngoài: ai làm gì
 
-Máy Paper cài sẵn vài plugin của marketplace chính thức (`skills.json`). **Vòng đời vẫn là của skill này** —
-một plugin ngoài không bao giờ thay một chặng, nó chỉ được gọi ở đúng ô dưới đây. Lý do và bài học:
-`Paper-skills/docs/adr/0008`.
-
-**Luật trước bảng: một plugin được bật chỉ khi nó không tự nhận việc.** Bảng dưới chỉ có tác dụng sau khi
-skill này đã được đọc, nên nó không cứu được một plugin đã nói trước — một plugin có hook `SessionStart`,
-hoặc có skill tự kích hoạt trùng vai. Những cái đó bị tắt trong `skills.json` chứ không bị fence bằng lời
-(đo 2026-09-19: `microsoft-docs`, `frontend-design`, `mattpocock-skills` tắt; `superpowers` không cài).
-Cái còn bật chỉ chạy khi được gọi đích danh — lệnh, agent, hoặc tool MCP — nên bảng là đủ cho chúng.
-
-| Chặng | paper-kit giữ | Plugin ngoài vào ở đâu |
-|---|---|---|
-| Yêu cầu → SPEC, brief, plan, cổng duyệt | `/task-spec`, `/task-bug`, cổng `tasks` | `feature-dev` **không** thay chặng 1; chỉ mượn agent khảo sát của nó khi plan cần một vòng đọc rộng, kết quả đổ vào plan |
-| Viết code theo lane | `/task-do` + lane agent | `code-simplifier` chạy **sau** khi lane đã xanh, chỉ trên file của task đó, không tự nới phạm vi |
-| Rà trước khi đóng | `review-files` → `find-bug` → `architecture-reviewer` | `code-review` chạy **trên PR đã mở**, sau `/task-verify`; không thay `find-bug` — chỉ `find-bug` có bước đọc lại độc lập (F21) |
-| Tra API | `api-lookup` + `docsSource` của host | `context7` cho **gói bên thứ ba**; không dùng cho API của host. `microsoft-docs` đã tắt: nó tự nhận mọi task C# và giành chỗ của `api-lookup` |
-| Đọc/hiểu code C# | — | `csharp-lsp` tự do: nó không chạm vòng đời |
-| E2E, giao diện web | verb `e2e`, skill style của host | `playwright` **chỉ** cho host `web`. `frontend-design` đã tắt tới khi có host `web`: nó tự nhận mọi cửa sổ WPF, mà chủ thật là skill style của host cộng wireframe đã duyệt |
-
-Một plugin ngoài chạy ngoài ô của nó là một lần đi tắt: kết quả không có dòng nào trong plan, và cổng
-`tasks` không thấy nó.
-
-**Cùng luật đó áp cho skill của chính dự án.** Một chặng chỉ có một chủ, và chủ là kit: dự án **không**
-được có skill thứ hai cho một chặng kit đã giữ, kể cả khi nó lễ phép bảo "đọc skill kia trước". Cái được
-phép ở lại dự án là **kiến thức miền** (P/Invoke, installer, harness của một mảng) và **giá trị cụ thể**
-— những giá trị đó đi vào `paper.profile.json` và các file nó trỏ tới (`live.notes`, `live.dialogRules`),
-không đi vào một skill. Skill riêng của dự án phải có tên trong `profile.projectSkills` kèm một dòng lý do.
-Lý do và cái giá đã trả: `Paper-skills/docs/adr/0009`.
+Một plugin ngoài không bao giờ thay một chặng; nó chỉ được gọi ở đúng ô của nó, và skill riêng của dự án
+không được giữ một chặng kit đã giữ. Bảng từng chặng và luật đủ: `references/plugins.md`.
 
 ## Ba verdict ở mọi cổng
 

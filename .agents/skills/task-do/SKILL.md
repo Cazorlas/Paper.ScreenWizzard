@@ -108,18 +108,9 @@ bước này thì chưa được tick.
 project (`Plumbing` chứa `bin`) và xanh trong khi thứ nó canh đang hỏng — chỉ lòi ra khi gỡ luật khỏi một
 project để ép nó đỏ.
 
-**Bốn hình dạng của một test không chứng minh gì** (đặt tên theo `wondelai/skills`, và xoá thẳng chứ đừng
-sửa — nó không mang theo độ phủ nào để giữ):
-
-| Hình dạng | Vì sao nó vô nghĩa |
-|---|---|
-| Khẳng định một mock trả về thứ chính test vừa bảo nó trả | Nó kiểm cái mock, không kiểm code |
-| Tính giá trị mong đợi **bằng chính biểu thức** code đang dùng | Sai cùng nhau thì vẫn xanh |
-| `Assert(HẰNG, Is.EqualTo(HẰNG))` | Xanh với mọi code biên dịch được |
-| Snapshot một output chưa ai đọc mà đã duyệt | Đóng băng cái sai thành "đúng" |
-
-Một test đặc tả ghim một giá trị **đã quan sát được** thì không nằm trong danh sách này; ghim thứ code tự
-tính lại lúc assert thì có.
+**Bốn hình dạng của một test không chứng minh gì** — mock tự khẳng định mình, giá trị mong đợi tính bằng
+chính biểu thức của code, hằng so với hằng, snapshot chưa ai đọc: xoá thẳng, đừng sửa. Bảng và lý do:
+`references/empty-tests.md`.
 
 - Tick `- [x]` **chỉ khi** bằng chứng của task đã chạy, và thêm dòng bằng chứng: lệnh, id, giá trị đọc
   lại. Tick không có dòng bằng chứng làm cổng đỏ.
@@ -132,8 +123,11 @@ tính lại lúc assert thì có.
 trước trả hết.
 
 1. Với nhóm đầu còn task mở, gom task theo lane. Trong **một** lượt, gọi mỗi lane một `Agent` chạy nền, tên
-   theo bảng trên, và đưa cho nó: các mã task của lane đó, đường dẫn plan và `SPEC.md`, và `{files:}` của
-   từng task. Lane agent chỉ sửa file trong các glob đó, không push, không mở hay tắt host; lane `unit` và
+   theo bảng trên. Prompt của nó là output của `.claude/paperflow/paperflow.ps1 brief -Path <plan> -Task <mã>`
+   (dòng task, `{files:}`, dòng `F<n>` của `SPEC.md`, wireframe cho `ui`, dòng `baseline` cho `[red]`) cộng
+   đúng các dòng `Cho … →` mà task phủ — **không** gửi đường dẫn để lane tự đọc cả plan hay cả `SPEC.md`
+   (ADR-0023: lane tự đọc là thứ đẩy nó tới 200–300k). Lane trả `not verifiable: brief thiếu <dòng>` (F28) thì
+   bổ sung đúng dòng đó rồi giao lại. Lane agent chỉ sửa file trong các glob đó, không push, không mở hay tắt host; lane `unit` và
    lane `ui` commit **một lần** trên nhánh worktree của chúng để trả việc về (bước 4).
 2. **Nối tiếp, không song song:** task ghi `(sau T<n>)` chờ `T<n>` trả về; lane `ui` và lane `live` không
    bao giờ chạy cùng lúc (driver UI giữ chuột và bàn phím, ảnh chụp host cần cửa sổ host ở trước); task
