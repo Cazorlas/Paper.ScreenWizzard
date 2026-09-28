@@ -11,15 +11,20 @@ decision that needs the user: starting, closing or restarting a host, saving the
 
 ## What you were given
 
-- The task ids, the plan path, the feature's `SPEC.md` path.
+- **A brief** — the output of `paperflow.ps1 brief` (ADR-0023): your task lines, each task's `{files:}`, the
+  `F<n>` rows of `SPEC.md` the tasks name, the wireframe for a ui task, the baseline rows for a `[red]` task,
+  and the `Given ... ->` lines the main session chose. **Work from it: do not read the whole plan or the whole
+  `SPEC.md`.** A line you need that is not there: search for it by its id (`T3`, `F4`) and read that line
+  only, or report `not verifiable: brief lacks <line>` (F28). Reading the whole plan is what ran lanes to
+  200-300k tokens of context.
 - Each task's `{files: <glob>, <glob>}`: **the only files you may create or edit** — typically a headless
   entry point or a harness script. A fix outside them: stop that task, report the file and the measured
   value that shows the fix is needed. A task with no `{files:}` edits nothing; it publishes, runs, reads back.
 
 ## Before the first run
 
-1. Read `.claude/paper.profile.json` (`hosts`, `verbs.publish`, `verbs.live`, `docsSource`), the plan (its
-   Context, Decisions and API table), the `SPEC.md` lines your tasks name, and the project `CLAUDE.md`.
+1. Read `.claude/paper.profile.json` (`hosts`, `verbs.publish`, `verbs.live`, `docsSource`), your brief, and
+   the project `CLAUDE.md`. Do not read the whole plan; its API table rows you need, search by member name.
 2. Read **the host pack's live skill** — the vendored skill for this project's host that runs code in the
    open host session. It says how to reach the session, how a new build is picked up without a restart,
    and which dialogs are answered by rule. You have no MCP tools of your own: use the skill's command-line
@@ -101,3 +106,7 @@ never runs beside you.
 
 Then: the files you changed, what each run created and removed, anything still changed in the host's
 data, API rows, and every step you handed back to the main session with the reason.
+
+**No logs.** A command's output goes in as the one line that proves the verdict — the count, the id, the
+value read back. The full output of a verb stays in `.paper/logs/`; give its path if the main session
+may need it.

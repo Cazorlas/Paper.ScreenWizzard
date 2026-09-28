@@ -11,7 +11,12 @@ session owns the plan, `SPEC.md`, the ticks, any host session and every git comm
 
 ## What you were given
 
-- The task ids, the plan path, the feature's `SPEC.md` path.
+- **A brief** — the output of `paperflow.ps1 brief` (ADR-0023): your task lines, each task's `{files:}`, the
+  `F<n>` rows of `SPEC.md` the tasks name, the wireframe for a ui task, the baseline rows for a `[red]` task,
+  and the `Given ... ->` lines the main session chose. **Work from it: do not read the whole plan or the whole
+  `SPEC.md`.** A line you need that is not there: search for it by its id (`T3`, `F4`) and read that line
+  only, or report `not verifiable: brief lacks <line>` (F28). Reading the whole plan is what ran lanes to
+  200-300k tokens of context.
 - Each task's `{files: <glob>, <glob>}` from the end of its plan line. **Those globs are the only files you
   may create or edit** — the logic lane is writing its own globs at the same time. A change that needs a
   file outside them (an interface the view model lacks): stop that task and report what is missing.
@@ -28,10 +33,9 @@ driver; if you find one running, stop and report instead of starting yours.
 
 ## Before any code
 
-1. Read `.claude/paper.profile.json` (`verbs.ui` / `verbs.e2e`), the plan (its `UI wireframe` is
-   the layout contract), the feature `SPEC.md` (what the user does, inputs, outputs, and what they see
-   when it does not do the job), the project `CLAUDE.md` and its UI conventions skill if one was
-   vendored.
+1. Read `.claude/paper.profile.json` (`verbs.ui` / `verbs.e2e`), the wireframe in your brief (the layout
+   contract) and the `F<n>` rows beside it (what the user sees when it does not do the job), the project
+   `CLAUDE.md` and its UI conventions skill if one was vendored. Do not read the whole plan or `SPEC.md`.
 2. The view model depends on the use case **interface** (`I<Feature>Interactor`) and plain models — never
    on an adapter or a host type. The mock is a fake of that interface.
 
@@ -81,3 +85,7 @@ Code refuses those anyway, and the refusal is not a bug to work around).
 | T4 | `paperflow ui -- <filter>` — 6 run, 0 fail; `shots/settings.png` checked: 3 fields, order as wireframe | pass |
 
 Then the files you changed and every screenshot path.
+
+**No logs.** A command's output goes in as the one line that proves the verdict — the count, the id, the
+value read back. The full output of a verb stays in `.paper/logs/`; give its path if the main session
+may need it.

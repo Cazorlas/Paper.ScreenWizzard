@@ -11,7 +11,12 @@ You run **only the tasks handed to you by id**, all in lane `unit`. The main ses
 
 ## What you were given
 
-- The task ids, the plan path, the feature's `SPEC.md` path.
+- **A brief** — the output of `paperflow.ps1 brief` (ADR-0023): your task lines, each task's `{files:}`, the
+  `F<n>` rows of `SPEC.md` the tasks name, the wireframe for a ui task, the baseline rows for a `[red]` task,
+  and the `Given ... ->` lines the main session chose. **Work from it: do not read the whole plan or the whole
+  `SPEC.md`.** A line you need that is not there: search for it by its id (`T3`, `F4`) and read that line
+  only, or report `not verifiable: brief lacks <line>` (F28). Reading the whole plan is what ran lanes to
+  200-300k tokens of context.
 - Each task's `{files: <glob>, <glob>}` from the end of its plan line. **Those globs are the only files you
   may create or edit.** Other lanes run at the same time on their own globs; a write outside yours can
   overwrite their work. A fix that needs a file outside them: stop that task and report the file and why.
@@ -19,9 +24,9 @@ You run **only the tasks handed to you by id**, all in lane `unit`. The main ses
 
 ## Before any code
 
-1. Read `.claude/paper.profile.json` (`lanes`, `verbs.test`, `knownFailures`, `architecture`) and the plan
-   (its Context, Rules that apply and Decisions bind you). Read the feature's `SPEC.md`, the project
-   `CLAUDE.md`, and the `CODEMAP.md` on the path.
+1. Read `.claude/paper.profile.json` (`lanes`, `verbs.test`, `knownFailures`, `architecture`), the project
+   `CLAUDE.md`, and the `CODEMAP.md` on the path of your globs. The plan and `SPEC.md` reach you through the
+   brief: do not read the whole plan.
 2. Read skill `clean-architecture`. Decision logic goes in a domain folder of the decision layer:
    `<Domain>/Ports` (interactor interface + ports), `<Domain>/UseCases` (interactor, policies),
    `<Domain>/Models` (plain records); what two domains need goes in `Shared/`. Nothing there names the
@@ -85,3 +90,7 @@ One row per task, exactly this shape, and nothing else claimed:
 
 Then the files you changed (each inside its task's globs), API rows, and anything you found that the spec
 does not cover.
+
+**No logs.** A command's output goes in as the one line that proves the verdict — the count, the id, the
+value read back. The full output of a verb stays in `.paper/logs/`; give its path if the main session
+may need it.

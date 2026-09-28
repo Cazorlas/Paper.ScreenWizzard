@@ -30,7 +30,7 @@ $script:PaperVerbLanes = [ordered]@{
 # api-check and review-files, git - review-files also ocr when the machine has it) only - that is what lets
 # the task gate work in a repository where no host is installed at all (spec rule 10). api-check without a
 # profile has no host namespace to look for: not applicable.
-$script:PaperInternalVerbs = @('tasks', 'status', 'api-check', 'review-files')
+$script:PaperInternalVerbs = @('tasks', 'status', 'api-check', 'review-files', 'brief')
 
 # Hosts this version ships, and the lanes each one can actually prove. `unit` needs no host: a test that
 # never starts the application runs anywhere. An unknown host fails loudly here rather than quietly doing
@@ -143,6 +143,57 @@ function Get-PaperKnownFailuresPath {
     if ($template.IndexOf('{config}', [System.StringComparison]::OrdinalIgnoreCase) -lt 0) { return $template }
     if ([string]::IsNullOrWhiteSpace($Configuration)) { return $null }
     return [regex]::Replace($template, '\{config\}', $Configuration.Trim(), [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+}
+
+# The verbs whose whole output goes to a log file and whose summary goes to the session (ADR-0023). tasks,
+# status, api-check, review-files and brief print as before: their output IS the result.
+$script:PaperSummaryVerbs = @('build', 'test', 'ui', 'e2e', 'publish')
+
+function Get-PaperVerbSummary {
+    <#
+    .SYNOPSIS
+    What a long-running verb prints into the session: exit code, where the full log is, the test total, up to
+    MaxErrors error or failure lines, and the last Tail lines. An output of 40 lines or fewer is printed whole.
+    .DESCRIPTION
+    An error line says error, fail/failed/failure or exception as a word, and is not a zero count ("0 Error(s)",
+    "0 failed"). A line that states a test total (Get-PaperTestTotal) is always kept, so whoever reads the
+    summary counts the tests the same way the verdict does.
+    #>
+    param(
+        [string] $Verb,
+        $Code,
+        [AllowEmptyString()][string[]] $Lines = @(),
+        [string] $LogPath,
+        [int] $MaxErrors = 30,
+        [int] $Tail = 10
+    )
+    $all = @($Lines)
+    $out = New-Object System.Collections.Generic.List[string]
+    $codeText = if ($null -eq $Code) { 'none (stopped)' } else { [string] $Code }
+    $out.Add("paperflow: $Verb exit $codeText - $($all.Count) lines, full log: $LogPath")
+    if ($all.Count -le 40) {
+        foreach ($l in $all) { $out.Add($l) }
+        return $out.ToArray()
+    }
+
+    $totals = @($all | Where-Object { $null -ne (Get-PaperTestTotal $_) })
+    $errors = @($all | Where-Object {
+            $_ -match '(?i)\b(errors?|fail|failed|failures?|exception)\b' -and
+            $_ -notmatch '(?i)\b0\s+(errors?|failed|failures?)\b' -and
+            $totals -notcontains $_
+        })
+    if ($totals.Count -gt 0) {
+        $out.Add('-- test total')
+        foreach ($l in $totals) { $out.Add($l) }
+    }
+    if ($errors.Count -gt 0) {
+        $shown = [Math]::Min($MaxErrors, $errors.Count)
+        $out.Add("-- $shown of $($errors.Count) error lines")
+        foreach ($l in @($errors | Select-Object -First $MaxErrors)) { $out.Add($l) }
+    }
+    $out.Add("-- last $Tail lines")
+    foreach ($l in @($all | Select-Object -Last $Tail)) { $out.Add($l) }
+    return $out.ToArray()
 }
 
 function Get-PaperTestTotal {

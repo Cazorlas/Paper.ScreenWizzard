@@ -1,0 +1,3 @@
+# The whole output of build, test, ui, e2e and publish (ADR-0023) - per machine, never committed.
+*
+!.gitignore

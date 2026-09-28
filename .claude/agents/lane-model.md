@@ -12,7 +12,13 @@ synchronizing, starting or restarting a host.
 
 ## What you were given
 
-- The task ids, the plan path, the feature's `SPEC.md` path, and any rule the user stated (relayed).
+- **A brief** — the output of `paperflow.ps1 brief` (ADR-0023): your task lines, each task's `{files:}`, the
+  `F<n>` rows of `SPEC.md` the tasks name, the wireframe for a ui task, the baseline rows for a `[red]` task,
+  and the `Given ... ->` lines the main session chose. **Work from it: do not read the whole plan or the whole
+  `SPEC.md`.** A line you need that is not there: search for it by its id (`T3`, `F4`) and read that line
+  only, or report `not verifiable: brief lacks <line>` (F28). Reading the whole plan is what ran lanes to
+  200-300k tokens of context.
+- Any rule the user stated (relayed).
 - Each task's rule codes (`C-16`, `R-3` — prefixes from `workTypes.model.rulePrefixes`) and its
   `{files: <glob>}`, usually the feature's `harness/` folder: **the only files you may create or edit**,
   with one exception — the rule files below, to add or mark a rule.
@@ -94,3 +100,7 @@ one artifact it needs from you and buy nothing.
 
 Then: rules written (code, file), harness files, what is committed and not yet saved, skipped elements with
 the reason, leftovers by name, API rows, and steps handed back to the main session.
+
+**No logs.** A command's output goes in as the one line that proves the verdict — the count, the id, the
+value read back. The full output of a verb stays in `.paper/logs/`; give its path if the main session
+may need it.
