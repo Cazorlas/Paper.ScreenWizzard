@@ -1,6 +1,6 @@
 ---
 name: check-spec
-description: Check every SPEC.md in the repository in well under a second for requirements written in the code's words - a class, method, property or test name in backticks - for a drawing whose rendered PNG is missing or older than its SVG, and for a draft banner or change marker left behind by a finished plan. Use whenever a SPEC.md was written or changed (/task-spec before the code, closing it in /task-verify, a /spec-backfill, /sync-docs), or to see whether specs have slipped into the code's vocabulary.
+description: Check every SPEC.md in the repository in well under a second for requirements written in the code's words - a class, method, property or test name in backticks - for a drawing whose rendered PNG is missing or older than its SVG, for a draft banner or change marker left behind by a finished plan, and for a split requirement whose parts and index disagree - every part file under spec/ held to the same checks. Use whenever a SPEC.md was written or changed (/task-spec before the code, closing it in /task-verify, a /spec-backfill, /sync-docs), or to see whether specs have slipped into the code's vocabulary.
 ---
 
 # check-spec
@@ -9,7 +9,7 @@ description: Check every SPEC.md in the repository in well under a second for re
 python .claude/skills/check-spec/check_spec.py
 ```
 
-Exit `0` when clean, `1` when any of the three checks finds a problem. Runs from anywhere in the
+Exit `0` when clean, `1` when any check finds a problem. Runs from anywhere in the
 repository, in any kind of project - it reads markdown and file times only.
 
 ## The code-name check
@@ -52,6 +52,19 @@ spec (skill `spec`, "Two languages"). When both are there they must keep one sha
 sections, the same number of acceptance lines (`Given` / `Cho`), the same `F` codes; the report names what
 differs. A spec nobody is changing is not asked for the second part, so old specs get it on their next
 change.
+
+## A requirement split into a tree - F30, F31
+
+Over 300 lines a `SPEC.md` becomes an index and one `spec/<part>.md` per part (skill `spec`,
+`spec/references/split-spec.md`). Every check above runs on each part as on `SPEC.md`, and two more on the tree:
+
+- **`F30`** - a file in `spec/` the index does not link, or an index link to a part that is not there. The
+  agent reading the index would never find the one, and would look for the other in vain.
+- **`F31`** - an F code on two rows of the index (per language part), or an F table in a part. The F table
+  lives only in the index; a test or a bug that names a code must mean one case.
+
+An unsplit `SPEC.md` over 300 lines is listed under **Long** with its line count - a reminder, never a
+problem and never a non-zero exit, because splitting is its own task.
 
 ## What it cannot catch
 

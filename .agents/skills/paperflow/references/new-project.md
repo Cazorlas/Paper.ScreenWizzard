@@ -18,7 +18,6 @@ Không sửa skill này. Một mẫu dự án mới dùng được sau hai việ
     "model": { "lanes": ["model"], "rules": "docs/features/**/RULE.md", "samples": "docs/features/**/SAMPLE", "references": "docs/features/**/REFERENCE.md" }
   },
   "laneAliases": { "<tag lane cũ>": "live" },
-  "models": { "strong": "<model mạnh nhất>", "strongOnAccount": "<email tài khoản duy nhất được đổi model>" },
   "worktree": { "copyFiles": ["<file cục bộ ngoài git>"] },
   "live": {
     "loop": "<script vòng đo-trước: nhận một bước ensure | measure | red | green | verify | loop>",

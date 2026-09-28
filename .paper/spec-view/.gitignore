@@ -1,0 +1,4 @@
+# The review pages of spec_changes.py --view (SPEC "Trang xem yeu cau cho nguoi review") - per machine, rebuilt on
+# every run, never committed.
+*
+!.gitignore
