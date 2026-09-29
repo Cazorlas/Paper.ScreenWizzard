@@ -1,6 +1,6 @@
 {
-  "version": "1.43.0",
-  "payloadHash": "1462147a13ad4b1f538bb1ef30f69a99ebb4d5d989c926c4a7dccec277883af9",
+  "version": "1.44.0",
+  "payloadHash": "de16e56b6a1e7925bcfc37b1f5a18f9c3f37bc574e617f6aa637f4f32ac96215",
   "hosts": ["desktop"],
   "files": {
     ".agents/skills/accessibility-review/LICENSE": "a6946284993aeec75c7d75906064b66210c46051e562077efb30eb6dcfe72e26",
@@ -132,7 +132,7 @@
     ".claude/hooks/destructive-guard.ps1": "502e48da7c0cc514a2f0f31a8a969a21adf8d78ae0b05fddd1c3e3b4ed09bf45",
     ".claude/hooks/guard-plan.ps1": "e74ad09a369acc382a8128389b3eeb2e3cbf3bf93d297a02dc0b48d8ab602378",
     ".claude/hooks/harness-event.ps1": "96059750c75766e7161d7b3ab6b2a6d11a135b2b39db93f3ddd32d4834370835",
-    ".claude/hooks/hook-dispatch-plan.ps1": "bd31b79ba31ea10bcded4bfffa0ef3fc86aac8f7f6da688754ba8e3735a19ade",
+    ".claude/hooks/hook-dispatch-plan.ps1": "71f6e9479350190375685bae7520a834f595cd94a1b7abd62c01343d4266a45c",
     ".claude/hooks/hook-dispatch.ps1": "033adbefc39a8f458363899dcb151b60146ca6b96d6ce2faaed900ca128278b0",
     ".claude/hooks/hook-input.ps1": "8489dc643ddec977d864ff980cfcf134b815fada8f4b940d22f0efef0f762eee",
     ".claude/hooks/kit-version-plan.ps1": "0f5eea5ebe97e62dd77994dbd1017d794ec46de898813fde0273e069fc66413d",
@@ -141,6 +141,8 @@
     ".claude/hooks/link-nag.ps1": "dfa4e8187a5d64384898d5f284bc6146d09e3bd2e99a42bf98926b3f7025b11f",
     ".claude/hooks/live-first-guard-plan.ps1": "0f36ed046295f84eaadc65f5b47ba62d9432fdfabf682817f23432dd0384e57c",
     ".claude/hooks/live-first-guard.ps1": "3d9e8f6c005cdf1b48aa00a46afd18815e989bcc0ee211cebcc28a21a17ba603",
+    ".claude/hooks/memory-nag-plan.ps1": "e9d05a411860a856aff95cfb117dc6b1464f5cbaa598aad7b2e51ebe2e9ba35a",
+    ".claude/hooks/memory-nag.ps1": "24d3119d78b704bb0850a70cc9456359358aa1e4b76039faae5ed42c6f0e3d31",
     ".claude/hooks/no-static-host-state.ps1": "a45bd62a8c2a00509774f730f2cc1b285cf0bb37013aa948e370ce21412cecb8",
     ".claude/hooks/open-plans-plan.ps1": "5237b6e8a6db3d9b7b635c29a9d49401c9688e2d11a52e0884e5a7e841a8314c",
     ".claude/hooks/paperflow-route-plan.ps1": "44f6a6844f07a8652413052bb3470de9104039ab8c6788509744a5c5c210748a",

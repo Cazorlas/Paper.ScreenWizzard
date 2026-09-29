@@ -16,7 +16,7 @@ $script:PaperDispatchTable = @(
     @{ Event = 'PreToolUse'; Tools = @('Bash', 'PowerShell'); Scripts = @('destructive-guard.ps1', 'build-guard.ps1', 'test-guard.ps1') },
     @{ Event = 'PreToolUse'; Tools = @('Edit', 'Write', 'apply_patch'); Scripts = @('live-first-guard.ps1') },
     @{ Event = 'PostToolUse'; Tools = @(); Scripts = @('harness-event.ps1') },
-    @{ Event = 'PostToolUse'; Tools = @('Edit', 'Write', 'apply_patch'); Scripts = @('layer-guard.ps1', 'no-static-host-state.ps1') }
+    @{ Event = 'PostToolUse'; Tools = @('Edit', 'Write', 'apply_patch'); Scripts = @('layer-guard.ps1', 'no-static-host-state.ps1', 'memory-nag.ps1') }
 )
 
 # The scripts one event runs for one tool, in table order. An empty Tools list means every tool.
