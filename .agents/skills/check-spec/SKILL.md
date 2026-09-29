@@ -1,6 +1,6 @@
 ---
 name: check-spec
-description: Check every SPEC.md in the repository in well under a second for requirements written in the code's words - a class, method, property or test name in backticks - for a drawing whose rendered PNG is missing or older than its SVG, for a draft banner or change marker left behind by a finished plan, and for a split requirement whose parts and index disagree - every part file under spec/ held to the same checks. Use whenever a SPEC.md was written or changed (/task-spec before the code, closing it in /task-verify, a /spec-backfill, /sync-docs), or to see whether specs have slipped into the code's vocabulary.
+description: Use whenever a SPEC.md or one of its spec/ part files was written or changed - in /task-spec, when closing it in /task-verify, in /spec-backfill or /sync-docs - or to see whether the specs have drifted.
 ---
 
 # check-spec

@@ -1,6 +1,6 @@
 ---
 name: task-worktree
-description: Run one planned task in its own git worktree beside the repository - create it on branch task/slug, carry the main checkout's uncommitted work across when the task needs it, take a baseline build and test there, do the work and verify it there, and merge back only when the user asked to merge, with the tests re-run on the target branch before the worktree is removed. Use when a task with a plan should not block other sessions with its build or its red tests, when the user asks to work in a worktree or in isolation, or when a task's worktree is finished and should be merged or discarded.
+description: Use when a planned task should not block other sessions with its build or its red tests, when the user asks to work in a worktree or in isolation, or when a task's worktree is finished and should be merged or discarded.
 ---
 
 # task-worktree

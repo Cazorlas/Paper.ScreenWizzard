@@ -1,6 +1,6 @@
 ---
 name: paperflow
-description: Run one request end to end in any Paper project - decide the work type (code or model) from the profile, asking one question when it is unclear, write the requirement, brief and plan through /task-spec (a bug is reproduced first through /task-bug, a model change goes through model-task), stop for the user's approval, optionally open a task worktree, dispatch lane agents in parallel by the plan's file ownership through /task-do, run the full suite and build once, verify through /task-verify, sync the docs, and report every SPEC rule as pass, fail or not verifiable. Every command is a profile verb, so the same stages run in every project. Use when the user types /paperflow with a request, or asks for a feature, fix or model change to be carried through without further prompting.
+description: Use when the user types /paperflow with a request, or asks for a feature, fix or model change in a Paper project to be carried from request to verified result without further prompting.
 ---
 
 # /paperflow <yêu cầu>
@@ -14,7 +14,7 @@ này và trên phiên host **đang mở** — và chỉ thế. Phần còn lại
 
 ## Khi nào dừng
 
-Năm dòng này là **danh sách đầy đủ** những lần `/paperflow` được dừng. Không có dòng thứ năm.
+Năm dòng này là **danh sách đầy đủ** những lần `/paperflow` được dừng. Không có dòng thứ sáu.
 
 | Lúc | Hỏi gì |
 | --- | --- |

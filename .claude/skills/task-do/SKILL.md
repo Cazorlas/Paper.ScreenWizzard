@@ -1,6 +1,6 @@
 ---
 name: task-do
-description: Implement an approved plan - gate first, then survey the code or the model, then each task group in order, its lanes dispatched in parallel to lane agents (logic, ui, live, model) with their task ids and the files each task may write, test-first inside every lane (on a host whose profile declares a live loop, the behaviour measured live as a baseline before the red test is written from it; a red test from the SPEC.md lines before its code, a UI mock before the real host, the open host driven on real data and read back, a model change dry-run before commit), ticking each task from the evidence rows the agents return, one full suite and build by the main session at the end, and hand over to /task-verify. Use when the user types /task-do with a plan or approves a plan.
+description: Use when the user types /task-do with a plan, or approves a plan and says to go ahead with the implementation.
 ---
 
 # /task-do <plan>
