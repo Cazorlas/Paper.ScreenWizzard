@@ -1,6 +1,6 @@
 ---
 name: task-bug
-description: Take a bug report to an approved fix plan - log it in the bug ledger (the docs bugs folder, status triaging) at intake, reproduce it first (a red test, or a read-back from the host session already open) and stop without a plan when it cannot be reproduced, classify it as a code bug or a spec gap, change SPEC.md when it is a spec gap, set the ledger status (open, not-a-bug, duplicate - never fixed), then write the brief and a plan with its work type, lanes and file ownership, and stop for approval. Use when the user types /task-bug or reports something broken.
+description: Use when the user types /task-bug, reports something broken, or a behaviour contradicts what SPEC.md says.
 ---
 
 # /task-bug <cái gì đang sai>

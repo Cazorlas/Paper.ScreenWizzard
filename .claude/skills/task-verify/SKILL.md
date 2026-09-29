@@ -1,6 +1,6 @@
 ---
 name: task-verify
-description: Verify a plan end to end - the evidence each lane agent returned read lane by lane (a run that counted zero tests is not verifiable, never pass), the full test suite against the known-red baseline, one review-files list of the files to review (a reviewer that did not read all N of N fails), a find-bug pass against SPEC.md, the architecture-reviewer agent on that list, the rule-check table of a model plan, closing SPEC.md (draft banner and change markers out, replaced lines deleted), the bug ledger and lesson queue, the plan gate - and report every SPEC rule and failure mode (F1, F2 ...) the task touched as pass, fail or not verifiable with evidence. Use when the user types /task-verify, and at the end of /task-do.
+description: Use when the user types /task-verify, when /task-do has finished its tasks, or when a plan's work is about to be reported done.
 ---
 
 # /task-verify <plan>

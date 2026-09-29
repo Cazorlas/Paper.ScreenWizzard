@@ -1,6 +1,6 @@
 ---
 name: model-task
-description: Run a change to the user's model or drawing the way a code task runs - the project's rule file with codes, its samples and reference documents read first, a brief and a plan of work type model whose tasks cite the rule codes, the user's approval, then per group survey, dry run with nothing kept, commit and an independent read-back, a rule-check table at the end, every script kept as a rerunnable harness and every leftover reported by name. Also for learning a rule from something the user built, and whenever the user states a modelling or drafting rule, which is written into the rule file the same turn. Use for any request that edits model or drawing content rather than program code.
+description: Use for any request that edits the user's model or drawing content rather than program code, when learning a rule from something the user built, and whenever the user states a modelling or drafting rule.
 ---
 
 # model-task: luật + mẫu → SPEC, brief, plan → khảo sát / chạy thử / thực hiện / đọc lại → kiểm luật

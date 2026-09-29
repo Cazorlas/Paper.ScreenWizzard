@@ -1,6 +1,6 @@
 ---
 name: task-spec
-description: Turn a request into the requirement first - the work type (code or model) decided from the profile and asked in one question when unclear, SPEC.md written or changed in the user's words with measurable acceptance, a frozen brief, and a plan with test-first tasks in lanes, each naming the files it may write, the API lookup table and a status line - then stop for the user's approval. A model plan reads the project's rules, samples and references first. Use when the user types /task-spec, or starts any code or model change that has no approved plan yet.
+description: Use when the user types /task-spec, when any code or model change starts with no approved plan yet, or when it is unclear whether a request changes the program's code or the user's model.
 ---
 
 # /task-spec <yêu cầu>
