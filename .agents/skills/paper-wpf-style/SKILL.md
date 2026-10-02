@@ -120,7 +120,10 @@ NavigateCommand<TViewModel> -> NavigationService<TViewModel> -> NavigationStore.
 through a `ConfigService<T>`, stored under `%AppData%\Paper\<AppName>\configs` (built with
 `Environment.SpecialFolder.ApplicationData` + `Path.Combine`, never a relative working directory), with
 `System.IO` + `System.Text.Json`. Validate before an explicit save; on first load create the default file;
-on a corrupt file report it and fall back to defaults. Never persist secrets there.
+on a corrupt file report it and fall back to defaults. Never persist secrets there. **Two processes save that
+file** - two Revit years, or one Revit per worktree: a save re-reads it, applies only the keys this session
+changed and swaps it in through a temp file (`File.Replace`). Writing back the object loaded at start lets the
+window closed last undo the other; a unit test with two instances on one temp file, each saving a key, keeps both.
 
 ## XAML
 
@@ -132,7 +135,8 @@ exist (table and header: `references/xaml-shared-library.md`).
 - Brushes via `DynamicResource`, never a hard-coded `#RRGGBB`. `StaticResource` is fine for `Geometry`
   icons and local styles.
 - All user-visible text via `{DynamicResource <LocalizationKey>}`. A literal string in XAML is a
-  localization bug.
+  localization bug. A sentence with a number or a name in it is **one** key with a `{0}` slot, formatted in the
+  ViewModel - never `Run`s or `+` gluing fragments: Vietnamese and English put the words in different orders.
 - **Split screens into UserControls**: one shell `Views/<Screen>.xaml` plus `Views/Controls/<Part>.xaml`,
   each with its own ViewModel exposed on the parent. Split before a view passes ~200 lines or gains a
   second independent concern.
