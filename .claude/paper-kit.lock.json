@@ -1,6 +1,6 @@
 {
-  "version": "1.46.14",
-  "payloadHash": "7ac8b9387ad0e94647abb322f34ce85f7f9b7afb857ef91dadbcf978988cbb6c",
+  "version": "1.46.15",
+  "payloadHash": "3739283be909ad5ca7e5cb41014a5bec9bdc2a742910d18c8a79be894fe92a15",
   "hosts": ["desktop"],
   "files": {
     ".agents/skills/accessibility-review/LICENSE": "a6946284993aeec75c7d75906064b66210c46051e562077efb30eb6dcfe72e26",
@@ -178,6 +178,7 @@
     ".claude/paperflow/change-set.ps1": "e0bd013dcb050b109ba91ce16646178df3a1e6bd3e6283c896f117bd29eeb98c",
     ".claude/paperflow/diagram-plan.ps1": "198967dc492b3755bab3b1acf4a65fd96e9111a1d26e9690657034beb9f4a520",
     ".claude/paperflow/diagram.ps1": "2b573fe09b7fc13131e4e920d24a7b385e8d6fccc651b333cc62cb7fefe357b3",
+    ".claude/paperflow/new-dev-signing-cert.ps1": "cc2b38969c4d1f089cbc95366bb21dd94dfc26c3b65fd605b3464613924ee3ce",
     ".claude/paperflow/paper.profile.schema.json": "d59b0ad0c440484adaf67e547cf23823da531da923aa9b524fe6801b2f15b52e",
     ".claude/paperflow/paperflow.ps1": "94ce44d78554ada4de30495e1675741db22bf7640329eaeee2070c644912ab7a",
     ".claude/paperflow/profile-map.ps1": "79d1015fc0787e9100a93d8a94c78e46f01456180c24a87d0ad9e7ab54188fd9",
@@ -188,6 +189,8 @@
     ".claude/paperflow/review-files.ps1": "25b56c88d6a25122326bb1682ee20f6674921796a9b0012078880f6e67a79921",
     ".claude/paperflow/routes/desktop.json": "432506bebd9d4290b821d28412302ff0094571c6b2ad1796fe865736864e8ce2",
     ".claude/paperflow/run-lock.ps1": "cc31ab24ebe4c633c491e3a55a3896edc9a546309d1557c06a05b9900aa3696d",
+    ".claude/paperflow/sign-addin-plan.ps1": "bc18f1592b1084bd1b5e9030517a1490445303c9e93c1fa2e40b8295c59973d5",
+    ".claude/paperflow/sign-addin.ps1": "3e9b5b70e7bc2db5e46487f4557f3be08232bf9ec83204a83c9f53ec524c75a3",
     ".claude/paperflow/tasks-gate-plan.ps1": "7a90c644f5ce9f9f02cc7b1e6ca791d7375d1eba8bfaecdb9080032d5699baa9",
     ".claude/paperflow/tasks-gate.ps1": "5717f68f589d558f4dfb94f7fa3ab5c5cd5ba80238d9539937ed5888c08345f1",
     ".claude/paperflow/verb-plan.ps1": "47b8d09afe688e8b506f1b27ce8a22cf8d2fdf92e8220e3d7c037a33d52049fd",
