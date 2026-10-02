@@ -8,6 +8,8 @@
 #   powershell -Command ". .\tasks-gate.ps1; exit (Invoke-PaperTasksGate -Path <plan file>)"
 #
 # Exit: 0 done | 1 open task or a tick with no evidence | 2 malformed | 4 not approved
+# After the verdict, one "note: T<n>: <row>" line per "not verifiable" row that names no reason code (F33);
+# the notes never change the exit code.
 
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'tasks-gate-plan.ps1')
@@ -51,6 +53,8 @@ function Invoke-PaperTasksGate {
     # anything written to the success stream would be collected into that return value instead of printed.
     [Console]::Out.WriteLine("tasks: $label - $($verdict.Reason)")
     [Console]::Out.WriteLine("       $Path")
+    # F33: a "not verifiable" row with no reason code, reminded only while the plan is not done.
+    foreach ($note in @($verdict.Notes)) { [Console]::Out.WriteLine("note: $note") }
     return $verdict.ExitCode
 }
 

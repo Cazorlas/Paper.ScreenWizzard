@@ -5,8 +5,9 @@
 # It holds no knowledge of any host. It reads .claude/paper.profile.json, asks Get-PaperVerbPlan what to
 # do, and either runs the project's own command or runs one of the kit's own verbs. Every decision that
 # reads the profile lives in verb-plan.ps1, which is pure and fully tested; this file only reads files and
-# starts processes. One route is taken here, before the profile is read: review-files, which never reads
-# the profile (see below); its own decisions live in review-files-plan.ps1.
+# starts processes. Two routes are taken here, before the profile is read: review-files, which never reads
+# the profile (see below), its own decisions in review-files-plan.ps1; and memory, the shared memory block
+# Codex is handed at session start (hooks/shared-memory-read.ps1, ADR-0032).
 #
 # Exit codes:
 #   0  done
@@ -56,6 +57,8 @@ Verbs of the kit itself:        tasks (-Path <plan file>) status help
                                 brief (-Path <plan file> -Task T1,T3): what a lane agent is handed -
                                 the task lines, their files, their F rows of SPEC.md, the wireframe
                                 for ui/e2e, the baseline rows for [red]
+                                memory: Claude Code's memory folder of this repository, its index and
+                                the rules for writing it - what Codex is handed at session start
 
 The project declares what each verb runs in .claude/paper.profile.json. A verb the profile does not
 declare exits 5 = not applicable, which is a valid verdict and never a failure.
@@ -128,6 +131,26 @@ if ($Verb -eq 'review-files') {
         $code = 2
     }
     exit $code
+}
+
+# memory reads git, the Claude Code config folder and the index - never the profile - and prints what the
+# session-start hook hands Codex, for a Codex whose hook did not run. Exit 0 even when no folder is found
+# (the text says what to do); 2 only on an unexpected error.
+if ($Verb -eq 'memory') {
+    try {
+        . (Join-Path $PSScriptRoot '..\hooks\shared-memory-read.ps1')
+        $text = Get-PaperSharedMemoryText $repoRoot
+        # UTF-8 bytes: Write-Output encodes with the OEM codepage on 5.1 and an accented index line would not survive.
+        $bytes = (New-Object System.Text.UTF8Encoding $false).GetBytes($text + "`n")
+        $stdout = [Console]::OpenStandardOutput()
+        $stdout.Write($bytes, 0, $bytes.Length)
+        $stdout.Flush()
+        exit 0
+    }
+    catch {
+        [Console]::Error.WriteLine("paperflow: memory: $($_.Exception.Message)")
+        exit 2
+    }
 }
 
 $projectProfile = Read-PaperProfile $repoRoot

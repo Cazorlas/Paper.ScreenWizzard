@@ -21,8 +21,8 @@ run as incomplete until the plan's independent verification evidence is availabl
 0. **Bằng chứng theo lane.** Đọc bảng `## Bằng chứng` của plan theo từng lane (`unit`, `ui`, `e2e`,
    `live`, `model`) — mỗi lane agent trả dòng của lane nó, và từng dòng được đọc lại ở đây:
    - dòng lane `unit`/`ui`/`e2e` mà **số test đã chạy là 0**, hay không ghi số test nào → `not verifiable`,
-     không phải `pass`, dù exit 0 và dù task đã tick. Chạy lại đúng lần đó một lần; vẫn 0 thì ghi
-     `môi trường: <lý do>` và báo dòng luật của nó là `not verifiable`;
+     không phải `pass`, dù exit 0 và dù task đã tick: `not verifiable (zero-tests: <bộ lọc>)`. Xem verb `test`
+     và bộ lọc của nó, không sửa code sản phẩm; vẫn 0 thì báo dòng luật của nó là `not verifiable`;
    - dòng lane `live` hay `model` lấy số từ giá trị trả về của chính lệnh vừa sửa, không phải từ một lần
      đọc lại riêng → `not verifiable`; task đọc lại thêm vào plan, trả về `/task-do`;
    - file một lane agent báo đã sửa nằm ngoài `{files:}` của task nó → **fail** của task đó;

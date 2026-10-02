@@ -343,6 +343,41 @@ function Get-PaperSpecHash {
     return (-join ($digest | ForEach-Object { $_.ToString('x2') })).Substring(0, 12)
 }
 
+# ---- reason codes for "not verifiable" (F33) --------------------------------------------------------
+#
+# The one list. An evidence verdict reads "not verifiable (<code>: <detail>)", or on the environment's second
+# run "not verifiable (moi truong: <code> - <detail>)". The first four are the environment's: run once more,
+# then record it and change no code. zero-tests sends the main session to the test verb and its filter;
+# the last three are the main session's to fix and hand back. The codes are English because they must be the
+# same in every project and match as ASCII. brief-plan.ps1 prints this list into every lane's hand-back line.
+$script:PaperNotVerifiableReasons = @('host-down', 'host-busy', 'locked', 'timeout', 'zero-tests', 'brief-lacks',
+    'needs-main-session', 'no-report')
+
+function Get-PaperEvidenceReasonNotes {
+    <#
+    .SYNOPSIS
+    One reminder "T<n>: <row>" per evidence row whose last cell opens with "not verifiable" (or "khong kiem
+    duoc") and names no code of $script:PaperNotVerifiableReasons. A code counts as a whole word, so
+    "host down" is not host-down. Pure; the gate attaches the notes only while work is left.
+    #>
+    param([AllowEmptyString()][string[]] $Lines = @())
+    $notes = New-Object System.Collections.Generic.List[string]
+    foreach ($row in (Get-PaperPlanOutline $Lines)) {
+        if ($row.Section -ne 'evidence' -or $row.Heading -or $row.Fenced) { continue }
+        if ($row.Line -notmatch '^\s*\|\s*(T\d+[a-z]?)\s*\|') { continue }
+        $id = $Matches[1]
+        $cells = @($row.Line.Trim().Trim('|') -split '\|')
+        $last = Get-PaperPlainText ($cells[$cells.Count - 1].Trim())
+        if ($last -notmatch '^(not verifiable|khong kiem duoc)') { continue }
+        $named = $false
+        foreach ($code in $script:PaperNotVerifiableReasons) {
+            if ($last -match "(^|[^a-z-])$([regex]::Escape($code))([^a-z-]|$)") { $named = $true; break }
+        }
+        if (-not $named) { $notes.Add("${id}: $($row.Line.Trim())") }
+    }
+    return @($notes)
+}
+
 function Get-PaperTaskGateVerdict {
     <#
     .SYNOPSIS
@@ -364,8 +399,13 @@ function Get-PaperTaskGateVerdict {
         $LaneAliases
     )
 
+    # F33: reminders for "not verifiable" rows with no reason code - only while the plan is not done, so a
+    # finished plan written before the codes existed stays silent. They never change the exit code.
+    $reasonNotes = @(Get-PaperEvidenceReasonNotes $Lines)
     function New-Verdict([int] $code, [string] $reason, $open) {
-        return [pscustomobject]@{ ExitCode = $code; Reason = $reason; Open = @($open) }
+        $notes = @()
+        if ($code -ne 0) { $notes = $reasonNotes }
+        return [pscustomobject]@{ ExitCode = $code; Reason = $reason; Open = @($open); Notes = @($notes) }
     }
 
     $lanes = @($Lanes | ForEach-Object { ([string] $_).ToLowerInvariant() })

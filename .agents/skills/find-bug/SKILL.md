@@ -16,6 +16,14 @@ suspicion - list it separately as one, and do not pad the findings with it.
 list - no more, no fewer - and a group rule printed beside a file applies to it on top of the spec. The
 report ends with `đã xem N/N` and names every file not read; one missing file leaves the pass unfinished.
 
+## No SPEC.md for the file
+
+When a file of the list belongs to no feature with a `SPEC.md` (look it up in `featureDocs` and
+`CODEMAP.md`), the rule is the code's own contract: its XML doc or comments, the promise of a function's
+and its parameters' names, the names and asserts of its tests, the rules of the project's `CLAUDE.md` and
+ADRs. RULE quotes it with its source. With nothing to quote it is a suspicion (INPUT `-`), not a
+finding. Inside a `/qa` run, report in the format of `.claude/skills/qa/references/findings.md`.
+
 ## How
 
 1. **Read the whole `SPEC.md`.** Every acceptance line is a claim the code must satisfy - a line under a

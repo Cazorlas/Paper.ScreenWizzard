@@ -139,8 +139,9 @@ ghi **trước** dòng code gọi nó.
 ## Bằng chứng
 
 Mỗi task đã tick có đúng một dòng ở đây; task phủ `F<n>` ghi tên test `F<n>_…` của từng mã. Verdict là một trong ba: `pass`, `fail`,
-`not verifiable` (host tắt, runner chạy 0 test, verb trả 4 hoặc 5 — chạy lại **một** lần, lần hai
-ghi `môi trường: <lý do>` và **không** sửa code vì nó).
+`not verifiable (<mã>: <chi tiết>)` với đúng một mã của `/task-do` mục 4 — `host-down`, `host-busy`, `locked`,
+`timeout` chạy lại **một** lần, lần hai ghi `not verifiable (môi trường: <mã> - <bước hỏng>)` và **không** sửa code
+vì nó; `zero-tests`, `brief-lacks`, `needs-main-session`, `no-report` là việc của session chính.
 
 | Task | Lệnh / id / giá trị đọc lại | Verdict |
 |---|---|---|

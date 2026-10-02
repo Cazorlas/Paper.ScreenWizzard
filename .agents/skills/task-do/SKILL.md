@@ -119,24 +119,25 @@ chính biểu thức của code, hằng so với hằng, snapshot chưa ai đọ
 
 ### Chia cho lane agent
 
-Đơn vị song song là **nhóm** `### n.` của plan: các lane trong một nhóm chạy cùng lúc, nhóm sau chờ nhóm
-trước trả hết.
+Đơn vị song song là **nhóm** `### n.` của plan: các lane trong một nhóm chạy cùng lúc;
+nhóm sau chỉ giao khi mọi task của nhóm trước đã tick (F35) — một task chưa đạt thì xử lý nó, hay dừng và nêu task chặn cùng verdict.
 
 1. Với nhóm đầu còn task mở, gom task theo lane. Trong **một** lượt, gọi mỗi lane một `Agent` chạy nền, tên
    theo bảng trên. Prompt của nó là output của `.claude/paperflow/paperflow.ps1 brief -Path <plan> -Task <mã>`
    (dòng task, `{files:}`, dòng `F<n>` của `SPEC.md`, wireframe cho `ui`, dòng `baseline` cho `[red]`) cộng
    đúng các dòng `Cho … →` mà task phủ — **không** gửi đường dẫn để lane tự đọc cả plan hay cả `SPEC.md`
-   (ADR-0023: lane tự đọc là thứ đẩy nó tới 200–300k). Lane trả `not verifiable: brief thiếu <dòng>` (F28) thì
+   (ADR-0023: lane tự đọc là thứ đẩy nó tới 200–300k). Lane trả `not verifiable (brief-lacks: <dòng>)` (F28) thì
    bổ sung đúng dòng đó rồi giao lại. Lane agent chỉ sửa file trong các glob đó, không push, không mở hay tắt host; lane `unit` và
    lane `ui` commit **một lần** trên nhánh worktree của chúng để trả việc về (bước 4).
-2. **Nối tiếp, không song song:** task ghi `(sau T<n>)` chờ `T<n>` trả về; lane `ui` và lane `live` không
+2. **Nối tiếp, không song song:** task ghi `(sau T<n>)` không giao khi `T<n>` chưa `pass` (F35); lane `ui` và lane `live` không
    bao giờ chạy cùng lúc (driver UI giữ chuột và bàn phím, ảnh chụp host cần cửa sổ host ở trước); task
    `baseline` của `live` chạy **trước** task `[red]` nó mở đường (mục trên), task kiểm của `live` chỉ chạy
    sau khi `unit` của cùng việc đã xanh. Một nhóm chỉ có một lane thì giao một agent, vẫn chạy nền.
    Task không có `{files:}` mà cần sửa file thì plan sai khuôn: thêm glob vào plan trước khi giao.
 3. **Chờ** mọi agent của nhóm trả về. Session chính **giữ** plan, `SPEC.md`, dấu tick, bảng API, mọi câu
-   hỏi cho người dùng và mọi bước cần công cụ host mà agent không có (agent trả `not verifiable: cần session
-   chính` thì session chính tự chạy bước đó).
+   hỏi cho người dùng và mọi bước cần công cụ host mà agent không có (agent trả `not verifiable (needs-main-session:
+   …)` thì session chính tự chạy bước đó). Thiếu dòng cho một task đã giao là `no-report`: giao lại một lần, lần hai
+   dừng và nêu mã task (F34).
 4. **Gộp code của lane về trước khi gộp bằng chứng.** Lane `unit` và lane `ui` chạy trong **worktree
    riêng** (`isolation: worktree`), nên code của chúng **không nằm trong** cây session chính đang build.
    Mỗi lane trả về một tên nhánh và một commit: `git merge --no-ff <nhánh>` từng cái, theo đúng thứ tự
@@ -166,14 +167,20 @@ trước trả hết.
 | --- | --- | --- |
 | `pass` | đo được, đúng | tick, ghi bằng chứng |
 | `fail` | đo được, sai | skill `systematic-debugging`; về chặng sớm nhất sửa được |
-| `not verifiable` | không đo được (host tắt, runner chạy 0 test, verb trả 4 hoặc 5) | chạy lại **đúng một lần** |
+| `not verifiable (<mã>: <chi tiết>)` | không đo được — đúng một mã của bảng dưới | theo mã |
+
+| Mã | Ai xử lý |
+| --- | --- |
+| `host-down`, `host-busy`, `locked`, `timeout` | môi trường: chạy lại **đúng một lần** (host thì chạy bài kiểm nhanh của skill chạy thật trước) |
+| `zero-tests` | session chính xem verb `test` và bộ lọc — không sửa code sản phẩm |
+| `brief-lacks`, `needs-main-session`, `no-report` | session chính bổ sung dòng, tự chạy bước, hay giao lại — không tính là lần chạy lại |
 
 Bốn luật, vì đây là bốn cách một vòng test tự lừa mình:
 
 1. **Exit 0 với 0 test đã chạy không phải pass** — nó là `not verifiable`. Luôn đọc số test đã chạy,
    đừng chỉ đọc exit code.
-2. **`not verifiable` lần thứ hai là môi trường.** Ghi `môi trường: <lý do>` vào bằng chứng và
-   **không** sửa một dòng code nào vì nó.
+2. **`not verifiable` lần thứ hai là môi trường** — chỉ với `host-down`, `host-busy`, `locked`, `timeout`. Ghi
+   `not verifiable (môi trường: <mã> - <bước hỏng>)` và **không** sửa một dòng code nào vì nó.
 3. **Cùng một test đỏ ba lần** với cùng giả thuyết: viết một dòng `đổi giả thuyết: <cũ> → <mới>` vào
    plan trước lần thử thứ tư. Sau ba lần, cái sai là giả thuyết, không phải tham số.
 4. **Baseline đỏ**: fail nằm trong `knownFailures` của profile thì cho qua; fail ngoài danh sách là

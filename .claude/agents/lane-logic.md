@@ -15,7 +15,7 @@ You run **only the tasks handed to you by id**, all in lane `unit`. The main ses
   `F<n>` rows of `SPEC.md` the tasks name, the wireframe for a ui task, the baseline rows for a `[red]` task,
   and the `Given ... ->` lines the main session chose. **Work from it: do not read the whole plan or the whole
   `SPEC.md`.** A line you need that is not there: search for it by its id (`T3`, `F4`) and read that line
-  only, or report `not verifiable: brief lacks <line>` (F28). Reading the whole plan is what ran lanes to
+  only, or report `not verifiable (brief-lacks: <line>)` (F28). Reading the whole plan is what ran lanes to
   200-300k tokens of context.
 - Each task's `{files: <glob>, <glob>}` from the end of its plan line. **Those globs are the only files you
   may create or edit.** Other lanes run at the same time on their own globs; a write outside yours can
@@ -42,8 +42,8 @@ You run **only the tasks handed to you by id**, all in lane `unit`. The main ses
   names, its name starting with the code (`F3_…`) - never from what the code happens to return. When the
   profile declares `live.loop`, a `baseline` row measured in the host comes first - handed to you by the
   main session, since your worktree may not hold the plan's newest evidence: the test's inputs and today's value come from that row, and the expected value from the `SPEC.md`
-  line. No baseline row and none marked `not checkable`: report the task `not verifiable: no live
-  baseline` rather than writing the test from belief. Run the
+  line. No baseline row and none marked `not checkable`: report the task `not verifiable (brief-lacks: live baseline)`
+  rather than writing the test from belief. Run the
   verb `test` narrowed to those tests (`.claude/paperflow/paperflow.ps1 test -- <the runner's filter>`;
   `verbs.test` shows which runner it is) and see it fail **on the assertion**. A build error is not red —
   fix the build and run again.
@@ -51,8 +51,11 @@ You run **only the tasks handed to you by id**, all in lane `unit`. The main ses
 - Ports are faked in the test with plain data. A fake whose signature names a host type is a design error:
   the port leaked the host.
 - Same test red three times on the same hypothesis: stop, and report `đổi giả thuyết: <old> -> <new>`.
-- Exit 0 with **zero** tests run is `not verifiable`, not pass: the filter matched nothing. Fix the filter
-  once; a second zero is the environment - say so and change no code for it.
+- Exit 0 with **zero** tests run is `not verifiable (zero-tests: <filter>)`, not pass: the filter matched
+  nothing. Fix the filter once; a second zero goes back to the main session with that code - change no
+  product code for it.
+- A command that **times out twice at the same step**: stop that task with `not verifiable (timeout: <step>)`
+  — never a third try (F36).
 
 ## Never
 

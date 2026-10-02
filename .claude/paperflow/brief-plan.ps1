@@ -15,7 +15,7 @@
 #                    [-LaneAliases <map>]
 # Returns ExitCode (0, or 2 for an id the plan does not have) and Text.
 #
-# Needs tasks-gate-plan.ps1 dot-sourced first (Get-PaperPlanOutline, Get-PaperPlanTasks, Get-PaperPlainText).
+# Needs tasks-gate-plan.ps1 dot-sourced first (Get-PaperPlanOutline, Get-PaperPlanTasks, Get-PaperPlainText, $script:PaperNotVerifiableReasons).
 # Dot-sourced; declares no param() block at script level. ASCII only: PowerShell 5.1 reads a .ps1 without a
 # BOM as ANSI.
 
@@ -51,7 +51,7 @@ function Get-PaperTaskBrief {
 
     $out = New-Object System.Collections.Generic.List[string]
     $out.Add("brief for $($ids -join ', ') - plan $PlanPath")
-    $out.Add('Work from this brief. Do not read the whole plan or SPEC.md; a line you need that is not here: report "not verifiable: brief lacks <line>" (F28).')
+    $out.Add('Work from this brief. Do not read the whole plan or SPEC.md; a line you need that is not here: report "not verifiable (brief-lacks: <line>)" (F28).')
     $out.Add('')
     $out.Add('## Tasks')
     foreach ($t in $tasks) { $out.Add($taskLines[$t.Id]) }
@@ -111,6 +111,9 @@ function Get-PaperTaskBrief {
     }
 
     $out.Add('')
-    $out.Add('Hand back only: one evidence row per task (| T<n> | command / id / value read back | verdict |), your branch and commit, the files you changed. No logs.')
+    $out.Add('Hand back only: exactly one evidence row per task (| T<n> | command / id / value read back | verdict |), your branch and commit, the files you changed. No logs. A task with no row is not verifiable (no-report) and is handed out again once (F34).')
+    # The reason codes come from the gate's one list (tasks-gate-plan.ps1), so a lane and the gate cannot disagree.
+    $out.Add("A verdict that is not pass or fail reads ""not verifiable (<code>: <detail>)"", one code of: $($script:PaperNotVerifiableReasons -join ', ').")
+    $out.Add('A command or host call that times out twice at the same step: stop that task with "not verifiable (timeout: <step>)" - never a third try (F36).')
     return [pscustomobject]@{ ExitCode = 0; Text = ($out -join $nl) }
 }
