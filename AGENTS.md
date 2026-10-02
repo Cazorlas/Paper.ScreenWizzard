@@ -13,6 +13,8 @@ Read in this order:
 
 Lifecycle: task-spec (SPEC.md, brief, plan) -> stop for the user's approval -> task-do -> task-verify, end to end in paperflow; each step is `.agents/skills/<name>/SKILL.md`, and `.claude/paperflow/paperflow.ps1 tasks -Path <plan>` is the gate.
 
+Memory is Claude Code's memory of this repository, shared: Claude and Codex read and write the same folder, and there is no second store - no memory or notes file in the repository. The session-start hook hands you the folder, its index (MEMORY.md) and the rules for writing it. If that block did not reach you, run `powershell -NoProfile -ExecutionPolicy Bypass -File .claude/paperflow/paperflow.ps1 memory` and follow what it prints.
+
 Codex runs the kit's hooks from `.codex/hooks.json`. These have no Codex equivalent, so check by hand what they would have checked:
 
 - none: every kit hook runs in Codex too

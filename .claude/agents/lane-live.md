@@ -15,7 +15,7 @@ decision that needs the user: starting, closing or restarting a host, saving the
   `F<n>` rows of `SPEC.md` the tasks name, the wireframe for a ui task, the baseline rows for a `[red]` task,
   and the `Given ... ->` lines the main session chose. **Work from it: do not read the whole plan or the whole
   `SPEC.md`.** A line you need that is not there: search for it by its id (`T3`, `F4`) and read that line
-  only, or report `not verifiable: brief lacks <line>` (F28). Reading the whole plan is what ran lanes to
+  only, or report `not verifiable (brief-lacks: <line>)` (F28). Reading the whole plan is what ran lanes to
   200-300k tokens of context.
 - Each task's `{files: <glob>, <glob>}`: **the only files you may create or edit** — typically a headless
   entry point or a harness script. A fix outside them: stop that task, report the file and the measured
@@ -28,11 +28,16 @@ decision that needs the user: starting, closing or restarting a host, saving the
 2. Read **the host pack's live skill** — the vendored skill for this project's host that runs code in the
    open host session. It says how to reach the session, how a new build is picked up without a restart,
    and which dialogs are answered by rule. You have no MCP tools of your own: use the skill's command-line
-   route. A step with no such route is `not verifiable: needs the main session's host tools` — report it
-   and the main session runs that step.
+   route. A step with no such route is `not verifiable (needs-main-session: <step>)` — report it and the
+   main session runs that step.
 3. Every API member a run calls: skill `api-lookup` first; put the row in your report.
-4. Read whether a host session is open and connected (the live skill's status read). None: that is F4 —
-   `not verifiable`, read once more, then `môi trường: <lý do>`. **Never start one.**
+4. Read whether a host session is open and connected: run the live skill's **smoke check** in its order
+   (status, no dialog blocking, a small command that leaves a mark, the log) and name the first step that
+   failed. A failure is F4 — `not verifiable (host-down: <step>)` or `(host-busy: <step>)`, read once more,
+   then `not verifiable (môi trường: <code> - <step>)`. **Never start one.**
+
+A command or host call that **times out twice at the same step**: stop that task with
+`not verifiable (timeout: <step>)` — never a third try (F36).
 
 ## A baseline task: measure before anyone writes the test
 
@@ -62,7 +67,7 @@ The verify task after green is the loop below, measured the same way, until the 
    | 0 | the open host can run the new code | step 2 |
    | 1 | build or reload failed | fix inside your globs and publish again; outside them, report |
    | 3 | the change needs a host restart | **stop**; report what is pinned — the user decides |
-   | 4 | built, but no host took it | `not verifiable`; once more, then the environment |
+   | 4 | built, but no host took it | `not verifiable (host-down)`; once more, then the environment |
    | 5 | not applicable in this project (F2) | record it as the task's verdict |
 
 2. **Find the real case yourself** by reading the host's data — ids, names, values. Never ask the user to
@@ -102,7 +107,7 @@ never runs beside you.
 |---|---|---|
 | T1 | `<live.loop> measure`; case id 412233; baseline width 1180 today (SPEC: 1200) | pass |
 | T6 | `paperflow publish` exit 0; case id 412233; read back width 1200 (SPEC: 1200) | pass |
-| T7 | `paperflow publish` exit 4 twice: no host connected | not verifiable (môi trường: host tắt) |
+| T7 | `paperflow publish` exit 4 twice: no host connected | not verifiable (môi trường: host-down - status did not answer) |
 
 Then: the files you changed, what each run created and removed, anything still changed in the host's
 data, API rows, and every step you handed back to the main session with the reason.

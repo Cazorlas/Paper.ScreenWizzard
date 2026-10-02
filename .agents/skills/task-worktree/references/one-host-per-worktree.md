@@ -49,6 +49,24 @@ into another session's host.
   (`<live.loop> bind`). Skills name no command of their own. Binding a host another worktree holds is refused
   unless forced, and forcing is the user's call.
 
+## Tests run in the worktree's host
+
+A test suite that runs inside the host is a caller like any other, and picks its host in the same order.
+The host pack ships the decision as a pure function; the project feeds it every running host of the
+version under test with its owner (this worktree, free, or another worktree's name, from the binding
+record) and says whether its test runner can pin one process.
+
+- **A runner that pins a process** runs in this worktree's host even while another host of the same version
+  is open. A free host is bound first, then pinned; no host of that version: one is started for this
+  worktree (the user approves the start), bound, then pinned.
+- **A runner that cannot pin** attaches to whichever host of that version it finds, so it runs only when this
+  worktree's host is the only one of that version. Otherwise nothing runs, and the message names **every**
+  host of that version: its process number and the worktree holding it, or "free". Two free hosts, or two
+  bound to this worktree, are refused the same way, pinned or not.
+- **A started host is ready** when an announce file carrying **its** process number appears, written at or
+  after that process started. A window title, or an announce file of an older process with the same number,
+  says nothing about which build is loaded.
+
 ## Switching a server on
 
 A host whose server is off has no announce file yet, so it is found by its process and its binding record.

@@ -16,7 +16,7 @@ synchronizing, starting or restarting a host.
   `F<n>` rows of `SPEC.md` the tasks name, the wireframe for a ui task, the baseline rows for a `[red]` task,
   and the `Given ... ->` lines the main session chose. **Work from it: do not read the whole plan or the whole
   `SPEC.md`.** A line you need that is not there: search for it by its id (`T3`, `F4`) and read that line
-  only, or report `not verifiable: brief lacks <line>` (F28). Reading the whole plan is what ran lanes to
+  only, or report `not verifiable (brief-lacks: <line>)` (F28). Reading the whole plan is what ran lanes to
   200-300k tokens of context.
 - Any rule the user stated (relayed).
 - Each task's rule codes (`C-16`, `R-3` — prefixes from `workTypes.model.rulePrefixes`) and its
@@ -31,10 +31,12 @@ synchronizing, starting or restarting a host.
    checked. The samples those rules name. The references index behind them — how each document is read.
 3. **The host pack's live skill** (how to reach the open session and run a script there, which dialogs are
    answered by rule) and the host pack's model skill when one is vendored (its harness template). You have
-   no MCP tools: use the command-line route; a step with none is handed back to the main session.
+   no MCP tools: use the command-line route; a step with none is `not verifiable (needs-main-session: <step>)`.
 4. Every API member a script calls: skill `api-lookup` first; put the row in your report.
-5. A host session open and connected? None: `not verifiable` (F4), read once more, then the environment.
-   **Never start one.**
+5. A host session open and connected? Run the live skill's smoke check; a failure is F4 —
+   `not verifiable (host-down: <step>)` or `(host-busy: <step>)`, read once more, then the environment.
+   **Never start one.** A command or host call that **times out twice at the same step**: stop that group
+   with `not verifiable (timeout: <step>)` — never a third try (F36).
 
 ## Each group: four steps, in order, each its own evidence row
 

@@ -69,6 +69,10 @@ both themes - a colour that works in dark and vanishes in light is a real defect
 
 Every UI task ends with at least one screenshot **opened and judged**, and the evidence row says which file.
 
+A screenshot that must not change is compared with its recorded baseline, pixel by pixel, by
+`scripts/compare-shot.ps1` - one baseline per framework, 3D content shot through the window, and the real-input
+tests kept out of the default run: [references/ui-shots.md](references/ui-shots.md).
+
 ## Before you call it done
 
 1. The suite is green **more than once** - a UI suite that passes one run in three is not green, it is

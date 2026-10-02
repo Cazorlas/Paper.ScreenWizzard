@@ -30,13 +30,16 @@ function Read-PaperHookPayload {
         $toolName = if ($toolNameProperty) { [string]$toolNameProperty.Value } else { '' }
         $toolInput = if ($toolInputProperty) { $toolInputProperty.Value } else { $null }
         $commandProperty = if ($toolInput) { $toolInput.PSObject.Properties['command'] } else { $null }
+        # file_paths carries every path of the patch, in order, for memory-nag (each memory file of a
+        # multi-file patch is its own write, ADR-0032); the other guards still read the first.
         if ($toolName -eq 'apply_patch' -and $toolInput -and $commandProperty) {
-            $match = [regex]::Match([string]$commandProperty.Value, '(?m)^\*\*\* (?:Update|Add|Delete) File: (.+?)\s*$')
-            if ($match.Success) {
-                $path = $match.Groups[1].Value.Trim()
-                if (-not [IO.Path]::IsPathRooted($path) -and $payload.cwd) { $path = Join-Path ([string]$payload.cwd) $path }
+            $paths = @(Get-PaperPatchPaths -Patch ([string]$commandProperty.Value) -Cwd ([string]$payload.cwd))
+            if ($paths.Count -gt 0) {
+                $path = $paths[0]
                 if ($null -eq $toolInput.PSObject.Properties['file_path']) { $toolInput | Add-Member -NotePropertyName file_path -NotePropertyValue $path }
                 else { $toolInput.file_path = $path }
+                if ($null -eq $toolInput.PSObject.Properties['file_paths']) { $toolInput | Add-Member -NotePropertyName file_paths -NotePropertyValue $paths }
+                else { $toolInput.file_paths = $paths }
             }
         }
         # Existing Paper guards use this variable after reading the payload. Resolve it to the current
@@ -50,6 +53,21 @@ function Read-PaperHookPayload {
     catch { return $null }
 }
 
+
+# Every path an apply_patch names, in order, each once (OrdinalIgnoreCase): the file headers (Add, Update,
+# Delete) and a "*** Move to:" target; a relative path joins Cwd. Pure - string work only.
+function Get-PaperPatchPaths([AllowNull()][AllowEmptyString()][string] $Patch, [AllowNull()][AllowEmptyString()][string] $Cwd) {
+    $out = New-Object System.Collections.Generic.List[string]
+    if ([string]::IsNullOrEmpty($Patch)) { return @() }
+    $seen = New-Object System.Collections.Generic.HashSet[string] ([StringComparer]::OrdinalIgnoreCase)
+    foreach ($m in [regex]::Matches($Patch, '(?m)^\*\*\* (?:(?:Add|Update|Delete) File|Move to): (.+?)\s*$')) {
+        $path = $m.Groups[1].Value.Trim()
+        if (-not $path) { continue }
+        if (-not [IO.Path]::IsPathRooted($path) -and $Cwd) { $path = [IO.Path]::Combine($Cwd, $path) }
+        if ($seen.Add($path)) { $out.Add($path) }
+    }
+    return $out.ToArray()
+}
 
 # The profile as a map, or $null - missing and unreadable alike, so a hook lets the turn through (F10).
 # The reading itself is Read-PaperProfileFile in paperflow/profile-map.ps1, shared with the runner.

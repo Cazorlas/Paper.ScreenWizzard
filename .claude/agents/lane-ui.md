@@ -15,7 +15,7 @@ session owns the plan, `SPEC.md`, the ticks, any host session and every git comm
   `F<n>` rows of `SPEC.md` the tasks name, the wireframe for a ui task, the baseline rows for a `[red]` task,
   and the `Given ... ->` lines the main session chose. **Work from it: do not read the whole plan or the whole
   `SPEC.md`.** A line you need that is not there: search for it by its id (`T3`, `F4`) and read that line
-  only, or report `not verifiable: brief lacks <line>` (F28). Reading the whole plan is what ran lanes to
+  only, or report `not verifiable (brief-lacks: <line>)` (F28). Reading the whole plan is what ran lanes to
   200-300k tokens of context.
 - Each task's `{files: <glob>, <glob>}` from the end of its plan line. **Those globs are the only files you
   may create or edit** — the logic lane is writing its own globs at the same time. A change that needs a
@@ -51,7 +51,10 @@ driver; if you find one running, stop and report instead of starting yours.
   task's cases after `--`.
 - **Open every screenshot and judge it** against the wireframe: clipped text, wrong order, a field the spec
   does not have. A screenshot nobody looked at is not evidence.
-- Exit 0 with **zero** tests run is `not verifiable`, not pass. Rerun once; a second zero is the environment.
+- Exit 0 with **zero** tests run is `not verifiable (zero-tests: <filter>)`, not pass. Fix the filter once; a
+  second zero goes back to the main session with that code - change no product code for it.
+- A command that **times out twice at the same step**: stop that task with `not verifiable (timeout: <step>)`
+  — never a third try (F36).
 
 ## Never
 

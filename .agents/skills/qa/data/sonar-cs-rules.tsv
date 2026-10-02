@@ -1,0 +1,483 @@
+# source: SonarSource/sonar-dotnet tag 10.35.0.4138, analyzers/rspec/cs/*.json (2e306ca14e1d187faf5b13a99ce3b5e2babc7319), generated 2026-10-02 by ConvertFrom-PaperSonarRspec
+id	kind	severity	title	cwe	owasp
+S100	smell	minor	Methods and properties should be named in PascalCase		
+S101	smell	minor	Types should be named in PascalCase		
+S103	smell	major	Lines should not be too long		
+S104	smell	major	Files should not have too many lines of code		
+S105	smell	minor	Tabulation characters should not be used		
+S106	smell	major	Standard outputs should not be used directly to log anything		A3
+S107	smell	major	Methods should not have too many parameters		
+S108	smell	major	Nested blocks of code should not be left empty		
+S109	smell	major	Magic numbers should not be used		
+S110	smell	major	Inheritance tree of classes should not be too deep		
+S112	smell	major	General or reserved exceptions should never be thrown	CWE-397	
+S113	smell	minor	Files should end with a newline		
+S121	smell	critical	Control structures should use curly braces		
+S122	smell	major	Statements should be on separate lines		
+S125	smell	major	Sections of code should not be commented out		
+S126	smell	critical	"if ... else if" constructs should end with "else" clauses		
+S127	smell	major	"for" loop stop conditions should be invariant		
+S131	smell	critical	"switch/Select" statements should contain a "default/Case Else" clauses	CWE-478	
+S134	smell	critical	Control flow statements "if", "switch", "for", "foreach", "while", "do"  and "try" should not be nested too deeply		
+S138	smell	major	Functions should not have too many lines of code		
+S818	smell	minor	Literal suffixes should be upper case		
+S881	smell	major	Increment (++) and decrement (--) operators should not be used in a method call or mixed with other operators in an expression		
+S907	smell	major	"goto" statement should not be used		
+S927	smell	critical	Parameter names should match base declaration and other partial definitions		
+S1006	smell	critical	Method overrides should not change parameter defaults		
+S1048	bug	critical	Finalizers should not throw exceptions		
+S1066	smell	major	Mergeable "if" statements should be combined		
+S1067	smell	critical	Expressions should not be too complex		
+S1075	smell	minor	URIs should not be hardcoded		
+S1104	smell	minor	Fields should not have public accessibility	CWE-493	
+S1109	smell	minor	A close curly brace should be located at the beginning of a line		
+S1110	smell	major	Redundant pairs of parentheses should be removed		
+S1116	smell	minor	Empty statements should be removed		
+S1117	smell	major	Local variables should not shadow class fields or properties		
+S1118	smell	major	Utility classes should not have public constructors		
+S1121	smell	major	Assignments should not be made from within sub-expressions	CWE-481	
+S1123	smell	major	"Obsolete" attributes should include explanations		
+S1125	smell	minor	Boolean literals should not be redundant		
+S1128	smell	minor	Unnecessary "using" should be removed		
+S1133	smell	info	Deprecated code should be removed		
+S1134	smell	major	Track uses of "FIXME" tags	CWE-546	
+S1135	smell	info	Track uses of "TODO" tags	CWE-546	
+S1144	smell	major	Unused private types or members should be removed		
+S1147	smell	critical	Exit methods should not be called	CWE-382	
+S1151	smell	major	"switch case" clauses should not have too many lines of code		
+S1155	smell	minor	"Any()" should be used to test for emptiness		
+S1163	smell	critical	Exceptions should not be thrown in finally blocks		
+S1168	smell	major	Empty arrays and collections should be returned instead of null		
+S1172	smell	major	Unused method parameters should be removed		
+S1185	smell	minor	Overriding members should do more than simply call the same member in the base class		
+S1186	smell	critical	Methods should not be empty		
+S1192	smell	minor	String literals should not be duplicated		
+S1199	smell	minor	Nested code blocks should not be used		
+S1200	smell	major	Classes should not be coupled to too many other classes		
+S1206	bug	minor	"Equals(Object)" and "GetHashCode()" should be overridden in pairs	CWE-581	
+S1210	smell	minor	"Equals" and the comparison operators should be overridden when implementing "IComparable"		
+S1215	smell	critical	"GC.Collect" should not be called		
+S1226	bug	minor	Method parameters, caught exceptions and foreach variables' initial values should not be ignored		
+S1227	smell	minor	break statements should not be used except for switch cases		
+S1244	bug	major	Floating point numbers should not be tested for equality		
+S1264	smell	minor	A "while" loop should be used instead of a "for" loop		
+S1301	smell	minor	"switch" statements should have at least 3 "case" clauses		
+S1309	smell	info	Track uses of in-source issue suppressions		
+S1312	smell	minor	Logger fields should be "private static readonly"		
+S1313	smell	minor	IP addresses should not be hardcoded	CWE-547	A3
+S1449	smell	minor	Culture should be specified for "string" operations		
+S1450	smell	minor	Private fields only used as local variables in methods should become local variables		
+S1451	smell	critical	Track lack of copyright and license headers		
+S1479	smell	major	"switch" statements with many "case" clauses should have only one statement		
+S1481	smell	minor	Unused local variables should be removed		
+S1541	smell	critical	Methods and properties should not be too complex		
+S1607	smell	major	Tests should not be ignored		
+S1643	smell	minor	Strings should not be concatenated using '+' in a loop		
+S1656	bug	major	Variables should not be self-assigned		
+S1659	smell	minor	Multiple variables should not be declared on the same line		
+S1694	smell	minor	An abstract class should have both abstract and concrete methods		
+S1696	smell	major	NullReferenceException should not be caught	CWE-395	
+S1698	smell	minor	"==" should not be used when "Equals" is overridden	CWE-595;CWE-597	
+S1699	smell	critical	Constructors should only call non-overridable methods		
+S1751	bug	major	Loops with at most one iteration should be refactored		
+S1764	bug	major	Identical expressions should not be used on both sides of operators		
+S1821	smell	critical	"switch" statements should not be nested		
+S1848	bug	major	Objects should not be created to be dropped immediately without being used		
+S1854	smell	major	Unused assignments should be removed	CWE-563	
+S1858	smell	minor	"ToString()" calls should not be redundant		
+S1862	bug	major	Related "if/else if" statements should not have the same condition		
+S1871	smell	major	Two branches in a conditional structure should not have exactly the same implementation		
+S1905	smell	minor	Redundant casts should not be used		
+S1939	smell	minor	Inheritance list should not be redundant		
+S1940	smell	minor	Boolean checks should not be inverted		
+S1944	smell	critical	Invalid casts should be avoided	CWE-588;CWE-704	
+S1994	smell	critical	"for" loop increment clauses should modify the loops' counters		
+S2053	vulnerability	critical	Password hashing functions should use an unpredictable salt	CWE-759;CWE-760	A3
+S2068	vulnerability	major	Credentials should not be hard-coded	CWE-798;CWE-259	A2
+S2077	vulnerability	major	SQL queries should not be dynamically formatted	CWE-89;CWE-943	A1
+S2092	vulnerability	minor	Cookies should have the "secure" flag	CWE-614;CWE-311;CWE-315	A3
+S2094	smell	minor	Classes should not be empty		
+S2114	bug	major	Collections should not be passed as arguments to their own methods		
+S2115	vulnerability	critical	A secure password should be used when connecting to a database	CWE-521	A2;A3
+S2123	bug	major	Values should not be uselessly incremented		
+S2139	smell	major	Exceptions should be either logged or rethrown but not both		
+S2148	smell	minor	Underscores should be used to make large numbers readable		
+S2156	smell	minor	"sealed" classes should not have "protected" members		
+S2166	smell	major	Classes named like "Exception" should extend "Exception" or a subclass		
+S2178	smell	critical	Short-circuit logic should be used in boolean contexts		
+S2183	bug	minor	Integral numbers should not be shifted by zero or more than their number of bits-1		
+S2184	bug	minor	Results of integer division should not be assigned to floating point variables	CWE-190	
+S2187	smell	critical	Test classes should contain at least one test case		
+S2190	bug	critical	Loops and recursions should not be infinite		
+S2197	smell	critical	Modulus results should not be checked for direct equality		
+S2198	smell	critical	Unnecessary mathematical comparisons should not be made		
+S2201	bug	major	Methods without side effects should not have their return values ignored		
+S2219	smell	minor	Runtime type checking should be simplified		
+S2221	smell	minor	"Exception" should not be caught	CWE-396	
+S2222	bug	critical	Locks should be released on all paths	CWE-459	
+S2223	smell	critical	Non-constant static fields should not be visible		
+S2225	bug	major	"ToString()" method should not return null	CWE-476	
+S2234	smell	major	Arguments should be passed in the same order as the method parameters		
+S2245	vulnerability	major	Pseudorandom number generators (PRNGs) should not be used in security contexts	CWE-326;CWE-330;CWE-338;CWE-1241	A3
+S2251	bug	major	A "for" loop update clause should move the counter in the right direction		
+S2252	bug	major	For-loop conditions should be true at least once		
+S2257	vulnerability	critical	Custom cryptographic algorithms should not be used	CWE-327	A3
+S2259	bug	major	Null pointers should not be dereferenced	CWE-476	
+S2275	bug	critical	Composite format strings should not lead to unexpected behavior at runtime		
+S2290	smell	critical	Field-like events should not be virtual		
+S2291	smell	critical	Overflow checking should not be disabled for "Enumerable.Sum"		
+S2292	smell	minor	Trivial properties should be auto-implemented		
+S2302	smell	critical	"nameof" should be used		
+S2306	smell	critical	"async" and "await" should not be used as identifiers		
+S2325	smell	minor	Methods and properties that don't access instance data should be static		
+S2326	smell	major	Unused type parameters should be removed		
+S2327	smell	major	"try" statements with identical "catch" and/or "finally" blocks should be merged		
+S2328	bug	minor	"GetHashCode" should not reference mutable fields		
+S2330	smell	critical	Array covariance should not be used		
+S2333	smell	minor	Redundant modifiers should not be used		
+S2339	smell	critical	Public constant members should not be used		
+S2342	smell	minor	Enumeration types should comply with a naming convention		
+S2344	smell	minor	Enumeration type names should not have "Flags" or "Enum" suffixes		
+S2345	bug	minor	Flags enumerations should explicitly initialize all their members		
+S2346	smell	critical	Flags enumerations zero-value members should be named "None"		
+S2357	smell	major	Fields should be private		
+S2360	smell	critical	Optional parameters should not be used		
+S2365	smell	critical	Properties should not make collection or array copies		
+S2368	smell	critical	Public methods should not have multidimensional array parameters		
+S2372	smell	major	Exceptions should not be thrown from property getters		
+S2376	smell	major	Write-only properties should not be used		
+S2386	smell	minor	Mutable fields should not be "public static"	CWE-607;CWE-582	
+S2387	smell	critical	Child class fields should not shadow parent class fields		
+S2436	smell	major	Types and methods should not have too many generic parameters		
+S2437	smell	critical	Unnecessary bit operations should not be performed		
+S2445	bug	major	Blocks should be synchronized on read-only fields	CWE-412;CWE-413	
+S2479	smell	critical	Whitespace and control characters in string literals should be explicit		
+S2486	smell	minor	Generic exceptions should not be ignored	CWE-390	A10
+S2551	bug	critical	Shared resources should not be used for locking		
+S2583	bug	major	Conditionally executed code should be reachable	CWE-489;CWE-571;CWE-570	
+S2589	smell	major	Boolean expressions should not be gratuitous	CWE-489;CWE-571;CWE-570	
+S2612	vulnerability	major	File permissions should not be set to world-accessible values	CWE-732;CWE-266	A5
+S2629	smell	major	Logging templates should be constant		
+S2674	bug	minor	The length returned from a stream read should be checked		
+S2681	smell	major	Multiline blocks should be enclosed in curly braces	CWE-483	
+S2688	bug	major	"NaN" should not be used in comparisons		
+S2692	smell	critical	"IndexOf" checks should not be for positive numbers		
+S2696	smell	critical	Instance members should not write to "static" fields		
+S2699	smell	critical	Tests should include assertions		
+S2701	smell	critical	Literal boolean values should not be used in assertions		
+S2737	smell	minor	"catch" clauses should do more than rethrow		
+S2743	smell	major	Static fields should not be used in generic types		
+S2755	vulnerability	critical	XML parsers should not be vulnerable to XXE attacks	CWE-611;CWE-827	A4
+S2757	bug	major	Non-existent operators like "=+" should not be used		
+S2760	smell	minor	Sequential tests should not check the same condition		
+S2761	bug	major	Doubled prefix operators "!!" and "~~" should not be used		
+S2857	bug	critical	SQL keywords should be delimited by whitespace		
+S2925	smell	major	"Thread.Sleep" should not be used in tests		
+S2930	bug	critical	"IDisposables" should be disposed	CWE-459	
+S2931	bug	critical	Classes with "IDisposable" members should implement "IDisposable"	CWE-459	
+S2933	smell	major	Fields that are only assigned in the constructor should be "readonly"		
+S2934	bug	minor	Property assignments should not be made for "readonly" fields not constrained to reference types		
+S2952	bug	critical	Classes should "Dispose" of members from the classes' own "Dispose" methods	CWE-459	
+S2953	smell	critical	Methods named "Dispose" should implement "IDisposable.Dispose"		
+S2955	bug	minor	Generic parameters not constrained to reference types should not be compared to "null"		
+S2970	smell	critical	Assertions should be complete		
+S2971	smell	major	LINQ expressions should be simplified		
+S2995	bug	major	"Object.ReferenceEquals" should not be used for value types		
+S2996	bug	major	"ThreadStatic" fields should not be initialized		
+S2997	bug	major	"IDisposables" created in a "using" statement should not be returned		
+S3005	bug	major	"ThreadStatic" should not be used on non-static fields		
+S3010	smell	major	Static fields should not be updated in constructors		
+S3011	smell	major	Reflection should not be used to increase accessibility of classes, methods, or fields		
+S3052	smell	minor	Members should not be initialized to default values		
+S3059	smell	major	Types should not have members with visibility set higher than the type's visibility		
+S3060	smell	critical	"is" should not be used with "this"		
+S3063	smell	major	"StringBuilder" data should be used		
+S3168	bug	major	"async" methods should not return "void"		
+S3169	smell	major	Multiple "OrderBy" calls should not be used		
+S3172	bug	major	Delegates should not be subtracted		
+S3215	smell	critical	"interface" instances should not be cast to concrete types		
+S3216	smell	critical	"ConfigureAwait(false)" should be used		
+S3217	smell	critical	"Explicit" conversions of "foreach" loops should not be used		
+S3218	smell	critical	Inner class members should not shadow outer class "static" or type members		
+S3220	smell	minor	Method calls should not resolve ambiguously to overloads with "params"		
+S3234	smell	minor	"GC.SuppressFinalize" should not be invoked for types without destructors		
+S3235	smell	minor	Redundant parentheses should not be used		
+S3236	smell	minor	Caller information arguments should not be provided explicitly		
+S3237	smell	critical	"value" contextual keyword should be used		
+S3240	smell	minor	The simplest possible condition syntax should be used		
+S3241	smell	minor	Methods should not return values that are never used		
+S3242	smell	minor	Method parameters should be declared with base types		
+S3244	bug	major	Anonymous delegates should not be used to unsubscribe from Events		
+S3246	smell	major	Generic type parameters should be co/contravariant when possible		
+S3247	smell	minor	Duplicate casts should not be made		
+S3249	bug	major	Classes directly extending "object" should not call "base" in "GetHashCode" or "Equals"		
+S3251	smell	minor	Implementations should be provided for "partial" methods		
+S3253	smell	minor	Constructor and destructor declarations should not be redundant		
+S3254	smell	minor	Default parameter values should not be passed as arguments		
+S3256	smell	minor	"string.IsNullOrEmpty" should be used		
+S3257	smell	minor	Declarations and initializations should be as concise as possible		
+S3260	smell	minor	Non-derived "private" classes and records should be "sealed"		
+S3261	smell	minor	Namespaces should not be empty		
+S3262	smell	major	"params" should be used on overrides		
+S3263	bug	major	Static fields should appear in the order they must be initialized		
+S3264	smell	major	Events should be invoked		
+S3265	smell	critical	Non-flags enums should not be used in bitwise operations		
+S3267	smell	minor	Loops should be simplified with "LINQ" expressions		
+S3329	vulnerability	critical	Cipher Block Chaining IVs should be unpredictable	CWE-327;CWE-780	A6;A3
+S3330	vulnerability	minor	Cookies should have the "HttpOnly" flag	CWE-1004	A7
+S3343	bug	major	Caller information parameters should come at the end of the parameter list		
+S3346	bug	major	Expressions used in "Debug.Assert" should not produce side effects		
+S3353	smell	critical	Unchanged variables should be marked as "const"		
+S3358	smell	major	Ternary operators should not be nested		
+S3363	bug	minor	Date and time should not be used as a type for primary keys		
+S3366	smell	major	"this" should not be exposed from constructors		
+S3376	smell	minor	Attribute, EventArgs, and Exception type names should end with the type being extended		
+S3397	bug	minor	"base.Equals" should not be used to check for reference equality in "Equals" if "base" is not "object"		
+S3398	smell	minor	"private" methods called only by inner classes should be moved to those classes		
+S3400	smell	minor	Methods should not return constants		
+S3415	smell	major	Assertion arguments should be passed in the correct order		
+S3416	smell	minor	Loggers should be named for their enclosing types		
+S3427	smell	critical	Method overloads with default parameter values should not overlap		
+S3431	smell	major	"[ExpectedException]" should not be used		
+S3433	smell	critical	Test method signatures should be correct		
+S3440	smell	minor	Variables should not be checked against the values they're about to be assigned		
+S3441	smell	minor	Redundant property names should be omitted in anonymous classes		
+S3442	smell	major	"abstract" classes should not have "public" constructors		
+S3443	smell	critical	Type should not be examined on "System.Type" instances		
+S3444	smell	minor	Interfaces should not simply inherit from base interfaces with colliding members		
+S3445	smell	major	Exceptions should not be explicitly rethrown		
+S3447	smell	critical	"[Optional]" should not be used on "ref" or "out" parameters		
+S3449	bug	critical	Right operands of shift operators should be integers		
+S3450	smell	minor	Parameters with "[DefaultParameterValue]" attributes should also be marked "[Optional]"		
+S3451	smell	critical	"[DefaultValue]" should not be used when "[DefaultParameterValue]" is meant		
+S3453	bug	major	Classes should not have only "private" constructors		
+S3456	bug	minor	"string.ToCharArray()" and "ReadOnlySpan<T>.ToArray()" should not be called redundantly		
+S3457	smell	major	Composite format strings should be used correctly		
+S3458	smell	minor	Empty "case" clauses that fall through to the "default" should be omitted		
+S3459	smell	minor	Unassigned members should be removed		
+S3464	bug	critical	Type inheritance should not be recursive		
+S3466	bug	major	Optional parameters should be passed to "base" calls		
+S3532	smell	minor	Empty "default" clauses should be removed		
+S3597	smell	major	"ServiceContract" and "OperationContract" attributes should be used together		
+S3598	bug	major	One-way "OperationContract" methods should have "void" return type		
+S3600	smell	critical	"params" should not be introduced on overrides		
+S3603	bug	major	Methods with "Pure" attribute should return a value		
+S3604	smell	minor	Member initializer values should not be redundant		
+S3610	bug	major	Nullable type comparison should not be redundant		
+S3626	smell	minor	Jump statements should not be redundant		
+S3655	bug	major	Empty nullable value should not be accessed	CWE-476	
+S3717	smell	minor	Track use of "NotImplementedException"		
+S3776	smell	critical	Cognitive Complexity of methods should not be too high		
+S3869	bug	critical	"SafeHandle.DangerousGetHandle" should not be called		
+S3871	smell	critical	Exception types should be "public"		A10
+S3872	smell	minor	Parameter names should not duplicate the names of their methods		
+S3874	smell	critical	"out" and "ref" parameters should not be used		
+S3875	smell	critical	"operator==" should not be overloaded on reference types		
+S3876	smell	minor	Strings or integral types should be used for indexers		
+S3877	smell	critical	Exceptions should not be thrown from unexpected methods		
+S3878	smell	minor	Arrays should not be created for params parameters		
+S3880	smell	major	Finalizers should not be empty		
+S3881	smell	major	"IDisposable" should be implemented correctly		
+S3884	vulnerability	critical	"CoSetProxyBlanket" and "CoInitializeSecurity" should not be used	CWE-648	A6
+S3885	smell	major	"Assembly.Load" should be used		
+S3887	bug	minor	Mutable, non-private fields should not be "readonly"		
+S3889	bug	critical	"Thread.Resume" and "Thread.Suspend" should not be used		
+S3897	smell	minor	Classes that provide "Equals(<T>)" should implement "IEquatable<T>"		
+S3898	smell	major	Value types should implement "IEquatable<T>"		
+S3900	smell	major	Arguments of public methods should be validated against null		
+S3902	smell	major	"Assembly.GetExecutingAssembly" should not be called		
+S3903	bug	major	Types should be defined in named namespaces		
+S3904	smell	critical	Assemblies should have version information		
+S3906	smell	major	Event Handlers should have the correct signature		
+S3908	smell	major	Generic event handlers should be used		
+S3909	smell	major	Collections should implement the generic interface		
+S3923	bug	major	All branches in a conditional structure should not have exactly the same implementation		
+S3925	smell	major	"ISerializable" should be implemented correctly		
+S3926	bug	major	Deserialization methods should be provided for "OptionalField" members		
+S3927	bug	major	Serialization event handlers should be implemented correctly		
+S3928	smell	major	Parameter names used into ArgumentException constructors should match an existing one		
+S3937	smell	critical	Number patterns should be regular		
+S3949	bug	major	Calculations should not overflow		
+S3956	smell	major	"Generic.List" instances should not be part of public APIs		
+S3962	smell	minor	"static readonly" constants should be "const" instead		
+S3963	smell	minor	"static" fields should be initialized inline		
+S3966	smell	major	Objects should not be disposed more than once		
+S3967	smell	minor	Multidimensional arrays should not be used		
+S3971	smell	major	"GC.SuppressFinalize" should not be called		
+S3972	smell	critical	Conditionals should start on new lines		
+S3973	smell	critical	A conditionally executed single line should be denoted by indentation		
+S3981	bug	major	Collection sizes and array length comparisons should make sense		
+S3984	bug	major	Exceptions should not be created without being thrown		
+S3990	smell	major	Assemblies should be marked as CLS compliant		
+S3992	smell	major	Assemblies should explicitly specify COM visibility		
+S3993	smell	major	Custom attributes should be marked with "System.AttributeUsageAttribute"		
+S3994	smell	major	URI Parameters should not be strings		
+S3995	smell	major	URI return values should not be strings		
+S3996	smell	major	URI properties should not be strings		
+S3997	smell	major	String URI overloads should call "System.Uri" overloads		
+S3998	smell	critical	Threads should not lock on objects with weak identity		
+S4000	smell	critical	Pointers to unmanaged memory should not be visible		
+S4002	smell	major	Disposable types should declare finalizers		
+S4004	smell	major	Collection properties should be readonly		
+S4005	smell	major	"System.Uri" arguments should be used instead of strings		
+S4015	smell	critical	Inherited member visibility should not be decreased		
+S4016	smell	major	Enumeration members should not be named "Reserved"		
+S4017	smell	major	Method signatures should not contain nested generic types		
+S4018	smell	minor	All type parameters should be used in the parameter list to enable type inference		
+S4019	smell	critical	Base class methods should not be hidden		
+S4022	smell	minor	Enumerations should have "Int32" storage		
+S4023	smell	minor	Interfaces should not be empty		
+S4025	smell	critical	Child class fields should not differ from parent class fields only by capitalization		
+S4026	smell	minor	Assemblies should be marked with "NeutralResourcesLanguageAttribute"		
+S4027	smell	minor	Exceptions should provide standard constructors		
+S4035	smell	major	Classes implementing "IEquatable<T>" should be sealed		
+S4036	vulnerability	minor	OS commands should not rely on PATH resolution	CWE-427;CWE-426	A1
+S4039	smell	critical	Interface methods should be callable by derived types		
+S4040	smell	minor	Strings should be normalized to uppercase		
+S4041	smell	minor	Type names should not match namespaces		
+S4047	smell	minor	Generics should be used when appropriate		
+S4049	smell	minor	Properties should be preferred		
+S4050	smell	major	Operators should be overloaded consistently		
+S4052	smell	minor	Types should not extend outdated base types		
+S4055	smell	major	Literals should not be passed as localized parameters		
+S4056	smell	minor	Overloads with a "CultureInfo" or an "IFormatProvider" parameter should be used		
+S4057	smell	major	Locales should be set for data types		
+S4058	smell	minor	Overloads with a "StringComparison" parameter should be used		
+S4059	smell	major	Property names should not match get methods		
+S4060	smell	minor	Non-abstract attributes should be sealed		
+S4061	smell	minor	"params" should be used instead of "varargs"		
+S4069	smell	minor	Operator overloads should have named alternatives		
+S4070	smell	major	Non-flags enums should not be marked with "FlagsAttribute"		
+S4136	smell	minor	Method overloads should be grouped together		
+S4143	bug	major	Collection elements should not be replaced unconditionally		
+S4144	smell	major	Methods should not have identical implementations		
+S4158	bug	minor	Empty collections should not be accessed or iterated		
+S4159	bug	critical	Classes should implement their "ExportAttribute" interfaces		
+S4200	smell	major	Native methods should be wrapped		
+S4201	smell	minor	Null checks should not be combined with "is" operator checks		
+S4210	bug	major	Windows Forms entry points should be marked with STAThread		
+S4211	vulnerability	major	Members should not have conflicting transparency annotations	CWE-269	A6
+S4212	vulnerability	major	Serialization constructors should be secured		A8
+S4214	smell	major	"P/Invoke" methods should not be visible		
+S4220	smell	major	Events should have proper arguments		
+S4225	smell	minor	Extension methods should not extend "object"		
+S4226	smell	minor	Extensions should be in separate namespaces		
+S4260	bug	major	"ConstructorArgument" parameters should exist in constructors		
+S4261	smell	minor	Methods should be named according to their synchronicities		
+S4275	bug	critical	Getters and setters should access the expected fields		
+S4277	bug	critical	"Shared" parts should not be created with "new"		
+S4347	vulnerability	critical	Secure random number generators should not output predictable values	CWE-330;CWE-332;CWE-336;CWE-337	A6
+S4423	vulnerability	critical	Weak SSL/TLS protocols should not be used	CWE-327;CWE-326;CWE-295	A3;A6
+S4426	vulnerability	critical	Cryptographic keys should be robust	CWE-326	A3;A6
+S4428	bug	major	"PartCreationPolicyAttribute" should be used with "ExportAttribute"		
+S4433	vulnerability	critical	LDAP connections should be authenticated	CWE-521	A2
+S4456	smell	major	Parameter validation in yielding methods should be wrapped		
+S4457	smell	major	Parameter validation in "async"/"await" methods should be wrapped		
+S4462	smell	critical	Calls to "async" methods should not be blocking		
+S4487	smell	critical	Unread "private" fields should be removed	CWE-563	
+S4502	vulnerability	critical	CSRF protections should not be disabled	CWE-352	A6
+S4507	vulnerability	minor	Debugging features should not be enabled in production	CWE-489;CWE-215	A3
+S4524	smell	critical	"default" clauses should be first or last		
+S4545	smell	major	"DebuggerDisplayAttribute" strings should reference existing members		
+S4581	smell	major	"new Guid()" should not be used		
+S4583	bug	critical	Calls to delegate's method "BeginInvoke" should be paired with calls to "EndInvoke"		
+S4586	bug	critical	Non-async "Task/Task<T>" methods should not return null		
+S4635	smell	critical	Start index should be used instead of calling Substring		
+S4663	smell	minor	Comments should not be empty		
+S4790	vulnerability	critical	Weak hashing algorithms should not be used	CWE-1240	A3;A6
+S4830	vulnerability	critical	Server certificates should be verified during SSL/TLS connections	CWE-295	A6;A3
+S5034	smell	critical	"ValueTask" should be consumed correctly		
+S5042	smell	major	Expanding archive files should not be done without controlling resource consumption	CWE-409	A5;A6
+S5122	vulnerability	major	Cross-Origin Resource Sharing (CORS) policy should be restricted to trusted origins	CWE-346;CWE-942	A6
+S5332	vulnerability	minor	Clear-text protocols should not be used	CWE-200;CWE-319	A3
+S5344	vulnerability	critical	Passwords should not be stored in plaintext or with a fast hashing algorithm	CWE-256;CWE-916	A3
+S5443	vulnerability	critical	Temporary files should not be created in publicly writable directories	CWE-377;CWE-379	A5;A3
+S5445	vulnerability	critical	Insecure temporary file creation methods should not be used	CWE-377;CWE-379	
+S5542	vulnerability	critical	Encryption algorithms should be used with secure mode and padding scheme	CWE-327;CWE-780	A6;A3
+S5547	vulnerability	critical	Cipher algorithms should be robust	CWE-327;CWE-326	A3;A6
+S5659	vulnerability	critical	JWT should be signed and verified with strong cipher algorithms	CWE-347	A3
+S5693	vulnerability	major	HTTP request content length should be limited	CWE-400;CWE-770	A6
+S5753	vulnerability	major	ASP.NET Request Validation should not be disabled	CWE-79	A7
+S5766	vulnerability	major	Serializable objects should validate data during deserialization	CWE-502	A8
+S5773	vulnerability	major	Types allowed to be deserialized should be restricted	CWE-502	A8
+S5856	bug	critical	Regular expressions should be syntactically valid		
+S6354	smell	major	Use a testable date/time provider		
+S6377	vulnerability	major	XML signatures should be validated securely	CWE-347	A3
+S6418	vulnerability	critical	Secrets should not be hard-coded	CWE-798	A2
+S6419	smell	major	Azure Functions should be stateless		
+S6420	smell	major	Client instances should not be recreated on each Azure Function invocation		
+S6421	smell	major	Azure Functions should use Structured Error Handling		
+S6422	smell	critical	Calls to "async" methods should not be blocking in Azure Functions		
+S6423	smell	major	Azure Functions should log all failures		
+S6424	smell	critical	Interfaces for durable entities should satisfy the restrictions		
+S6444	vulnerability	minor	Regular expressions should be executed with a timeout	CWE-400;CWE-1333	A1
+S6507	bug	major	Blocks should not be synchronized on local variables	CWE-412;CWE-413	
+S6513	smell	minor	"ExcludeFromCodeCoverage" attributes should include a justification		
+S6561	smell	major	Avoid using "DateTime.Now" for benchmarking or timing operations		
+S6562	smell	major	Always set the "DateTimeKind" when creating new "DateTime" instances		
+S6563	smell	major	Use UTC when recording DateTime instants		
+S6566	smell	major	Use "DateTimeOffset" instead of "DateTime"		
+S6575	smell	major	Use "TimeZoneInfo.FindSystemTimeZoneById" without converting the timezones with "TimezoneConverter"		
+S6580	smell	major	Use a format provider when parsing date and time		
+S6585	smell	minor	Don't hardcode the format when turning dates and times to strings		
+S6588	smell	minor	Use the "UnixEpoch" field instead of creating "DateTime" instances that point to the beginning of the Unix epoch		
+S6602	smell	minor	"Find" method should be used instead of the "FirstOrDefault" extension		
+S6603	smell	minor	The collection-specific "TrueForAll" method should be used instead of the "All" extension		
+S6605	smell	minor	Collection-specific "Exists" method should be used instead of the "Any" extension		
+S6607	smell	minor	The collection should be filtered before sorting by using "Where" before "OrderBy"		
+S6608	smell	minor	Prefer indexing instead of "Enumerable" methods on types implementing "IList"		
+S6609	smell	minor	"Min/Max" properties of "Set" types should be used instead of the "Enumerable" extension methods		
+S6610	smell	minor	"StartsWith" and "EndsWith" overloads that take a "char" should be used instead of the ones that take a "string"		
+S6612	smell	minor	The lambda parameter should be used instead of capturing arguments in "ConcurrentDictionary" methods		
+S6613	smell	minor	"First" and "Last" properties of "LinkedList" should be used instead of the "First()" and "Last()" extension methods		
+S6617	smell	minor	"Contains" should be used instead of "Any" for simple equality checks		
+S6618	smell	minor	"string.Create" should be used instead of "FormattableString"		
+S6640	vulnerability	major	Unsafe code blocks should not be used	CWE-119;CWE-787	
+S6664	smell	minor	The code block contains too many logging calls		
+S6667	smell	minor	Logging in a catch clause should pass the caught exception as a parameter.		
+S6668	smell	minor	Logging arguments should be passed to the correct parameter		
+S6669	smell	minor	Logger field or property name should comply with a naming convention		
+S6670	smell	minor	"Trace.Write" and "Trace.WriteLine" should not be used		
+S6672	smell	minor	Generic logger injection should match enclosing type		
+S6673	smell	major	Log message template placeholders should be in the right order		
+S6674	bug	critical	Log message template should be syntactically correct		
+S6675	smell	minor	"Trace.WriteLineIf" should not be used with "TraceSwitch" levels		
+S6677	bug	major	Message template placeholders should be unique		
+S6678	smell	minor	Use PascalCase for named placeholders		
+S6781	vulnerability	critical	JWT secret keys should not be disclosed	CWE-798;CWE-259	A3
+S6797	bug	major	Blazor query parameter type should be supported		
+S6798	bug	major	[JSInvokable] attribute should only be used on public methods		
+S6800	bug	major	Component parameter type should match the route parameter type constraint		
+S6802	smell	major	Using lambda expressions in loops should be avoided in Blazor markup section		
+S6803	smell	major	Parameters with SupplyParameterFromQuery attribute should be used only in routable components		
+S6930	bug	major	Backslash should be avoided in route templates		
+S6931	smell	major	ASP.NET controller actions should not have a route template starting with "/"		
+S6932	smell	major	Use model binding instead of reading raw request data		
+S6934	smell	major	A Route attribute should be added to the controller when a route template is specified at the action level		
+S6960	smell	major	Controllers should not have mixed responsibilities		
+S6961	smell	major	API Controllers should derive from ControllerBase instead of Controller		
+S6962	smell	major	You should pool HTTP connections with HttpClientFactory		
+S6964	smell	major	Value type property used as input in a controller action should be nullable, required or annotated with the JsonRequiredAttribute to avoid under-posting.		
+S6965	smell	major	REST API actions should be annotated with an HTTP verb attribute		
+S6966	smell	major	Awaitable method should be used		
+S6967	smell	critical	ModelState.IsValid should be called in controller actions		
+S6968	smell	major	Actions that return a value should be annotated with ProducesResponseTypeAttribute containing the return type		
+S7039	vulnerability	major	Content Security Policies should be restrictive	CWE-693	A6
+S7130	smell	major	First/Single should be used instead of FirstOrDefault/SingleOrDefault on collections that are known to be non-empty		
+S7131	bug	critical	A write lock should not be released when a read lock has been acquired and vice versa		
+S7133	bug	critical	Locks should be released within the same method		
+S8367	smell	critical	Identifiers should not conflict with the C# 14 "field" contextual keyword		
+S8368	smell	critical	Identifiers should not conflict with the C# 14 "extension" contextual keyword		
+S8380	smell	critical	Return types named "partial" should be escaped with "@"		
+S8381	smell	critical	"scoped" should be escaped when used as an identifier or type name in parenthesized lambda parameter lists		
+S8717	bug	critical	Multiple "[Key]" attributes should not be used to define a composite key		
+S8718	bug	critical	Client-evaluated default values should use database functions		
+S8733	bug	major	Potential Cartesian Explosion		
+S8747	bug	major	Migrations should not narrow column types without converting existing data		
+S8949	bug	major	The overload accepting a 'CancellationToken' should be used		
+S8969	smell	minor	Null-forgiving operators should not be redundant		
+S8970	smell	minor	Null-forgiving operators should not be used when nullable warnings are disabled		
+S9022	smell	minor	Redundant "Include" calls should be removed		
+S9023	bug	critical	"Include" calls discarded by query reshaping should be fixed		
+S9118	bug	major	Default values should be compatible with their entity property type		
+S9129	smell	minor	"Include" and "ThenInclude" chains of reference navigations should be merged into a single "Include" call		

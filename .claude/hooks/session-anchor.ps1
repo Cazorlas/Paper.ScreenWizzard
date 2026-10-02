@@ -9,10 +9,16 @@
 # It also writes the session stamp the Stop hooks (code-map-nag, plan-nag, verify-on-stop) measure "changed
 # this session" against. Always exits 0.
 #
+# Under Codex (no CLAUDE_PROJECT_DIR when the hook starts - read before Read-PaperHookPayload sets it, as
+# harness-event.ps1 does) the same text goes out as SessionStart additionalContext, followed by the shared
+# memory block: the folder Claude Code keeps this repository's memory in, the rules for writing it and the
+# index (shared-memory-read.ps1, ADR-0032). Claude loads its own memory and gets the plain text as before.
+#
 # ASCII only: PowerShell 5.1 reads a .ps1 without a BOM as ANSI.
 
 $ErrorActionPreference = 'Stop'
 try {
+    $isCodex = -not [bool] $env:CLAUDE_PROJECT_DIR
     . (Join-Path $PSScriptRoot 'hook-input.ps1')
     . (Join-Path $PSScriptRoot 'session-state.ps1')
     . (Join-Path $PSScriptRoot 'kit-version-plan.ps1')
@@ -75,6 +81,22 @@ try {
         catch { return '' }
     }
 
+    # The one place this hook speaks. Codex: the text plus the shared memory block, as one JSON line; a
+    # failure in the memory half leaves the text alone.
+    function Write-PaperAnchorText([string] $Text, [string] $ProjectDir) {
+        if (-not $isCodex) { Write-PaperHookText $Text; return }
+        $context = $Text
+        try {
+            . (Join-Path $PSScriptRoot 'shared-memory-read.ps1')
+            # One budget for the whole additionalContext (F80): what the kit says first leaves the rest.
+            $budget = $script:PaperCodexContextBytes - [Text.Encoding]::UTF8.GetByteCount($Text + "`n`n")
+            $context = $Text + "`n`n" + (Get-PaperSharedMemoryText $ProjectDir -MaxBytes $budget)
+        }
+        catch { $context = $Text }
+        $json = @{ hookSpecificOutput = @{ hookEventName = 'SessionStart'; additionalContext = $context } } | ConvertTo-Json -Compress -Depth 4
+        Write-PaperHookText $json
+    }
+
     $payload = Read-PaperHookPayload
     if ($null -ne $payload) { [void] (Get-PaperSessionStart ([string] $payload.session_id) -Create) }
 
@@ -103,11 +125,11 @@ try {
         $why = if (-not $gitRoot) { "$cwd is not inside a git repository" }
                elseif ($gitRoot -ne $cwd) { "the session is rooted at $cwd, below the git root $gitRoot" }
                else { "the git root $gitRoot has no .claude/paper.profile.json" }
-        Write-PaperHookText @"
+        Write-PaperAnchorText @"
 paper-kit: WRONG ANCHOR - $why.
 The kit's guards read .claude/paper.profile.json at the project root; from here they may read nothing.
 Restart Claude Code from the git root that holds .claude/paper.profile.json (or run /paper-kit:setup there).
-"@
+"@ $cwd
         exit 0
     }
 
@@ -155,7 +177,7 @@ Restart Claude Code from the git root that holds .claude/paper.profile.json (or 
     }
     catch { }
 
-    Write-PaperHookText $line
+    Write-PaperAnchorText $line $cwd
     exit 0
 }
 catch {
