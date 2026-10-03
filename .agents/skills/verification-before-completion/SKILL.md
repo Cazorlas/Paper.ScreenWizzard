@@ -127,6 +127,17 @@ From 24 failure memories:
 - Time wasted on false completion → redirect → rework
 - Violates: "Honesty is a core value. If you lie, you'll be replaced."
 
+## Bàn giao thay đổi và nội dung PR
+
+Khi bàn giao thay đổi hoặc người dùng yêu cầu nội dung PR, thêm vào báo cáo:
+
+- **Tóm tắt:** câu ngắn hoặc sơ đồ nhỏ làm rõ thay đổi; dùng từ vựng dự án.
+- **Trước / sau:** link bằng chứng đã đọc, test đỏ rồi xanh hoặc ảnh/giá trị; thiếu thì nêu khoảng trống.
+- **Phạm vi ảnh hưởng:** người dùng, consumer, dữ liệu hoặc host bị chạm; chưa biết thì nói chưa biết.
+- **Hoàn tác:** cách trở lại và điều kiện của nó. Quay lại bản chương trình cũ không tự **khôi phục dữ liệu**
+  đã xoá; nêu backup/migration ngược, bước đã kiểm và bước chưa kiểm. Thiếu bằng chứng thì không khẳng định
+  hoàn tác an toàn. Chỉ đọc và mô tả, không tự chạy hoàn tác, commit, mở PR hay deploy.
+
 ## When To Apply
 
 **ALWAYS before:**

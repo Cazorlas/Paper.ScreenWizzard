@@ -26,7 +26,7 @@ description: End-of-session documentation sync - make each changed feature's SPE
    lỗi chưa dựng lại được, dễ bị quên nhất. Không xoá file bug nào.
 7. **Hàng đợi bài học.** Trình cho người dùng mọi dòng `chờ xét` của `<docs>/retro/README.md` — ngắn: phát
    hiện, nhà đề xuất — và hỏi nhận hay không từng dòng. **Chỉ** dòng người dùng nhận mới được chép vào
-   nhà của nó (`CLAUDE.md`, `SPEC.md`, comment ở code, skill — skill của kit thì sửa ở kho kit, không ở
+   nhà của nó (`CLAUDE.md`, `SPEC.md`, comment ở code, skill hoặc kiểm tra tự động — skill của kit thì sửa ở kho kit, không ở
    bản vendor), rồi đổi Status thành `đã nhận → <file>`; dòng bị gạt thành `không nhận — <lý do>`. Cả hai
    gạch ngang `~~ ~~`, **không bao giờ xoá**. Dòng người dùng chưa trả lời giữ `chờ xét` — tồn dư là bình
    thường. Không có dòng `chờ xét` nào thì bỏ qua bước này, đừng hỏi.

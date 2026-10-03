@@ -28,7 +28,10 @@ Dòng đã xử lý (`đã nhận`, `không nhận`) **gạch ngang** cả dòng
 cách duy nhất để lần sau biết bài học này đã có nhà, và bối cảnh phát hiện ra nó vẫn còn.
 
 **Nhà đề xuất** là một trong: dòng luật trong `CLAUDE.md`, dòng trong `SPEC.md` của feature, comment ở
-code (`file:line`), hoặc một skill. `/task-spec` và khảo sát của `/task-do` đọc các dòng `đã nhận` chạm tới
+code (`file:line`), một skill, hoặc kiểm tra tự động của dự án. Với bài học máy kiểm được, nêu kiểm tra
+đang có và phần thiếu, đề xuất thêm/sửa kiểm tra kèm **ca vi phạm** và **ca hợp lệ**. Chưa được nhận thì
+chưa cài hay bật; bài học cần phán đoán giữ chủ là reviewer/hướng dẫn.
+`/task-spec` và khảo sát của `/task-do` đọc các dòng `đã nhận` chạm tới
 việc của chúng; dòng `chờ xét` chưa ràng buộc ai.
 
 ## Hàng đợi
