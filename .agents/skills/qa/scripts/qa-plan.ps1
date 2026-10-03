@@ -3,7 +3,8 @@
 # and verdicts, the bug ledger proposals and the report. No I/O: qa.ps1 reads git, the disk and processes.
 # The caller dot-sources paperflow/review-files-plan.ps1 (Test-PaperSecretName), paperflow/tasks-gate-plan.ps1
 # (ConvertTo-PaperGlobKey, ConvertTo-PaperGlobRegex) and qa-sarif-plan.ps1
-# (Test-PaperQaGeneratedPath, Sort-PaperQaByKey) first; declares no param() block.
+# (Test-PaperQaGeneratedPath, Sort-PaperQaByKey) first, and qa-external-plan.ps1 (Get-PaperQaBatchRules, used
+# only for an external repository) before calling with -Rules; declares no param() block.
 # ASCII only: PowerShell 5.1 reads a .ps1 without a BOM as ANSI.
 
 $script:PaperQaLaneNames = @('static', 'security', 'bug', 'architecture', 'smell', 'ui')
@@ -175,9 +176,15 @@ function Select-PaperQaScope {
     Which scope a run reviews and why (table C): asked for, or by default the branch when it is ahead of its
     base or has uncommitted work, else the whole project. Error is set when the request cannot be served.
     #>
-    param([string] $Requested, [string] $Path, [string] $Base, [string] $CurrentBranch, [string] $BaseBranch, [string] $BaseError, [int] $Ahead, [int] $Dirty)
+    param([string] $Requested, [string] $Path, [string] $Base, [string] $CurrentBranch, [string] $BaseBranch, [string] $BaseError, [int] $Ahead, [int] $Dirty, [switch] $External)
     $new = { param($mode, $label, $reason, $folder, $err) [pscustomobject]@{ Mode = $mode; Label = $label; Reason = $reason; Folder = $folder; Error = $err } }
     $req = "$Requested".ToLowerInvariant()
+    # An external repository has no branch scope: its list comes from review-files, which may run a tool
+    # inside the repository (F98, ADR-0034).
+    if ($External) {
+        if ($Base -or $req -eq 'branch') { return & $new '' '' '' '' '-Scope branch is not available with -Out: the branch list comes from review-files, which may run a tool inside the repository - use -Scope project or -Scope path' }
+        if (-not $req -and -not $Path) { return & $new 'project' '' 'project (external repository: no branch scope)' '' '' }
+    }
     if (-not $req -and $Path) { $req = 'path' }
     if (-not $req -and $Base) { $req = 'branch' }
     if (@('', 'project', 'branch', 'path') -notcontains $req) { return & $new '' '' '' '' "-Scope must be project, branch or path, not '$Requested'" }
@@ -330,7 +337,7 @@ function Get-PaperQaLanes {
     Which lanes run, in the order static, security, bug, architecture, smell, ui; the first rule of D.1
     that matches decides each one. Error is set for an unknown lane or one both in -Only and -Skip (F66).
     #>
-    param($Hosts, $Config, $LaneFiles, [bool] $HasDotnetProject, [bool] $HasBuildVerb, [string[]] $Only, [string[]] $Skip, [switch] $StaticOnly)
+    param($Hosts, $Config, $LaneFiles, [bool] $HasDotnetProject, [bool] $HasBuildVerb, [string[]] $Only, [string[]] $Skip, [switch] $StaticOnly, [int] $RuleCount = -1, [string] $NoBuildReason = 'no build verb')
     $names = $script:PaperQaLaneNames
     # Not $only/$skip: PowerShell names are case-insensitive, so those would be the typed parameters.
     $onlyList = @(Split-PaperQaLaneList $Only)
@@ -354,10 +361,15 @@ function Get-PaperQaLanes {
         elseif ($skipList -contains $lane) { $state = 'skipped'; $reason = '-Skip' }
         elseif ($override -is [bool] -and -not $override) { $state = 'skipped'; $reason = 'profile turns it off' }
         elseif ($lane -eq 'static' -and -not $HasDotnetProject) { $state = 'not applicable'; $reason = 'no .NET project' }
-        elseif ($lane -eq 'static' -and -not $HasBuildVerb) { $state = 'not applicable'; $reason = 'no build verb' }
+        elseif ($lane -eq 'static' -and -not $HasBuildVerb) { $state = 'not applicable'; $reason = $NoBuildReason }
         elseif ($count -eq 0) {
             $state = 'not applicable'
             $reason = switch ($lane) { 'static' { 'no C# or VB files in scope' } 'ui' { 'no UI files in scope' } default { 'no code files in scope' } }
+        }
+        elseif ($lane -eq 'architecture' -and $null -ne $Config -and $Config.External -eq $true) {
+            # An external repository is judged by its own rule files; with none there is nothing to judge
+            # against, whatever qa.lanes.architecture says (F95).
+            if ($RuleCount -le 0) { $state = 'not applicable'; $reason = 'no rule files in the repository (qa.profile.json rules)' }
         }
         elseif ($lane -eq 'architecture' -and -not ($null -ne $Config -and $Config.ArchitectureDeclared) -and $override -ne $true) { $state = 'not applicable'; $reason = 'profile declares no architecture' }
         elseif ($lane -eq 'ui' -and $hostList -notcontains 'desktop' -and $hostList -notcontains 'web' -and $override -ne $true) { $state = 'not applicable'; $reason = 'no desktop or web host' }
@@ -403,7 +415,7 @@ function Get-PaperQaEstimate {
     Agents and tokens of each lane and of the verify readers (table E). Static is free; a lane that does not
     run costs nothing; verify is the cap times one reader, only when an LLM lane runs.
     #>
-    param($Lanes, $LaneFiles, $Config, [switch] $StaticOnly)
+    param($Lanes, $LaneFiles, $Config, [switch] $StaticOnly, $Rules = $null)
     $rows = @()
     $total = 0
     foreach ($l in @($Lanes)) {
@@ -416,6 +428,15 @@ function Get-PaperQaEstimate {
                 $batches = Split-PaperQaBatches -Files $files -MaxTokens $Config.BatchTokens
                 $content = 0
                 foreach ($f in $files) { $content += Get-PaperQaFileTokens $f }
+                # An external repository: each architecture batch also reads its rule files (ADR-0034).
+                $ruleList = @($Rules | Where-Object { $null -ne $_ })
+                if ($l.Name -eq 'architecture' -and $ruleList.Count -gt 0) {
+                    foreach ($bt in $batches) {
+                        $paths = @($bt | ForEach-Object { "$($_.Path)" })
+                        foreach ($rf in @(Get-PaperQaBatchRules -Rules $ruleList -BatchPaths $paths)) { $content += [long] [math]::Ceiling([double] $rf.Bytes / $script:PaperQaBytesPerToken) }
+                    }
+                    $row.Reason = "rules: $($ruleList.Count) file(s)"
+                }
                 $row.Batches = @($batches).Count
                 $row.Agents = @($batches).Count
                 $row.Tokens = [long] ($row.Agents * $script:PaperQaLaneOverhead + [math]::Ceiling($content * $script:PaperQaReadFactor))
@@ -438,9 +459,10 @@ function Format-PaperQaEstimate {
     The estimate table the user sees before any token is spent (table E): one line per lane, verify, total,
     how to skip, and whether the run waits for approval.
     #>
-    param([string] $Run, [string] $Mode, [string] $Reason, [int] $FileCount, [int] $ExcludedCount, $Estimate, [bool] $Approved)
+    param([string] $Run, [string] $Mode, [string] $Reason, [int] $FileCount, [int] $ExcludedCount, $Estimate, [bool] $Approved, [string] $RepoRoot = '', [string] $RunDir = '')
     $cells = { param($a, $b, $c, $d, $e, $f) ("$a".PadRight(14) + "$b".PadRight(16) + "$c".PadRight(7) + "$d".PadRight(8) + "$e".PadRight(9) + "$f").TrimEnd() }
     $out = @("qa: run $Run - scope $Mode ($Reason) - $FileCount file(s), $ExcludedCount excluded")
+    if ($RepoRoot) { $out += "repo: $RepoRoot (external, read only) - run folder $RunDir" }
     $out += & $cells 'lane' 'state' 'files' 'agents' 'tokens' ''
     foreach ($r in @($Estimate.Rows)) {
         if ($r.Name -eq 'verify') {
@@ -781,7 +803,7 @@ function Get-PaperQaLedgerProposals {
     Bug ledger proposals (F61): confirmed findings with an input only, one per fingerprint, in queue order.
     The owner approves each; the command is what the main session runs for an approved one.
     #>
-    param($Findings, [string] $Run)
+    param($Findings, [string] $Run, [switch] $External)
     $confirmed = @($Findings | Where-Object {
             $null -ne $_ -and $_.Status -eq 'confirmed' -and (Get-PaperQaFindingInput $_)
         })
@@ -800,7 +822,7 @@ function Get-PaperQaLedgerProposals {
         $ids = @($members | ForEach-Object { $_.Id })
         $out += [pscustomobject]@{
             Ids = $ids; Where = $first.Where; Path = $first.Path; Why = $first.Why; Input = (Get-PaperQaFindingInput $first)
-            Fingerprint = $first.Fingerprint; Command = "/task-bug $($first.Why) (qa ${Run}: $($ids -join ', '))"
+            Fingerprint = $first.Fingerprint; Command = $(if ($External) { "external repository: report to its owners - $($first.Why) (qa ${Run}: $($ids -join ', '))" } else { "/task-bug $($first.Why) (qa ${Run}: $($ids -join ', '))" })
         }
     }
     return $out
@@ -835,18 +857,20 @@ function Get-PaperQaReportName {
 }
 
 # A link from the report folder to a repository file; the line stays in the text, never #L.
-function Get-PaperQaReportLink([string] $ReportDir, [string] $Path) {
+# An external repository (RepoRoot): an absolute file:/// link, the root escaped too.
+function Get-PaperQaReportLink([string] $ReportDir, [string] $Path, [string] $RepoRoot = '') {
+    $escape = { param($t) "$t".Replace('\', '/').Replace('%', '%25').Replace(' ', '%20').Replace('(', '%28').Replace(')', '%29').Replace('#', '%23') }
+    if ($RepoRoot) { return 'file:///' + (& $escape ("$RepoRoot".Replace('\', '/').TrimEnd('/') + '/' + "$Path".Replace('\', '/'))) }
     $depth = @((ConvertTo-PaperQaRelPath $ReportDir) -split '/' | Where-Object { $_ }).Count
     $prefix = '../' * $depth
-    $target = "$Path".Replace('\', '/').Replace('%', '%25').Replace(' ', '%20').Replace('(', '%28').Replace(')', '%29').Replace('#', '%23')
-    return "$prefix$target"
+    return "$prefix$(& $escape $Path)"
 }
 
 function ConvertTo-PaperQaCell([string] $Text) { return ("$Text" -replace '\r?\n', ' ').Replace('|', '\|') }
 
-function Format-PaperQaWhereLink($Finding, [string] $ReportDir) {
+function Format-PaperQaWhereLink($Finding, [string] $ReportDir, [string] $RepoRoot = '') {
     if (-not $Finding.Path) { return "$($Finding.Where)" }
-    return "[$($Finding.Where)]($(Get-PaperQaReportLink $ReportDir $Finding.Path))"
+    return "[$($Finding.Where)]($(Get-PaperQaReportLink $ReportDir $Finding.Path $RepoRoot))"
 }
 
 function Format-PaperQaReport {
@@ -858,11 +882,13 @@ function Format-PaperQaReport {
     param($Report)
     $r = $Report
     $dir = $r.ReportDir
+    $repo = "$($r.RepoRoot)"
     $dot = [string] [char] 0x00B7
     $findings = @($r.Findings | Where-Object { $null -ne $_ })
     $title = if ($r.Mode -eq 'project') { 'project' } else { "$($r.Mode) $($r.Label)" }
     $out = @("# QA report - $title - $($r.Date)", '')
     $out += "Run $($r.Run) $dot scope $($r.Reason) $dot $($r.FileCount) file(s), $($r.ExcludedCount) excluded $dot estimate $(Format-PaperQaNumber $r.EstimateTotal) tokens"
+    if ($r.External -eq $true) { $out += "Repository $repo (external, read only) $dot profile $($r.ProfilePath)" }
     $out += @('', '## Summary', '')
     $out += '| Lane | State | critical | major | minor | info | confirmed | rejected | needs validation | seen |'
     $out += '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |'
@@ -876,12 +902,18 @@ function Format-PaperQaReport {
         $seen = if ($l.Seen) { $l.Seen } else { '-' }
         $out += "| $($l.Name) | run | $(& $count 'Severity' 'critical') | $(& $count 'Severity' 'major') | $(& $count 'Severity' 'minor') | $(& $count 'Severity' 'info') | $(& $count 'Status' 'confirmed') | $(& $count 'Status' 'rejected') | $(& $count 'Status' 'needs_validation') | $seen |"
     }
+    if ($r.External -eq $true) {
+        $out += @('', '## Rules used', '')
+        $used = @($r.Rules | Where-Object { $null -ne $_ } | ForEach-Object { "$($_.Path)" } | Where-Object { $_ })
+        if ($used.Count -eq 0) { $out += 'None.' }
+        foreach ($u in $used) { $out += "- [$u]($(Get-PaperQaReportLink $dir $u $repo))" }
+    }
 
     $out += @('', '## Proposed bug ledger entries (owner approves each)', '')
     $props = @($r.Proposals | Where-Object { $null -ne $_ })
     if ($props.Count -eq 0) { $out += 'None.' }
     foreach ($p in $props) {
-        $out += "- [ ] $(@($p.Ids) -join ', ') - [$($p.Where)]($(Get-PaperQaReportLink $dir $p.Path)) - $($p.Why) - input: $($p.Input)"
+        $out += "- [ ] $(@($p.Ids) -join ', ') - [$($p.Where)]($(Get-PaperQaReportLink $dir $p.Path $repo)) - $($p.Why) - input: $($p.Input)"
         $out += "  ``$($p.Command)``"
     }
 
@@ -892,7 +924,7 @@ function Format-PaperQaReport {
         $mine = @($work | Where-Object { $_.Lane -eq $lane })
         if ($mine.Count -eq 0) { continue }
         $out += @("### $lane", '')
-        foreach ($f in $mine) { $out += "- [ ] $($f.Id) $(Format-PaperQaWhereLink $f $dir) ($($f.Severity)) - $($f.Why) - fix: $($f.Fix)" }
+        foreach ($f in $mine) { $out += "- [ ] $($f.Id) $(Format-PaperQaWhereLink $f $dir $repo) ($($f.Severity)) - $($f.Why) - fix: $($f.Fix)" }
         $out += ''
     }
 
@@ -922,7 +954,7 @@ function Format-PaperQaReport {
                     foreach ($f in @($g.Findings)) {
                         if ($shown -ge 20) { break }
                         $status = if ($statusById.ContainsKey($f.Id)) { $statusById[$f.Id] } else { $f.Status }
-                        $out += "- $(Format-PaperQaWhereLink $f $dir) $($f.Id) $status"
+                        $out += "- $(Format-PaperQaWhereLink $f $dir $repo) $($f.Id) $status"
                         $shown++
                     }
                     if (@($g.Findings).Count -gt 20) { $out += "- ... and $(@($g.Findings).Count - 20) more" }
@@ -940,7 +972,7 @@ function Format-PaperQaReport {
         if ($mine.Count -eq 0) { continue }
         $out += @("### $($l.Name)", '', '| Id | Where | Severity | Rule | Why | Smallest fix | Status |', '| --- | --- | --- | --- | --- | --- | --- |')
         foreach ($f in $mine) {
-            $out += "| $($f.Id) | $(Format-PaperQaWhereLink $f $dir) | $($f.Severity) | $(ConvertTo-PaperQaCell $f.Rule) | $(ConvertTo-PaperQaCell $f.Why) | $(ConvertTo-PaperQaCell $f.Fix) | $($f.Status) |"
+            $out += "| $($f.Id) | $(Format-PaperQaWhereLink $f $dir $repo) | $($f.Severity) | $(ConvertTo-PaperQaCell $f.Rule) | $(ConvertTo-PaperQaCell $f.Why) | $(ConvertTo-PaperQaCell $f.Fix) | $($f.Status) |"
         }
         $out += ''
     }
@@ -955,7 +987,7 @@ function Format-PaperQaReport {
         $mine = @($findings | Where-Object { $_.Status -eq $s[1] })
         if ($mine.Count -eq 0) { $out += 'None.' }
         foreach ($f in $mine) {
-            $line = "- $($f.Id) $(Format-PaperQaWhereLink $f $dir) - $($f.Why)"
+            $line = "- $($f.Id) $(Format-PaperQaWhereLink $f $dir $repo) - $($f.Why)"
             if ($s[2] -and $null -ne $f.PSObject.Properties[$s[2]] -and "$($f.($s[2]))") { $line += " - $($f.($s[2]))" }
             $out += $line
         }
@@ -1031,7 +1063,7 @@ function Get-PaperQaScreens {
 
 # The batches of every LLM lane that runs (E), as plan.json keeps them: Lane, Batch, Files (paths).
 function Get-PaperQaBatchList {
-    param($Lanes, $LaneFiles, [int] $MaxTokens)
+    param($Lanes, $LaneFiles, [int] $MaxTokens, $Rules = $null)
     $out = @()
     foreach ($l in @($Lanes)) {
         if ($l.State -ne 'run' -or $l.Name -eq 'static') { continue }
@@ -1042,7 +1074,11 @@ function Get-PaperQaBatchList {
         $split = Split-PaperQaBatches -Files $files -MaxTokens $MaxTokens
         foreach ($b in $split) {
             $n++
-            $out += [pscustomobject]@{ Lane = $l.Name; Batch = $n; Files = @($b | ForEach-Object { $_.Path }) }
+            $paths = @($b | ForEach-Object { $_.Path })
+            # Not $rules: PowerShell names are case-insensitive, so that would be the -Rules parameter.
+            $own = @()
+            if ($l.Name -eq 'architecture' -and @($Rules | Where-Object { $null -ne $_ }).Count -gt 0) { $own = @(Get-PaperQaBatchRules -Rules $Rules -BatchPaths $paths | ForEach-Object { $_.Path }) }
+            $out += [pscustomobject]@{ Lane = $l.Name; Batch = $n; Files = $paths; Rules = $own }
         }
     }
     return $out
@@ -1109,7 +1145,11 @@ function Get-PaperQaFilesList {
         if (-not $a.Complete) { $paths = @(Get-PaperQaNotReadPaths -NotRead $a.NotRead -Paths $paths -Seen $a.Seen) }
     }
     $lines = @("qa-files: $($paths.Count) to review - lane $Lane batch $Batch of $($all.Count), run $Run, ids $prefix-<n>")
+    if ($Plan.External -eq $true) { $lines += "repo: $($Plan.RepoRoot) (external, read only) - every path below is relative to it" }
     $lines += @($paths | ForEach-Object { "  $_" })
+    $batchRules = @()
+    if ($null -ne $all[$Batch - 1].PSObject.Properties['Rules']) { $batchRules = @($all[$Batch - 1].Rules | Where-Object { $_ }) }
+    if ($batchRules.Count -gt 0) { $lines += "rules: $($batchRules -join ', ')" }
     $already = Get-PaperQaAlreadyReported -Lane $Lane -Groups $StaticGroups
     if ($already) { $lines += $already }
     $lines += "total: $($paths.Count)"
@@ -1240,16 +1280,19 @@ function New-PaperQaReport {
     $verdicts = @()
     foreach ($v in @($VerdictLines)) { if ($null -ne $v) { $verdicts += ConvertFrom-PaperQaVerdict -Lines $v -Pending $pending } }
     $merged = @(Merge-PaperQaVerdicts -Findings $Check.Queue -Verdicts $verdicts)
-    $proposals = @(Get-PaperQaLedgerProposals -Findings $merged -Run $Run)
+    $external = ($Plan.External -eq $true)
+    $proposals = @(Get-PaperQaLedgerProposals -Findings $merged -Run $Run -External:$external)
     $name = Get-PaperQaReportName -Date $Date -Mode $Plan.Mode -Label $Plan.Label -Existing $Existing
     $report = [pscustomobject]@{
         Run = $Run; Mode = $Plan.Mode; Label = $Plan.Label; Reason = $Plan.Reason; Date = $Date
         FileCount = @($Plan.Files).Count; ExcludedCount = @($Plan.Excluded).Count; EstimateTotal = [long] $Plan.Estimate.Total; ReportDir = $ReportDir
         Lanes = @(Get-PaperQaReportLanes -PlanLanes $Plan.Lanes -Static $Static -LaneStates $Check.LaneStates -Seen $Check.Seen)
         Findings = $merged; Proposals = $proposals; Static = (ConvertFrom-PaperQaStaticJson -Static $Static); Excluded = @($Plan.Excluded)
+        External = $external; RepoRoot = $(if ($external) { "$($Plan.RepoRoot)" } else { '' }); ProfilePath = "$($Plan.ProfilePath)"; Rules = @($Plan.Rules | Where-Object { $null -ne $_ })
     }
     $text = ((Format-PaperQaReport -Report $report) -join "`n") + "`n"
     $notVerified = @($merged | Where-Object { $_.Status -eq 'needs_validation' }).Count
-    $lines = @("qa: report $ReportDir/$name", "qa: $($merged.Count) finding(s), $($proposals.Count) bug ledger proposal(s), $notVerified not verified")
+    $where = if ($external) { "$ReportDir\$name" } else { "$ReportDir/$name" }
+    $lines = @("qa: report $where", "qa: $($merged.Count) finding(s), $($proposals.Count) bug ledger proposal(s), $notVerified not verified")
     return [pscustomobject]@{ Name = $name; Text = $text; Lines = $lines }
 }

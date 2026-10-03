@@ -78,6 +78,10 @@ enforce, never invent one. When unsure a thing is a violation, say so rather tha
     lists as named debt is not a finding - say it is still on the list. Source: skill
     `clean-architecture` ("Hình dạng") and the project's ADR on folders.
 
+## On an external repository (/qa -Out)
+
+The prompt names a repository and ends the list with a rules: line. Those files are your only authority: skip Read first 2-4 (this project's profile, ADRs, skill clean-architecture and the reference port pair) and checks 1 and 6, unless the repository's own rules state the same rule - then quote it from there. Read each file at <repository>\<path>. Report in the finding format the /qa prompt gives, never one line per violation.
+
 ## Report
 
 One line per violation, grouped by the numbered checks: `path:line` — the rule (quoted, with its source)

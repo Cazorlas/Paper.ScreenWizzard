@@ -18,8 +18,10 @@ first rule that matches decides:
 | 6 | profile `qa.lanes.<lane>` is false | skipped | `profile turns it off` |
 | 7 | static: no .csproj, .vbproj, .fsproj or .sln in the repository | not applicable | `no .NET project` |
 | 8 | static: the profile has no `build` verb | not applicable | `no build verb` |
+| 8e | static, external repository: `build.command` blank, or `build.noDeploy` empty | not applicable | `no build command in qa.profile.json (build.command)` / `build.noDeploy names no property - deploying is not ruled out` |
 | 9 | the lane has no file in scope | not applicable | static `no C# or VB files in scope`, ui `no UI files in scope`, the others `no code files in scope` |
 | 10 | architecture: the profile declares neither `architecture.platformFree` nor `architecture.reviewers`, and `qa.lanes.architecture` is not true | not applicable | `profile declares no architecture` |
+| 10e | architecture, external repository: no rule file (replaces 10; `qa.lanes.architecture` cannot force it) | not applicable | `no rule files in the repository (qa.profile.json rules)` |
 | 11 | ui: hosts have neither desktop nor web, and `qa.lanes.ui` is not true | not applicable | `no desktop or web host` |
 | 12 | otherwise | run | |
 
@@ -71,3 +73,21 @@ Report each finding as one block in the format of .claude/skills/qa/references/f
 When the static lane ran, the list of the smell lane ends with `Already reported by analyzers (do not
 repeat): <rule> x<count>, ...` - the ten biggest static smell groups in scope - and the security lane's
 with the static vulnerabilities the same way; the agent does not report those again.
+
+## An external repository
+
+With `-Out` (ADR-0034) the lanes read a repository that is not this project, by its own rules:
+
+- **Rule files.** The `rules` key of `qa.profile.json` names them (paths or globs, each must match a file).
+  Without the key, the defaults: `CLAUDE.md`, `AGENTS.md`, `ARCHITECTURE.md` and `BUILD.md` at the root; the
+  Markdown files under a `docs/adr...` folder, `docs/decisions` and `specs`; and the `CLAUDE.md` or
+  `AGENTS.md` of any folder - never the agent config folders (`.claude`, `.agents`, `.codex`) or a generated
+  folder. `"rules": []` is no rule file: the architecture lane is not applicable (row 10e).
+- **A folder's own rules.** A `CLAUDE.md` or `AGENTS.md` below the root goes only to a batch with a file
+  under that folder; every other rule file goes to every architecture batch. The estimate counts them.
+- **The prompt** of every batch gains two lines after the instructions line:
+
+```
+The repository is <repo> (read only): every path of the list is relative to it; read <repo>\<path>.
+Judge against its own rules - for the architecture lane exactly the files on the rules: line - never against this project's ADRs or profile.
+```
