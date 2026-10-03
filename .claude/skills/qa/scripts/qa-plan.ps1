@@ -183,12 +183,9 @@ function Select-PaperQaScope {
     param([string] $Requested, [string] $Path, [string] $Base, [string] $CurrentBranch, [string] $BaseBranch, [string] $BaseError, [int] $Ahead, [int] $Dirty, [switch] $External)
     $new = { param($mode, $label, $reason, $folder, $err) [pscustomobject]@{ Mode = $mode; Label = $label; Reason = $reason; Folder = $folder; Error = $err } }
     $req = "$Requested".ToLowerInvariant()
-    # An external repository has no branch scope: its list comes from review-files, which may run a tool
-    # inside the repository (F98, ADR-0034).
-    if ($External) {
-        if ($Base -or $req -eq 'branch') { return & $new '' '' '' '' '-Scope branch is not available with -Out: the branch list comes from review-files, which may run a tool inside the repository - use -Scope project or -Scope path' }
-        if (-not $req -and -not $Path) { return & $new 'project' '' 'project (external repository: no branch scope)' '' '' }
-    }
+    # An external repository (ADR-0037): the project unless a scope is asked for; a branch scope's label and
+    # reason come from qa.ps1, which lists it with the kit's own read-only git (F98).
+    if ($External -and -not $req -and -not $Path -and -not $Base) { return & $new 'project' '' 'project (external repository: the default scope)' '' '' }
     if (-not $req -and $Path) { $req = 'path' }
     if (-not $req -and $Base) { $req = 'branch' }
     if (@('', 'project', 'branch', 'path') -notcontains $req) { return & $new '' '' '' '' "-Scope must be project, branch or path, not '$Requested'" }
@@ -203,6 +200,7 @@ function Select-PaperQaScope {
         }
         'project' { return & $new 'project' '' 'project as asked' '' '' }
         'branch' {
+            if ($External) { return & $new 'branch' '' '' '' '' }
             $reason = "branch $CurrentBranch against $baseName"
             if ($Ahead -gt 0) { $reason = "branch $CurrentBranch is $Ahead commit(s) ahead of $baseName" }
             elseif ($Dirty -gt 0) { $reason = "$Dirty uncommitted change(s)" }
@@ -473,10 +471,12 @@ function Format-PaperQaEstimate {
     The estimate table the user sees before any token is spent (table E): one line per lane, verify, total,
     how to skip, and whether the run waits for approval.
     #>
-    param([string] $Run, [string] $Mode, [string] $Reason, [int] $FileCount, [int] $ExcludedCount, $Estimate, [bool] $Approved, [string] $RepoRoot = '', [string] $RunDir = '')
+    param([string] $Run, [string] $Mode, [string] $Reason, [int] $FileCount, [int] $ExcludedCount, $Estimate, [bool] $Approved, [string] $RepoRoot = '', [string] $RunDir = '', [string[]] $ScopeLines = @())
     $cells = { param($a, $b, $c, $d, $e, $f) ("$a".PadRight(14) + "$b".PadRight(16) + "$c".PadRight(7) + "$d".PadRight(8) + "$e".PadRight(9) + "$f").TrimEnd() }
     $out = @("qa: run $Run - scope $Mode ($Reason) - $FileCount file(s), $ExcludedCount excluded")
     if ($RepoRoot) { $out += "repo: $RepoRoot (external, read only) - run folder $RunDir" }
+    # The base: and changes: lines of an external branch scope (ADR-0037), right after the repo line.
+    $out += @($ScopeLines | Where-Object { $_ })
     $out += & $cells 'lane' 'state' 'files' 'agents' 'tokens' ''
     foreach ($r in @($Estimate.Rows)) {
         if ($r.Name -eq 'verify') {
@@ -902,7 +902,10 @@ function Format-PaperQaReport {
     $title = if ($r.Mode -eq 'project') { 'project' } else { "$($r.Mode) $($r.Label)" }
     $out = @("# QA report - $title - $($r.Date)", '')
     $out += "Run $($r.Run) $dot scope $($r.Reason) $dot $($r.FileCount) file(s), $($r.ExcludedCount) excluded $dot estimate $(Format-PaperQaNumber $r.EstimateTotal) tokens"
-    if ($r.External -eq $true) { $out += "Repository $repo (external, read only) $dot profile $($r.ProfilePath)" }
+    if ($r.External -eq $true) {
+        $out += "Repository $repo (external, read only) $dot profile $($r.ProfilePath)"
+        $out += @($r.ScopeLines | Where-Object { $_ })
+    }
     $out += @('', '## Summary', '')
     $out += '| Lane | State | critical | major | minor | info | confirmed | rejected | needs validation | seen |'
     $out += '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |'
@@ -1303,6 +1306,7 @@ function New-PaperQaReport {
         Lanes = @(Get-PaperQaReportLanes -PlanLanes $Plan.Lanes -Static $Static -LaneStates $Check.LaneStates -Seen $Check.Seen)
         Findings = $merged; Proposals = $proposals; Static = (ConvertFrom-PaperQaStaticJson -Static $Static); Excluded = @($Plan.Excluded)
         External = $external; RepoRoot = $(if ($external) { "$($Plan.RepoRoot)" } else { '' }); ProfilePath = "$($Plan.ProfilePath)"; Rules = @($Plan.Rules | Where-Object { $null -ne $_ })
+        ScopeLines = @($Plan.ScopeLines | Where-Object { $_ })
     }
     $text = ((Format-PaperQaReport -Report $report) -join "`n") + "`n"
     $notVerified = @($merged | Where-Object { $_.Status -eq 'needs_validation' }).Count

@@ -1,0 +1,101 @@
+# {{name}} - wiki schema
+
+{{about}}
+
+This repository is a knowledge wiki kept by an LLM agent, after Andrej Karpathy's "LLM Wiki" pattern. The owner
+brings sources and asks questions; the agent writes and maintains every page. Read this file before any work here.
+It is the wiki's only rulebook: change it with the owner, never on your own.
+
+## Layers
+
+| Where | What | Written by |
+| --- | --- | --- |
+| `raw/` | sources exactly as they came: a web page as markdown, a memory file, a note from the owner, a pointer to a read-only repository; images and attachments in `raw/assets/` | the owner or the agent, once; never edited after |
+| `wiki/<kind>/` | the pages | the agent only |
+| `index.md` | the catalog: every page on one line, under the section of its kind | the agent, whenever a page is added or its point changes |
+| `log.md` | what was done and when, append-only | the agent, one entry per operation |
+
+Kinds, one folder each under `wiki/`:
+
+- `sources` - one page per source in `raw/`: what it says, and the pages it changed
+- `topics` - a concept, technique, trap or decision that holds beyond one project
+- `projects` - one page per repository this wiki knows: where it lives, what it is, which pages concern it
+- `answers` - an answer worth keeping: a comparison, an analysis, a question settled
+
+A new kind is a new folder plus a `## <kind>` section in `index.md`, agreed with the owner and added to this list.
+
+## Pages
+
+- File name: lowercase ascii words joined by `-`, ending `.md` (`transaction-scope.md`). The name is the link.
+- Link with `[[page-name]]` - no folder, no `.md`; `[[page-name|other words]]` to show other words. When two files
+  share a name, put the kind in front: `[[topics/page-name]]`. A raw file is linked the same way, by its name.
+- First line `# <Title>`, then one paragraph saying what the page holds, then the body.
+- Every claim says where it comes from: a `## Sources` section at the end links the source pages or raw files it
+  rests on.
+- A claim a newer source contradicts is rewritten as it now stands - "was X, now Y (<date>, [[source]])" - never
+  appended below the old one.
+- Written in the language the owner asks in; names, commands, paths and API members stay as they are.
+- No secrets: no key, token, password or private block. The wiki is plain text, pushed to its remote and read by
+  every agent.
+
+## A source from a read-only repository
+
+A repository this wiki must not write into, or copy from, is a source by pointer: a file in `raw/` that starts with
+
+    ---
+    repo: <absolute path of the clone>
+    sha: <the commit that was read, 7 to 40 hex>
+    paths:
+      - <a path inside it>
+    ---
+
+then what was read there and why. Pages link that raw file. When lint says the clone has moved past `sha`, read the
+paths again, then add a new raw file with the new `sha`; the old one stays as it is.
+
+## Operations
+
+### ingest - a source into the wiki
+
+1. Put the source in `raw/` as `<YYYY-MM-DD>-<short-name>.md` (a web page through a markdown reader, a note as the
+   owner gave it); attachments in `raw/assets/`. Never edit it afterwards.
+2. Read it and tell the owner its key points in a few lines; ask what to stress when that is unclear.
+3. Write `wiki/sources/<short-name>.md`. Update or create every topic and project page it touches, linking both ways.
+4. Add an `index.md` line for each new page under its kind; rewrite the summary of a page whose point changed.
+5. Append to `log.md`: `## [YYYY-MM-DD] ingest | <source title>`, then the pages touched on the lines below.
+6. Run lint and fix every error before saying done.
+
+### query - answer from the wiki, keep the good answers
+
+1. Read `index.md` first, then the pages it points to; follow links; open `raw/` only when a page is not enough.
+2. Answer with links to the pages used. Say what the wiki does not know rather than filling it in from memory.
+3. An answer worth keeping becomes `wiki/answers/<name>.md` once the owner agrees: linked from the topic pages it
+   concerns, an `index.md` line, and `## [YYYY-MM-DD] query | <the question>` in `log.md`.
+
+### lint - keep it healthy
+
+1. Free, always first: the lint command below. It checks links, page names, the index against `wiki/`, the log,
+   orphan pages (a warning), secrets, and sources from read-only repositories.
+2. Costs tokens, only when the owner asks and after saying how many pages and characters will be read:
+   contradictions between pages, claims a newer source superseded, concepts mentioned without a page of their own,
+   questions worth a new source.
+3. Append `## [YYYY-MM-DD] lint | <what was checked>` to `log.md`.
+
+### promote - from an agent's memory
+
+An agent's memory belongs to one project and keeps what holds there. A fact that holds beyond that project comes
+here, and only after the owner approved the list of memory files, the pages they become and what stays behind: copy
+the memory file unchanged to `raw/memory/<project folder name>/`, ingest it, then leave in the memory file only its
+project-specific part and one line pointing to the page. Log it as `promote`.
+
+## Log entries
+
+`## [YYYY-MM-DD] <op> | <title>`, op one of `init`, `ingest`, `query`, `promote`, `lint`; newest at the end, never
+edited or reordered. Lines below an entry are free.
+
+## Commands
+
+- Lint, free, no model: `powershell -NoProfile -ExecutionPolicy Bypass -File "{{runner}}" lint -Wiki .` - the
+  paper-kit copy that created this wiki; every project set up with paper-kit has one at
+  `.claude/skills/wiki/scripts/wiki.ps1`.
+- The last five log entries: `Select-String -Path log.md -Pattern '^## \[' | Select-Object -Last 5`
+- Commit in this repository when the owner says so.

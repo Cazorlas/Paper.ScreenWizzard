@@ -94,3 +94,5 @@ With `-Out` (ADR-0034) the lanes read a repository that is not this project, by 
 The repository is <repo> (read only): every path of the list is relative to it; read <repo>\<path>.
 Judge against its own rules - for the architecture lane exactly the files on the rules: line - never against this project's ADRs or profile.
 ```
+
+- **A branch scope.** The list is the kit's own read-only git (ADR-0037), not review-files; the static lane still builds the whole project and keeps only findings in the files of the scope - the rest is counted `outside scope`.
