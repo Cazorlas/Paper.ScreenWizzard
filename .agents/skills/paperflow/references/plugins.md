@@ -10,6 +10,13 @@ hoặc có skill tự kích hoạt trùng vai. Những cái đó bị tắt tron
 (đo 2026-09-19: `microsoft-docs`, `frontend-design`, `mattpocock-skills` tắt; `superpowers` không cài).
 Cái còn bật chỉ chạy khi được gọi đích danh — lệnh, agent, hoặc tool MCP — nên bảng là đủ cho chúng.
 
+**Ba bề mặt, hai agent** (ADR-0040): hook, skill tự kích hoạt, và agent mặc định của plugin (`settings.json` của plugin có
+khoá `agent`: nó thay phiên chính ở mọi dự án — nặng nhất). Luật áp cho cả Claude lẫn Codex. Codex không có skill chỉ chạy
+khi gõ, nên mọi skill Codex thấy đều tính là tự kích hoạt; một bộ skill Codex giữ chặng bị lưu trữ, không rào bằng lời.
+Plugin mà không việc nào của dự án dùng tới cũng tắt: mô tả của nó chiếm chỗ trong danh sách skill và đẩy mô tả khác ra.
+`skills.json` của Paper-skills khai cả hai agent; script check-agent-surface của Paper-skills báo tên trùng, bề mặt
+chưa ghi nhận và plugin trái danh sách — chỉ đọc, không sửa máy.
+
 | Chặng | paper-kit giữ | Plugin ngoài vào ở đâu |
 |---|---|---|
 | Yêu cầu → SPEC, brief, plan, cổng duyệt | `/task-spec`, `/task-bug`, cổng `tasks` | `feature-dev` **không** thay chặng 1; chỉ mượn agent khảo sát của nó khi plan cần một vòng đọc rộng, kết quả đổ vào plan |

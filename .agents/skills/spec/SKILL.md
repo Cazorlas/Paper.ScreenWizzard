@@ -156,10 +156,15 @@ A spec gap is never closed by changing the code first and writing the spec to ma
      change contradicts.
 3. **Ask only where the answer changes what gets built or how it is checked.** Each question is a
    choice of two to five, or one word. At most five in a session. Record the exchange under
-   `## Clarifications`; a question still open is a line marked **Chưa trả lời**.
+   `## Clarifications`; a question still open is a line marked **Chưa trả lời**. Look up available facts;
+   ask independent decisions in a numbered round, with a recommendation; defer dependent questions.
+   For expert gaps, draft a questionnaire; drafting grants no permission to send or approve.
+   Read [clarifications](references/clarifications.md) when arranging rounds or preparing a questionnaire.
 4. **Write the brief, then the plan** with status `chờ duyệt` and `- [ ] T<n> [lane] … — done when …`
    tasks in test-first order, grouped `### n.` and ending with a Close group. Every rule line and every
    `F<n>` row the task touches is reached by a task, and the task names the codes it covers.
+   A **prototype** is optional design evidence, never proof of the live **host** lane. Propose its task
+   only for an unresolved design question; after approval, follow [prototype evidence](references/prototype-evidence.md).
 5. **Stop and show the user the SPEC rules and the task list - end the turn.** Every time - the first
    presentation and the second, third and later re-approvals alike - the message **carries an openable link**
    to each document awaiting approval (SPEC.md, brief, plan: one link per line, an absolute
@@ -176,20 +181,11 @@ correcting task and a Decisions line.
 
 ## After verification - close SPEC.md
 
-1. Remove the `Bản nháp chờ duyệt` banner and every `chờ kiểm` marker this task put in, in both language
-   parts, in the index and in every `spec/<part>.md` the task changed.
-2. **Delete the lines a verified line replaced**, and any line the work proved wrong.
-3. Update `Inputs`, `When it does not do the job` and `What it does not do yet` if they moved. A new
-   failure row takes the next unused `F` number; a row that no longer exists is deleted, its number
-   never reused. An open bug stays linked from its `F` row or from `What it does not do yet`; a fixed one
-   is unlinked there and kept in `<docs>/bugs/`.
-4. Run skill `check-spec`.
-5. For the pull request, a person may ask for skill `spec-changes`: the rules this branch added, changed
-   and removed, section by section, or its `--view` page of the whole requirement with the changes marked.
-   Offer it once; never run it unasked.
+1. Remove this task's draft banner and `chờ kiểm` markers in both languages, the index and changed parts;
+   **delete replaced or disproved lines**. The spec describes verified behaviour, never build-only intent.
+2. Update `Inputs`, failure cases and deferred work when they moved. New F rows take the next unused
+   number; deleted rows keep their gap. Keep open-bug links; unlink fixed bugs but retain their ledger files.
+3. Run `check-spec`. A marker remaining when the plan is `xong` is drift, also listed by `/sync-docs`.
+4. Offer `spec-changes` once for PR review: section changes or the `--view` page; never run it unasked.
 
-`SPEC.md` then describes what the feature does - verified behaviour, not intended or build-only
-behaviour. A banner or marker still there once the plan is `xong` is drift: `check-spec` and `/sync-docs`
-list it.
-Architecture and project rules stay in the `CLAUDE.md` files, where the code is in the `CODEMAP.md`,
-and traps in a comment at the code - never in the spec.
+Architecture and project rules stay in `CLAUDE.md`, code navigation in `CODEMAP.md`, traps in comments.

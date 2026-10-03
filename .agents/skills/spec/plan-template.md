@@ -88,6 +88,10 @@ Thêm "## Kiểm tra luật" sau "Bằng chứng": | Mã | Script / cách đo | 
 
 ## UI wireframe
 
+<!-- Khi một câu hỏi thiết kế cần thử: đề xuất task prototype trong Tasks, trước task phụ thuộc kết luận
+đó; không tự tạo trước duyệt. Sau khi thử, Decisions link artifact, revision/hash, câu hỏi, kịch bản,
+kết luận và giới hạn theo spec/references/prototype-evidence.md. Evidence này không thay lane host thật. -->
+
 <Chỉ khi có giao diện: wireframe dạng chữ trong khối code. Wireframe sống ở đây, không bao giờ trong SPEC.md.>
 
 <Dưới wireframe, mỗi quyết định bố cục một dòng: 2-4 nguyên lý liên quan (Fitts, Hick, Gestalt, heuristic

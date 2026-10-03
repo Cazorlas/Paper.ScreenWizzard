@@ -125,6 +125,9 @@ run as incomplete until the plan's independent verification evidence is availabl
    (`CLAUDE.md`, dòng SPEC, comment ở code, skill), status. **Không** tự ghi luật vào `CLAUDE.md`, skill
    hay `SPEC.md` — chủ dự án xét hàng đợi ở `/sync-docs`. Ngoại lệ duy nhất: người dùng đã yêu cầu
    **chính luật đó** trong phiên này. Đọc hàng đợi trước khi ghi để không thêm lại dòng đã có.
+   Vi phạm máy nhận ra được: đọc **kiểm tra đang có** và phạm vi nó trước; thiếu hay chưa nối thì đề xuất
+   sửa/thêm test, lint, hook hoặc CI trong hàng đợi, kèm ca vi phạm và ca hợp lệ. Cần phán đoán thì đề xuất
+   vào reviewer/hướng dẫn có chủ. Không tự cài hay bật kiểm tra vì một bài học chưa được nhận.
 
 8. **Cổng.** `.claude/paperflow/paperflow.ps1 tasks -Path <plan>` phải exit **0**; rồi đặt dòng trạng
    thái của plan thành `xong <ngày>`. Brief không bị sửa.

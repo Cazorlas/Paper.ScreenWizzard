@@ -66,6 +66,12 @@ Viết yêu cầu, brief và plan — theo đúng thứ tự đó — rồi kế
    Member phát hiện sau do `/task-do` thêm.
 8. **Chỉ hỏi điều làm đổi thứ sẽ được xây** — hai tới năm phương án, nhiều nhất năm câu. Câu còn mở là
    một dòng **Chưa trả lời** dưới Clarifications của `SPEC.md`.
+   - Tra dữ kiện trong source/tài liệu sẵn có trước; thiếu nguồn thì nói rõ. Gom câu độc lập vào một vòng
+     đánh số, mỗi câu có đề xuất. Câu phụ thuộc câu chưa trả lời để **lượt sau**, ghi phụ thuộc; trả lời
+     xong thì xét lại câu nào hỏi được. Chạm trần năm câu mà còn quyết định ảnh hưởng việc xây thì giữ mở.
+   - Người dùng cần thông tin từ người khác: hỏi vai người nhận và quyết định cần họ, rồi soạn questionnaire
+     theo [hướng dẫn làm rõ](../spec/references/clarifications.md). Soạn xong **không cấp quyền gửi** hay duyệt;
+     quyết định chưa được trả lời vẫn **Chưa trả lời**; plan phụ thuộc nó giữ `chờ duyệt`.
 9. Dòng trạng thái của plan để nguyên `**Trạng thái:** chờ duyệt`. Kiểm cả hai:
    - `.claude/paperflow/paperflow.ps1 tasks -Path <plan>` phải exit **4** (2 nghĩa là sai khuôn — lane
      ngoài loại việc, `{files:}` giao nhau trong một nhóm, task model thiếu mã luật — sửa rồi kiểm lại);
