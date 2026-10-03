@@ -27,6 +27,13 @@ Slug kebab-case theo việc (`fix-join-order`), thường là slug của plan.
 ```
 
 - Nhánh `task/<slug>` tạo từ nhánh hiện tại, hoặc `-From`. Nhánh gốc được ghi lại để `done` biết gộp về đâu.
+- **Claude và Codex: mỗi worktree task phải gắn cha là checkout tạo ra nó**, kể cả khi cha là worktree
+  của một task khác. Script lưu đường dẫn cha ở Git config `branch.task/<slug>.paperflowParent`; trong
+  phiên Orca, nó gắn parent bằng CLI và đọc lại `parentWorktreeId`. Gắn thất bại → dừng, giữ worktree
+  để sửa liên kết, không tạo thêm bản khác. `-From` chọn nhánh Git, không đổi worktree cha.
+- Nếu tự tạo bằng Orca, lấy id đầy đủ của checkout cha trước khi chuyển phiên, truyền
+  `--parent-worktree "id:<parent-id>"` khi tạo và đọc lại bằng `worktree show --json`.
+  Không dùng `--no-parent` cho worktree task, trừ khi người dùng yêu cầu tách riêng không có cha.
 - Chỗ đặt: `<parent>\_worktrees\<repo>-<slug>` khi thư mục `_worktrees` đó đã có, không thì
   `<parent>\<repo>-<slug>` cùng cấp kho — cùng độ sâu với kho, nên đường dẫn tương đối vẫn đúng.
 - Các file cục bộ không nằm trong git mà profile khai ở `worktree.copyFiles` được chép theo nếu có; thiếu
@@ -87,3 +94,4 @@ Chạy từ bản checkout chính, không từ trong worktree.
 
 Nhánh và đường dẫn worktree, dòng số test của baseline, kết quả `/task-verify`, và kết quả `done`: đã gộp
 vào đâu với dòng số test ở nhánh đích, hay worktree còn giữ và vì sao.
+Kèm đường dẫn/id cha và kết quả xác nhận parent trong Orca (ngoài Orca: chỉ xác nhận Git config).

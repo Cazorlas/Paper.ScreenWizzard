@@ -347,7 +347,8 @@ def main(argv):
         folders = [a for a in names if os.path.isdir(os.path.join(started_in, a))]
         names = [a for a in names if a not in folders]
         if folders:
-            feature = os.path.abspath(os.path.join(started_in, folders[0]))
+            # realpath, not abspath: an 8.3 %TEMP% comes back long, the spelling git's toplevel uses below.
+            feature = os.path.realpath(os.path.join(started_in, folders[0]))
             if not os.path.isfile(os.path.join(feature, "SPEC.md")):
                 # F32: never a blank page that reads like a requirement with no rules.
                 print(f"spec-changes: {folders[0]} has no SPEC.md - no page written.", file=sys.stderr)

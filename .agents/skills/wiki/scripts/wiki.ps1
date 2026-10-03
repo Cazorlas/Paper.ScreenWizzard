@@ -54,6 +54,13 @@ function Get-FullPath([string] $Path) {
     if ($p -notmatch '^[A-Za-z]:\\$') { $p = $p.TrimEnd('\') }
     return $p
 }
+# The spelling Get-ChildItem gives children of an existing folder: an 8.3 %TEMP% comes back long, so cut relative
+# paths against this, never against the spelling the caller typed.
+function Get-OnDiskPath([string] $Path) {
+    $p = (Get-Item -LiteralPath $Path -Force).FullName
+    if ($p -notmatch '^[A-Za-z]:\\$') { $p = $p.TrimEnd('\') }
+    return $p
+}
 if ($Registry -eq '') {
     $base = if ($env:LOCALAPPDATA) { $env:LOCALAPPDATA } else { $env:TEMP }
     $Registry = Join-Path $base 'paper-kit\wikis.json'
@@ -143,8 +150,9 @@ try {
         foreach ($t in @(Get-ChildItem -LiteralPath (Join-Path $PSScriptRoot '..\template') -Filter '*.tmpl' -File)) { $templates[$t.Name] = Read-Utf8 $t.FullName }
         $existing = @()
         if ($targetExists) {
+            $onDisk = Get-OnDiskPath $target
             $existing = @(Get-ChildItem -LiteralPath $target -Recurse -Force -File | ForEach-Object {
-                    $_.FullName.Substring($target.Length).TrimStart('\').Replace('\', '/')
+                    $_.FullName.Substring($onDisk.Length).TrimStart('\').Replace('\', '/')
                 } | Where-Object { $_ -notmatch '^\.git(/|$)' })
         }
         $aboutText = if ($About -ne '') { $About } else { $script:PaperWikiDefaultAbout }
@@ -207,11 +215,12 @@ try {
             Stop-Wiki 2
         }
         $files = New-Object System.Collections.Generic.List[string]
+        $onDisk = Get-OnDiskPath $path
         foreach ($top in @('wiki', 'raw')) {
             $dir = Join-Path $path $top
             if (-not (Test-Path -LiteralPath $dir -PathType Container)) { continue }
             foreach ($f in @(Get-ChildItem -LiteralPath $dir -Recurse -Force -File)) {
-                $rel = $f.FullName.Substring($path.Length).TrimStart('\').Replace('\', '/')
+                $rel = $f.FullName.Substring($onDisk.Length).TrimStart('\').Replace('\', '/')
                 if ($f.Name -eq '.gitkeep') { continue }
                 if (@($rel.Split('/') | Where-Object { $_.StartsWith('.') }).Count -gt 0) { continue }
                 $files.Add($rel)

@@ -111,6 +111,9 @@ nhắc plan đang dở khi phiên mới mở. Effort đổi ở đây nếu đ�
 đi tiếp ngay trong phiên này, và ghi một dòng Decisions.
 
 ## 3. Worktree
+Mỗi worktree task của Claude và Codex phải gắn với checkout cha tạo ra nó; tạo từ worktree con thì
+gắn cha trực tiếp đó. Theo skill `task-worktree` để ghi và xác nhận parent; trong Orca không dùng
+`--no-parent` trừ khi người dùng yêu cầu tách riêng. Parent là quan hệ quản lý, khác nhánh Git gốc.
 Lane `unit` và lane `ui` **luôn** chạy trong worktree riêng của chúng (`isolation: worktree`) và trả việc
 về bằng một nhánh; `/task-do` mục 3 giữ luật gộp. Lane `live` và lane `model` ở lại cây chính, vì host chỉ
 có một. Thêm một worktree cho **cả việc** (skill `task-worktree`: `create` → `carry` → `baseline`) khi

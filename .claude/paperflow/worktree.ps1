@@ -116,6 +116,21 @@ switch ($Command) {
 
     'create' {
         $main = Get-PaperMainRoot $Repo
+        $parentRoot = Invoke-PaperGit -C $Repo rev-parse --show-toplevel
+        if ($parentRoot.Code -ne 0) { Fail 2 'worktree: could not resolve the parent checkout' }
+        $parentPath = [IO.Path]::GetFullPath($parentRoot.Text.Trim())
+        $orca = $null
+        $parentId = $null
+        if ($env:ORCA_WORKTREE_ID -or $env:ORCA_WORKSPACE_ID) {
+            $orca = if ($env:ORCA_CLI_COMMAND) { $env:ORCA_CLI_COMMAND } elseif ($env:ORCA_DEV_REPO_ROOT) { 'orca-dev' } else { 'orca' }
+            try {
+                $parentJson = & $orca worktree show --worktree "path:$parentPath" --json
+                if ($LASTEXITCODE -ne 0) { throw 'Orca could not resolve the parent checkout' }
+                $parentId = ($parentJson -join "`n" | ConvertFrom-Json).result.worktree.id
+                if (-not $parentId) { throw 'Orca returned no parent worktree id' }
+            }
+            catch { Fail 1 "worktree: parent lookup failed - $($_.Exception.Message)" }
+        }
         if (Test-PaperBranch $main $branch) { Fail 2 "worktree: branch $branch already exists - pick another slug, or finish it with done $Slug" }
         $base = $From
         if ($base) {
@@ -133,6 +148,19 @@ switch ($Command) {
         $add = Invoke-PaperGit -C $main worktree add -b $branch $path $base
         if ($add.Code -ne 0) { Fail 1 "worktree: git worktree add failed - $($add.Text)" }
         [void] (Invoke-PaperGit -C $main config "branch.$branch.paperflowBase" $base)
+        $record = Invoke-PaperGit -C $main config "branch.$branch.paperflowParent" $parentPath
+        if ($record.Code -ne 0) { Fail 1 "worktree: created $path but could not record parent $parentPath - worktree kept" }
+        if ($orca) {
+            try {
+                $linked = & $orca worktree set --worktree "path:$path" --parent-worktree "id:$parentId" --json
+                if ($LASTEXITCODE -ne 0) { throw 'Orca could not attach the parent' }
+                $childJson = & $orca worktree show --worktree "path:$path" --json
+                if ($LASTEXITCODE -ne 0) { throw 'Orca could not read back the child' }
+                $child = ($childJson -join "`n" | ConvertFrom-Json).result.worktree
+                if ($child.parentWorktreeId -ne $parentId) { throw 'Orca parent readback did not match' }
+            }
+            catch { Fail 1 "worktree: created $path but parent link failed - $($_.Exception.Message). Worktree kept; repair the parent before continuing" }
+        }
 
         # Local files git does not carry (personal settings and the like), declared by the project.
         $projectProfile = Read-PaperWorktreeProfile $main
@@ -151,6 +179,7 @@ switch ($Command) {
 
         Say "worktree: $path"
         Say "branch:   $branch (from $base)"
+        Say "parent:   $parentPath"
         Say "next:     worktree.ps1 carry $Slug (only if the main checkout holds uncommitted work the task needs), then worktree.ps1 baseline $Slug"
         exit 0
     }
