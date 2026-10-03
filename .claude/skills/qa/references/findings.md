@@ -59,6 +59,8 @@ lane or who found it (find-bug, "Verifying a finding"); for a static finding, th
 link and `path:line`, with: decide whether this code gives a wrong result or an exploitable path for some
 input; confirmed needs that INPUT.
 
+On an external repository, also give the reader the repository line check prints: it locates the code there, read only.
+
 ## A verdict
 
 Saved by the main session as `.paper/qa/<run>/verdicts/<id>.md`:

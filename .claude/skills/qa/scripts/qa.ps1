@@ -1,6 +1,7 @@
 # /qa, the I/O part (plan 2026-10-02-qa-command, table K): git, the disk, `dotnet restore`, the build verb.
-# Every decision lives in qa-plan.ps1 and qa-sarif-plan.ps1, which are pure and fully tested: each command
-# reads what it needs, hands it to one of their functions, prints its lines and exits with its code.
+# Every decision lives in qa-plan.ps1, qa-sarif-plan.ps1 and qa-external-plan.ps1, which are pure and fully
+# tested: each command reads what it needs, hands it to one of their functions, prints its lines and exits
+# with its code.
 #
 #   qa.ps1 plan    [-Scope project|branch|path] [-Path <folder>] [-Base <branch>] [-Only a,b] [-Skip a,b] [-StaticOnly] [-Yes]
 #   qa.ps1 approve -Run <run>
@@ -8,17 +9,25 @@
 #   qa.ps1 files   -Run <run> -Lane <lane> [-Batch <n>] [-Retry]
 #   qa.ps1 check   -Run <run>
 #   qa.ps1 report  -Run <run>
+#   qa.ps1 init    -Repo <repository> -Out <folder>
 #   (every command takes -Repo <project root>; default: the current folder)
 #
 # A run lives in <root>\.paper\qa\<run>\ (plan.json, lanes\, verdicts\, sarif\, static.json, findings.json);
 # <root>\.paper\qa\.gitignore holds one line "*", so git sees nothing there. The one other file a run
 # writes is its report under the profile's qa.report folder.
 #
+# An external repository (-Out <folder> with -Repo, ADR-0034): nothing is written into the repository. The
+# qa profile is <Out>\qa.profile.json (qa.ps1 init writes its skeleton), runs live in <Out>\runs\<run>\ and
+# reports in <Out>\reports\. No script of the repository runs (paperflow is the kit's own), git runs with
+# GIT_OPTIONAL_LOCKS=0 so it never refreshes the repository's index, and the static lane runs the owner's
+# declared build line only when it carries every declared no-deploy property; a build that changes a file
+# git does not ignore leaves the static lane not verifiable (qa-external-plan.ps1).
+#
 # Exit codes:
 #   0  done
 #   1  check found answers to send back
 #   2  invalid request, broken profile, unknown run (F66, F67); "not verifiable:" when the branch scope has
-#      no base (F69)
+#      no base (F69); a wrong qa.profile.json or -Out (external repository, F91-F95, F98)
 #   4  not verifiable: the run is not approved (F63), or the static lane could not run (F57, F58)
 #   5  NOT APPLICABLE: no file in scope (F65), or the lane does not run
 # ASCII only: PowerShell 5.1 reads a .ps1 without a BOM as ANSI.
@@ -36,7 +45,8 @@ param(
     [switch] $Yes,
     [string] $Lane,
     [int] $Batch = 1,
-    [switch] $Retry
+    [switch] $Retry,
+    [string] $Out
 )
 
 $ErrorActionPreference = 'Stop'
@@ -45,6 +55,7 @@ try { [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding $false } c
 
 . (Join-Path $PSScriptRoot 'qa-sarif-plan.ps1')
 . (Join-Path $PSScriptRoot 'qa-plan.ps1')
+. (Join-Path $PSScriptRoot 'qa-external-plan.ps1')
 
 $script:Utf8 = New-Object System.Text.UTF8Encoding $false
 $script:PowerShellExe = Join-Path $PSHOME 'powershell.exe'
@@ -57,6 +68,8 @@ function Show-Help {
     Say '  qa.ps1 plan [-Scope project|branch|path] [-Path <folder>] [-Base <branch>] [-Only a,b] [-Skip a,b] [-StaticOnly] [-Yes]'
     Say '  qa.ps1 approve|static|check|report -Run <run>'
     Say '  qa.ps1 files -Run <run> -Lane <lane> [-Batch <n>] [-Retry]'
+    Say '  qa.ps1 init -Repo <repository> -Out <folder>   (an external repository: nothing is written into it)'
+    Say '  every command takes -Out <folder> with -Repo for an external repository'
     Say 'Exit: 0 done | 1 answers to send back | 2 invalid request | 4 not verifiable | 5 not applicable'
 }
 
@@ -80,15 +93,46 @@ function Read-Lines([string] $File) { return , [IO.File]::ReadAllLines($File, [T
 # ------------------------------------------------------------------ where things are
 
 if ($Command -in @('help', '-h', '--help', '/?')) { Show-Help; exit 0 }
-if ($Command -notin @('plan', 'approve', 'static', 'files', 'check', 'report')) { Stop-Qa 2 "qa: unknown command '$Command' (plan, approve, static, files, check, report)" }
+if ($Command -notin @('init', 'plan', 'approve', 'static', 'files', 'check', 'report')) { Stop-Qa 2 "qa: unknown command '$Command' (init, plan, approve, static, files, check, report)" }
+$external = [bool] $Out
+if ($Command -eq 'init' -and -not $external) { Stop-Qa 2 'qa: init needs -Out <folder outside the repository>' }
+if ($external) {
+    # A2: before the first git command, so no git of this run, nor of a process it starts, takes the
+    # repository's index lock to refresh it.
+    if (-not $PSBoundParameters.ContainsKey('Repo')) { Stop-Qa 2 'qa: -Out needs -Repo <repository> - the repository to read' }
+    [Environment]::SetEnvironmentVariable('GIT_OPTIONAL_LOCKS', '0')
+}
 if (-not (Test-Path -LiteralPath $Repo -PathType Container)) { Stop-Qa 2 "qa: project folder not found: $Repo" }
 $top = Invoke-Native 'git.exe' @('-C', $Repo, 'rev-parse', '--show-toplevel')
 if ($top.Code -ne 0 -or -not $top.Lines) { Stop-Qa 2 "qa: not a git repository: $Repo" }
 $root = ([string] $top.Lines[0]).Trim().Replace('/', '\').TrimEnd('\')
 
-# paperflow: beside the skill in a Claude project and in the kit source; the project's own for Codex.
+if ($external) {
+    # A4 (F91): -Out outside the repository, by its text against the git root and -Repo as typed, and by git
+    # itself from the nearest folder of -Out that exists (an 8.3 path and its long form are one folder).
+    $outFull = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Out).TrimEnd('\')
+    $repoGiven = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Repo).TrimEnd('\')
+    if (Test-Path -LiteralPath $outFull -PathType Leaf) { Stop-Qa 2 "qa: -Out is a file, not a folder: $outFull" }
+    # Spec bo sung 2026-10-03 (find-bug T8 FB4): the repository's git folder too - inside it --show-toplevel
+    # fails, so a junction or an 8.3 name into .git is caught by --absolute-git-dir.
+    $norm = { param($r) if ($r.Code -eq 0 -and $r.Lines) { ([string] $r.Lines[0]).Trim().Replace('/', '\').TrimEnd('\') } else { '' } }
+    $gitDir = & $norm (Invoke-Native 'git.exe' @('-C', $root, 'rev-parse', '--absolute-git-dir'))
+    $inside = -not (Test-PaperQaOutsideRepo -Out $outFull -RepoRoots @(@($root, $repoGiven, $gitDir) | Where-Object { $_ }))
+    if (-not $inside) {
+        $probe = $outFull
+        while ($probe -and -not (Test-Path -LiteralPath $probe -PathType Container)) { $probe = Split-Path -Parent $probe }
+        if ($probe) {
+            if ((& $norm (Invoke-Native 'git.exe' @('-C', $probe, 'rev-parse', '--show-toplevel'))) -ieq $root) { $inside = $true }
+            elseif ($gitDir -and (& $norm (Invoke-Native 'git.exe' @('-C', $probe, 'rev-parse', '--absolute-git-dir'))) -ieq $gitDir) { $inside = $true }
+        }
+    }
+    if ($inside) { Stop-Qa 2 "qa: -Out must be a folder outside the repository: $outFull is inside $root" }
+}
+
+# paperflow (F97): a project looks beside the skill (a Claude project, the kit source), then in the project;
+# an external repository only in the kit (beside the skill, or the .claude beside the Codex .agents).
 $paperflow = $null
-foreach ($candidate in @((Join-Path $PSScriptRoot '..\..\..\paperflow'), (Join-Path $root '.claude\paperflow'))) {
+foreach ($candidate in @(Get-PaperQaPaperflowCandidates -ScriptRoot $PSScriptRoot -RepoRoot $root -External $external)) {
     if (Test-Path -LiteralPath (Join-Path $candidate 'paperflow.ps1') -PathType Leaf) { $paperflow = (Resolve-Path -LiteralPath $candidate).ProviderPath; break }
 }
 if (-not $paperflow) { Stop-Qa 2 'qa: paperflow not found (.claude/paperflow/paperflow.ps1) - run paper-kit setup' }
@@ -100,16 +144,38 @@ if (-not $paperflow) { Stop-Qa 2 'qa: paperflow not found (.claude/paperflow/pap
 . (Join-Path $paperflow 'profile-map.ps1')
 . (Join-Path $paperflow 'verb-plan.ps1')
 
-$read = Read-PaperProfileFile $root
-if ($read.Error) { Stop-Qa 2 "qa: .claude/paper.profile.json is not valid JSON - $($read.Error)" }
-$profileMap = $read.Map
-$config = ConvertFrom-PaperQaProfile -Profile $profileMap
-if (@($config.Errors).Count -gt 0) {
-    foreach ($e in $config.Errors) { Say "qa: $e" }
-    exit 2
+$profileMap = $null
+$config = $null
+$profileFile = ''
+$reportsDir = ''
+if ($external) {
+    # A6: the qa profile of the repository lives under -Out; the repository's own profile is never read.
+    $profileFile = Join-Path $outFull 'qa.profile.json'
+    if (Test-Path -LiteralPath $profileFile -PathType Leaf) {
+        try { $json = [IO.File]::ReadAllText($profileFile, [Text.Encoding]::UTF8) | ConvertFrom-Json }
+        catch { Stop-Qa 2 "qa: $profileFile is not valid JSON - $($_.Exception.Message)" }
+        $config = ConvertFrom-PaperQaExternalProfile -Profile (ConvertTo-PaperMap $json -SkipDocKeys) -RepoRoot $root
+        if (@($config.Errors).Count -gt 0) {
+            foreach ($e in $config.Errors) { Say "qa: $e" }
+            exit 2
+        }
+    }
+    elseif ($Command -ne 'init') { Stop-Qa 2 "qa: no qa.profile.json in $outFull - run qa.ps1 init -Repo $root -Out $outFull first" }
+    $runsDir = Join-Path $outFull 'runs'
+    $reportsDir = Join-Path $outFull 'reports'
+    if ($null -ne $config) { $config.Report = $reportsDir }
 }
-
-$runsDir = Join-Path $root '.paper\qa'
+else {
+    $read = Read-PaperProfileFile $root
+    if ($read.Error) { Stop-Qa 2 "qa: .claude/paper.profile.json is not valid JSON - $($read.Error)" }
+    $profileMap = $read.Map
+    $config = ConvertFrom-PaperQaProfile -Profile $profileMap
+    if (@($config.Errors).Count -gt 0) {
+        foreach ($e in $config.Errors) { Say "qa: $e" }
+        exit 2
+    }
+    $runsDir = Join-Path $root '.paper\qa'
+}
 $dataDir = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\data')).ProviderPath
 
 function Initialize-QaRunsDir {
@@ -121,7 +187,10 @@ function Initialize-QaRunsDir {
 function Get-QaRunDir {
     if (-not $Run) { Stop-Qa 2 "qa: $Command needs -Run <run>" }
     $dir = Join-Path $runsDir $Run
-    if (-not (Test-Path -LiteralPath (Join-Path $dir 'plan.json') -PathType Leaf)) { Stop-Qa 2 "qa: no run $Run (looked in .paper/qa)" }
+    if (-not (Test-Path -LiteralPath (Join-Path $dir 'plan.json') -PathType Leaf)) {
+        if ($external) { Stop-Qa 2 "qa: no run $Run (looked in $runsDir)" }
+        Stop-Qa 2 "qa: no run $Run (looked in .paper/qa)"
+    }
     return $dir
 }
 
@@ -155,11 +224,66 @@ function Get-QaSizes([string[]] $Paths) {
     return $sizes
 }
 
+# The repository as git sees it, for F94: every path `git status` lists -> "XY|length|ticks" ("XY|missing").
+function Get-QaRepoSnapshot {
+    $st = Invoke-PaperChangeGit -C $root -c core.quotepath=false status --porcelain --untracked-files=all
+    if ($st.Code -ne 0) { return $null }
+    $snap = @{}
+    foreach ($line in @($st.Lines)) {
+        $p = @(Get-PaperQaStatusPaths -Lines @($line))
+        if ($p.Count -eq 0) { continue }
+        $xy = "$line".Substring(0, 2)
+        $full = Get-QaFullPath $p[0]
+        if (Test-Path -LiteralPath $full -PathType Leaf) { $i = Get-Item -LiteralPath $full; $snap[$p[0]] = "$xy|$($i.Length)|$($i.LastWriteTimeUtc.Ticks)" }
+        else { $snap[$p[0]] = "$xy|missing" }
+    }
+    return $snap
+}
+
+# C (F95): the rule files of an external repository with their size; exit 2 naming each wrong rules entry.
+function Get-QaExternalRules([string[]] $Paths) {
+    $rr = Resolve-PaperQaRules -Declared $config.DeclaredRules -Paths $Paths
+    if (@($rr.Errors).Count -gt 0) {
+        foreach ($e in $rr.Errors) { Say "qa: $e" }
+        exit 2
+    }
+    $sizes = Get-QaSizes @($rr.Rules)
+    return @($rr.Rules | Where-Object { $_ } | ForEach-Object { [pscustomobject]@{ Path = $_; Bytes = $(if ($sizes.Contains($_)) { [long] $sizes[$_] } else { 0 }) } })
+}
+
+# ------------------------------------------------------------------ init
+
+function Invoke-QaInit {
+    if (-not (Test-Path -LiteralPath $outFull -PathType Container)) { New-Item -ItemType Directory -Force -Path $outFull | Out-Null }
+    $all = Get-QaRepoFiles
+    $paths = @($all.Tracked) + @($all.Untracked)
+    $created = ($null -eq $config)
+    $declared = $null
+    if (-not $created) { $declared = $config.DeclaredRules }
+    $rr = Resolve-PaperQaRules -Declared $declared -Paths $paths
+    if (@($rr.Errors).Count -gt 0) {
+        foreach ($e in $rr.Errors) { Say "qa: $e" }
+        exit 2
+    }
+    $buildConfig = $config
+    if ($created) {
+        $json = (New-PaperQaExternalProfile -RepoRoot $root -Rules @($rr.Rules)) | ConvertTo-Json -Depth 6
+        # PowerShell 5.1 writes ' < > & as \u escapes; valid JSON either way, but the owner reads this file.
+        $json = [regex]::Replace($json, '(?<!\\)((?:\\\\)*)\\u00(27|3[cCeE]|26)', { param($m) $m.Groups[1].Value + [string] [char] [Convert]::ToInt32($m.Groups[2].Value, 16) })
+        Write-Text $profileFile ($json + "`n")
+        $buildConfig = [pscustomobject]@{ BuildCommand = ''; NoDeploy = @() }
+    }
+    $b = Get-PaperQaExternalBuild -Config $buildConfig
+    foreach ($line in (Format-PaperQaInitLines -ProfilePath $profileFile -RepoRoot $root -Out $outFull -Rules @($rr.Rules) -Created $created -Build $b -Command "$($buildConfig.BuildCommand)")) { Say $line }
+    exit 0
+}
+
 # ------------------------------------------------------------------ plan
 
 function Invoke-QaPlan {
     $all = Get-QaRepoFiles
     $allPaths = @($all.Tracked) + @($all.Untracked)
+    if ($external) { Invoke-QaPlanFor $all $allPaths; return }
     $branch = "$((Invoke-PaperChangeGit -C $root rev-parse --abbrev-ref HEAD).Lines | Select-Object -First 1)".Trim()
     # The base and merge-base are the kit's one answer (change-set.ps1, as review-files reads them): -Base,
     # the base worktree create recorded, main/master/origin, or the branch's own remote when on the base.
@@ -174,6 +298,18 @@ function Invoke-QaPlan {
 
     $sel = Select-PaperQaScope -Requested $Scope -Path $Path -Base $Base -CurrentBranch $branch -BaseBranch $baseBranch -BaseError "$($change.Message)" -Ahead $ahead -Dirty $dirty
     if ($sel.Error) { Stop-Qa 2 "qa: $($sel.Error)" }
+    Invoke-QaPlanFor $all $allPaths $sel
+}
+
+# The plan once the scope is chosen. An external repository chooses it here: no branch scope (F98), so no
+# branch, base or uncommitted work is read.
+function Invoke-QaPlanFor($all, [string[]] $allPaths, $sel = $null) {
+    $ruleObjs = @()
+    if ($external) {
+        $sel = Select-PaperQaScope -Requested $Scope -Path $Path -Base $Base -External
+        if ($sel.Error) { Stop-Qa 2 "qa: $($sel.Error)" }
+        $ruleObjs = @(Get-QaExternalRules $allPaths)
+    }
 
     if ($sel.Mode -eq 'branch') {
         $args2 = @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $paperflow 'paperflow.ps1'), 'review-files', '-Repo', $root)
@@ -194,14 +330,21 @@ function Invoke-QaPlan {
     }
     $files = @($scopeResult.Files); $excluded = @($scopeResult.Excluded)
 
-    $hasBuild = (Get-PaperVerbPlan -ProjectProfile $profileMap -Verb 'build').ExitCode -eq 0
     $screens = @(Get-PaperQaScreens -Paths $allPaths -Glob $config.UiScreens -Folder $sel.Folder)
     $laneFiles = @{}
     foreach ($l in $script:PaperQaLaneNames) { $laneFiles[$l] = @(Get-PaperQaLaneFiles -Files $files -Lane $l -Screens $screens) }
-    $lanes = Get-PaperQaLanes -Hosts $config.Hosts -Config $config -LaneFiles $laneFiles -HasDotnetProject (Test-PaperQaDotnetProject -Paths $allPaths) -HasBuildVerb $hasBuild -Only $Only -Skip $Skip -StaticOnly:$StaticOnly
+    $hasDotnet = Test-PaperQaDotnetProject -Paths $allPaths
+    if ($external) {
+        $b = Get-PaperQaExternalBuild -Config $config
+        $lanes = Get-PaperQaLanes -Hosts $config.Hosts -Config $config -LaneFiles $laneFiles -HasDotnetProject $hasDotnet -HasBuildVerb $b.Run -NoBuildReason $b.Reason -RuleCount $ruleObjs.Count -Only $Only -Skip $Skip -StaticOnly:$StaticOnly
+    }
+    else {
+        $hasBuild = (Get-PaperVerbPlan -ProjectProfile $profileMap -Verb 'build').ExitCode -eq 0
+        $lanes = Get-PaperQaLanes -Hosts $config.Hosts -Config $config -LaneFiles $laneFiles -HasDotnetProject $hasDotnet -HasBuildVerb $hasBuild -Only $Only -Skip $Skip -StaticOnly:$StaticOnly
+    }
     if ($lanes.Error) { Stop-Qa 2 "qa: $($lanes.Error)" }
-    $estimate = Get-PaperQaEstimate -Lanes $lanes.Lanes -LaneFiles $laneFiles -Config $config -StaticOnly:$StaticOnly
-    $batches = @(Get-PaperQaBatchList -Lanes $lanes.Lanes -LaneFiles $laneFiles -MaxTokens $config.BatchTokens)
+    $estimate = Get-PaperQaEstimate -Lanes $lanes.Lanes -LaneFiles $laneFiles -Config $config -StaticOnly:$StaticOnly -Rules $ruleObjs
+    $batches = @(Get-PaperQaBatchList -Lanes $lanes.Lanes -LaneFiles $laneFiles -MaxTokens $config.BatchTokens -Rules $ruleObjs)
     $approved = [bool] (Test-PaperQaApprovedAtPlan -Lanes $lanes.Lanes -Yes $Yes.IsPresent)
 
     Initialize-QaRunsDir
@@ -214,8 +357,16 @@ function Invoke-QaPlan {
         StaticOnly = $StaticOnly.IsPresent; Files = $files; Excluded = $excluded; Lanes = $lanes.Lanes; Batches = $batches
         Screens = $screens; Estimate = $estimate; Approved = $approved; Created = (Get-Date).ToString('s')
     }
+    $repoLine = ''
+    if ($external) {
+        $plan | Add-Member -NotePropertyName External -NotePropertyValue $true
+        $plan | Add-Member -NotePropertyName RepoRoot -NotePropertyValue $root
+        $plan | Add-Member -NotePropertyName ProfilePath -NotePropertyValue $profileFile
+        $plan | Add-Member -NotePropertyName Rules -NotePropertyValue $ruleObjs
+        $repoLine = $root
+    }
     Write-Json (Join-Path $dir 'plan.json') $plan
-    foreach ($line in (Format-PaperQaEstimate -Run $runId -Mode $sel.Mode -Reason $sel.Reason -FileCount $files.Count -ExcludedCount $excluded.Count -Estimate $estimate -Approved $approved)) { Say $line }
+    foreach ($line in (Format-PaperQaEstimate -Run $runId -Mode $sel.Mode -Reason $sel.Reason -FileCount $files.Count -ExcludedCount $excluded.Count -Estimate $estimate -Approved $approved -RepoRoot $repoLine -RunDir $dir)) { Say $line }
     exit 0
 }
 
@@ -323,10 +474,31 @@ function Invoke-QaStatic {
     # Written right before the build: its time stamp, newer than every output, makes CoreCompile run again.
     Write-Text $targets ((New-PaperQaTargets -Run $Run -SarifDir $sarifDir -AnalyzerListDir $dir -GlobalConfig $globalConfig -Analyzers $plug.Analyzers -LegacyOnly $plug.LegacyOnly) + "`r`n")
 
-    $build = Invoke-QaWithEnvironment $envs { Invoke-Native $script:PowerShellExe @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $paperflow 'paperflow.ps1'), 'build', '-Repo', $root, '-Full') }
-    Write-Text (Join-Path $dir 'build.log') ((@($build.Lines) -join "`r`n") + "`r`n")
+    if ($external) {
+        # E: the owner's build line, run directly from the repository root (no run lock, no profile of the
+        # repository); git's view of the repository before and after it (F94).
+        $eb = Get-PaperQaExternalBuild -Config $config
+        if (-not $eb.Run) { & $fail $eb.Reason @() }
+        . (Join-Path $paperflow 'project-command.ps1')
+        $snapBefore = Get-QaRepoSnapshot
+        if ($null -eq $snapBefore) { & $fail 'git status failed before the build' @() }
+        $res = Invoke-QaWithEnvironment $envs { Invoke-PaperProjectCommand -Directory $root -Command $config.BuildCommand }
+        $buildCode = if ($null -eq $res.Code) { 1 } else { [int] $res.Code }
+        $buildLines = @("qa: build -> $($config.BuildCommand)") + @($res.Lines)
+        $snapAfter = Get-QaRepoSnapshot
+        Write-Text (Join-Path $dir 'build.log') ((@($buildLines) -join "`r`n") + "`r`n")
+        if ($null -eq $snapAfter) { & $fail 'git status failed after the build' @() }
+        $changed = @(Compare-PaperQaRepoSnapshot -Before $snapBefore -After $snapAfter)
+        if ($changed.Count -gt 0) { & $fail (Format-PaperQaRepoChange -Paths $changed) @() }
+    }
+    else {
+        $build = Invoke-QaWithEnvironment $envs { Invoke-Native $script:PowerShellExe @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $paperflow 'paperflow.ps1'), 'build', '-Repo', $root, '-Full') }
+        $buildCode = $build.Code
+        $buildLines = @($build.Lines)
+        Write-Text (Join-Path $dir 'build.log') ((@($buildLines) -join "`r`n") + "`r`n")
+    }
     $sarifFiles = @(Get-ChildItem -LiteralPath $sarifDir -Filter '*.sarif' -File -ErrorAction SilentlyContinue | Sort-Object Name)
-    $bf = Get-PaperQaBuildFailure -ExitCode $build.Code -Lines $build.Lines -SarifCount $sarifFiles.Count
+    $bf = Get-PaperQaBuildFailure -ExitCode $buildCode -Lines $buildLines -SarifCount $sarifFiles.Count -External:$external
     if ($null -ne $bf) { & $fail $bf.Reason $bf.Tail }
     $results = @(); $problems = @()
     foreach ($f in $sarifFiles) {
@@ -343,7 +515,7 @@ function Invoke-QaStatic {
     $grouped = Group-PaperQaStatic -Results $results -RepoRoot $root -ScopePaths @($plan.Files | ForEach-Object { $_.Path }) -ScopeMode $plan.Mode -ProfileKinds $config.Kinds -SonarTable $sonar
     $proof = @(Get-PaperQaAnalyzerProof -Listed $listed -Expected $expected -LoadProblems $grouped.LoadProblems)
     $outcome = Get-PaperQaStaticOutcome -Grouped $grouped -Proof $proof -AnalyzerText (Format-PaperQaAnalyzerText -Analyzers $analyzers -HasLegacy $pk.HasLegacy) `
-        -BuildText "paperflow.ps1 build -Full (exit $($build.Code)), $($sarifFiles.Count) SARIF file(s)" -Problems $problems -SarifDir $config.SarifDir -SarifCount $sarifFiles.Count
+        -BuildText $(if ($external) { "build.command of qa.profile.json (exit $buildCode), $($sarifFiles.Count) SARIF file(s)" } else { "paperflow.ps1 build -Full (exit $buildCode), $($sarifFiles.Count) SARIF file(s)" }) -Problems $problems -SarifDir $config.SarifDir -SarifCount $sarifFiles.Count
     Write-Json $staticJson $outcome.Json
     if ($outcome.CopySarifTo) {
         $keep = Get-QaFullPath $outcome.CopySarifTo
@@ -370,6 +542,7 @@ function Invoke-QaCheck {
     $plan = Read-Json (Join-Path $dir 'plan.json')
     $c = Get-PaperQaCheck -Plan $plan -Answers (Read-QaAnswers $dir) -Static (Read-QaStatic $dir) -VerifyCap $config.VerifyCap
     Write-Json (Join-Path $dir 'findings.json') ([pscustomobject]@{ Findings = $c.Queue; LaneStates = $c.LaneStates; Seen = $c.Seen })
+    if ($external) { Say "qa: repository $root (external, read only) - verify readers read the code there" }
     foreach ($line in @($c.Lines)) { Say $line }
     exit $c.ExitCode
 }
@@ -381,16 +554,18 @@ function Invoke-QaReport {
     $c = Get-PaperQaCheck -Plan $plan -Answers (Read-QaAnswers $dir) -Static $static -VerifyCap $config.VerifyCap
     $verdictLines = @()
     foreach ($v in @(Get-ChildItem -LiteralPath (Join-Path $dir 'verdicts') -Filter '*.md' -File -ErrorAction SilentlyContinue | Sort-Object Name)) { $verdictLines += , ([string[]] (Read-Lines $v.FullName)) }
-    $reportDir = Get-QaFullPath $config.Report
+    if ($external) { $reportDir = $reportsDir; $reportArg = $reportsDir }
+    else { $reportDir = Get-QaFullPath $config.Report; $reportArg = $config.Report }
     $existing = @()
     if (Test-Path -LiteralPath $reportDir -PathType Container) { $existing = @(Get-ChildItem -LiteralPath $reportDir -File | ForEach-Object { $_.Name }) }
-    $rep = New-PaperQaReport -Plan $plan -Check $c -VerdictLines $verdictLines -Static $static -Run $Run -Date (Get-Date).ToString('yyyy-MM-dd') -ReportDir $config.Report -Existing $existing
+    $rep = New-PaperQaReport -Plan $plan -Check $c -VerdictLines $verdictLines -Static $static -Run $Run -Date (Get-Date).ToString('yyyy-MM-dd') -ReportDir $reportArg -Existing $existing
     Write-Text (Join-Path $reportDir $rep.Name) $rep.Text
     foreach ($line in @($rep.Lines)) { Say $line }
     exit 0
 }
 
 switch ($Command) {
+    'init' { Invoke-QaInit }
     'plan' { Invoke-QaPlan }
     'approve' { Invoke-QaApprove }
     'static' { Invoke-QaStatic }

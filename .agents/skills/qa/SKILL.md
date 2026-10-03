@@ -2,7 +2,7 @@
 name: qa
 description: On-demand QA sweep of a whole project, a branch or a folder - machine static analysis plus read-only lanes for security, bugs, architecture, smells and UI, one report, nothing fixed. Manual only - run when the user types /qa or explicitly asks for a QA sweep; never on its own during a task, where /task-verify owns the review of a plan's change.
 disable-model-invocation: true
-argument-hint: "[project | branch [base] | <folder>] [--only lanes] [--skip lanes] [--static-only] [--yes]"
+argument-hint: "[project | branch [base] | <folder>] [--only lanes] [--skip lanes] [--static-only] [--yes] [--repo <path> --out <folder>]"
 ---
 
 # /qa
@@ -36,6 +36,7 @@ its parameters:
 | `--only a,b` / `--skip a,b` | `-Only a,b` / `-Skip a,b` (lanes: static, security, bug, architecture, smell, ui) |
 | `--static-only` | `-StaticOnly` |
 | `--yes` | `-Yes` |
+| `--repo <path> --out <folder>` | `-Repo <path> -Out <folder>` on every command (`init` first, below) |
 
 1. **Plan.** Run `qa.ps1 plan` with those parameters. Show its output to the user as it is: the scope and
    why, one line per lane with its state, files, agents and tokens, the verify readers, the total.
@@ -67,6 +68,29 @@ its parameters:
 The checklists the lanes read: [security](references/security.md), [smell](references/smell.md); the bug
 lane reads `.claude/skills/find-bug/SKILL.md`.
 
+## An external repository (read only)
+
+`/qa` also sweeps a repository it must never write into - another team's code, judged by its own rules
+(ADR-0034). Add `-Repo <repository> -Out <folder outside it>` to every command.
+
+1. **Once:** `qa.ps1 init -Repo <repository> -Out <folder>` writes `<folder>/qa.profile.json` (never over an
+   existing one; run again, it checks the file) and lists the rule files it found. The owner fills in
+   `build.command` - the build line, run from the repository root - and `build.noDeploy`, every MSBuild property
+   that turns deployment off (`DeployAddin=false`), each also written in the command as `-p:Name=Value`. Until
+   both are there the static lane is not applicable. Never write or guess the build line yourself.
+2. Then steps 1-8 above, every path under `<folder>`: runs in `<folder>/runs/<run>/` (save `lanes/` and
+   `verdicts/` there), the report in `<folder>/reports/`. Scopes are `project` (the default) and `path`; there is
+   no branch scope.
+3. Every file list has a `repo:` line: its paths are relative to that folder - tell each agent to read them
+   there, and each verify reader to look for the code there (`check` prints it). The architecture list ends with
+   a `rules:` line: the repository's own rule files for that batch; hand `architecture-reviewer` exactly those,
+   never this project's ADRs or profile.
+4. Bug proposals carry no `/task-bug`: the repository is not this project's; the owner reports them to its owners.
+
+Nothing is written into the repository - not `.paper/`, not its `.claude/`, not git's index - and none of its
+scripts runs except the declared build. Files that build writes into folders git ignores are the build's own;
+a build that changes anything else leaves the static lane not verifiable, naming the files.
+
 ## Never
 
 - Fix code, write anything under the bug ledger, commit, or change the project's config.
@@ -75,6 +99,7 @@ lane reads `.claude/skills/find-bug/SKILL.md`.
 - Let a lane verify its own findings, or put a finding that is not `confirmed` with an INPUT in the bug
   ledger proposals.
 - Report a lane that did not run as clean: not applicable, skipped and not verifiable each say why.
+- Run /qa on another repository without -Out, or edit its qa.profile.json build line yourself.
 
 ## Exit codes of qa.ps1
 
@@ -82,7 +107,7 @@ lane reads `.claude/skills/find-bug/SKILL.md`.
 | --- | --- |
 | 0 | done |
 | 1 | `check` found answers to send back |
-| 2 | invalid request, broken profile key, unknown lane or run; `not verifiable:` for a branch scope with no base branch |
+| 2 | invalid request, broken profile key, unknown lane or run; `not verifiable:` for a branch scope with no base branch, a wrong qa.profile.json or -Out (external repository) |
 | 4 | not verifiable: the run is not approved yet (`files`), or the static lane could not run (no dotnet, a package not downloaded, the build red, an analyzer that did not load) |
 | 5 | NOT APPLICABLE: no file in scope, or the lane does not run |
 

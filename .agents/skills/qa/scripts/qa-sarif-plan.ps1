@@ -603,8 +603,9 @@ function Get-PaperQaBuildEnvironment {
 # Steps 6-7: $null for a green build that wrote SARIF; else the reason (F58) with the command the verb ran
 # (paperflow's "build -> <command>" line) and the last five lines - a red build and one with no SARIF alike.
 function Get-PaperQaBuildFailure {
-    param([int] $ExitCode, [string[]] $Lines, [int] $SarifCount = 1)
-    if ($ExitCode -eq 4) {
+    param([int] $ExitCode, [string[]] $Lines, [int] $SarifCount = 1, [switch] $External)
+    # An external repository's build is the owner's build line, run directly: its exit 4 is a failed build.
+    if ($ExitCode -eq 4 -and -not $External) {
         $held = @($Lines | Where-Object { "$_" -match 'another run holds' } | Select-Object -First 1)
         $what = if ($held.Count -gt 0) { "$($held[0])".Trim() } else { 'paperflow exit 4' }
         return [pscustomobject]@{ Reason = "another build holds the project: $what"; Tail = @() }
@@ -613,7 +614,8 @@ function Get-PaperQaBuildFailure {
     $reason = if ($ExitCode -ne 0) { "build failed (exit $ExitCode)" } else { 'the build wrote no SARIF file' }
     $all = @($Lines)
     $last = @($all | Select-Object -Last 5)
-    $command = @($all | Where-Object { "$_" -match '^paperflow: build -> ' } | Select-Object -First 1)
+    $pattern = if ($External) { '^qa: build -> ' } else { '^paperflow: build -> ' }
+    $command = @($all | Where-Object { "$_" -match $pattern } | Select-Object -First 1)
     $tail = @()
     if ($command.Count -gt 0 -and $last -notcontains $command[0]) { $tail += $command[0] }
     $tail += $last
