@@ -77,7 +77,9 @@ Before `plan`, the owner picks the lanes - on a project and on an external repos
 1. **List.** `qa.ps1 lanes` with the scope parameters of `plan` (and `-Repo`/`-Out`) writes nothing. It prints
    the scope; one numbered line per lane that applies, `free` or its tokens, files and agents; a line per lane
    that does not apply or is turned off, with the reason; the verify readers; `all:`, the total; and `ask:`,
-   the option groups. Exit 5: nothing applies - show it and stop.
+   the option groups. Exit 5: nothing applies - show it and stop. On an external repository with no scope
+   given, `lanes` may print `qa-scope:` instead - the branch is off its base: ask the scope first ("A branch of
+   an external repository", below), then run `lanes` again with it.
 2. **Ask.** Claude (AskUserQuestion): one question per `ask:` group, in order, in one call, each
    `multiSelect: true`. Question 1: header `Lane QA`, text `Rà <scope>: chạy lane nào? Chọn nhiều được; Other
    để tự gõ, vd "chỉ bảo mật + bug cho thư mục X".` Question 2: header `Lane thêm`, text `Thêm lane nào nữa?`
@@ -97,8 +99,10 @@ Before `plan`, the owner picks the lanes - on a project and on an external repos
    nothing), or the numbers, `all` or lane names typed. A sentence - Other, a Codex answer, or the owner's own
    words after `/qa` - you read: the lanes it names (tĩnh/static, bảo mật/security, bug/lỗi,
    kiến trúc/architecture, smell/refactor, giao diện/UI/UX) with the boxes ticked, "trừ X" as every lane but
-   X, and the scope it names (a folder: `-Scope path -Path <folder>`; nhánh: branch; cả dự án: project). Once
-   the scope changed, pick by lane names: the numbers belong to the first list. A sentence that names no lane:
+   X, and the scope it names (a folder: `-Scope path -Path <folder>`; nhánh, phần đổi, thay đổi, so với <x>:
+   `-Scope branch`, with `-Base <x>` when it names one; cả dự án, cả kho: project).
+   A sentence that names only a scope: run `lanes` with that scope and ask the lane question - never pick lanes
+   for it. Once the scope changed, pick by lane names: the numbers belong to the first list. A sentence that names no lane:
    ask again - never guess one.
 4. Exit 2 names a number not on the list, a lane that does not apply here and why, or a word that is no lane:
    say it in Vietnamese and ask again. Exit 0 prints `qa-pick:` (the lanes and the scope) and `plan:`, the
@@ -122,13 +126,31 @@ or when `lanes` exits 5.
    that turns deployment off (`DeployAddin=false`), each also written in the command as `-p:Name=Value`. Until
    both are there the static lane is not applicable. Never write or guess the build line yourself.
 2. Then steps 1-8 above, every path under `<folder>`: runs in `<folder>/runs/<run>/` (save `lanes/` and
-   `verdicts/` there), the report in `<folder>/reports/`. Scopes are `project` (the default) and `path`; there is
-   no branch scope.
+   `verdicts/` there), the report in `<folder>/reports/`. Scopes are `project` (the default), `path` and `branch [base]`.
 3. Every file list has a `repo:` line: its paths are relative to that folder - tell each agent to read them
    there, and each verify reader to look for the code there (`check` prints it). The architecture list ends with
    a `rules:` line: the repository's own rule files for that batch; hand `architecture-reviewer` exactly those,
    never this project's ADRs or profile.
 4. Bug proposals carry no `/task-bug`: the repository is not this project's; the owner reports them to its owners.
+
+### A branch of an external repository
+
+`-Scope branch [-Base <branch>]` reads the files the open branch changed since it left its base - committed, then
+modified, staged or new on disk - with the kit's own read-only git (ADR-0037); nothing is fetched. The base: `-Base`,
+else `origin/HEAD`, `origin/main`, `main`, `master`, the first on this machine. `lanes`, the estimate and the report
+carry a `base:` line - the base, the merge-base, the commits ahead and how old the base is here (`STALE` or
+`MAY BE STALE`: the owner fetches if a fresh base matters; never fetch for them) - and a `changes:` line.
+
+`qa-scope:` (`lanes` with no scope while the branch is off its base): ask the scope first, alone. Claude: header
+`Phạm vi`, one choice, text `Rà cả kho hay phần đổi của nhánh <branch>?`, options `Cả kho` (`<n> file`) and
+`Nhánh <branch>` (`<m> file đổi so với <base>`); Codex: print the numbered lines and `Hoặc gõ: rà phần đổi so với
+<nhánh gốc>`. Then run `lanes` with the scope picked (`-Scope project`, or `-Scope branch` with `-Base` when the answer
+names a base) and ask the lane question.
+
+**From the plugin** (ADR-0038): `/paper-kit:qa` in a session whose repository has no `/qa` of its own runs this copy
+with `-Repo` the session's repository and `-Out` the folder it names (default under `%LOCALAPPDATA%\paper-kit\qa`).
+Codex has no plugin command: run `paper-kit/scripts/qa-entry.ps1 -Repo .` from a Paper-skills checkout and follow
+its lines.
 
 Nothing is written into the repository - not `.paper/`, not its `.claude/`, not git's index - and none of its
 scripts runs except the declared build. Files that build writes into folders git ignores are the build's own;

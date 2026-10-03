@@ -25,9 +25,11 @@ function Format-PaperQaLaneList {
     line per lane that does not apply or is turned off, the verify readers, the total and the option groups.
     ExitCode 5 when no lane applies.
     #>
-    param([string] $Mode, [string] $Reason, [int] $FileCount, [int] $ExcludedCount, $Estimate, [string] $RepoRoot = '')
+    param([string] $Mode, [string] $Reason, [int] $FileCount, [int] $ExcludedCount, $Estimate, [string] $RepoRoot = '', [string[]] $ScopeLines = @())
     $out = @("qa-lanes: scope $Mode ($Reason) - $FileCount file(s), $ExcludedCount excluded")
     if ($RepoRoot) { $out += "repo: $RepoRoot (external, read only)" }
+    # The base: and changes: lines of an external branch scope (ADR-0037), right after the repo line.
+    $out += @($ScopeLines | Where-Object { $_ })
     $rows = @($Estimate.Rows | Where-Object { $null -ne $_ -and $_.Name -ne 'verify' })
     $run = @($rows | Where-Object { $_.State -eq 'run' })
     $i = 0

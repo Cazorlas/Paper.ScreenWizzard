@@ -22,13 +22,16 @@
 # reports in <Out>\reports\. No script of the repository runs (paperflow is the kit's own), git runs with
 # GIT_OPTIONAL_LOCKS=0 so it never refreshes the repository's index, and the static lane runs the owner's
 # declared build line only when it carries every declared no-deploy property; a build that changes a file
-# git does not ignore leaves the static lane not verifiable (qa-external-plan.ps1).
+# git does not ignore leaves the static lane not verifiable (qa-external-plan.ps1). A branch scope (ADR-0037)
+# lists its files with the kit's own read-only git (Invoke-QaGit: core.fsmonitor off, no lazy fetch), never
+# review-files, and never fetches.
 #
 # Exit codes:
 #   0  done
 #   1  check found answers to send back
 #   2  invalid request, broken profile, unknown run (F66, F67); "not verifiable:" when the branch scope has
-#      no base (F69); a wrong qa.profile.json or -Out (external repository, F91-F95, F98)
+#      no base (F69); a wrong qa.profile.json or -Out (external repository, F91-F95, F98); a branch scope
+#      with no base or no merge-base (F121, F122)
 #   4  not verifiable: the run is not approved (F63), or the static lane could not run (F57, F58)
 #   5  NOT APPLICABLE: no file in scope (F65), or the lane does not run
 # ASCII only: PowerShell 5.1 reads a .ps1 without a BOM as ANSI.
@@ -58,6 +61,7 @@ try { [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding $false } c
 . (Join-Path $PSScriptRoot 'qa-sarif-plan.ps1')
 . (Join-Path $PSScriptRoot 'qa-plan.ps1')
 . (Join-Path $PSScriptRoot 'qa-external-plan.ps1')
+. (Join-Path $PSScriptRoot 'qa-branch-plan.ps1')
 . (Join-Path $PSScriptRoot 'qa-lanes-plan.ps1')
 
 $script:Utf8 = New-Object System.Text.UTF8Encoding $false
@@ -105,6 +109,8 @@ if ($Command -eq 'lanes' -and (@('Only', 'Skip', 'StaticOnly', 'Yes') | Where-Ob
 # The scope parameters as typed, in plan's order, for the plan line of lanes -Pick (F101).
 $planArgs = [ordered]@{}
 foreach ($k in @('Scope', 'Path', 'Base', 'Repo', 'Out')) { if ($PSBoundParameters.ContainsKey($k)) { $planArgs[$k] = [string] $PSBoundParameters[$k] } }
+# F126: lanes with no scope typed may ask the scope first on an external repository.
+$scopeGiven = [bool] (@('Scope', 'Path', 'Base') | Where-Object { $PSBoundParameters.ContainsKey($_) })
 $external = [bool] $Out
 if ($Command -eq 'init' -and -not $external) { Stop-Qa 2 'qa: init needs -Out <folder outside the repository>' }
 if ($external) {
@@ -112,6 +118,8 @@ if ($external) {
     # repository's index lock to refresh it.
     if (-not $PSBoundParameters.ContainsKey('Repo')) { Stop-Qa 2 'qa: -Out needs -Repo <repository> - the repository to read' }
     [Environment]::SetEnvironmentVariable('GIT_OPTIONAL_LOCKS', '0')
+    # ADR-0037: a partial clone never fetches a missing object for this run's git.
+    [Environment]::SetEnvironmentVariable('GIT_NO_LAZY_FETCH', '1')
 }
 if (-not (Test-Path -LiteralPath $Repo -PathType Container)) { Stop-Qa 2 "qa: project folder not found: $Repo" }
 $top = Invoke-Native 'git.exe' @('-C', $Repo, 'rev-parse', '--show-toplevel')
@@ -205,11 +213,17 @@ function Get-QaRunDir {
     return $dir
 }
 
+# The kit's git runner (change-set.ps1): stdout only, so a git warning never reads as a path. On an external
+# repository with core.fsmonitor off (ADR-0037): no hook and no daemon of the repository runs.
+function Invoke-QaGit {
+    if ($external) { return Invoke-PaperChangeGit -c core.fsmonitor=false @args }
+    return Invoke-PaperChangeGit @args
+}
+
 # Every file of the repository git knows: tracked plus untracked-not-ignored, '/' separated.
 function Get-QaRepoFiles {
-    # The kit's git runner (change-set.ps1): stdout only, so a git warning never reads as a path.
-    $t = Invoke-PaperChangeGit -C $root ls-files -z
-    $u = Invoke-PaperChangeGit -C $root ls-files -z --others --exclude-standard
+    $t = Invoke-QaGit -C $root ls-files -z
+    $u = Invoke-QaGit -C $root ls-files -z --others --exclude-standard
     if ($t.Code -ne 0 -or $u.Code -ne 0) { Stop-Qa 2 "qa: git ls-files failed: $(@($t.Lines + $u.Lines) -join ' / ')" }
     $split = { param($lines) @((@($lines) -join "`n") -split "`0" | ForEach-Object { $_.Trim("`n") } | Where-Object { $_ }) }
     return [pscustomobject]@{ Tracked = @(& $split $t.Lines); Untracked = @(& $split $u.Lines) }
@@ -237,7 +251,7 @@ function Get-QaSizes([string[]] $Paths) {
 
 # The repository as git sees it, for F94: every path `git status` lists -> "XY|length|ticks" ("XY|missing").
 function Get-QaRepoSnapshot {
-    $st = Invoke-PaperChangeGit -C $root -c core.quotepath=false status --porcelain --untracked-files=all
+    $st = Invoke-QaGit -C $root -c core.quotepath=false status --porcelain --untracked-files=all
     if ($st.Code -ne 0) { return $null }
     $snap = @{}
     foreach ($line in @($st.Lines)) {
@@ -291,12 +305,75 @@ function Invoke-QaInit {
 
 # ------------------------------------------------------------------ plan, lanes
 
-# The scope, chosen and checked; writes nothing. An external repository chooses it with no branch scope
-# (F98), so no branch, base or uncommitted work is read.
+# The branch of an external repository (ADR-0037, D): its base, how old that base is here, and the files it
+# changed - committed since the merge-base, then modified, staged or new on disk - all with read-only git,
+# never a fetch. Error (the text after "qa: ") at the first step that fails.
+function Get-QaExternalBranch {
+    $fail = { param($e) [pscustomobject]@{ Error = $e } }
+    $first = { param($r) if ($r.Code -eq 0 -and @($r.Lines).Count -gt 0) { "$(@($r.Lines)[0])".Trim() } else { '' } }
+    $verify = { param($ref) (Invoke-QaGit -C $root rev-parse --verify -q "$ref^{commit}").Code -eq 0 }
+    if (-not (& $verify 'HEAD')) { return & $fail 'not verifiable: the repository has no commit yet - use -Scope project' }
+    $label = Get-PaperQaBranchLabel -Branch (& $first (Invoke-QaGit -C $root symbolic-ref --short -q HEAD)) -Head (& $first (Invoke-QaGit -C $root rev-parse HEAD))
+    $found = @(@('origin/HEAD', 'origin/main', 'main', 'master') | Where-Object { & $verify $_ })
+    $originHead = & $first (Invoke-QaGit -C $root symbolic-ref -q --short refs/remotes/origin/HEAD)
+    $givenFound = $false
+    if ($Base) { $givenFound = & $verify $Base }
+    $b = Select-PaperQaExternalBase -Given $Base -GivenFound $givenFound -OriginHead $originHead -Found $found
+    if ($b.Error) { return & $fail "not verifiable: $($b.Error)" }
+    $ref = $b.Ref
+    $mb = & $first (Invoke-QaGit -C $root merge-base HEAD $ref)
+    if (-not $mb) { return & $fail "not verifiable: no merge-base with $ref (shallow clone or unrelated history) - /qa does not fetch: deepen the clone yourself (git fetch --deepen=<n>) or use -Scope project" }
+    $ahead = [int] (& $first (Invoke-QaGit -C $root rev-list --count "$mb..HEAD"))
+    $sha = & $first (Invoke-QaGit -C $root rev-parse $ref)
+    $kind = ConvertTo-PaperQaBaseKind -FullName (& $first (Invoke-QaGit -C $root rev-parse --symbolic-full-name $ref))
+    $cpFound = $false; $behind = 0
+    if ($kind.Kind -eq 'local') {
+        $cpFound = & $verify $kind.Counterpart
+        if ($cpFound) { $behind = [int] (& $first (Invoke-QaGit -C $root rev-list --count "$ref..$($kind.Counterpart)")) }
+    }
+    # The last fetch of this machine: FETCH_HEAD in the common git folder (a worktree shares it).
+    $age = -1; $date = ''
+    $common = & $first (Invoke-QaGit -C $root rev-parse --path-format=absolute --git-common-dir)
+    if ($common) {
+        $fetchHead = Join-Path $common.Replace('/', '\') 'FETCH_HEAD'
+        if (Test-Path -LiteralPath $fetchHead -PathType Leaf) {
+            $item = Get-Item -LiteralPath $fetchHead
+            $age = ((Get-Date).ToUniversalTime() - $item.LastWriteTimeUtc).TotalDays
+            $date = $item.LastWriteTime.ToString('yyyy-MM-dd')
+        }
+    }
+    $shallow = (& $first (Invoke-QaGit -C $root rev-parse --is-shallow-repository)) -eq 'true'
+    $line = Format-PaperQaBaseLine -Ref $ref -Why $b.Why -Sha $sha -MergeBase $mb -Ahead $ahead -Kind $kind.Kind -Counterpart $kind.Counterpart -CounterpartFound $cpFound -Behind $behind -FetchAgeDays $age -FetchDate $date -Shallow $shallow
+    # --no-renames: a rename is read as a new file, so git never reads a blob (a partial clone would fetch it).
+    $d = Invoke-QaGit -C $root diff --name-only --no-renames --no-ext-diff --no-textconv -z --diff-filter=d $mb HEAD
+    if ($d.Code -ne 0) { return & $fail "not verifiable: git diff against $mb failed" }
+    $committed = @((@($d.Lines) -join "`n") -split "`0" | ForEach-Object { $_.Trim("`n") } | Where-Object { $_ })
+    $st = Invoke-QaGit -C $root status --porcelain --untracked-files=all
+    if ($st.Code -ne 0) { return & $fail 'not verifiable: git status failed' }
+    $split = Split-PaperQaStatusEntries -Lines @($st.Lines)
+    $counts = Get-PaperQaExternalBranchPaths -Committed $committed -Changed @($split.Changed) -Untracked @($split.Untracked)
+    return [pscustomobject]@{
+        Error = ''; Label = $label; Ref = $ref; Why = $b.Why; MergeBase = $mb; Ahead = $ahead; BaseLine = $line.Line; Stale = $line.Stale
+        Committed = $committed; Changed = @($split.Changed); Untracked = @($split.Untracked); Counts = $counts
+    }
+}
+
+function Get-QaChangesLine($Branch) {
+    return (Format-PaperQaChangesLine -Committed $Branch.Counts.CommittedCount -Uncommitted $Branch.Counts.UncommittedCount -Untracked $Branch.Counts.UntrackedCount)
+}
+
+# The scope, chosen and checked; writes nothing. An external repository: the project by default; a branch
+# scope reads its branch with the kit's own git (Get-QaExternalBranch), never review-files (F98).
 function Select-QaScope {
     if ($external) {
         $sel = Select-PaperQaScope -Requested $Scope -Path $Path -Base $Base -External
         if ($sel.Error) { Stop-Qa 2 "qa: $($sel.Error)" }
+        if ($sel.Mode -eq 'branch') {
+            $script:QaBranch = Get-QaExternalBranch
+            if ($script:QaBranch.Error) { Stop-Qa 2 "qa: $($script:QaBranch.Error)" }
+            $sel.Label = $script:QaBranch.Label
+            $sel.Reason = "branch $($script:QaBranch.Label) against $($script:QaBranch.Ref)"
+        }
         return $sel
     }
     $branch = "$((Invoke-PaperChangeGit -C $root rev-parse --abbrev-ref HEAD).Lines | Select-Object -First 1)".Trim()
@@ -316,30 +393,46 @@ function Select-QaScope {
     return $sel
 }
 
+# The files of a scope with what is left out and why; ExitCode 5 (no file) or 2 (not verifiable) with its
+# Line - never stops. A branch of an external repository: its own git list (ADR-0037); of a project:
+# review-files.
+function Get-QaScopeFiles($all, [string[]] $allPaths, $sel) {
+    if ($sel.Mode -eq 'branch' -and -not $external) {
+        $args2 = @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $paperflow 'paperflow.ps1'), 'review-files', '-Repo', $root)
+        if ($Base) { $args2 += @('-Base', $Base) }
+        $rf = Invoke-Native $script:PowerShellExe $args2
+        $parsed = ConvertFrom-PaperReviewFilesOutput -Lines $rf.Lines -ExitCode $rf.Code
+        return (Resolve-PaperQaBranchScope -ReviewFiles $parsed -Sizes (Get-QaSizes @($parsed.Files | ForEach-Object { $_.Path })) -Label $sel.Label)
+    }
+    $tracked = @($all.Tracked); $untracked = @($all.Untracked); $folder = $sel.Folder
+    if ($sel.Mode -eq 'branch') {
+        $bp = $script:QaBranch.Counts
+        $tracked = @($bp.Tracked); $untracked = @($bp.Untracked); $folder = ''
+    }
+    $paths = @($tracked) + @($untracked)
+    $bytes = Get-QaSizes $paths
+    $binary = @{}
+    foreach ($p in @($bytes.Keys)) { $binary[$p] = Test-PaperBinaryFile (Get-QaFullPath $p) }
+    $submodules = @($paths | Where-Object { -not $bytes.ContainsKey($_) -and (Test-Path -LiteralPath (Get-QaFullPath $_) -PathType Container) })
+    $missing = @($paths | Where-Object { -not $bytes.ContainsKey($_) -and $submodules -notcontains $_ })
+    $r = Get-PaperQaScopeFiles -Tracked $tracked -Untracked $untracked -Bytes $bytes -Binary $binary -Missing $missing -Submodules $submodules -Folder $folder -Exclude $config.Exclude
+    $line = ''
+    if ($r.ExitCode -eq 5) { $line = Format-PaperQaNoFileLine $sel.Mode $sel.Label }
+    return [pscustomobject]@{ ExitCode = $r.ExitCode; Line = $line; Files = @($r.Files); Excluded = @($r.Excluded) }
+}
+
 # Everything plan decides once the scope is chosen - files, lanes, estimate, batches - for plan and for
 # lanes alike; writes nothing. Exit 2 or 5 as plan.
 function Get-QaPlanParts($all, [string[]] $allPaths, $sel, [string[]] $OnlyLanes, [string[]] $SkipLanes, [bool] $StaticOnlyRun) {
     $ruleObjs = @()
     if ($external) { $ruleObjs = @(Get-QaExternalRules $allPaths) }
 
-    if ($sel.Mode -eq 'branch') {
-        $args2 = @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $paperflow 'paperflow.ps1'), 'review-files', '-Repo', $root)
-        if ($Base) { $args2 += @('-Base', $Base) }
-        $rf = Invoke-Native $script:PowerShellExe $args2
-        $parsed = ConvertFrom-PaperReviewFilesOutput -Lines $rf.Lines -ExitCode $rf.Code
-        $scopeResult = Resolve-PaperQaBranchScope -ReviewFiles $parsed -Sizes (Get-QaSizes @($parsed.Files | ForEach-Object { $_.Path })) -Label $sel.Label
-        if ($scopeResult.ExitCode -ne 0) { Stop-Qa $scopeResult.ExitCode $scopeResult.Line }
-    }
-    else {
-        $bytes = Get-QaSizes $allPaths
-        $binary = @{}
-        foreach ($p in @($bytes.Keys)) { $binary[$p] = Test-PaperBinaryFile (Get-QaFullPath $p) }
-        $submodules = @($allPaths | Where-Object { -not $bytes.ContainsKey($_) -and (Test-Path -LiteralPath (Get-QaFullPath $_) -PathType Container) })
-        $missing = @($allPaths | Where-Object { -not $bytes.ContainsKey($_) -and $submodules -notcontains $_ })
-        $scopeResult = Get-PaperQaScopeFiles -Tracked $all.Tracked -Untracked $all.Untracked -Bytes $bytes -Binary $binary -Missing $missing -Submodules $submodules -Folder $sel.Folder -Exclude $config.Exclude
-        if ($scopeResult.ExitCode -eq 5) { Stop-Qa 5 (Format-PaperQaNoFileLine $sel.Mode $sel.Label) }
-    }
+    $scopeResult = Get-QaScopeFiles $all $allPaths $sel
+    if ($scopeResult.ExitCode -ne 0) { Stop-Qa $scopeResult.ExitCode $scopeResult.Line }
     $files = @($scopeResult.Files); $excluded = @($scopeResult.Excluded)
+    # The base: and changes: lines of an external branch scope (ADR-0037).
+    $scopeLines = @()
+    if ($external -and $sel.Mode -eq 'branch') { $scopeLines = @($script:QaBranch.BaseLine, (Get-QaChangesLine $script:QaBranch)) }
 
     $screens = @(Get-PaperQaScreens -Paths $allPaths -Glob $config.UiScreens -Folder $sel.Folder)
     $laneFiles = @{}
@@ -356,7 +449,7 @@ function Get-QaPlanParts($all, [string[]] $allPaths, $sel, [string[]] $OnlyLanes
     if ($lanes.Error) { Stop-Qa 2 "qa: $($lanes.Error)" }
     $estimate = Get-PaperQaEstimate -Lanes $lanes.Lanes -LaneFiles $laneFiles -Config $config -StaticOnly:$StaticOnlyRun -Rules $ruleObjs
     $batches = @(Get-PaperQaBatchList -Lanes $lanes.Lanes -LaneFiles $laneFiles -MaxTokens $config.BatchTokens -Rules $ruleObjs)
-    return [pscustomobject]@{ Files = $files; Excluded = $excluded; Screens = $screens; LaneFiles = $laneFiles; Lanes = $lanes.Lanes; Estimate = $estimate; Batches = $batches; Rules = $ruleObjs }
+    return [pscustomobject]@{ Files = $files; Excluded = $excluded; Screens = $screens; LaneFiles = $laneFiles; Lanes = $lanes.Lanes; Estimate = $estimate; Batches = $batches; Rules = $ruleObjs; ScopeLines = $scopeLines }
 }
 
 function Invoke-QaPlan {
@@ -376,6 +469,7 @@ function Invoke-QaPlan {
         Run = $runId; Mode = $sel.Mode; Label = $sel.Label; Reason = $sel.Reason; Folder = $sel.Folder; Base = $Base
         StaticOnly = $StaticOnly.IsPresent; Files = $files; Excluded = $excluded; Lanes = $parts.Lanes; Batches = @($parts.Batches)
         Screens = @($parts.Screens); Estimate = $estimate; Approved = $approved; Created = (Get-Date).ToString('s')
+        ScopeLines = @($parts.ScopeLines)
     }
     $repoLine = ''
     if ($external) {
@@ -386,7 +480,7 @@ function Invoke-QaPlan {
         $repoLine = $root
     }
     Write-Json (Join-Path $dir 'plan.json') $plan
-    foreach ($line in (Format-PaperQaEstimate -Run $runId -Mode $sel.Mode -Reason $sel.Reason -FileCount $files.Count -ExcludedCount $excluded.Count -Estimate $estimate -Approved $approved -RepoRoot $repoLine -RunDir $dir)) { Say $line }
+    foreach ($line in (Format-PaperQaEstimate -Run $runId -Mode $sel.Mode -Reason $sel.Reason -FileCount $files.Count -ExcludedCount $excluded.Count -Estimate $estimate -Approved $approved -RepoRoot $repoLine -RunDir $dir -ScopeLines @($parts.ScopeLines))) { Say $line }
     exit 0
 }
 
@@ -395,12 +489,28 @@ function Invoke-QaPlan {
 function Invoke-QaLanes {
     $all = Get-QaRepoFiles
     $allPaths = @($all.Tracked) + @($all.Untracked)
+    # F126: an external repository, no scope typed, the branch off its base - ask the scope first, alone.
+    # No base or no merge-base: no question, the project as before.
+    if ($external -and -not $pickGiven -and -not $scopeGiven) {
+        $br = Get-QaExternalBranch
+        if (-not $br.Error) {
+            $script:QaBranch = $br
+            $bs = Get-QaScopeFiles $all $allPaths ([pscustomobject]@{ Mode = 'branch'; Label = $br.Label; Folder = '' })
+            $bc = 0
+            if ($bs.ExitCode -eq 0) { $bc = @($bs.Files).Count }
+            if (Test-PaperQaAskScope -Ahead $br.Ahead -Uncommitted $br.Counts.UncommittedCount -Untracked $br.Counts.UntrackedCount -BranchCount $bc) {
+                $ps = Get-QaScopeFiles $all $allPaths ([pscustomobject]@{ Mode = 'project'; Label = ''; Folder = '' })
+                foreach ($line in @(Format-PaperQaScopeChoice -Label $br.Label -RepoRoot $root -BaseLine $br.BaseLine -ChangesLine (Get-QaChangesLine $br) -ProjectCount @($ps.Files).Count -ProjectExcluded @($ps.Excluded).Count -BranchCount $bc -BranchExcluded @($bs.Excluded).Count)) { Say $line }
+                exit 0
+            }
+        }
+    }
     $sel = Select-QaScope
     $parts = Get-QaPlanParts $all $allPaths $sel @() @() $false
     if (-not $pickGiven) {
         $repoLine = ''
         if ($external) { $repoLine = $root }
-        $list = Format-PaperQaLaneList -Mode $sel.Mode -Reason $sel.Reason -FileCount @($parts.Files).Count -ExcludedCount @($parts.Excluded).Count -Estimate $parts.Estimate -RepoRoot $repoLine
+        $list = Format-PaperQaLaneList -Mode $sel.Mode -Reason $sel.Reason -FileCount @($parts.Files).Count -ExcludedCount @($parts.Excluded).Count -Estimate $parts.Estimate -RepoRoot $repoLine -ScopeLines @($parts.ScopeLines)
         foreach ($line in @($list.Lines)) { Say $line }
         exit $list.ExitCode
     }
