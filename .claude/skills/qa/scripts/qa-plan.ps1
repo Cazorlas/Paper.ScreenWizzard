@@ -5,6 +5,8 @@
 # (ConvertTo-PaperGlobKey, ConvertTo-PaperGlobRegex) and qa-sarif-plan.ps1
 # (Test-PaperQaGeneratedPath, Sort-PaperQaByKey) first, and qa-external-plan.ps1 (Get-PaperQaBatchRules, used
 # only for an external repository) before calling with -Rules; declares no param() block.
+# The lanes (D.1, ADR-0035): a lane that does not apply says so before any choice is applied, and the ui
+# lane runs on every host with a user interface - all but $script:PaperQaNoUiHosts.
 # ASCII only: PowerShell 5.1 reads a .ps1 without a BOM as ANSI.
 
 $script:PaperQaLaneNames = @('static', 'security', 'bug', 'architecture', 'smell', 'ui')
@@ -31,7 +33,9 @@ $script:PaperQaLanePrefix = @{ 'security' = 'SEC'; 'bug' = 'BUG'; 'architecture'
 
 $script:PaperQaCodeExt = @('.cs', '.vb', '.fs', '.ps1', '.psm1', '.psd1', '.py', '.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.go', '.java', '.c', '.cc', '.cpp', '.h', '.hpp', '.rs', '.sql', '.sh')
 $script:PaperQaConfigExt = @('.json', '.config', '.xml', '.yml', '.yaml', '.props', '.targets', '.csproj', '.vbproj', '.fsproj', '.sln', '.addin', '.manifest', '.toml', '.ini')
-$script:PaperQaUiExt = @('.xaml', '.axaml', '.cshtml', '.razor', '.html', '.htm', '.css', '.scss', '.less', '.vue', '.svelte', '.tsx', '.jsx')
+$script:PaperQaUiExt = @('.xaml', '.axaml', '.cshtml', '.razor', '.html', '.htm', '.css', '.scss', '.less', '.vue', '.svelte', '.tsx', '.jsx', '.dcl')
+# The hosts with no user interface of their own; every other host has one (ADR-0035).
+$script:PaperQaNoUiHosts = @('cli', 'ai')
 $script:PaperQaProjectExt = @('.csproj', '.vbproj', '.fsproj', '.sln', '.props', '.targets')
 
 function Format-PaperQaNumber([double] $Value) { return $Value.ToString('N0', [Globalization.CultureInfo]::InvariantCulture) }
@@ -336,6 +340,8 @@ function Get-PaperQaLanes {
     .SYNOPSIS
     Which lanes run, in the order static, security, bug, architecture, smell, ui; the first rule of D.1
     that matches decides each one. Error is set for an unknown lane or one both in -Only and -Skip (F66).
+    The rules that a lane does not apply come before the choices (profile off, -StaticOnly, -Only, -Skip),
+    so a lane that does not apply says why whatever was picked (ADR-0035, F103).
     #>
     param($Hosts, $Config, $LaneFiles, [bool] $HasDotnetProject, [bool] $HasBuildVerb, [string[]] $Only, [string[]] $Skip, [switch] $StaticOnly, [int] $RuleCount = -1, [string] $NoBuildReason = 'no build verb')
     $names = $script:PaperQaLaneNames
@@ -349,6 +355,9 @@ function Get-PaperQaLanes {
         if ($skipList -contains $n) { return [pscustomobject]@{ Error = "lane '$n' is in both -Only and -Skip"; Lanes = @() } }
     }
     $hostList = @($Hosts | Where-Object { $_ } | ForEach-Object { "$_".ToLowerInvariant() })
+    $uiHost = (@($hostList | Where-Object { $script:PaperQaNoUiHosts -notcontains $_ }).Count -gt 0)
+    $hostText = $(if ($hostList.Count -gt 0) { $hostList -join ', ' } else { 'none' })
+    $external = ($null -ne $Config -and $Config.External -eq $true)
     $lanes = @()
     foreach ($lane in $names) {
         $override = $null
@@ -356,23 +365,28 @@ function Get-PaperQaLanes {
         $count = 0
         if ($null -ne $LaneFiles -and $LaneFiles.Contains($lane)) { $count = @($LaneFiles[$lane] | Where-Object { $null -ne $_ }).Count }
         $state = 'run'; $reason = ''
-        if ($StaticOnly -and $lane -ne 'static') { $state = 'skipped'; $reason = '-StaticOnly' }
-        elseif ($onlyList.Count -gt 0 -and $onlyList -notcontains $lane) { $state = 'skipped'; $reason = '-Only' }
-        elseif ($skipList -contains $lane) { $state = 'skipped'; $reason = '-Skip' }
-        elseif ($override -is [bool] -and -not $override) { $state = 'skipped'; $reason = 'profile turns it off' }
-        elseif ($lane -eq 'static' -and -not $HasDotnetProject) { $state = 'not applicable'; $reason = 'no .NET project' }
+        if ($lane -eq 'static' -and -not $HasDotnetProject) { $state = 'not applicable'; $reason = 'no .NET project' }
         elseif ($lane -eq 'static' -and -not $HasBuildVerb) { $state = 'not applicable'; $reason = $NoBuildReason }
         elseif ($count -eq 0) {
             $state = 'not applicable'
             $reason = switch ($lane) { 'static' { 'no C# or VB files in scope' } 'ui' { 'no UI files in scope' } default { 'no code files in scope' } }
         }
-        elseif ($lane -eq 'architecture' -and $null -ne $Config -and $Config.External -eq $true) {
+        elseif ($lane -eq 'architecture' -and $external) {
             # An external repository is judged by its own rule files; with none there is nothing to judge
             # against, whatever qa.lanes.architecture says (F95).
             if ($RuleCount -le 0) { $state = 'not applicable'; $reason = 'no rule files in the repository (qa.profile.json rules)' }
         }
         elseif ($lane -eq 'architecture' -and -not ($null -ne $Config -and $Config.ArchitectureDeclared) -and $override -ne $true) { $state = 'not applicable'; $reason = 'profile declares no architecture' }
-        elseif ($lane -eq 'ui' -and $hostList -notcontains 'desktop' -and $hostList -notcontains 'web' -and $override -ne $true) { $state = 'not applicable'; $reason = 'no desktop or web host' }
+        elseif ($lane -eq 'ui' -and -not $external -and -not $uiHost -and $override -ne $true) {
+            # An external repository is judged by the UI files of its scope, not by hosts (F104).
+            $state = 'not applicable'; $reason = "no host with a user interface (hosts: $hostText)"
+        }
+        if ($state -eq 'run') {
+            if ($override -is [bool] -and -not $override) { $state = 'skipped'; $reason = 'profile turns it off' }
+            elseif ($StaticOnly -and $lane -ne 'static') { $state = 'skipped'; $reason = '-StaticOnly' }
+            elseif ($onlyList.Count -gt 0 -and $onlyList -notcontains $lane) { $state = 'skipped'; $reason = '-Only' }
+            elseif ($skipList -contains $lane) { $state = 'skipped'; $reason = '-Skip' }
+        }
         $lanes += [pscustomobject]@{ Name = $lane; State = $state; Reason = $reason }
     }
     return [pscustomobject]@{ Error = ''; Lanes = $lanes }

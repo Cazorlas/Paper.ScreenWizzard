@@ -2,7 +2,7 @@
 name: qa
 description: On-demand QA sweep of a whole project, a branch or a folder - machine static analysis plus read-only lanes for security, bugs, architecture, smells and UI, one report, nothing fixed. Manual only - run when the user types /qa or explicitly asks for a QA sweep; never on its own during a task, where /task-verify owns the review of a plan's change.
 disable-model-invocation: true
-argument-hint: "[project | branch [base] | <folder>] [--only lanes] [--skip lanes] [--static-only] [--yes] [--repo <path> --out <folder>]"
+argument-hint: "[project | branch [base] | <folder>] [--only lanes] [--skip lanes] [--static-only] [--all] [--yes] [--repo <path> --out <folder>]"
 ---
 
 # /qa
@@ -35,14 +35,16 @@ its parameters:
 | a folder | `-Scope path -Path <folder>` |
 | `--only a,b` / `--skip a,b` | `-Only a,b` / `-Skip a,b` (lanes: static, security, bug, architecture, smell, ui) |
 | `--static-only` | `-StaticOnly` |
+| `--all` | none: every lane that applies, without the lane question |
 | `--yes` | `-Yes` |
 | `--repo <path> --out <folder>` | `-Repo <path> -Out <folder>` on every command (`init` first, below) |
 
-1. **Plan.** Run `qa.ps1 plan` with those parameters. Show its output to the user as it is: the scope and
-   why, one line per lane with its state, files, agents and tokens, the verify readers, the total.
+1. **Plan.** First the lane question ("Which lanes: ask first", below): it ends with the `plan:` line to run.
+   Run `qa.ps1 plan` with those parameters. Show its output to the user as it is: the scope and why, one line
+   per lane with its state, files, agents and tokens, the verify readers, the total.
 2. **Stop at the estimate.** Unless the last line says `approved: lanes may start` (`--yes`, or nothing
-   but static analysis runs), stop and ask one question: run everything, skip a lane, or static only?
-   A different choice is a new `plan` with `-Skip`/`-StaticOnly`. Only after the user agreed, run
+   but static analysis runs), stop and ask one question: start these lanes, change them (the lane question again), or static
+   only? A different choice is a new `plan`. Only after the user agreed, run
    `qa.ps1 approve -Run <run>`. Until then `qa.ps1 files` refuses (exit 4) - no lane gets a file list.
 3. **Static lane.** `qa.ps1 static -Run <run>` builds the project with the analyzers plugged in (see
    [static analysis](references/static-analysis.md)). It is machine work: start it in the background and
@@ -67,6 +69,47 @@ its parameters:
 
 The checklists the lanes read: [security](references/security.md), [smell](references/smell.md); the bug
 lane reads `.claude/skills/find-bug/SKILL.md`.
+
+## Which lanes: ask first
+
+Before `plan`, the owner picks the lanes - on a project and on an external repository alike.
+
+1. **List.** `qa.ps1 lanes` with the scope parameters of `plan` (and `-Repo`/`-Out`) writes nothing. It prints
+   the scope; one numbered line per lane that applies, `free` or its tokens, files and agents; a line per lane
+   that does not apply or is turned off, with the reason; the verify readers; `all:`, the total; and `ask:`,
+   the option groups. Exit 5: nothing applies - show it and stop.
+2. **Ask.** Claude (AskUserQuestion): one question per `ask:` group, in order, in one call, each
+   `multiSelect: true`. Question 1: header `Lane QA`, text `Rà <scope>: chạy lane nào? Chọn nhiều được; Other
+   để tự gõ, vd "chỉ bảo mật + bug cho thư mục X".` Question 2: header `Lane thêm`, text `Thêm lane nào nữa?`
+   Options, with the numbers of the lane's line:
+
+   | `ask:` | label | description |
+   | --- | --- | --- |
+   | all | Chạy hết | Mọi lane áp dụng được - <total> token, gồm xác minh |
+   | static | Phân tích tĩnh | Miễn phí - build có analyzer, <n> file |
+   | security, bug, architecture, smell, ui | Bảo mật, Bug, Kiến trúc, Smell, UI/UX | <tokens> token - <n> file, <a> agent |
+   | none | Không thêm | Chỉ các lane đã chọn ở câu trên |
+
+   The box adds Other by itself: that is "Tự gõ". Codex, or any agent with no choice box: print the numbered
+   lines as they are, then `all = chạy hết (<total> token)` and `Hoặc gõ một câu, vd: chỉ bảo mật + bug cho
+   thư mục X`, and end the turn.
+3. **Pick.** Run `qa.ps1 lanes <scope> -Pick <answer>`: the lanes ticked (Chạy hết = `all`, Không thêm =
+   nothing), or the numbers, `all` or lane names typed. A sentence - Other, a Codex answer, or the owner's own
+   words after `/qa` - you read: the lanes it names (tĩnh/static, bảo mật/security, bug/lỗi,
+   kiến trúc/architecture, smell/refactor, giao diện/UI/UX) with the boxes ticked, "trừ X" as every lane but
+   X, and the scope it names (a folder: `-Scope path -Path <folder>`; nhánh: branch; cả dự án: project). Once
+   the scope changed, pick by lane names: the numbers belong to the first list. A sentence that names no lane:
+   ask again - never guess one.
+4. Exit 2 names a number not on the list, a lane that does not apply here and why, or a word that is no lane:
+   say it in Vietnamese and ask again. Exit 0 prints `qa-pick:` (the lanes and the scope) and `plan:`, the
+   exact command line.
+5. **Confirm a sentence.** Show the lanes, the scope and the `plan:` line and ask `Đúng chưa?` (Claude: header
+   `Xác nhận`, options `Đúng, lập plan` and `Chọn lại`; Codex: `y`, or a new answer). Boxes or numbers need no
+   confirmation: the estimate is the next stop. Then step 1 runs the `plan:` line.
+
+No question when the owner's words already set the lanes (`--only`, `--skip`, `--static-only`, `--all`), with
+`--yes` (a run nobody answers: every lane that applies), when `ask:` says `none` (one lane applies: plan it),
+or when `lanes` exits 5.
 
 ## An external repository (read only)
 
@@ -100,6 +143,7 @@ a build that changes anything else leaves the static lane not verifiable, naming
   ledger proposals.
 - Report a lane that did not run as clean: not applicable, skipped and not verifiable each say why.
 - Run /qa on another repository without -Out, or edit its qa.profile.json build line yourself.
+- Plan before the owner picked the lanes (unless no question is asked), or plan the reading of a sentence the owner has not confirmed.
 
 ## Exit codes of qa.ps1
 

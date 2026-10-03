@@ -1,9 +1,10 @@
 # /qa, the I/O part (plan 2026-10-02-qa-command, table K): git, the disk, `dotnet restore`, the build verb.
-# Every decision lives in qa-plan.ps1, qa-sarif-plan.ps1 and qa-external-plan.ps1, which are pure and fully
+# Every decision lives in qa-plan.ps1, qa-sarif-plan.ps1, qa-external-plan.ps1 and qa-lanes-plan.ps1, which are pure and fully
 # tested: each command reads what it needs, hands it to one of their functions, prints its lines and exits
 # with its code.
 #
 #   qa.ps1 plan    [-Scope project|branch|path] [-Path <folder>] [-Base <branch>] [-Only a,b] [-Skip a,b] [-StaticOnly] [-Yes]
+#   qa.ps1 lanes   [-Scope project|branch|path] [-Path <folder>] [-Base <branch>] [-Pick <numbers|lanes|all>]
 #   qa.ps1 approve -Run <run>
 #   qa.ps1 static  -Run <run>
 #   qa.ps1 files   -Run <run> -Lane <lane> [-Batch <n>] [-Retry]
@@ -46,7 +47,8 @@ param(
     [string] $Lane,
     [int] $Batch = 1,
     [switch] $Retry,
-    [string] $Out
+    [string] $Out,
+    [string[]] $Pick
 )
 
 $ErrorActionPreference = 'Stop'
@@ -56,6 +58,7 @@ try { [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding $false } c
 . (Join-Path $PSScriptRoot 'qa-sarif-plan.ps1')
 . (Join-Path $PSScriptRoot 'qa-plan.ps1')
 . (Join-Path $PSScriptRoot 'qa-external-plan.ps1')
+. (Join-Path $PSScriptRoot 'qa-lanes-plan.ps1')
 
 $script:Utf8 = New-Object System.Text.UTF8Encoding $false
 $script:PowerShellExe = Join-Path $PSHOME 'powershell.exe'
@@ -66,6 +69,7 @@ function Stop-Qa([int] $Code, [string] $Line) { if ($Line) { Say $Line }; exit $
 function Show-Help {
     Say 'qa - on-demand QA sweep of a project, a branch or a folder'
     Say '  qa.ps1 plan [-Scope project|branch|path] [-Path <folder>] [-Base <branch>] [-Only a,b] [-Skip a,b] [-StaticOnly] [-Yes]'
+    Say '  qa.ps1 lanes [-Scope ...] [-Path <folder>] [-Base <branch>] [-Pick 1,3|all|<lanes>]   (the lanes that apply and their cost; writes nothing)'
     Say '  qa.ps1 approve|static|check|report -Run <run>'
     Say '  qa.ps1 files -Run <run> -Lane <lane> [-Batch <n>] [-Retry]'
     Say '  qa.ps1 init -Repo <repository> -Out <folder>   (an external repository: nothing is written into it)'
@@ -93,7 +97,14 @@ function Read-Lines([string] $File) { return , [IO.File]::ReadAllLines($File, [T
 # ------------------------------------------------------------------ where things are
 
 if ($Command -in @('help', '-h', '--help', '/?')) { Show-Help; exit 0 }
-if ($Command -notin @('init', 'plan', 'approve', 'static', 'files', 'check', 'report')) { Stop-Qa 2 "qa: unknown command '$Command' (init, plan, approve, static, files, check, report)" }
+if ($Command -notin @('init', 'lanes', 'plan', 'approve', 'static', 'files', 'check', 'report')) { Stop-Qa 2 "qa: unknown command '$Command' (init, lanes, plan, approve, static, files, check, report)" }
+# The lane question (ADR-0035): -Pick belongs to lanes, and lanes lists every lane with no choice applied.
+$pickGiven = $PSBoundParameters.ContainsKey('Pick')
+if ($pickGiven -and $Command -ne 'lanes') { Stop-Qa 2 'qa: -Pick goes with qa.ps1 lanes' }
+if ($Command -eq 'lanes' -and (@('Only', 'Skip', 'StaticOnly', 'Yes') | Where-Object { $PSBoundParameters.ContainsKey($_) })) { Stop-Qa 2 'qa: lanes lists every lane that applies - -Only, -Skip, -StaticOnly and -Yes go with plan' }
+# The scope parameters as typed, in plan's order, for the plan line of lanes -Pick (F101).
+$planArgs = [ordered]@{}
+foreach ($k in @('Scope', 'Path', 'Base', 'Repo', 'Out')) { if ($PSBoundParameters.ContainsKey($k)) { $planArgs[$k] = [string] $PSBoundParameters[$k] } }
 $external = [bool] $Out
 if ($Command -eq 'init' -and -not $external) { Stop-Qa 2 'qa: init needs -Out <folder outside the repository>' }
 if ($external) {
@@ -278,12 +289,16 @@ function Invoke-QaInit {
     exit 0
 }
 
-# ------------------------------------------------------------------ plan
+# ------------------------------------------------------------------ plan, lanes
 
-function Invoke-QaPlan {
-    $all = Get-QaRepoFiles
-    $allPaths = @($all.Tracked) + @($all.Untracked)
-    if ($external) { Invoke-QaPlanFor $all $allPaths; return }
+# The scope, chosen and checked; writes nothing. An external repository chooses it with no branch scope
+# (F98), so no branch, base or uncommitted work is read.
+function Select-QaScope {
+    if ($external) {
+        $sel = Select-PaperQaScope -Requested $Scope -Path $Path -Base $Base -External
+        if ($sel.Error) { Stop-Qa 2 "qa: $($sel.Error)" }
+        return $sel
+    }
     $branch = "$((Invoke-PaperChangeGit -C $root rev-parse --abbrev-ref HEAD).Lines | Select-Object -First 1)".Trim()
     # The base and merge-base are the kit's one answer (change-set.ps1, as review-files reads them): -Base,
     # the base worktree create recorded, main/master/origin, or the branch's own remote when on the base.
@@ -298,18 +313,14 @@ function Invoke-QaPlan {
 
     $sel = Select-PaperQaScope -Requested $Scope -Path $Path -Base $Base -CurrentBranch $branch -BaseBranch $baseBranch -BaseError "$($change.Message)" -Ahead $ahead -Dirty $dirty
     if ($sel.Error) { Stop-Qa 2 "qa: $($sel.Error)" }
-    Invoke-QaPlanFor $all $allPaths $sel
+    return $sel
 }
 
-# The plan once the scope is chosen. An external repository chooses it here: no branch scope (F98), so no
-# branch, base or uncommitted work is read.
-function Invoke-QaPlanFor($all, [string[]] $allPaths, $sel = $null) {
+# Everything plan decides once the scope is chosen - files, lanes, estimate, batches - for plan and for
+# lanes alike; writes nothing. Exit 2 or 5 as plan.
+function Get-QaPlanParts($all, [string[]] $allPaths, $sel, [string[]] $OnlyLanes, [string[]] $SkipLanes, [bool] $StaticOnlyRun) {
     $ruleObjs = @()
-    if ($external) {
-        $sel = Select-PaperQaScope -Requested $Scope -Path $Path -Base $Base -External
-        if ($sel.Error) { Stop-Qa 2 "qa: $($sel.Error)" }
-        $ruleObjs = @(Get-QaExternalRules $allPaths)
-    }
+    if ($external) { $ruleObjs = @(Get-QaExternalRules $allPaths) }
 
     if ($sel.Mode -eq 'branch') {
         $args2 = @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $paperflow 'paperflow.ps1'), 'review-files', '-Repo', $root)
@@ -336,16 +347,25 @@ function Invoke-QaPlanFor($all, [string[]] $allPaths, $sel = $null) {
     $hasDotnet = Test-PaperQaDotnetProject -Paths $allPaths
     if ($external) {
         $b = Get-PaperQaExternalBuild -Config $config
-        $lanes = Get-PaperQaLanes -Hosts $config.Hosts -Config $config -LaneFiles $laneFiles -HasDotnetProject $hasDotnet -HasBuildVerb $b.Run -NoBuildReason $b.Reason -RuleCount $ruleObjs.Count -Only $Only -Skip $Skip -StaticOnly:$StaticOnly
+        $lanes = Get-PaperQaLanes -Hosts $config.Hosts -Config $config -LaneFiles $laneFiles -HasDotnetProject $hasDotnet -HasBuildVerb $b.Run -NoBuildReason $b.Reason -RuleCount $ruleObjs.Count -Only $OnlyLanes -Skip $SkipLanes -StaticOnly:$StaticOnlyRun
     }
     else {
         $hasBuild = (Get-PaperVerbPlan -ProjectProfile $profileMap -Verb 'build').ExitCode -eq 0
-        $lanes = Get-PaperQaLanes -Hosts $config.Hosts -Config $config -LaneFiles $laneFiles -HasDotnetProject $hasDotnet -HasBuildVerb $hasBuild -Only $Only -Skip $Skip -StaticOnly:$StaticOnly
+        $lanes = Get-PaperQaLanes -Hosts $config.Hosts -Config $config -LaneFiles $laneFiles -HasDotnetProject $hasDotnet -HasBuildVerb $hasBuild -Only $OnlyLanes -Skip $SkipLanes -StaticOnly:$StaticOnlyRun
     }
     if ($lanes.Error) { Stop-Qa 2 "qa: $($lanes.Error)" }
-    $estimate = Get-PaperQaEstimate -Lanes $lanes.Lanes -LaneFiles $laneFiles -Config $config -StaticOnly:$StaticOnly -Rules $ruleObjs
+    $estimate = Get-PaperQaEstimate -Lanes $lanes.Lanes -LaneFiles $laneFiles -Config $config -StaticOnly:$StaticOnlyRun -Rules $ruleObjs
     $batches = @(Get-PaperQaBatchList -Lanes $lanes.Lanes -LaneFiles $laneFiles -MaxTokens $config.BatchTokens -Rules $ruleObjs)
-    $approved = [bool] (Test-PaperQaApprovedAtPlan -Lanes $lanes.Lanes -Yes $Yes.IsPresent)
+    return [pscustomobject]@{ Files = $files; Excluded = $excluded; Screens = $screens; LaneFiles = $laneFiles; Lanes = $lanes.Lanes; Estimate = $estimate; Batches = $batches; Rules = $ruleObjs }
+}
+
+function Invoke-QaPlan {
+    $all = Get-QaRepoFiles
+    $allPaths = @($all.Tracked) + @($all.Untracked)
+    $sel = Select-QaScope
+    $parts = Get-QaPlanParts $all $allPaths $sel $Only $Skip $StaticOnly.IsPresent
+    $files = @($parts.Files); $excluded = @($parts.Excluded); $estimate = $parts.Estimate; $ruleObjs = @($parts.Rules)
+    $approved = [bool] (Test-PaperQaApprovedAtPlan -Lanes $parts.Lanes -Yes $Yes.IsPresent)
 
     Initialize-QaRunsDir
     $existingRuns = @(Get-ChildItem -LiteralPath $runsDir -Directory | ForEach-Object { $_.Name })
@@ -354,8 +374,8 @@ function Invoke-QaPlanFor($all, [string[]] $allPaths, $sel = $null) {
     New-Item -ItemType Directory -Force -Path $dir | Out-Null
     $plan = [pscustomobject]@{
         Run = $runId; Mode = $sel.Mode; Label = $sel.Label; Reason = $sel.Reason; Folder = $sel.Folder; Base = $Base
-        StaticOnly = $StaticOnly.IsPresent; Files = $files; Excluded = $excluded; Lanes = $lanes.Lanes; Batches = $batches
-        Screens = $screens; Estimate = $estimate; Approved = $approved; Created = (Get-Date).ToString('s')
+        StaticOnly = $StaticOnly.IsPresent; Files = $files; Excluded = $excluded; Lanes = $parts.Lanes; Batches = @($parts.Batches)
+        Screens = @($parts.Screens); Estimate = $estimate; Approved = $approved; Created = (Get-Date).ToString('s')
     }
     $repoLine = ''
     if ($external) {
@@ -367,6 +387,27 @@ function Invoke-QaPlanFor($all, [string[]] $allPaths, $sel = $null) {
     }
     Write-Json (Join-Path $dir 'plan.json') $plan
     foreach ($line in (Format-PaperQaEstimate -Run $runId -Mode $sel.Mode -Reason $sel.Reason -FileCount $files.Count -ExcludedCount $excluded.Count -Estimate $estimate -Approved $approved -RepoRoot $repoLine -RunDir $dir)) { Say $line }
+    exit 0
+}
+
+# The lane question (ADR-0035, F99-F105): the lanes that apply and their cost, with no choice applied; with
+# -Pick, the answer turned into the exact plan command line. Writes nothing, creates no run folder.
+function Invoke-QaLanes {
+    $all = Get-QaRepoFiles
+    $allPaths = @($all.Tracked) + @($all.Untracked)
+    $sel = Select-QaScope
+    $parts = Get-QaPlanParts $all $allPaths $sel @() @() $false
+    if (-not $pickGiven) {
+        $repoLine = ''
+        if ($external) { $repoLine = $root }
+        $list = Format-PaperQaLaneList -Mode $sel.Mode -Reason $sel.Reason -FileCount @($parts.Files).Count -ExcludedCount @($parts.Excluded).Count -Estimate $parts.Estimate -RepoRoot $repoLine
+        foreach ($line in @($list.Lines)) { Say $line }
+        exit $list.ExitCode
+    }
+    $r = Resolve-PaperQaLanePick -Pick $Pick -Lanes $parts.Lanes
+    if ($r.Error -eq 'no lane applies to this scope') { Stop-Qa 5 'qa: NOT APPLICABLE - no lane applies to this scope' }
+    if ($r.Error) { Stop-Qa 2 "qa: $($r.Error)" }
+    foreach ($line in @(Format-PaperQaPickLines -Pick $r -Mode $sel.Mode -Reason $sel.Reason -Arguments $planArgs)) { Say $line }
     exit 0
 }
 
@@ -566,6 +607,7 @@ function Invoke-QaReport {
 
 switch ($Command) {
     'init' { Invoke-QaInit }
+    'lanes' { Invoke-QaLanes }
     'plan' { Invoke-QaPlan }
     'approve' { Invoke-QaApprove }
     'static' { Invoke-QaStatic }
