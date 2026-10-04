@@ -1,0 +1,11 @@
+{
+ "answers_question": {
+  "type": "choice",
+  "criteria": {
+   "yes": "The passage alone gives the answer for the case the question asks about: the value, limit, method or rule, or that the thing asked about is not required or not allowed. It may name that case or give a general rule that covers it, in other words, other units or another language than the question. A definition is the answer only when the question asks what a term means",
+   "partly": "The passage gives part of the answer but not all of it: the answer for only some of the cases or quantities the question asks about, or only under a condition the question does not state; a related requirement, condition or exception without the answer itself; or a pointer to the table, clause or annex where the answer is",
+   "no": "The passage does not help answer the question: it is about another space, element, device, building type or quantity, even when it shares most of its words with the question, or it gives the opposite limit (a maximum where the question asks for a minimum); it only defines a term the question uses or says how that term is measured; or it only states scope or purpose"
+  },
+  "instructions": "Does this passage from a building specification or standard answer the question? The state holds the question, then after 'question plain:' the same question without Vietnamese diacritics when it has them, then after 'passage:' one passage of the document. Judge by meaning, not by shared words: a passage may answer in other words or in another language than the question, and a passage may share most of its words with the question and still not answer it. A passage that answers no (not required, need not, shall not) still answers."
+ }
+}

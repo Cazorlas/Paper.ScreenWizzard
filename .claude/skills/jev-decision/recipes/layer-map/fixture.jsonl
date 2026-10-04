@@ -1,0 +1,45 @@
+{"id":"LM01","input":"layer: A-WALL | colour 7 | lines 1200","expect":{"discipline":"Architecture","element_kind":"wall","mep_system":"none"},"case":"plain","synthetic":true}
+{"id":"LM02","input":"layer: A-DOOR | blocks: Single Door 900","expect":{"discipline":"Architecture","element_kind":"other","mep_system":"none"},"case":"plain","synthetic":true}
+{"id":"LM03","input":"layer: S-COLUMN | polylines 64","expect":{"discipline":"Structure","element_kind":"other","mep_system":"none"},"case":"plain","synthetic":true}
+{"id":"LM04","input":"layer: S-GRID | lines 30","expect":{"discipline":"Structure","element_kind":"grid/axis","mep_system":"none"},"case":"plain","synthetic":true}
+{"id":"LM05","input":"layer: M-DUCT-SA | polylines 410","expect":{"discipline":"Mechanical/HVAC","element_kind":"duct","mep_system":"supply air"},"case":"plain","synthetic":true}
+{"id":"LM06","input":"layer: M-DUCT-RA | polylines 220","expect":{"discipline":"Mechanical/HVAC","element_kind":"duct","mep_system":"return air"},"case":"plain","synthetic":true}
+{"id":"LM07","input":"layer: M-DUCT-EXH | polylines 90","expect":{"discipline":"Mechanical/HVAC","element_kind":"duct","mep_system":"exhaust air"},"case":"plain","synthetic":true}
+{"id":"LM08","input":"layer: M-SMOKE-DUCT | polylines 75","expect":{"discipline":"Mechanical/HVAC","element_kind":"duct","mep_system":"smoke extract"},"case":"plain","synthetic":true}
+{"id":"LM09","input":"layer: M-GRILLE-SA | blocks: Linear Diffuser 1200","expect":{"discipline":"Mechanical/HVAC","element_kind":"air terminal","mep_system":"supply air"},"case":"plain","synthetic":true}
+{"id":"LM10","input":"layer: M-PIPE-CHWS | polylines 300","expect":{"discipline":"Mechanical/HVAC","element_kind":"pipe","mep_system":"chilled water supply"},"case":"plain","synthetic":true}
+{"id":"LM11","input":"layer: M-PIPE-CHWR | polylines 290","expect":{"discipline":"Mechanical/HVAC","element_kind":"pipe","mep_system":"chilled water return"},"case":"plain","synthetic":true}
+{"id":"LM12","input":"layer: M-EQPM-AHU | blocks: AHU-01","expect":{"discipline":"Mechanical/HVAC","element_kind":"equipment","mep_system":"not known"},"case":"plain","synthetic":true}
+{"id":"LM13","input":"layer: P-PIPE-CW | polylines 150","expect":{"discipline":"Plumbing/Drainage","element_kind":"pipe","mep_system":"domestic water"},"case":"plain","synthetic":true}
+{"id":"LM14","input":"layer: P-SOIL | polylines 80","expect":{"discipline":"Plumbing/Drainage","element_kind":"other","mep_system":"sanitary"},"case":"plain","synthetic":true}
+{"id":"LM15","input":"layer: P-COND-DRAIN | polylines 40","expect":{"discipline":"Plumbing/Drainage","element_kind":"other","mep_system":"condensate/drain"},"case":"plain","synthetic":true}
+{"id":"LM16","input":"layer: FF-SPRK-HEAD | blocks: Pendent Sprinkler","expect":{"discipline":"Fire protection","element_kind":"fixture/device","mep_system":"fire sprinkler"},"case":"plain","synthetic":true}
+{"id":"LM17","input":"layer: FF-HYDRANT | blocks: Hydrant Valve","expect":{"discipline":"Fire protection","element_kind":"fitting/accessory","mep_system":"not known"},"case":"plain","synthetic":true}
+{"id":"LM18","input":"layer: E-LITE | blocks: Downlight 150","expect":{"discipline":"Electrical","element_kind":"fixture/device","mep_system":"none"},"case":"plain","synthetic":true}
+{"id":"LM19","input":"layer: E-CABLE-TRAY | polylines 120","expect":{"discipline":"Electrical","element_kind":"other","mep_system":"none"},"case":"plain","synthetic":true}
+{"id":"LM20","input":"layer: E-FA-DETECTOR | blocks: Smoke Detector","expect":{"discipline":"Fire protection","element_kind":"fixture/device","mep_system":"none"},"case":"plain","synthetic":true}
+{"id":"LM21","input":"layer: G-TITLE | blocks: A1 Title Block","expect":{"discipline":"General/annotation","element_kind":"title block/border","mep_system":"none"},"case":"plain","synthetic":true}
+{"id":"LM22","input":"layer: G-DIMS | dimensions 85","expect":{"discipline":"General/annotation","element_kind":"dimension","mep_system":"none"},"case":"plain","synthetic":true}
+{"id":"LM23","input":"layer: G-ANNO-TEXT | texts 140","expect":{"discipline":"General/annotation","element_kind":"text/tag","mep_system":"none"},"case":"plain","synthetic":true}
+{"id":"LM24","input":"layer: XX-ONG-GIO-CAP | polylines 60","expect":{"discipline":"Mechanical/HVAC","element_kind":"duct","mep_system":"supply air"},"case":"plain","synthetic":true}
+{"id":"LM25","input":"layer: BD-ME-M-HVAC | polylines 33","expect":{"discipline":"Mechanical/HVAC","element_kind":"other","mep_system":"not known"},"case":"plain","synthetic":true}
+{"id":"LM26","input":"layer: S-BEAM | lines 210","expect":{"discipline":"Structure","element_kind":"other","mep_system":"none"},"case":"plain","synthetic":true}
+{"id":"LM27","input":"layer: ZZ-MISC-01 | lines 4","expect":{"discipline":"Other","element_kind":"other","mep_system":"none"},"case":"plain","synthetic":true}
+{"id":"LM28","input":"layer: A-HATCH-FLOOR | hatches 12","expect":{"discipline":"Architecture","element_kind":"hatch","mep_system":"none"},"case":"plain","synthetic":true}
+{"id":"LM29","input":"layer: BD-M-Duct Fittings | blocks: Elbow 90","expect":{"discipline":"Mechanical/HVAC","element_kind":"fitting/accessory","mep_system":"not known"},"case":"plain","synthetic":true}
+{"id":"LM30","input":"layer: A-FURN | blocks: Sofa 3 seat","expect":{"discipline":"Architecture","element_kind":"other","mep_system":"none"},"case":"plain","synthetic":true}
+{"id":"LM31","input":"layer: A-DUCT-SHAFT | lines 16","expect":{"discipline":"Architecture","element_kind":"other","mep_system":"none"},"case":"hard","synthetic":true,"note":"a shaft is building fabric, not a duct"}
+{"id":"LM32","input":"layer: E-DUCT-CABLE | polylines 55","expect":{"discipline":"Electrical","element_kind":"other","mep_system":"none"},"case":"hard","synthetic":true,"note":"cable duct is electrical containment"}
+{"id":"LM33","input":"layer: FIRE-ALARM-DEVICES | blocks: Manual Call Point","expect":{"discipline":"Fire protection","element_kind":"fixture/device","mep_system":"none"},"case":"hard","synthetic":true,"note":"fire alarm is Fire protection (owner 2026-10-01; was Electrical); its system is none: no pipe or duct"}
+{"id":"LM34","input":"layer: FIRE-PIPE | polylines 140","expect":{"discipline":"Fire protection","element_kind":"pipe","mep_system":"not known"},"case":"hard","synthetic":true}
+{"id":"LM35","input":"layer: 空调风管-送风 | polylines 90","expect":{"discipline":"Mechanical/HVAC","element_kind":"duct","mep_system":"supply air"},"case":"hard","synthetic":true,"note":"Chinese: air-conditioning duct, supply"}
+{"id":"LM36","input":"layer: Ống thoát nước mưa | polylines 44","expect":{"discipline":"Plumbing/Drainage","element_kind":"pipe","mep_system":"condensate/drain"},"case":"hard","synthetic":true,"note":"rainwater drain pipe, Vietnamese with accents"}
+{"id":"LM37","input":"layer: M-SUPPORT-HANGER | blocks: Hanger Rod","expect":{"discipline":"Mechanical/HVAC","element_kind":"fitting/accessory","mep_system":"not known"},"case":"hard","synthetic":true}
+{"id":"LM38","input":"layer: VRF-REFRIGERANT | polylines 60","expect":{"discipline":"Mechanical/HVAC","element_kind":"pipe","mep_system":"not known"},"case":"hard","synthetic":true}
+{"id":"LM39","input":"layer: LPG-LINE | polylines 12","expect":{"discipline":"Plumbing/Drainage","element_kind":"pipe","mep_system":"not known"},"case":"hard","synthetic":true}
+{"id":"LM40","input":"layer: KITCHEN-HOOD-EXT | blocks: Hood 2400","expect":{"discipline":"Mechanical/HVAC","element_kind":"equipment","mep_system":"exhaust air"},"case":"hard","synthetic":true}
+{"id":"LM41","input":"layer: Tường xây 200 | lines 800","expect":{"discipline":"Architecture","element_kind":"wall","mep_system":"none"},"case":"hard","synthetic":true,"note":"Vietnamese masonry wall"}
+{"id":"LM42","input":"layer: SPRINKLER-MAIN-150 | polylines 22","expect":{"discipline":"Fire protection","element_kind":"pipe","mep_system":"fire sprinkler"},"case":"hard","synthetic":true}
+{"id":"LM43","input":"layer: FAHU-OUTDOOR-AIR | blocks: FAHU-1","expect":{"discipline":"Mechanical/HVAC","element_kind":"equipment","mep_system":"fresh air"},"case":"hard","synthetic":true}
+{"id":"LM44","input":"layer: CEILING-GRID-600 | lines 900","expect":{"discipline":"Architecture","element_kind":"other","mep_system":"none"},"case":"hard","synthetic":true,"note":"ceiling grid is not a structural grid"}
+{"id":"LM45","input":"layer: REVISION-CLOUD-P3 | polylines 6","expect":{"discipline":"General/annotation","element_kind":"other","mep_system":"none"},"case":"hard","synthetic":true}

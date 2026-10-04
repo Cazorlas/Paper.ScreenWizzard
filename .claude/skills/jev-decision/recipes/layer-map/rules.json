@@ -1,0 +1,52 @@
+{
+  "discipline": {
+    "default": "Other",
+    "default_confidence": 0.3,
+    "rules": [
+      { "option": "General/annotation", "any": ["g", "title", "border", "viewport", "vport", "defpoints", "anno", "dims", "text", "notes"], "none": ["elec", "lite", "duct", "pipe"], "confidence": 0.85 },
+      { "option": "Fire protection", "any": ["ff", "fp", "sprk", "sprink", "sprinkler", "hydrant", "fhc", "hose reel", "fa", "alarm", "detector"] },
+      { "option": "Electrical", "any": ["e", "elec", "lite", "light", "power", "cable", "tray", "socket"] },
+      { "option": "Mechanical/HVAC", "any": ["m", "mech", "hvac", "acmv", "mvac", "duct", "chw", "vrv", "ahu", "fcu", "grille", "diffuser", "damper", "ong gio"] },
+      { "option": "Plumbing/Drainage", "any": ["p", "plmb", "plumb", "ws", "cw", "drain", "san", "soil", "waste", "rwp", "cap nuoc", "thoat nuoc"] },
+      { "option": "Structure", "any": ["s", "struc", "strc", "column", "beam", "slab", "found", "rc"] },
+      { "option": "Architecture", "any": ["a", "arch", "wall", "door", "window", "furn", "ceil", "room", "stair", "tuong"] }
+    ]
+  },
+  "element_kind": {
+    "default": "other",
+    "default_confidence": 0.3,
+    "rules": [
+      { "option": "title block/border", "any": ["title", "border", "tblk"] },
+      { "option": "dimension", "any": ["dim", "dims"] },
+      { "option": "text/tag", "any": ["text", "tag", "notes", "iden"] },
+      { "option": "hatch", "any": ["hatch", "patt"] },
+      { "option": "grid/axis", "any": ["grid", "axis", "luoi truc"] },
+      { "option": "air terminal", "any": ["grille", "diffuser", "louver", "mieng gio"] },
+      { "option": "fitting/accessory", "any": ["fitting", "fittings", "valve", "damper"] },
+      { "option": "duct", "any": ["duct", "ong gio"], "none": ["cable"] },
+      { "option": "pipe", "any": ["pipe", "piping", "ong nuoc"] },
+      { "option": "equipment", "any": ["eqpm", "equip", "ahu", "fcu", "pump", "chiller", "panel"] },
+      { "option": "fixture/device", "any": ["lite", "light", "socket", "detector", "sprk", "fixt"] },
+      { "option": "wall", "any": ["wall", "tuong"] }
+    ]
+  },
+  "mep_system": {
+    "default": "none",
+    "default_confidence": 0.5,
+    "rules": [
+      { "option": "smoke extract", "any": ["smoke", "smk"], "none": ["detector"] },
+      { "option": "fresh air", "any": ["fresh", "oa", "fad"] },
+      { "option": "exhaust air", "any": ["exhaust", "exh", "ea", "khi thai"] },
+      { "option": "return air", "any": ["return", "ra"] },
+      { "option": "supply air", "any": ["supply air", "sa", "cap"], "none": ["cap nuoc"] },
+      { "option": "chilled water supply", "any": ["chws"] },
+      { "option": "chilled water return", "any": ["chwr"] },
+      { "option": "heating water", "any": ["hws", "hwr", "heating", "lthw"] },
+      { "option": "condensate/drain", "any": ["cond", "condensate", "nuoc ngung"] },
+      { "option": "fire sprinkler", "any": ["sprk", "sprink", "sprinkler"] },
+      { "option": "domestic water", "any": ["cw", "dcw", "dhw", "ws", "cap nuoc"] },
+      { "option": "sanitary", "any": ["soil", "waste", "sanitary", "thoat nuoc"] },
+      { "option": "not known", "any": ["m", "mech", "hvac", "ff", "fp", "duct", "pipe"], "confidence": 0.3 }
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "effect": {
+    "default": "unclear",
+    "default_confidence": 0.3,
+    "rules": [
+      { "option": "network/process", "any": ["process start", "httpclient", "webclient", "webrequest", "cmd", "powershell", "explorer", "notepad", "loadfrom", "loadfile"] },
+      { "option": "deletes elements", "any": ["delete"] },
+      { "option": "writes files", "any": ["writealltext", "writealllines", "appendalltext", "file copy", "file move", "streamwriter", "doc save", "saveas", "synchronizewithcentral", "doc export"], "none": ["gettemppath", "temp path", "temp"] },
+      { "option": "unclear", "any": ["not shown", "getmethod", "invoke", "dynamic", "postcommand"] },
+      { "option": "modifies model", "any": ["set", "commit", "create", "moveelement", "moveelements", "copyelement", "rotateelement", "mirrorelements", "loadfamily", "changetypeid"] },
+      { "option": "read only", "any": ["filteredelementcollector", "asstring", "asdouble"] }
+    ]
+  },
+  "needs_confirmation": {
+    "default": "yes",
+    "default_confidence": 0.3,
+    "rules": [
+      { "option": "yes", "any": ["delete"] },
+      { "option": "yes", "any": ["process start"] },
+      { "option": "yes", "any": ["writealltext", "writealllines", "appendalltext", "file copy", "file move", "streamwriter", "doc save", "saveas", "synchronizewithcentral"], "none": ["gettemppath", "temp path", "temp"] },
+      { "option": "yes", "any": ["httpclient", "webclient", "webrequest", "cmd", "powershell", "explorer", "notepad", "loadfrom", "loadfile", "not shown", "getmethod", "invoke", "dynamic", "postcommand"] },
+      { "option": "no", "any": ["set", "commit", "create", "moveelement", "moveelements", "copyelement", "rotateelement", "mirrorelements", "loadfamily", "changetypeid"] },
+      { "option": "no", "any": ["filteredelementcollector", "asstring", "asdouble"] }
+    ]
+  }
+}

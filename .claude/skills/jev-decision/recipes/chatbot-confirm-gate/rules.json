@@ -1,0 +1,27 @@
+{
+  "destructive": {
+    "default": "no",
+    "default_confidence": 0.5,
+    "rules": [
+      { "option": "yes", "any": ["delete", "remove", "purge", "clear", "move", "rotate", "mirror", "extend", "trim", "join", "split", "change", "rename", "renumber", "redo", "redraw", "replace", "xoa", "sua", "xoay", "doi"] }
+    ]
+  },
+  "has_negation_or_exception": {
+    "default": "no",
+    "default_confidence": 0.5,
+    "rules": [
+      { "option": "yes", "any": ["except", "but not", "all but", "other than", "keep only", "tru", "ngoai tru", "chua", "chi giu", "don t", "do not", "never", "dung", "khong duoc", "khoi"] }
+    ]
+  },
+  "scope": {
+    "default": "not stated",
+    "default_confidence": 0.5,
+    "rules": [
+      { "option": "selection", "any": ["dang chon", "da chon", "cai nay", "selected", "selection", "these"] },
+      { "option": "view", "any": ["view nay", "ban ve nay", "this view", "current view", "this sheet", "sheet nay"] },
+      { "option": "level", "any": ["tang", "level", "l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8", "l9", "ham", "mai"] },
+      { "option": "whole model", "any": ["du an", "ca file", "ca model", "toan bo", "project", "everywhere", "whole model", "warning", "warnings", "levels", "sheets", "views"] },
+      { "option": "view", "any": ["an", "hide", "isolate", "to mau", "override"] }
+    ]
+  }
+}

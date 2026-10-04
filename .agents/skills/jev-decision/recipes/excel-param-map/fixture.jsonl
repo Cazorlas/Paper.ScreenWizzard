@@ -1,0 +1,34 @@
+{"id":"EP01","input":"header: Equipment Tag | samples: AHU-01; AHU-02; AHU-03","expect":{"target_parameter":"Mark","unit":"none"},"case":"plain","synthetic":true}
+{"id":"EP02","input":"header: Type Mark | samples: FCU-A; FCU-A; FCU-B","expect":{"target_parameter":"Type Mark","unit":"none"},"case":"plain","synthetic":true}
+{"id":"EP03","input":"header: Model | samples: QV-220; QV-280; QV-360","expect":{"target_parameter":"Model","unit":"none"},"case":"plain","synthetic":true}
+{"id":"EP04","input":"header: Hãng sản xuất | header plain: Hang san xuat | samples: Brand X; Brand Y; Brand X","expect":{"target_parameter":"Manufacturer","unit":"none"},"case":"plain","synthetic":true}
+{"id":"EP05","input":"header: Description | samples: Air handling unit; Fan coil unit; Exhaust fan","expect":{"target_parameter":"Description","unit":"none"},"case":"plain","synthetic":true}
+{"id":"EP06","input":"header: Comments | samples: Standby unit; See schedule; By others","expect":{"target_parameter":"Comments","unit":"none"},"case":"plain","synthetic":true}
+{"id":"EP07","input":"header: Unit Price | samples: 12500000; 8400000; 15200000","expect":{"target_parameter":"Cost","unit":"none"},"case":"plain","synthetic":true}
+{"id":"EP08","input":"header: Airflow (m3/h) | samples: 3200; 4500; 6800","expect":{"target_parameter":"Airflow","unit":"m3/h"},"case":"plain","synthetic":true}
+{"id":"EP09","input":"header: Air Volume (L/s) | samples: 850; 1200; 1650","expect":{"target_parameter":"Airflow","unit":"L/s"},"case":"plain","synthetic":true}
+{"id":"EP10","input":"header: Lưu lượng nước (L/s) | header plain: Luu luong nuoc (L/s) | samples: 4.2; 6.8; 9.5","expect":{"target_parameter":"Water Flow","unit":"L/s"},"case":"plain","synthetic":true}
+{"id":"EP11","input":"header: Pump Flow Rate (m3/h) | samples: 18; 32; 45","expect":{"target_parameter":"Water Flow","unit":"m3/h"},"case":"plain","synthetic":true}
+{"id":"EP12","input":"header: Năng suất lạnh (kW) | header plain: Nang suat lanh (kW) | samples: 7.1; 10.5; 14.2","expect":{"target_parameter":"Cooling Capacity","unit":"kW"},"case":"plain","synthetic":true}
+{"id":"EP13","input":"header: Heating Capacity (kW) | samples: 4.5; 6.0; 8.2","expect":{"target_parameter":"Heating Capacity","unit":"kW"},"case":"plain","synthetic":true}
+{"id":"EP14","input":"header: Motor Power (kW) | samples: 1.5; 2.2; 3.0","expect":{"target_parameter":"Power","unit":"kW"},"case":"plain","synthetic":true}
+{"id":"EP15","input":"header: Voltage | samples: 380 V; 380 V; 230 V","expect":{"target_parameter":"Voltage","unit":"other"},"case":"plain","synthetic":true}
+{"id":"EP16","input":"header: External Static Pressure (Pa) | samples: 150; 250; 300","expect":{"target_parameter":"External Static Pressure","unit":"other"},"case":"plain","synthetic":true}
+{"id":"EP17","input":"header: Width (mm) | samples: 1200; 1400; 900","expect":{"target_parameter":"Width","unit":"mm"},"case":"plain","synthetic":true}
+{"id":"EP18","input":"header: Height (mm) | samples: 600; 750; 500","expect":{"target_parameter":"Height","unit":"mm"},"case":"plain","synthetic":true}
+{"id":"EP19","input":"header: Chiều dài (m) | header plain: Chieu dai (m) | samples: 2.4; 3.1; 1.8","expect":{"target_parameter":"Length","unit":"m"},"case":"plain","synthetic":true}
+{"id":"EP20","input":"header: Operating Weight (kg) | samples: 320; 450; 610","expect":{"target_parameter":"Weight","unit":"other"},"case":"plain","synthetic":true}
+{"id":"EP21","input":"header: Quantity | samples: 2; 4; 1","expect":{"target_parameter":"(do not import)","unit":"none"},"case":"plain","synthetic":true}
+{"id":"EP22","input":"header: Cooling Capacity | samples: 28.5; 35.2; 42.0","expect":{"target_parameter":"Cooling Capacity","unit":"not stated"},"case":"plain","synthetic":true}
+{"id":"EP23","input":"header: Lưu lượng (m³/h) | header plain: Luu luong (m³/h) | samples: 2500; 4200; 6000","expect":{"target_parameter":"Airflow","unit":"m3/h"},"case":"hard","synthetic":true,"note":"Vietnamese, superscript 3, Luu luong alone with air sized values"}
+{"id":"EP24","input":"header: Q | samples: 3400; 5100; 6800","expect":{"target_parameter":"Airflow","unit":"not stated"},"case":"hard","synthetic":true,"note":"one letter Q, air sized values, no unit anywhere"}
+{"id":"EP25","input":"header: Làm lạnh / Q | header plain: Lam lanh / Q | samples: kW; 28.5; 35.2","expect":{"target_parameter":"Cooling Capacity","unit":"kW"},"case":"hard","synthetic":true,"note":"Q is heat here: merged group header says cooling, the unit row under the header is the first sample"}
+{"id":"EP26","input":"header: Airflow | samples: L/s; 950; 1400","expect":{"target_parameter":"Airflow","unit":"L/s"},"case":"hard","synthetic":true,"note":"the unit sits in the row under the header"}
+{"id":"EP27","input":"header: Size | samples: 5.5 kW; 7.5 kW; 11 kW","expect":{"target_parameter":"Power","unit":"kW"},"case":"hard","synthetic":true,"note":"first of two columns named Size: motor size"}
+{"id":"EP28","input":"header: Size | samples: 1200x600x450 mm; 1400x700x500 mm; 900x500x400 mm","expect":{"target_parameter":"(do not import)","unit":"mm"},"case":"hard","synthetic":true,"note":"second column named Size: W x H x L in one cell fits no single parameter"}
+{"id":"EP29","input":"header: Ghi chú | header plain: Ghi chu | samples: Dự phòng 1 bơm; Motor 5.5 kW; 2 x 50% công suất","expect":{"target_parameter":"Comments","unit":"none"},"case":"hard","synthetic":true,"note":"notes column holding numbers, kW and the word for power"}
+{"id":"EP30","input":"header: Remarks | samples: 2 nos standby; 380V 3ph 50Hz; c/w VFD 7.5kW","expect":{"target_parameter":"Comments","unit":"none"},"case":"hard","synthetic":true,"note":"remarks holding a voltage and a motor rating"}
+{"id":"EP31","input":"header: STT | samples: 1; 2; 3","expect":{"target_parameter":"(do not import)","unit":"none"},"case":"hard","synthetic":true,"note":"Vietnamese row number column holds numbers"}
+{"id":"EP32","input":"header: H | samples: m; 18; 24","expect":{"target_parameter":"(do not import)","unit":"m"},"case":"hard","synthetic":true,"note":"H is pump head in metres, not the unit height"}
+{"id":"EP33","input":"header: Công suất lạnh | header plain: Cong suat lanh | samples: 12000 BTU/h; 18000 BTU/h; 24000 BTU/h","expect":{"target_parameter":"Cooling Capacity","unit":"other"},"case":"hard","synthetic":true,"note":"Vietnamese, unit outside the list goes to the user"}
+{"id":"EP34","input":"header: Model No. | samples: XK-450H; XK-560H; XK-630V","expect":{"target_parameter":"Model","unit":"none"},"case":"hard","synthetic":true,"note":"No. points the wrong way to Mark"}

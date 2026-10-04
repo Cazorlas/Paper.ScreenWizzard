@@ -1,0 +1,52 @@
+{
+ "group": {
+  "type": "choice",
+  "criteria": {
+   "Pr_15 Preparatory products": "Ground and site preparation products: soil stabilizers, excavated earth and fill, geotextiles, geomembranes and geocells, trench boards and sheets, fill blocks. Seldom a Revit family",
+   "Pr_20 Structure and general products": "Load-bearing and general building products: metal, timber and precast sections for beams and columns, masonry and structural units, piles, lintels, trusses and frames, brackets, hangers and fasteners such as bolts and anchors. Revit: Structural Columns, Structural Framing, Structural Foundations",
+   "Pr_25 Skin products": "Products that form or line the building skin: cladding and lining panels, boards and sheets, membranes, insulation, glazing sheets, handrails, stair and ladder units, floor gratings, smoke and fire barriers and fire-stopping. Revit: Curtain Panels, Railings",
+   "Pr_30 Opening products": "Openings and their parts: doorsets, door frames and leaves, window units, rooflights, hatches and access panels in walls and floors, gates and barriers, shutters, blinds, louvres, wall and door ventilation grilles, and door and window hardware. Revit: Doors, Windows",
+   "Pr_35 Covering and finishing products": "Coverings and finishes: paints and coatings, plasters and renders, carpets and floor coverings, wall and floor tiles, ceiling infill units, trims, flashings, joints and sealing strips",
+   "Pr_40 Signage, sanitary fittings and fittings, furnishing and equipment (FF&E) products": "Signs; sanitary fittings such as WCs, urinals, washbasins, sinks, baths, showers and taps; fitted desks, seats, shelving and storage; loose furniture such as desks, chairs, beds and bins; fire extinguishers and fire blankets; kitchen, laundry, medical, office and sports equipment. Revit: Furniture, Casework, Plumbing Fixtures, Specialty Equipment",
+   "Pr_45 Flora and fauna products": "Plants and animals: trees, shrubs, seeds, turf, topsoil and growing media, plant containers and supports, animal passes and deterrents. Revit: Planting",
+   "Pr_50 Fabric accessory products": "Fabric accessory products. Uniclass group title only: version 1.43 publishes no subgroups under it",
+   "Pr_55 Manufacturing process products": "Manufacturing process products; in version 1.43 its only subgroup is alcohol fermentation equipment",
+   "Pr_60 Services and process source products": "Plant that produces, stores or treats what a building service distributes: boilers, burners, chillers and cooling towers, water heaters, heat exchangers, air-handling units, heating and cooling coils, tanks, cylinders and vessels, water treatment, generators, transformers, switchgear, switchboards and distribution boards, batteries, communications source equipment. Revit: Mechanical Equipment, Electrical Equipment",
+   "Pr_65 Services and process distribution products": "Products that carry a service from source to outlet: pipes, tubes, hoses and hose reels with their fittings, drainage gullies and channels, pumps, valves, ductwork and duct fittings, duct dampers, fans, sound attenuators, air filters, cables, cable trays, conduit and trunking, socket outlets, switches and other wiring accessories, gutters, chutes, lifts, escalators and conveyors. Revit: Pipes, Pipe Fittings, Pipe Accessories, Ducts, Duct Fittings, Duct Accessories, Flex Ducts, Cable Trays, Conduits",
+   "Pr_70 Services and process outlet products": "Products where a service reaches the space: air terminals, diffusers and grilles on ducts, fan coil units, split and VRF indoor units, heat emitters, radiators and heat pumps, luminaires and lamps, sprinkler heads, nozzles and hydrants, water inlets and outlets, flues and chimneys, communications products. Revit: Air Terminals, Lighting Fixtures, Sprinklers",
+   "Pr_75 Services and process control products": "Products that sense, switch or control a service: fire detection and alarm devices such as smoke and heat detectors, call points, sounders and alarm panels; intrusion and security devices; actuators, controllers, sensors and detectors, control and indicator panels; motors and motor controls; opening control products. Revit: Fire Alarm Devices, Security Devices",
+   "Pr_80 Services and process general products": "General products used across services: meters, flowmeters and measuring products; equipment boards, racks, enclosures, cabinets and housings; lighting columns and bollards; pipe and duct insulation and its casing; vibration isolation",
+   "Pr_82 Vehicle products": "Vehicles: road-based vehicles and railway vehicle products",
+   "Pr_85 Process engineering products": "Process engineering: environmental process products, engines and hydraulic power components, milling products, robotic products",
+   "Pr_90 Soft facility management products": "Soft facility management products. Uniclass group title only: version 1.43 publishes no subgroups under it"
+  },
+  "instructions": "Which Uniclass 2015 Products (Pr) group does the Revit family type described in the state belong to? Decide by what the product is, read from the family name, the type name and the parameters; the Revit category is only a hint, and names may be Vietnamese or only a manufacturer's code."
+ },
+ "subgroup_pr_65": {
+  "type": "choice",
+  "criteria": {
+   "Pr_65_12 Chutes": "Chutes. Includes: Linen chutes and openings; Refuse chutes and openings; Chute accessories",
+   "Pr_65_50 Gutter and fitting products": "Gutter and fitting products. Includes: Gutters and accessories",
+   "Pr_65_52 Pipe, tube and fitting products": "Pipe, tube and fitting products. Includes: Access and inspection chambers and gullies; Above-ground drainage pipes and fittings; Below-ground and pressure drainage pipes and fittings; Culverts; Deaerators; Drainage gullies and channels; Drainage traps, separators and accessories; Expansion compensators; Gauges and sight glasses; Hoses, hose reels and ancillaries; Pipe accessories; Pipe jointing fittings and materials; Pipes and fittings; Pre-insulated heating, cooling and domestic water pipes",
+   "Pr_65_53 Pump products": "Pump products. Includes: Drainage pumps; Pump accessories; Supply and exhaust pumps; Water supply and wastewater pumps",
+   "Pr_65_54 Valve products": "Valve products. Includes: Drainage valves; Firefighting valves and devices; Gas and liquid fuel valves; Irrigation valves; Pneumatic waste collection valves; Steam valves; Valve accessories; Water supply and wastewater valves; Building services valves",
+   "Pr_65_55 Liquid and gas distribution products": "Liquid and gas distribution products. Includes: Phase change distribution products; Separators; Steam and condensate distribution products; Steam and condensate recovery vessels; Steam traps and strainers; Washing products",
+   "Pr_65_57 Filter products": "Filter products. Includes: Air filters; Gas and air filters; Oil filters and strainers; Swimming pool water filters and strainers; Water feature filters and strainers; Water filters and strainers",
+   "Pr_65_65 Ductwork products": "Ductwork products. Includes: Ductwork accessories; Duct dampers; Ductwork and fittings",
+   "Pr_65_67 Air and fume distribution products": "Air and fume distribution products. Includes: Compressed air products; Deaerators; Expansion compensators; Fans; Humidifiers and dehumidifiers; Laboratory gas products; Sound attenuators; Vehicle exhaust distribution products",
+   "Pr_65_70 Cables, conductors and fittings products": "Cables, conductors and fittings products. Includes: Cable management and accessories; Cable protection products; Cathodic protection products; Communications cables and accessories; Conductor rail ancillaries; Electrostatic discharge protection; Extra-high-voltage cables; High-voltage cables; Overhead line insulators; Lightning protection and earthing components; Low-voltage cables; Low-voltage prefabricated cables; Railway rolling stock cables; Signalling cables",
+   "Pr_65_72 Electrical power products and wiring accessories": "Electrical power products and wiring accessories. Includes: Electrical protective devices; Power conditioning equipment; Overhead power supply line products; Overhead power supply line support products; Wiring accessories",
+   "Pr_65_80 Transport distribution products": "Transport distribution products. Includes: Baggage handling conveyors; Conveyor components; Cranes and lifting products; Dock levellers; Escalator and moving walk products; Transport cars, platforms and chairs; Laundry conveyors; Lifting gear; Lift products and components; Pneumatic conveying products; Transport cables; Wastewater conveyor products"
+  },
+  "instructions": "Which part of Uniclass 2015 Pr_65 Services and process distribution products is the Revit family type described in the state? Decide by what the product is, read from the family name, the type name and the parameters; the Revit category is only a hint, and names may be Vietnamese or only a manufacturer's code."
+ },
+ "section_pr_65_65": {
+  "type": "choice",
+  "criteria": {
+   "Pr_65_65_23 Ductwork accessories": "Ductwork accessories. Includes: Access panels; Duct access panels; Ductwork access doorsets; Ductwork security bars; Quench pipe bellows",
+   "Pr_65_65_24 Duct dampers": "Duct dampers. Includes: Constant flow dampers; Constant volume boxes; Fire and smoke dampers; Fire dampers; Intumescent fire and smoke dampers; Non-return dampers; Pressure control flaps; Pressure relief dampers; Shut-off dampers; Smoke control dampers; Variable air volume boxes; Volume control dampers",
+   "Pr_65_65_25 Ductwork and fittings": "Ductwork and fittings. Includes: Circular plastics ductwork and fittings; Circular sheet metal ductwork and fittings; Domestic rigid ductwork and fittings; Fabric ductwork and fittings; Fire-resisting ductwork and fittings; Flat oval sheet metal ductwork and fittings; Flexible ductwork; Glass fibre ductwork and fittings; Pre-insulated ductwork and fittings; Quench pipe and fittings; Rectangular plastics ductwork and fittings; Rectangular sheet metal ductwork and fittings; Smoke extract ductwork"
+  },
+  "instructions": "Which part of Uniclass 2015 Pr_65_65 Ductwork products is the Revit family type described in the state? Decide by what the product is, read from the family name, the type name and the parameters; the Revit category is only a hint, and names may be Vietnamese or only a manufacturer's code."
+ }
+}

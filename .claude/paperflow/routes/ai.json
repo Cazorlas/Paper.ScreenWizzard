@@ -1,0 +1,12 @@
+{
+  "$comment": "Route file of the ai host pack, read by the kit's paperflow-route hook. keywords: whole-word regular-expression fragments that mark a prompt as work on code that calls a language model; a project adds its own under routing.hosts.ai.keywords. No live lane: the decision is proved with a fake reply first, the real call last.",
+  "keywords": [
+    "llm", "prompts?", "anthropic", "claude api", "openai", "tokens?", "embeddings?", "agents?"
+  ],
+  "liveFirst": false,
+  "loop": [
+    "red - a unit test with a fake model reply, seen failing on its assertion",
+    "green - the smallest code that passes it",
+    "e2e - the real call (verb e2e), model ids and parameters looked up in skill claude-api"
+  ]
+}

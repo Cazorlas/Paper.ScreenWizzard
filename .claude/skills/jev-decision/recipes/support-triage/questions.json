@@ -1,0 +1,25 @@
+{
+ "queue": {
+  "type": "choice",
+  "criteria": {
+   "license": "Activating or signing in to the add-in's license: a key or license that is rejected, a trial or subscription that has ended, moving a license to another machine, seat or machine limits. Also when the user calls it a crash or an error but the message shown is about the license, the trial or the subscription",
+   "install": "Getting the add-in onto the machine and loaded: installing, updating or uninstalling it, which Revit or AutoCAD versions a build supports, an installer error, the add-in's tab or ribbon missing, or an error at start-up after which Revit or AutoCAD runs on without the add-in",
+   "crash": "Revit or AutoCAD itself closes, freezes, stops responding or shows a fatal error while the add-in is in use, and no message says the cause is the license",
+   "revit tool bug": "A tool or behaviour of the Revit add-in runs but gives a wrong result, shows an error message, does nothing, or is much slower than before, while Revit keeps running",
+   "cad tool bug": "A tool or command of the AutoCAD add-in runs but gives a wrong result, shows an error message, does nothing, or is much slower than before, while AutoCAD keeps running",
+   "feature request": "The tool works as it was made to and the user wants it to do more or differently: another option, setting, category or output, or a new tool. Also when the ticket calls the missing behaviour an error or a bug and asks to fix it",
+   "billing": "Money: a price or quote, payment or bank transfer, an invoice, a refund or a receipt; also a paid order whose license key has not arrived yet",
+   "other": "Anything else: how to use a tool, a ticket that names no tool, message or symptom (only a word such as error or help, often with a screenshot the state does not carry), thanks, spam"
+  },
+  "instructions": "Which support queue should take this ticket about an add-in for Revit and AutoCAD? The state holds the ticket title, the first 500 characters of its first message with emails, phone numbers, names, company names, ids, paths and the add-in's own name replaced by placeholders in square brackets, the app the ticket was sent from (Revit, AutoCAD or web) and the add-in build, then after 'folded:' the title and text in lower case without Vietnamese diacritics. Tickets mix Vietnamese and English. Judge by what happened, not by the words the user chose: a ticket titled crash can show a license message, a ticket that says error or bug can ask for something the tool was never made to do, and a ticket can deny a word it uses. Whether a tool is a Revit or an AutoCAD tool comes from what the ticket describes; the app it was sent from decides only when the ticket does not say. When more than one queue fits, take the first of license, billing, install, crash, revit tool bug or cad tool bug, feature request, other."
+ },
+ "urgency": {
+  "type": "choice",
+  "criteria": {
+   "blocking work": "The user cannot do their work now: the add-in cannot be used at all on their machine (license rejected or ended, tab or ribbon missing, the add-in does not load, Revit or AutoCAD will not start or closes on every use), or the ticket says work has stopped, people are waiting, or a deadline or submission today or this week is at risk with no other way to do the job",
+   "annoying": "Something in the product does not work as it should but the user can keep working: a wrong result they fix by hand, an occasional crash, slowness, a workaround; also a reported fault whose effect on the work the ticket does not state",
+   "question or request": "Nothing in the product is broken: a question on how to use it, a new feature or option, a price, payment or invoice, a paid key that has not arrived yet, or a license move or renewal asked ahead of time"
+  },
+  "instructions": "How urgent is this support ticket about an add-in for Revit and AutoCAD? The state holds the ticket title, the first 500 characters of its first message with emails, phone numbers, names, company names, ids, paths and the add-in's own name replaced by placeholders in square brackets, the app the ticket was sent from (Revit, AutoCAD or web) and the add-in build, then after 'folded:' the title and text in lower case without Vietnamese diacritics. Tickets mix Vietnamese and English. Judge by the effect on the user's work, not by the tone: capital letters, exclamation marks or a word such as urgent do not make a feature request blocking, and a calm, polite ticket is blocking when it says the work has stopped or a deadline is at risk. Vietnamese without diacritics can turn one word into another, so read the sentence, not the single word."
+ }
+}

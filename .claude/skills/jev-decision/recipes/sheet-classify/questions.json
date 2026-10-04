@@ -1,0 +1,40 @@
+{
+ "discipline": {
+  "type": "choice",
+  "criteria": {
+   "Architecture": "Architectural sheets: building layout, walls, doors, windows, finishes, stairs, rooms, furniture, facades and architectural ceilings. Sheet numbers often start A or KT (kiến trúc)",
+   "Structure": "Structural sheets: grids, piles, foundations, columns, beams, slabs, concrete and steel walls, reinforcement and connections. Sheet numbers often start S or KC (kết cấu)",
+   "Mechanical": "Air conditioning and ventilation: ducts, grilles and diffusers, dampers, air handling and fan coil units, fans, chillers, chilled water and refrigerant pipes, smoke extract and stair pressurisation. Sheet numbers often start M, HVAC, DH (điều hoà) or TG (thông gió)",
+   "Plumbing": "Water supply, hot water, drainage, soil, waste, vent and rainwater pipes, pumps, tanks and sanitary fixtures. Sheet numbers often start P, N or CTN (cấp thoát nước)",
+   "Electrical": "Power, lighting, sockets, switchboards and distribution boards, cable trays and ladders, earthing, lightning protection, and low-voltage systems such as telephone, data, CCTV and access control. Sheet numbers often start E or D (điện)",
+   "Fire protection": "Sprinklers, hydrants, hose reels, fire pumps, gas suppression, extinguishers, and fire alarm and detection: detectors, call points and alarm panels. Sheet numbers often start FP, F or PCCC (phòng cháy chữa cháy)",
+   "General": "Sheets for the whole set rather than one discipline: cover or title sheet, drawing list, general notes, abbreviations and symbols, site location. A cover or drawing list is General even when it lists sheets of several disciplines",
+   "Other": "None of the disciplines above on its own, or too little to tell: combined services (MEP) coordination drawings that show several services together, civil works, landscape"
+  },
+  "instructions": "Which discipline does this page of a drawing set belong to? The state holds the title block of one PDF page (sheet number, sheet name, scale), how its sheet number compares with the previous page's, and the first words of the drawing area. The sheet number often starts with a discipline code; read it together with the sheet name, and use the page text as support only, because notes, drawing lists and coordination drawings name several disciplines. Names may be Vietnamese, with or without accents."
+ },
+ "drawing_type": {
+  "type": "choice",
+  "criteria": {
+   "plan": "A floor plan or layout of one floor or area seen from above: architectural, structural and services layouts, coordination layouts and site plans (mặt bằng, bố trí). Not a reflected ceiling plan",
+   "ceiling plan": "A reflected ceiling plan: ceiling grid, light fittings, diffusers and access panels as seen from below (mặt bằng trần)",
+   "section": "A vertical cut through the building or one part of it (mặt cắt)",
+   "elevation": "A face of the building or of a wall seen straight on, from outside or inside (mặt đứng)",
+   "detail": "An enlarged drawing of a small part: typical, installation and connection details, usually at 1:5 to 1:20 (chi tiết)",
+   "schedule/legend": "A table: equipment, door, panel, board or quantity schedules, or a legend of symbols and abbreviations (bảng thống kê, ký hiệu)",
+   "schematic": "A diagram, not to scale, of how a system connects: riser diagrams, single-line diagrams, flow and control diagrams (sơ đồ nguyên lý). An isometric pipe drawing is 3D",
+   "3D": "An axonometric, isometric or perspective view, including isometric pipe drawings (sơ đồ không gian, phối cảnh)",
+   "cover/index": "A cover or title sheet, or the list of drawings in the set (bìa, danh mục bản vẽ)",
+   "other": "None of the kinds above, or too little to tell: text pages such as general notes, specifications, letters, calculations and reports"
+  },
+  "instructions": "What kind of drawing does this page of a drawing set mainly show? Read the sheet name first, then the scale (details are often 1:5 to 1:20, plans 1:50 to 1:200, diagrams not to scale) and the page text. Words in the page text, such as notes that mention a ceiling or a detail, do not decide alone. Names may be Vietnamese, with or without accents."
+ },
+ "starts_new_document": {
+  "type": "choice",
+  "criteria": {
+   "yes": "This page begins a new sheet or document: it is the first page, or its sheet number differs from the previous page's (a new sheet number starts a new sheet even when its name says continued), or it has no sheet number but opens a new letter, report, specification or table under a heading of its own",
+   "no": "This page continues the sheet or document of the previous page: it has the same sheet number, or it has no sheet number and its text carries on the previous page's table, list or text with no heading of its own (markers such as CONT., CONTINUED, TIẾP THEO, page 2 of 3, trang 2/3)"
+  },
+  "instructions": "Does this page begin a new sheet or document in the PDF, or does it continue the one on the previous page? The state says how this page's sheet number compares with the previous page's: first page, same number, other number, or no number on this page."
+ }
+}

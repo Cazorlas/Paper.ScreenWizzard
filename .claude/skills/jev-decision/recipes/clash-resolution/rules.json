@@ -1,0 +1,18 @@
+{
+  "which_moves": { "default": "neither", "default_confidence": 0.3, "rules": [
+    { "option": "neither", "any": ["slope required a and b"] },
+    { "option": "neither", "any": ["a none b none"] },
+    { "option": "element B", "any": ["slope required a"] },
+    { "option": "element A", "any": ["slope required b"] },
+    { "option": "element A", "any": ["b none"] },
+    { "option": "element B", "any": ["a none"] },
+    { "option": "element A", "any": ["a conduit", "a cable tray", "a pipe"] },
+    { "option": "element B", "any": ["b conduit", "b cable tray", "b pipe"] } ] },
+  "action": { "default": "send to a person", "default_confidence": 0.3, "rules": [
+    { "option": "send to a person", "any": ["slope required a and b"] },
+    { "option": "send to a person", "any": ["a none b none"] },
+    { "option": "raise", "any": ["raise"] },
+    { "option": "lower", "any": ["lower"] },
+    { "option": "resize", "any": ["resize"] },
+    { "option": "route around", "any": ["route around"] } ] }
+}
