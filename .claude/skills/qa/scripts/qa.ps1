@@ -3,12 +3,14 @@
 # tested: each command reads what it needs, hands it to one of their functions, prints its lines and exits
 # with its code.
 #
-#   qa.ps1 plan    [-Scope project|branch|path] [-Path <folder>] [-Base <branch>] [-Only a,b] [-Skip a,b] [-StaticOnly] [-Yes]
-#   qa.ps1 lanes   [-Scope project|branch|path] [-Path <folder>] [-Base <branch>] [-Pick <numbers|lanes|all>]
+#   qa.ps1 plan    [-Scope project|branch|path] [-Path <folder>] [-Base <branch>] [-Only a,b] [-Skip a,b] [-StaticOnly] [-Yes] [-Executor auto|collab|subagents]
+#   qa.ps1 lanes   [-Scope project|branch|path] [-Path <folder>] [-Base <branch>] [-Pick <numbers|lanes|all>] [-Executor auto|collab|subagents]
 #   qa.ps1 approve -Run <run>
 #   qa.ps1 static  -Run <run>
 #   qa.ps1 files   -Run <run> -Lane <lane> [-Batch <n>] [-Retry]
 #   qa.ps1 check   -Run <run>
+#   qa.ps1 prompt  -Run <run> -Lane <lane> [-Batch <n>] [-Retry]      (the prompt of one lane batch, written to the run folder)
+#   qa.ps1 prompt  -Run <run> -Verify <id>                            (the prompt of the reader of one finding)
 #   qa.ps1 report  -Run <run>
 #   qa.ps1 init    -Repo <repository> -Out <folder>
 #   (every command takes -Repo <project root>; default: the current folder)
@@ -25,6 +27,9 @@
 # git does not ignore leaves the static lane not verifiable (qa-external-plan.ps1). A branch scope (ADR-0037)
 # lists its files with the kit's own read-only git (Invoke-QaGit: core.fsmonitor off, no lazy fetch), never
 # review-files, and never fetches.
+#
+# -Executor (ADR-0043): who answers the agent lanes - Codex through a read-only collab session when collab and codex are here, else
+# Claude subagents; the choice is in plan.json and in the estimate, and PAPER_QA_COLLAB_DIR replaces the collab folder.
 #
 # Exit codes:
 #   0  done
@@ -51,7 +56,9 @@ param(
     [int] $Batch = 1,
     [switch] $Retry,
     [string] $Out,
-    [string[]] $Pick
+    [string[]] $Pick,
+    [string] $Executor = 'auto',
+    [string] $Verify
 )
 
 $ErrorActionPreference = 'Stop'
@@ -63,6 +70,7 @@ try { [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding $false } c
 . (Join-Path $PSScriptRoot 'qa-external-plan.ps1')
 . (Join-Path $PSScriptRoot 'qa-branch-plan.ps1')
 . (Join-Path $PSScriptRoot 'qa-lanes-plan.ps1')
+. (Join-Path $PSScriptRoot 'qa-collab-plan.ps1')
 
 $script:Utf8 = New-Object System.Text.UTF8Encoding $false
 $script:PowerShellExe = Join-Path $PSHOME 'powershell.exe'
@@ -76,6 +84,8 @@ function Show-Help {
     Say '  qa.ps1 lanes [-Scope ...] [-Path <folder>] [-Base <branch>] [-Pick 1,3|all|<lanes>]   (the lanes that apply and their cost; writes nothing)'
     Say '  qa.ps1 approve|static|check|report -Run <run>'
     Say '  qa.ps1 files -Run <run> -Lane <lane> [-Batch <n>] [-Retry]'
+    Say '  qa.ps1 prompt -Run <run> -Lane <lane> [-Batch <n>] [-Retry]   |   qa.ps1 prompt -Run <run> -Verify <id>   (writes the prompt, prints where)'
+    Say '  plan and lanes take -Executor auto|collab|subagents (who answers the agent lanes)'
     Say '  qa.ps1 init -Repo <repository> -Out <folder>   (an external repository: nothing is written into it)'
     Say '  every command takes -Out <folder> with -Repo for an external repository'
     Say 'Exit: 0 done | 1 answers to send back | 2 invalid request | 4 not verifiable | 5 not applicable'
@@ -101,14 +111,14 @@ function Read-Lines([string] $File) { return , [IO.File]::ReadAllLines($File, [T
 # ------------------------------------------------------------------ where things are
 
 if ($Command -in @('help', '-h', '--help', '/?')) { Show-Help; exit 0 }
-if ($Command -notin @('init', 'lanes', 'plan', 'approve', 'static', 'files', 'check', 'report')) { Stop-Qa 2 "qa: unknown command '$Command' (init, lanes, plan, approve, static, files, check, report)" }
+if ($Command -notin @('init', 'lanes', 'plan', 'approve', 'static', 'files', 'prompt', 'check', 'report')) { Stop-Qa 2 "qa: unknown command '$Command' (init, lanes, plan, approve, static, files, prompt, check, report)" }
 # The lane question (ADR-0035): -Pick belongs to lanes, and lanes lists every lane with no choice applied.
 $pickGiven = $PSBoundParameters.ContainsKey('Pick')
 if ($pickGiven -and $Command -ne 'lanes') { Stop-Qa 2 'qa: -Pick goes with qa.ps1 lanes' }
 if ($Command -eq 'lanes' -and (@('Only', 'Skip', 'StaticOnly', 'Yes') | Where-Object { $PSBoundParameters.ContainsKey($_) })) { Stop-Qa 2 'qa: lanes lists every lane that applies - -Only, -Skip, -StaticOnly and -Yes go with plan' }
 # The scope parameters as typed, in plan's order, for the plan line of lanes -Pick (F101).
 $planArgs = [ordered]@{}
-foreach ($k in @('Scope', 'Path', 'Base', 'Repo', 'Out')) { if ($PSBoundParameters.ContainsKey($k)) { $planArgs[$k] = [string] $PSBoundParameters[$k] } }
+foreach ($k in @('Scope', 'Path', 'Base', 'Repo', 'Out', 'Executor')) { if ($PSBoundParameters.ContainsKey($k)) { $planArgs[$k] = [string] $PSBoundParameters[$k] } }
 # F126: lanes with no scope typed may ask the scope first on an external repository.
 $scopeGiven = [bool] (@('Scope', 'Path', 'Base') | Where-Object { $PSBoundParameters.ContainsKey($_) })
 $external = [bool] $Out
@@ -358,6 +368,22 @@ function Get-QaExternalBranch {
     }
 }
 
+# ADR-0043, F205: who answers the agent lanes. The collab folder is PAPER_QA_COLLAB_DIR (tests), else the user's .claude\collab;
+# codex is "on PATH" when an application of that name is; the Codex copy of the skill sits under .agents\skills\qa.
+function Get-QaCollabDir {
+    if ($env:PAPER_QA_COLLAB_DIR) { return $env:PAPER_QA_COLLAB_DIR }
+    return (Join-Path $env:USERPROFILE '.claude\collab')
+}
+function Get-QaExecutor {
+    $dir = Get-QaCollabDir
+    $found = Test-Path -LiteralPath (Join-Path $dir 'scripts\collab.ps1') -PathType Leaf
+    $codex = [bool] (Get-Command codex -CommandType Application -ErrorAction SilentlyContinue)
+    $copy = ("$PSScriptRoot\").Replace('/', '\').IndexOf('\.agents\skills\qa\', [StringComparison]::OrdinalIgnoreCase) -ge 0
+    $e = Get-PaperQaExecutor -Requested $Executor -CollabDir $dir -CollabFound $found -CodexFound $codex -CollabRole $env:COLLAB_ROLE -CodexCopy $copy
+    if ($e.Error) { Stop-Qa 2 $e.Error }
+    return $e
+}
+
 function Get-QaChangesLine($Branch) {
     return (Format-PaperQaChangesLine -Committed $Branch.Counts.CommittedCount -Uncommitted $Branch.Counts.UncommittedCount -Untracked $Branch.Counts.UntrackedCount)
 }
@@ -447,9 +473,20 @@ function Get-QaPlanParts($all, [string[]] $allPaths, $sel, [string[]] $OnlyLanes
         $lanes = Get-PaperQaLanes -Hosts $config.Hosts -Config $config -LaneFiles $laneFiles -HasDotnetProject $hasDotnet -HasBuildVerb $hasBuild -Only $OnlyLanes -Skip $SkipLanes -StaticOnly:$StaticOnlyRun
     }
     if ($lanes.Error) { Stop-Qa 2 "qa: $($lanes.Error)" }
-    $estimate = Get-PaperQaEstimate -Lanes $lanes.Lanes -LaneFiles $laneFiles -Config $config -StaticOnly:$StaticOnlyRun -Rules $ruleObjs
-    $batches = @(Get-PaperQaBatchList -Lanes $lanes.Lanes -LaneFiles $laneFiles -MaxTokens $config.BatchTokens -Rules $ruleObjs)
-    return [pscustomobject]@{ Files = $files; Excluded = $excluded; Screens = $screens; LaneFiles = $laneFiles; Lanes = $lanes.Lanes; Estimate = $estimate; Batches = $batches; Rules = $ruleObjs; ScopeLines = $scopeLines }
+    $exec = Get-QaExecutor
+    $maxTokens = [int] $config.BatchTokens
+    if ($exec.Kind -eq 'collab') { $maxTokens = [int] $config.CodexBatchTokens }
+    $estimate = Get-PaperQaEstimate -Lanes $lanes.Lanes -LaneFiles $laneFiles -Config $config -StaticOnly:$StaticOnlyRun -Rules $ruleObjs -Executor $exec.Kind
+    $batches = @(Get-PaperQaBatchList -Lanes $lanes.Lanes -LaneFiles $laneFiles -MaxTokens $maxTokens -Rules $ruleObjs)
+    $collab = $null
+    if ($exec.Kind -eq 'collab') {
+        $modelsFile = Join-Path (Get-QaCollabDir) 'models.json'
+        $modelsText = ''
+        if (Test-Path -LiteralPath $modelsFile -PathType Leaf) { try { $modelsText = [IO.File]::ReadAllText($modelsFile, [Text.Encoding]::UTF8) } catch { $modelsText = '' } }
+        $caps = Get-PaperQaCollabCaps -ModelsText $modelsText
+        $collab = [pscustomobject]@{ CollabScript = $exec.CollabScript; Parallel = $caps.Parallel; GapSec = $caps.GapSec; TurnTokens = @($estimate.TurnTokens); Root = $root; VerifyCap = [int] $config.VerifyCap }
+    }
+    return [pscustomobject]@{ Files = $files; Excluded = $excluded; Screens = $screens; LaneFiles = $laneFiles; Lanes = $lanes.Lanes; Estimate = $estimate; Batches = $batches; Rules = $ruleObjs; ScopeLines = $scopeLines; Executor = $exec; Collab = $collab }
 }
 
 function Invoke-QaPlan {
@@ -471,6 +508,9 @@ function Invoke-QaPlan {
         Screens = @($parts.Screens); Estimate = $estimate; Approved = $approved; Created = (Get-Date).ToString('s')
         ScopeLines = @($parts.ScopeLines)
     }
+    $plan | Add-Member -NotePropertyName Executor -NotePropertyValue $parts.Executor.Kind
+    $plan | Add-Member -NotePropertyName ExecutorReason -NotePropertyValue $parts.Executor.Reason
+    $plan | Add-Member -NotePropertyName CollabScript -NotePropertyValue $parts.Executor.CollabScript
     $repoLine = ''
     if ($external) {
         $plan | Add-Member -NotePropertyName External -NotePropertyValue $true
@@ -480,7 +520,7 @@ function Invoke-QaPlan {
         $repoLine = $root
     }
     Write-Json (Join-Path $dir 'plan.json') $plan
-    foreach ($line in (Format-PaperQaEstimate -Run $runId -Mode $sel.Mode -Reason $sel.Reason -FileCount $files.Count -ExcludedCount $excluded.Count -Estimate $estimate -Approved $approved -RepoRoot $repoLine -RunDir $dir -ScopeLines @($parts.ScopeLines))) { Say $line }
+    foreach ($line in (Format-PaperQaEstimate -Run $runId -Mode $sel.Mode -Reason $sel.Reason -FileCount $files.Count -ExcludedCount $excluded.Count -Estimate $estimate -Approved $approved -RepoRoot $repoLine -RunDir $dir -ScopeLines @($parts.ScopeLines) -Executor $parts.Executor.Kind -ExecutorReason $parts.Executor.Reason -Collab $parts.Collab)) { Say $line }
     exit 0
 }
 
@@ -510,7 +550,7 @@ function Invoke-QaLanes {
     if (-not $pickGiven) {
         $repoLine = ''
         if ($external) { $repoLine = $root }
-        $list = Format-PaperQaLaneList -Mode $sel.Mode -Reason $sel.Reason -FileCount @($parts.Files).Count -ExcludedCount @($parts.Excluded).Count -Estimate $parts.Estimate -RepoRoot $repoLine -ScopeLines @($parts.ScopeLines)
+        $list = Format-PaperQaLaneList -Mode $sel.Mode -Reason $sel.Reason -FileCount @($parts.Files).Count -ExcludedCount @($parts.Excluded).Count -Estimate $parts.Estimate -RepoRoot $repoLine -ScopeLines @($parts.ScopeLines) -Executor $parts.Executor.Kind -ExecutorReason $parts.Executor.Reason -Collab $parts.Collab
         foreach ($line in @($list.Lines)) { Say $line }
         exit $list.ExitCode
     }
@@ -551,6 +591,97 @@ function Invoke-QaFiles {
     $r = Get-PaperQaFilesList -Plan $plan -Lane $Lane -Batch $Batch -Run $Run -Retry $Retry.IsPresent -RetryAnswer $answer -StaticGroups $groups
     foreach ($line in @($r.Lines)) { Say $line }
     exit $r.ExitCode
+}
+
+# ------------------------------------------------------------------ prompt (ADR-0043, F213)
+
+# The instruction files of a lane, pasted word for word into its prompt: paths from the qa skill folder (qa-collab-plan.ps1, G.5).
+function Get-QaInstructionPaths([string] $LaneName) {
+    $skill = Split-Path -Parent $PSScriptRoot
+    $rel = @()
+    switch ($LaneName) {
+        'security' { $rel = @('references\security.md') }
+        'bug' { $rel = @('..\find-bug\SKILL.md') }
+        'smell' { $rel = @('references\smell.md') }
+        'ui' { $rel = @('..\design-critique\SKILL.md', '..\accessibility-review\SKILL.md') }
+    }
+    if ($LaneName -eq 'architecture') {
+        $cands = @('..\..\agents\architecture-reviewer.md', '..\..\..\.claude\agents\architecture-reviewer.md') | ForEach-Object { [IO.Path]::GetFullPath((Join-Path $skill $_)) }
+        foreach ($c in $cands) { if (Test-Path -LiteralPath $c -PathType Leaf) { return @($c) } }
+        Stop-Qa 2 "qa: instruction file not found: $($cands[0])"
+    }
+    $paths = @($rel | ForEach-Object { [IO.Path]::GetFullPath((Join-Path $skill $_)) })
+    foreach ($p in $paths) { if (-not (Test-Path -LiteralPath $p -PathType Leaf)) { Stop-Qa 2 "qa: instruction file not found: $p" } }
+    return $paths
+}
+
+function Get-QaPromptTemplate([string] $Name) {
+    $file = Join-Path (Split-Path -Parent $PSScriptRoot) 'references\prompts.md'
+    if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { Stop-Qa 2 "qa: instruction file not found: $file" }
+    $t = Get-PaperQaPromptTemplate -PromptsText ([IO.File]::ReadAllText($file, [Text.Encoding]::UTF8)) -Name $Name
+    if (-not $t) { Stop-Qa 2 "qa: no '$Name' template in $file" }
+    return $t
+}
+
+function Invoke-QaPrompt {
+    $dir = Get-QaRunDir
+    $plan = Read-Json (Join-Path $dir 'plan.json')
+    $external = ($plan.External -eq $true)
+    $repoText = ''
+    if ($external) { $repoText = "$($plan.RepoRoot)" }
+    if ($Verify) {
+        $fjson = Join-Path $dir 'findings.json'
+        $found = $null
+        if (Test-Path -LiteralPath $fjson -PathType Leaf) { $found = @((Read-Json $fjson).Findings | Where-Object { $null -ne $_ -and "$($_.Id)" -ieq $Verify -and "$($_.Status)" -eq 'queued' })[0] }
+        if ($null -eq $found) { Stop-Qa 2 "qa: $Verify is not queued for verification - run qa.ps1 check" }
+        $howTo = [IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $PSScriptRoot) '..\find-bug\SKILL.md'))
+        if (-not (Test-Path -LiteralPath $howTo -PathType Leaf)) { Stop-Qa 2 "qa: instruction file not found: $howTo" }
+        $text = New-PaperQaVerifyPrompt -Template (Get-QaPromptTemplate 'Verify prompt') -Finding $found -Run $Run -External $external -Repo $repoText -HowToPath $howTo -HowToText ([IO.File]::ReadAllText($howTo, [Text.Encoding]::UTF8))
+        $id = "$($found.Id)"
+        $promptFile = Join-Path $dir "prompts\verify-$id.md"
+        Write-Text $promptFile ($text + "`n")
+        $reader = "$($found.Reader)"; if (-not $reader) { $reader = 'claude' }
+        Say "qa-prompt: verify $id, run $Run - reader $reader"
+        Say "prompt: $promptFile"
+        Say "answer: $(Join-Path $dir "verdicts\$id.md")"
+        Say "task: verify-$id"
+        exit 0
+    }
+    if (-not $Lane) { Stop-Qa 2 'qa: prompt needs -Lane <lane> [-Batch <n>] or -Verify <id>' }
+    $tag = "$Lane-$Batch"
+    $answerFile = Join-Path $dir "lanes\$tag.md"
+    $answer = $null
+    if ($Retry) {
+        if (-not (Test-Path -LiteralPath $answerFile -PathType Leaf)) { Stop-Qa 2 "qa: $tag has no answer to send back - save it first" }
+        $answer = Read-Lines $answerFile
+    }
+    $static = Read-QaStatic $dir
+    $groups = @()
+    if ($null -ne $static) { $groups = @($static.Groups) }
+    $r = Get-PaperQaFilesList -Plan $plan -Lane $Lane -Batch $Batch -Run $Run -Retry $Retry.IsPresent -RetryAnswer $answer -StaticGroups $groups
+    if ($r.ExitCode -ne 0) { foreach ($line in @($r.Lines)) { Say $line }; exit $r.ExitCode }
+    $all = @(Get-PaperQaPlanBatches $plan $Lane)
+    $paths = @($all[$Batch - 1].Files)
+    $prefix = Get-PaperQaPrefix $Lane $Batch $all.Count
+    $errors = @()
+    if ($Retry) {
+        $a = Test-PaperQaLaneAnswer -Lines $answer -Lane $Lane -Prefix $prefix -ListPaths $paths -FileCount $paths.Count
+        foreach ($e in @($a.Errors)) { $errors += "${tag}: $e" }
+        if (-not $a.Complete -and @($a.Errors).Count -eq 0) { $errors += "${tag}: not read: $(@($a.NotRead) -join ', ')" }
+    }
+    $instructions = @(Get-QaInstructionPaths $Lane | ForEach-Object { [pscustomobject]@{ Path = $_; Text = [IO.File]::ReadAllText($_, [Text.Encoding]::UTF8) } })
+    $findingsFile = [IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $PSScriptRoot) 'references\findings.md'))
+    $text = New-PaperQaLanePrompt -Template (Get-QaPromptTemplate 'Lane prompt') -Lane $Lane -Batch $Batch -BatchCount $all.Count -Run $Run -Prefix $prefix -FilesLines @($r.Lines) `
+        -External $external -Repo $repoText -Retry $Retry.IsPresent -RetryErrors $errors -FindingsPath $findingsFile -FindingsText ([IO.File]::ReadAllText($findingsFile, [Text.Encoding]::UTF8)) -Instructions $instructions
+    $name = $tag; $retryText = ''
+    if ($Retry) { $name = "$tag.2"; $retryText = ' - retry' }
+    $promptFile = Join-Path $dir "prompts\$name.md"
+    Write-Text $promptFile ($text + "`n")
+    Say "qa-prompt: lane $Lane batch $Batch of $($all.Count), run $Run$retryText"
+    Say "prompt: $promptFile"
+    Say "answer: $(Join-Path $dir "lanes\$name.md")"
+    Say "task: $name"
+    exit 0
 }
 
 # ------------------------------------------------------------------ static
@@ -688,10 +819,19 @@ function Read-QaAnswers([string] $Dir) {
     return $answers
 }
 
+# The records collab wrote beside the answers (F212): "bug-1" for lanes\bug-1.turn.json, "BUG-1" for verdicts\BUG-1.turn.json.
+function Read-QaRecords([string] $Dir, [string] $Folder) {
+    $records = @{}
+    foreach ($f in @(Get-ChildItem -LiteralPath (Join-Path $Dir $Folder) -Filter '*.turn.json' -File -ErrorAction SilentlyContinue)) {
+        try { $records[$f.Name.Substring(0, $f.Name.Length - '.turn.json'.Length)] = Read-Json $f.FullName } catch { }
+    }
+    return $records
+}
+
 function Invoke-QaCheck {
     $dir = Get-QaRunDir
     $plan = Read-Json (Join-Path $dir 'plan.json')
-    $c = Get-PaperQaCheck -Plan $plan -Answers (Read-QaAnswers $dir) -Static (Read-QaStatic $dir) -VerifyCap $config.VerifyCap
+    $c = Get-PaperQaCheck -Plan $plan -Answers (Read-QaAnswers $dir) -Static (Read-QaStatic $dir) -VerifyCap $config.VerifyCap -Records (Read-QaRecords $dir 'lanes')
     Write-Json (Join-Path $dir 'findings.json') ([pscustomobject]@{ Findings = $c.Queue; LaneStates = $c.LaneStates; Seen = $c.Seen })
     if ($external) { Say "qa: repository $root (external, read only) - verify readers read the code there" }
     foreach ($line in @($c.Lines)) { Say $line }
@@ -702,14 +842,15 @@ function Invoke-QaReport {
     $dir = Get-QaRunDir
     $plan = Read-Json (Join-Path $dir 'plan.json')
     $static = Read-QaStatic $dir
-    $c = Get-PaperQaCheck -Plan $plan -Answers (Read-QaAnswers $dir) -Static $static -VerifyCap $config.VerifyCap
+    $laneRecords = Read-QaRecords $dir 'lanes'
+    $c = Get-PaperQaCheck -Plan $plan -Answers (Read-QaAnswers $dir) -Static $static -VerifyCap $config.VerifyCap -Records $laneRecords
     $verdictLines = @()
     foreach ($v in @(Get-ChildItem -LiteralPath (Join-Path $dir 'verdicts') -Filter '*.md' -File -ErrorAction SilentlyContinue | Sort-Object Name)) { $verdictLines += , ([string[]] (Read-Lines $v.FullName)) }
     if ($external) { $reportDir = $reportsDir; $reportArg = $reportsDir }
     else { $reportDir = Get-QaFullPath $config.Report; $reportArg = $config.Report }
     $existing = @()
     if (Test-Path -LiteralPath $reportDir -PathType Container) { $existing = @(Get-ChildItem -LiteralPath $reportDir -File | ForEach-Object { $_.Name }) }
-    $rep = New-PaperQaReport -Plan $plan -Check $c -VerdictLines $verdictLines -Static $static -Run $Run -Date (Get-Date).ToString('yyyy-MM-dd') -ReportDir $reportArg -Existing $existing
+    $rep = New-PaperQaReport -Plan $plan -Check $c -VerdictLines $verdictLines -Static $static -Run $Run -Date (Get-Date).ToString('yyyy-MM-dd') -ReportDir $reportArg -Existing $existing -Records $laneRecords -VerdictRecords (Read-QaRecords $dir 'verdicts')
     Write-Text (Join-Path $reportDir $rep.Name) $rep.Text
     foreach ($line in @($rep.Lines)) { Say $line }
     exit 0
@@ -722,6 +863,7 @@ switch ($Command) {
     'approve' { Invoke-QaApprove }
     'static' { Invoke-QaStatic }
     'files' { Invoke-QaFiles }
+    'prompt' { Invoke-QaPrompt }
     'check' { Invoke-QaCheck }
     'report' { Invoke-QaReport }
 }

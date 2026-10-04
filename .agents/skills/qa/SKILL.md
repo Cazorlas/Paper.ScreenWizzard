@@ -49,26 +49,39 @@ its parameters:
 3. **Static lane.** `qa.ps1 static -Run <run>` builds the project with the analyzers plugged in (see
    [static analysis](references/static-analysis.md)). It is machine work: start it in the background and
    go on. Exit 4 is not verifiable with the reason - never "0 findings"; exit 5 is not applicable.
-4. **Agent lanes.** For every lane in state `run` and every batch of it, take the list from
-   `qa.ps1 files -Run <run> -Lane <lane> -Batch <b>` and hand one agent the prompt of
-   [lanes](references/lanes.md) - all lanes and batches in one message, in the background. Security,
-   bug, smell and UI go to a read-only subagent; architecture goes to the `architecture-reviewer` agent.
-5. **Save each answer** word for word to `.paper/qa/<run>/lanes/<lane>-<b>.md` - the agents only read;
-   the main session writes.
-6. **Check.** `qa.ps1 check -Run <run>`. Exit 1 lists what to send back, `<lane>-<b>: <error>`: send that
-   batch back once with exactly those errors (or, for files not read, the list of
-   `qa.ps1 files ... -Retry`), save the second answer as `<lane>-<b>.2.md`, and check again. There is no
-   third time: a batch still wrong is reported not verifiable.
-7. **Verify.** For each `verify: <id>` line, start one read-only reader in parallel, with only what
-   [findings](references/findings.md) allows it (for an agent finding the RULE verbatim and the INPUT -
-   never WHERE, WHY, FIX or who found it). Save each verdict block to `.paper/qa/<run>/verdicts/<id>.md`.
-   A reader that returns nothing leaves the finding not verified - do not invent a verdict.
+4. **Agent lanes.** The estimate's `lanes run:` line says who answers the batches; never a lane before `approve`.
+   - `codex via collab - <collab> - ...`: run the `collab-start:` line of the estimate once - a read-only collab session on
+     the real checkout (uncommitted work included) or the external repository; nothing is written there. For every lane
+     in state `run` and every batch of it: `qa.ps1 prompt -Run <run> -Lane <lane> -Batch <b>` writes the prompt and
+     prints `prompt:` and `answer:`; then `<collab> ask -Session <id> -Task <lane>-<b> -Prompt <prompt> -Answer <answer>
+     -WaitSec 0`. Exit 11: it runs. Exit 13 (the machine's turns are all taken): `<collab> wait -Session <id>`, then ask
+     again. Exit 6 (Codex out of usage): ask that batch again with `-As takeover` (the Claude Sonnet worker), and the next
+     batches too, with `<collab> probe -Session <id>` between asks - back to Codex once the probe says ok. Exit 7: the
+     checkout changed during the turn - the answer is kept; name the printed paths to the user. Exit 1, 4 or 9: ask that
+     batch once more; failing again, it has no answer. When every batch was asked, `wait` until no turn runs.
+   - `claude subagents - <reason>` (no codex on PATH, collab not installed, `-Executor subagents`, Codex runs /qa):
+     hand each batch's `prompt:` file to one read-only subagent (Codex: one sub-agent), all in one message, in the
+     background.
+5. **Save each answer.** collab writes the answer word for word to `answer:`, with `<lane>-<b>.turn.json` beside it
+   (agent, role, model); never edit either. A subagent's answer you save word for word to `answer:` yourself.
+6. **Check.** `qa.ps1 check -Run <run>`. Exit 1 lists what to send back, `<lane>-<b>: <error>`: run the same `prompt`
+   command with `-Retry` and send that prompt once, the way the batch went first (collab: `-Task <lane>-<b>.2`); its
+   answer is `<lane>-<b>.2.md`. Check again. There is no third time: a batch still wrong is reported not verifiable.
+7. **Verify.** Each `verify: <id> (<lane>, <severity>) reader <agent>` line names a reader that is not the agent that
+   found it. `qa.ps1 prompt -Run <run> -Verify <id>` writes its prompt - the RULE verbatim and the INPUT, never WHERE,
+   WHY, FIX, the lane or who found it - and prints `prompt:` and `answer:`. `reader claude`: one read-only Claude
+   subagent per finding, all in one message, given only that prompt; save its block word for word to `answer:`.
+   `reader codex`: `<collab> ask -Session <id> -Task verify-<id> -Prompt <prompt> -Answer <answer>`; Codex unavailable,
+   a fresh read-only Claude subagent reads it instead (the report shows both are Claude). A reader that returns nothing
+   leaves the finding not verified - do not invent a verdict. Then `<collab> report -Session <id> -Final` closes the
+   session.
 8. **Report.** `qa.ps1 report -Run <run>` writes the report and prints its path. Give the user a link
    that opens (paperflow rule 9), a short summary in Vietnamese, and ask which bug ledger proposals to
    open. Each one approved becomes `/task-bug` with the command line the report gives; nothing else does.
 
 The checklists the lanes read: [security](references/security.md), [smell](references/smell.md); the bug
-lane reads `.claude/skills/find-bug/SKILL.md`.
+lane reads `.claude/skills/find-bug/SKILL.md`. Which lanes run, who answers each and how its prompt is built:
+[lanes](references/lanes.md).
 
 ## Which lanes: ask first
 
@@ -129,8 +142,8 @@ or when `lanes` exits 5.
    `verdicts/` there), the report in `<folder>/reports/`. Scopes are `project` (the default), `path` and `branch [base]`.
 3. Every file list has a `repo:` line: its paths are relative to that folder - tell each agent to read them
    there, and each verify reader to look for the code there (`check` prints it). The architecture list ends with
-   a `rules:` line: the repository's own rule files for that batch; hand `architecture-reviewer` exactly those,
-   never this project's ADRs or profile.
+   a `rules:` line: the repository's own rule files for that batch; the architecture batch carries them: `qa.ps1 prompt`
+   pastes them with architecture-reviewer's instructions, never this project's ADRs or profile.
 4. Bug proposals carry no `/task-bug`: the repository is not this project's; the owner reports them to its owners.
 
 ### A branch of an external repository
@@ -150,7 +163,8 @@ names a base) and ask the lane question.
 **From the plugin** (ADR-0038): `/paper-kit:qa` in a session whose repository has no `/qa` of its own runs this copy
 with `-Repo` the session's repository and `-Out` the folder it names (default under `%LOCALAPPDATA%\paper-kit\qa`).
 Codex has no plugin command: run `paper-kit/scripts/qa-entry.ps1 -Repo .` from a Paper-skills checkout and follow
-its lines.
+its lines. Codex as the session: add `-Executor subagents` to `plan` and `lanes` - a sub-agent of Codex has no network
+for the collab session.
 
 Nothing is written into the repository - not `.paper/`, not its `.claude/`, not git's index - and none of its
 scripts runs except the declared build. Files that build writes into folders git ignores are the build's own;
@@ -161,8 +175,8 @@ a build that changes anything else leaves the static lane not verifiable, naming
 - Fix code, write anything under the bug ledger, commit, or change the project's config.
 - Start an agent lane before the user saw the estimate and agreed (`approve`), or hand a lane a file that
   is not in its list.
-- Let a lane verify its own findings, or put a finding that is not `confirmed` with an INPUT in the bug
-  ledger proposals.
+- Let a lane verify its own findings, let a finding be read by the agent that found it while the other is
+  available, or put a finding that is not `confirmed` with an INPUT in the bug ledger proposals.
 - Report a lane that did not run as clean: not applicable, skipped and not verifiable each say why.
 - Run /qa on another repository without -Out, or edit its qa.profile.json build line yourself.
 - Plan before the owner picked the lanes (unless no question is asked), or plan the reading of a sentence the owner has not confirmed.
@@ -173,9 +187,9 @@ a build that changes anything else leaves the static lane not verifiable, naming
 | --- | --- |
 | 0 | done |
 | 1 | `check` found answers to send back |
-| 2 | invalid request, broken profile key, unknown lane or run; `not verifiable:` for a branch scope with no base branch, a wrong qa.profile.json or -Out (external repository) |
-| 4 | not verifiable: the run is not approved yet (`files`), or the static lane could not run (no dotnet, a package not downloaded, the build red, an analyzer that did not load) |
-| 5 | NOT APPLICABLE: no file in scope, or the lane does not run |
+| 2 | invalid request, broken profile key, unknown lane or run, `-Executor` that cannot be met, an instruction file or a queued finding that is not there (`prompt`); `not verifiable:` for a branch scope with no base branch, a wrong qa.profile.json or -Out (external repository) |
+| 4 | not verifiable: the run is not approved yet (`files`, `prompt`), or the static lane could not run (no dotnet, a package not downloaded, the build red, an analyzer that did not load) |
+| 5 | NOT APPLICABLE: no file in scope, or the lane does not run (`files`, `prompt`) |
 
 ## Paper-skills itself
 
