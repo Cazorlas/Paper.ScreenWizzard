@@ -1,0 +1,29 @@
+{
+ "destructive": {
+  "type": "choice",
+  "criteria": {
+   "yes": "The request deletes or changes elements that already exist in the model: delete, remove, purge or clear elements, tags, dimensions, views or sheets; move, rotate, mirror, extend, trim, join or split them; change their type, parameters, names or numbers; redo, redraw or replace existing work. Also yes when the change is asked after a check in the same request (count the doors, then change their type)",
+   "no": "The request changes nothing that exists: it counts, lists, finds, selects, zooms, measures, checks, explains, exports or opens a tool; or it changes only what a view displays (hide, unhide, isolate, visibility, colour and graphic overrides, and resetting them); or it only creates new elements, tags or views; or it asks how to do something, or forbids every change"
+  },
+  "instructions": "Does this chat request to a Revit assistant delete or change elements that already exist in the model? The state holds the request as typed and, after 'folded:', the same words in lower case without Vietnamese diacritics. Read the whole request: a verb of deleting or changing that the request forbids, or only asks how to do, does not count; a tool whose name holds such a verb is not the verb; and some words delete or change without saying delete."
+ },
+ "has_negation_or_exception": {
+  "type": "choice",
+  "criteria": {
+   "yes": "The request leaves some elements out of what it acts on, or keeps only some and acts on the rest (except, but not, all but, other than, keep only, Vietnamese trừ, ngoại trừ, chừa, chỉ giữ); or it forbids or negates its own action (don't, do not, never, Vietnamese đừng, không được, khỏi)",
+   "no": "Nothing is left out and no action is negated. A negative word that only describes the elements (unused, not placed), that ends a yes-or-no question (Vietnamese có ... không), or that is part of another word or of a category name is not a negation; neither is a minus in arithmetic"
+  },
+  "instructions": "Does this chat request to a Revit assistant leave some elements out with an exception, or negate its own action? The state holds the request as typed and, after 'folded:', the same words in lower case without Vietnamese diacritics. Read what each negative or exception word does in the sentence, not only whether it is there."
+ },
+ "scope": {
+  "type": "choice",
+  "criteria": {
+   "selection": "The elements the user has selected now: selected, the selection, these, Vietnamese đang chọn, đã chọn, cái này",
+   "view": "The active view or sheet: this view, the current view, this sheet, Vietnamese view này, bản vẽ này. Also a hide, unhide, isolate or graphic override that names no selection and no level, since it acts on the active view",
+   "level": "One or more named levels or floors (level 2, L3, tầng 4, tầng trệt, hầm, mái), also when the request says all of that level",
+   "whole model": "The whole project, file or model (the project, everywhere, toàn bộ dự án, cả file), or what exists once per project rather than in a view: the list of levels, sheets or views, views and sheets themselves, warnings, unused families and types",
+   "not stated": "The request names no selection, view, level or project and its action does not imply one; or it is not a command to act on the model: a question about how to do something, opening a tool, a greeting"
+  },
+  "instructions": "Where does this chat request to a Revit assistant act? The state holds the request as typed and, after 'folded:', the same words in lower case without Vietnamese diacritics. Pick the place where the action happens: a place the request leaves out (all levels except level 1) is not the scope, and when it names several places pick the narrowest - selection, then view, then level, then whole model."
+ }
+}

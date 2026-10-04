@@ -1,0 +1,41 @@
+{
+ "target_parameter": {
+  "type": "choice",
+  "criteria": {
+   "Mark": "The tag of each single unit, different on every row: AHU-01, FCU-3-05, P-02, EF-B1-01. Headers: Mark, Tag, Tag No., Equipment No., Ref., Ký hiệu, Mã thiết bị. Not a model or catalogue number",
+   "Type Mark": "A type code repeated for every unit of the same type: A, FCU-A, Type 2. Headers: Type, Type Mark, Loại",
+   "Model": "The manufacturer's model or catalogue number: XK-450H, CV-12A. Headers: Model, Model No., Catalogue No., Mã hiệu, Model máy",
+   "Manufacturer": "The maker or brand. Headers: Manufacturer, Make, Brand, Hãng, Hãng sản xuất, Nhà sản xuất",
+   "Description": "What the unit is, in words: Air handling unit, Ceiling cassette FCU, Chilled water pump. Headers: Description, Equipment, Name, Tên thiết bị, Mô tả",
+   "Comments": "Free remarks and notes, also when they hold numbers or units: standby, see drawing, c/w VFD 7.5 kW. Headers: Comments, Remarks, Notes, Ghi chú",
+   "Cost": "The price of one unit in money. Headers: Cost, Price, Unit price, Đơn giá, Giá",
+   "Airflow": "Volume of air moved by a fan, AHU or FCU, in m3/h, CMH, L/s or CFM; typically hundreds to tens of thousands of m3/h. Headers: Airflow, Air volume, Air flow rate, Lưu lượng gió, and Q or Lưu lượng alone when the values are air sized",
+   "Water Flow": "Flow of water through a pump, chiller or coil, in L/s, m3/h or GPM; typically under a few hundred m3/h or under 100 L/s. Headers: Water flow, Flow rate, GPM, Lưu lượng nước, and Q on a pump or coil",
+   "Cooling Capacity": "Cooling output in kW, BTU/h or TR. Headers: Cooling capacity, Total cooling, Qc, Công suất lạnh, Năng suất lạnh, and Q in kW on cooling equipment",
+   "Heating Capacity": "Heating output in kW or BTU/h. Headers: Heating capacity, Qh, Công suất sưởi, Công suất nhiệt",
+   "Power": "Electrical input power or motor rating in kW or HP. Headers: Power, Motor, Input power, Rated power, Công suất điện, Công suất động cơ. Công suất alone is this unless the header or the values say cooling or heating",
+   "Voltage": "The electrical supply, often with phase and frequency: 380V/3P/50Hz, 230V. Headers: Voltage, Power supply, Electrical, Điện áp, Nguồn điện",
+   "External Static Pressure": "Pressure a fan delivers outside the unit, in Pa or kPa. Headers: ESP, External static pressure, Static pressure, Áp suất tĩnh",
+   "Width": "The overall width of the unit alone, one number per cell. Headers: Width, W, Rộng, Chiều rộng",
+   "Height": "The overall height of the unit alone, one number per cell, in mm. Headers: Height, H, Cao, Chiều cao",
+   "Length": "The overall length or depth of the unit alone, one number per cell. Headers: Length, Depth, L, D, Dài, Chiều dài, Sâu",
+   "Weight": "Operating or shipping weight in kg. Headers: Weight, Operating weight, Khối lượng, Trọng lượng",
+   "(do not import)": "No parameter above fits: row numbers (STT, No., Item), number of units, combined sizes such as 1200x600x450, pump head (H or Cột áp, in m), current, sound level, refrigerant, country of origin, empty columns"
+  },
+  "instructions": "Which parameter of a Revit Mechanical Equipment element should the values of the spreadsheet column described in the state be imported into? The header may be English or Vietnamese, a single letter such as Q or H, or shared by two columns; a merged group header above the column comes first, before ' / '. Read the samples too: the first sample may be the unit row under the header. Choose (do not import) when no parameter fits; do not force a fit."
+ },
+ "unit": {
+  "type": "choice",
+  "criteria": {
+   "mm": "Millimetres: mm in the header, alone as the first sample (a unit row), or after the numbers, as in 1200x600 mm",
+   "m": "Metres: m in the header, alone as the first sample, or after the numbers. Not m3/h, m³/h or m/s",
+   "m3/h": "Cubic metres per hour: m3/h, m³/h, m3/hr, CMH, m3/giờ",
+   "L/s": "Litres per second: L/s, l/s, lps, lít/s",
+   "kW": "Kilowatts of power or capacity: kW, KW, kw",
+   "other": "A unit is written but it is none of the above: V, A, Pa, kPa, kg, HP, BTU/h, TR, CFM, GPM, m/s, °C, dB(A). The import asks the user",
+   "not stated": "The values are a physical quantity (flow, power, capacity, size, pressure) but no unit is written in the header or the samples. Do not guess the unit from the size of the numbers",
+   "none": "The column holds no physical quantity: tags, codes, model numbers, brands, names, remarks and notes (even when they mention a unit), row numbers, counts and prices"
+  },
+  "instructions": "In which unit are the values of the spreadsheet column described in the state written? Look for the unit in the header (often in brackets), in the first sample when it is a unit alone (the unit row under the header), and after the numbers. The header may be Vietnamese; 'header plain' is the same header without accents."
+ }
+}

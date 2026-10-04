@@ -1,0 +1,11 @@
+{
+  "answers_question": {
+    "default": "no",
+    "default_confidence": 0.3,
+    "overlap_ignore": ["a", "an", "the", "of", "for", "in", "on", "at", "to", "by", "with", "and", "or", "is", "are", "be", "do", "does", "what", "which", "how", "when", "where", "who", "there", "they", "it", "its", "this", "that", "any", "much", "many", "should", "must", "shall", "can", "need", "needed", "required", "là", "gì", "nào", "có", "không", "của", "cho", "trong", "với", "và", "hay", "được", "phải", "cần", "như", "thế", "một", "các", "những", "để", "ở", "này", "nhiêu"],
+    "rules": [
+      { "option": "yes", "overlap": { "of": "question", "in": "passage", "min": 0.6 }, "confidence": 0.6 },
+      { "option": "partly", "overlap": { "of": "question", "in": "passage", "min": 0.3 }, "confidence": 0.5 }
+    ]
+  }
+}

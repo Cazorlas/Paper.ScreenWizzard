@@ -1,0 +1,22 @@
+{
+ "which_moves": {
+  "type": "choice",
+  "criteria": {
+   "element A": "Element A moves and element B stays where it is",
+   "element B": "Element B moves and element A stays where it is",
+   "neither": "Nothing moves now and a person decides: both elements need their slope, or no element that may move has a move that fits"
+  },
+  "instructions": "Which element of the MEP clash in the state should move? Code computed the state: elements A and B with kind, system, size, flow and bottom elevation, which of them need their slope, the free space above and below each, and the moves that fit each one. Decide in this order. (1) An element whose slope is required (a gravity drain) never moves, not up, not down, not around, even when it is the smaller one and a move fits it. Judge this by the flow and the line 'slope required', not by the system name: a pumped drain is a pressure pipe and may move. (2) Of the elements that may move, the smaller one moves, by its size across: a pipe's DN, a conduit's diameter, the larger side of a duct or cable tray. Only when the smaller size is more than 75% of the larger one, the pipe, cable tray or conduit moves and the duct stays; at 75% or less the smaller one moves. (3) If that element has no move that fits, the other element moves when it may and a move fits it. (4) Otherwise neither. Take what fits only from the line 'moves that fit', never from the free space numbers; a shorter shift listed for the other element does not change which element moves."
+ },
+ "action": {
+  "type": "choice",
+  "criteria": {
+   "raise": "The moving element goes up by the shift listed for it in 'moves that fit'",
+   "lower": "The moving element goes down by the shift listed for it; code has checked that it stays above the ceiling",
+   "resize": "The moving element is a rectangular duct and takes the flatter size of the same area listed for it",
+   "route around": "The moving element detours sideways around the other one, with the extra length and bends listed for it",
+   "send to a person": "Nothing moves automatically: both elements need their slope, or no element that may move has a move that fits, for example when the ceiling leaves too little room below and the slab or other services too little above"
+  },
+  "instructions": "How should the MEP clash in the state be resolved? First find the element that moves: an element whose slope is required (a gravity drain) never moves, even when a move fits it; of the others the smaller one moves, by its size across (a pipe's DN, a conduit's diameter, the larger side of a duct or cable tray; only when the smaller size is more than 75% of the larger one, the pipe, cable tray or conduit moves rather than the duct); if it has no move that fits, the other one moves. Then pick that element's move from the line 'moves that fit', in this order: raise or lower, whichever shift is smaller (raise when they are equal); then resize; then route around. Moves listed for the element that stays do not count. Choose send to a person when no element that may move has a move that fits."
+ }
+}

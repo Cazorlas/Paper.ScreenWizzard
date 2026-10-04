@@ -1,7 +1,8 @@
 {
   "$comment": "Paper.ScreenWizzard. Every verb is a plain dotnet command run from the repository root; the total the verdict reads is the 'Total tests: N' line of dotnet test. ui and e2e need the interactive desktop (FlaUI, real capture), so they never run beside each other and never in CI without one. There is no host and no live lane; the lane ui proves both, and the E2eTests project (plan group 5) is run by its own dotnet test command, because paperflow only offers a verb for a lane and the desktop host proves only unit and ui.",
   "hosts": [
-    "desktop"
+    "desktop",
+    "ai"
   ],
   "lanes": [
     "unit",
@@ -17,28 +18,61 @@
   "adrFolder": "docs/decisions",
   "docsSource": "https://learn.microsoft.com/dotnet/desktop/wpf",
   "verify": {
-    "watch": [".cs", ".xaml", ".csproj", ".props", ".targets", ".slnx", ".manifest"],
+    "watch": [
+      ".cs",
+      ".xaml",
+      ".csproj",
+      ".props",
+      ".targets",
+      ".slnx",
+      ".manifest"
+    ],
     "configuration": "Debug"
   },
-  "codeMap": { "extensions": [".cs", ".xaml", ".csproj", ".props", ".manifest"] },
+  "codeMap": {
+    "extensions": [
+      ".cs",
+      ".xaml",
+      ".csproj",
+      ".props",
+      ".manifest"
+    ]
+  },
   "api": {
-    "namespaces": ["System.Windows", "Windows.", "Microsoft.Win32", "System.Drawing", "System.Runtime.InteropServices"]
+    "namespaces": [
+      "System.Windows",
+      "Windows.",
+      "Microsoft.Win32",
+      "System.Drawing",
+      "System.Runtime.InteropServices"
+    ]
   },
   "architecture": {
     "platformFree": [
       {
         "path": "**/Paper.ScreenWizzard.Domain/**",
-        "forbid": ["System.Windows", "System.Drawing", "Microsoft.Win32"],
+        "forbid": [
+          "System.Windows",
+          "System.Drawing",
+          "Microsoft.Win32"
+        ],
         "forbidPackages": []
       },
       {
         "path": "**/Paper.ScreenWizzard.UseCases/**",
-        "forbid": ["System.Windows", "System.Drawing", "Microsoft.Win32", "System.Runtime.InteropServices"],
+        "forbid": [
+          "System.Windows",
+          "System.Drawing",
+          "Microsoft.Win32",
+          "System.Runtime.InteropServices"
+        ],
         "forbidPackages": []
       },
       {
         "path": "**/Paper.ScreenWizzard.Presentation/**",
-        "forbid": ["Paper.ScreenWizzard.Infrastructure"],
+        "forbid": [
+          "Paper.ScreenWizzard.Infrastructure"
+        ],
         "forbidPackages": []
       }
     ],

@@ -1,0 +1,25 @@
+{
+  "queue": {
+    "default": "other",
+    "default_confidence": 0.3,
+    "rules": [
+      { "option": "license", "any": ["license", "licence", "ban quyen", "kich hoat", "activate", "activation", "trial", "dung thu", "het han", "expired", "subscription", "key"], "confidence": 0.8 },
+      { "option": "billing", "any": ["bao gia", "bang gia", "gia ban", "price", "quote", "thanh toan", "chuyen khoan", "payment", "hoa don", "invoice", "vat", "refund", "hoan tien"], "confidence": 0.8 },
+      { "option": "install", "any": ["cai dat", "cai lai", "go cai dat", "install", "installer", "uninstall", "setup", "cap nhat", "update", "tab", "ribbon", "could not load", "failed to load"], "confidence": 0.8 },
+      { "option": "crash", "any": ["crash", "crashed", "treo", "dung hinh", "not responding", "fatal error", "tu tat", "tat dot ngot", "dong dot ngot", "closes", "freezes", "froze"], "confidence": 0.8 },
+      { "option": "feature request", "any": ["de xuat", "mong co", "bo sung", "them tinh nang", "tinh nang moi", "co the them", "feature", "request", "suggest", "would be nice"], "confidence": 0.8 },
+      { "option": "other", "any": ["lam sao", "cach dung", "cach lam", "huong dan", "how do i", "how to"], "confidence": 0.8 },
+      { "option": "cad tool bug", "any": ["autocad", "cad"], "confidence": 0.8 },
+      { "option": "revit tool bug", "any": ["revit"], "confidence": 0.8 }
+    ]
+  },
+  "urgency": {
+    "default": "annoying",
+    "default_confidence": 0.3,
+    "rules": [
+      { "option": "blocking work", "any": ["khong dung duoc", "khong lam duoc", "khong lam viec duoc", "khong mo duoc", "khong khoi dong duoc", "cannot work", "cannot use", "can t use", "can t open", "het han", "expired", "tab", "ribbon", "could not load", "failed to load", "deadline", "dang cho", "gap", "urgent", "asap"], "confidence": 0.8 },
+      { "option": "annoying", "any": ["loi", "error", "bug", "sai", "wrong", "cham", "slow", "crash", "treo", "not responding", "tu tat"], "confidence": 0.8 },
+      { "option": "question or request", "any": ["lam sao", "cach dung", "cach lam", "huong dan", "how do i", "how to", "question", "de xuat", "mong co", "bo sung", "them tinh nang", "co the them", "feature", "request", "bao gia", "bang gia", "price", "quote", "thanh toan", "chuyen khoan", "payment", "hoa don", "invoice", "vat"], "confidence": 0.8 }
+    ]
+  }
+}

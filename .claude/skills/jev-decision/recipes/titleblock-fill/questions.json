@@ -1,0 +1,27 @@
+{
+ "field": {
+  "type": "choice",
+  "criteria": {
+   "sheet number": "The number of the drawing: a discipline code and digits, usually with a dash or a dot: M-101, KT-02, E1.03, P-201. Targets: Sheet Number, Sheet No., Drawing No., DWG NO, Số bản vẽ, Ký hiệu bản vẽ. A letter and two digits with no dash (P02, C04) is more often a revision code",
+   "sheet name": "The title of the drawing in words: LEVEL 2 LIGHTING LAYOUT, SECTION A-A, MẶT BẰNG ĐIỆN TẦNG 2. Targets: Sheet Name, Title, Drawing Title, Tên bản vẽ. Words inside a title that name another field, such as kiểm tra or tỷ lệ, do not make it that field",
+   "drawn by": "The person who drew the sheet. Targets: Drawn By, Drawn, DRN, Vẽ, Người vẽ",
+   "checked by": "The person who checked the sheet. Targets: Checked By, Checked, CHK, Kiểm tra, Người kiểm tra, KCS",
+   "designed by": "The person who designed the content of the sheet. Targets: Designed By, Designed, DES, Thiết kế, Người thiết kế",
+   "approved by": "The person who approves the sheet or leads the design and signs last. Targets: Approved By, Approved, APP, APPD, Duyệt, Phê duyệt, Chủ nhiệm, Chủ trì",
+   "date": "The issue date of the sheet, in any format: 05/06/2026, 2026-06-05, 5 Jun 2026, 05.06.26, ngày 05 tháng 06 năm 2026, or a date stored as a spreadsheet serial number. Targets: Date, Issue Date, Sheet Issue Date, Ngày, Ngày phát hành",
+   "revision": "The revision code of the sheet: a letter and two digits (P01 to P99 preliminary, C01 to C99 construction, T01 tender), a single letter (A, B) or a number (0, 1, 2), sometimes with a dot (P02.1). Targets: Rev, Revision, Current Revision, Lần sửa đổi, Phiên bản",
+   "scale": "The drawing scale: 1:100, 1/100, 1:50 @A3, NTS, AS SHOWN, AS INDICATED. Targets: Scale, Tỷ lệ, TL",
+   "none": "Neither the value nor the target is one of the fields above: sheet size, zone, status or suitability (FOR CONSTRUCTION, S2), or any other title block cell"
+  },
+  "instructions": "Which title block field does the value described in the state belong to? The target is the title block parameter or attribute the import wants to write the value into; its name may be English, Vietnamese or a short tag such as DRN, CHK or REV. Read the value first: when its content clearly belongs to another field than the target (a revision code in a date target, a value labelled with another field), choose the field of the content. A label in front of a value names its field; extra words or a second value after it (status words after a revision code, a revision after a sheet number) do not: the field is that of the value the cell starts with. When the value is empty or a placeholder, choose the field the target stands for. Names of people and companies have been replaced by [PERSON-n] and [COMPANY-n]. 'target plain' and 'value plain' are the same text without Vietnamese accents."
+ },
+ "value_ok": {
+  "type": "choice",
+  "criteria": {
+   "yes": "The value is complete and can be written exactly as it is into the target: one sheet number, one title, one person ([PERSON-n] counts as a real name), one revision code (P02, C04, A, 0), one scale (1:100; 1:50 @A3 is a scale at a paper size; NTS; AS SHOWN), or one date that reads only one way: yyyy-mm-dd, a four-digit year with the day above 12 (25/09/2026), or the month in words or labelled (5 Jun 2026, ngày 05 tháng 06 năm 2026)",
+   "needs fixing": "There is a value but a person must change it before it is written: a date that reads two ways (day and month both 12 or under, as in 05/06/2026, or a two-digit year), a date stored as a spreadsheet serial number (46178), two people or two values in one cell, a label or extra words around the value (DRAWN: [PERSON-1], P02 - FOR TENDER, E-201 REV P01), text garbled by a wrong character encoding (KIáº¾N TRÃšC), or a value whose content belongs to another field than the target",
+   "missing": "There is no real value for the target: (empty), a dash, TBC, TBA, N/A, xx, or the template's default text left unchanged: Author, Checker, Designer, Approver, Unnamed, MM/DD/YY, or the target's own name"
+  },
+  "instructions": "Can the value described in the state be written exactly as it is into the target, the title block parameter or attribute named in the state? A person reviews every value before anything is written; this answer says whether the value can be proposed as it is, needs a person to fix it first, or is missing. Names of people and companies have been replaced by [PERSON-n] and [COMPANY-n]; a placeholder counts as a real name. 'target plain' and 'value plain' are the same text without Vietnamese accents."
+ }
+}

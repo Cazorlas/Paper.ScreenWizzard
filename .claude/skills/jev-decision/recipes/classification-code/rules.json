@@ -1,0 +1,48 @@
+{
+  "group": {
+    "default": "Pr_15 Preparatory products",
+    "default_confidence": 0.3,
+    "rules": [
+      { "option": "Pr_70 Services and process outlet products", "any": ["fan coil", "diffuser", "downlight"] },
+      { "option": "Pr_75 Services and process control products", "any": ["smoke detector", "detector"] },
+      { "option": "Pr_60 Services and process source products", "any": ["air handling unit", "ahu", "chiller", "distribution board"] },
+      { "option": "Pr_65 Services and process distribution products", "any": ["pump", "fan", "damper", "attenuator", "access door", "valve", "drain", "switch", "cable tray", "conduit"] },
+      { "option": "Pr_40 Signage, sanitary fittings and fittings, furnishing and equipment (FF&E) products", "any": ["extinguisher", "water closet", "wc", "desk"] },
+      { "option": "Pr_45 Flora and fauna products", "any": ["tree"] },
+      { "option": "Pr_30 Opening products", "any": ["doors", "windows"] },
+      { "option": "Pr_20 Structure and general products", "any": ["structural columns", "structural framing", "structural foundations"] },
+      { "option": "Pr_40 Signage, sanitary fittings and fittings, furnishing and equipment (FF&E) products", "any": ["furniture", "casework", "plumbing fixtures", "specialty equipment"] },
+      { "option": "Pr_45 Flora and fauna products", "any": ["planting"] },
+      { "option": "Pr_70 Services and process outlet products", "any": ["lighting fixtures", "air terminals", "sprinklers"] },
+      { "option": "Pr_75 Services and process control products", "any": ["fire alarm devices"] },
+      { "option": "Pr_65 Services and process distribution products", "any": ["pipes", "pipe fittings", "pipe accessories", "ducts", "duct fittings", "duct accessories", "flex ducts", "cable trays", "conduits", "lighting devices"] },
+      { "option": "Pr_60 Services and process source products", "any": ["mechanical equipment", "electrical equipment"] }
+    ]
+  },
+  "subgroup_pr_65": {
+    "default": "Pr_65_12 Chutes",
+    "default_confidence": 0.3,
+    "rules": [
+      { "option": "Pr_65_53 Pump products", "any": ["pump"] },
+      { "option": "Pr_65_67 Air and fume distribution products", "any": ["fan", "attenuator"] },
+      { "option": "Pr_65_65 Ductwork products", "any": ["damper", "access door"] },
+      { "option": "Pr_65_54 Valve products", "any": ["valve"] },
+      { "option": "Pr_65_52 Pipe, tube and fitting products", "any": ["drain"] },
+      { "option": "Pr_65_72 Electrical power products and wiring accessories", "any": ["switch"] },
+      { "option": "Pr_65_70 Cables, conductors and fittings products", "any": ["cable tray", "conduit"] },
+      { "option": "Pr_65_65 Ductwork products", "any": ["ducts", "duct fittings", "duct accessories", "flex ducts"] },
+      { "option": "Pr_65_52 Pipe, tube and fitting products", "any": ["pipes", "pipe fittings", "pipe accessories"] },
+      { "option": "Pr_65_70 Cables, conductors and fittings products", "any": ["cable trays", "conduits"] },
+      { "option": "Pr_65_72 Electrical power products and wiring accessories", "any": ["lighting devices"] }
+    ]
+  },
+  "section_pr_65_65": {
+    "default": "Pr_65_65_23 Ductwork accessories",
+    "default_confidence": 0.3,
+    "rules": [
+      { "option": "Pr_65_65_24 Duct dampers", "any": ["damper"] },
+      { "option": "Pr_65_65_23 Ductwork accessories", "any": ["access door"] },
+      { "option": "Pr_65_65_25 Ductwork and fittings", "any": ["duct", "ducts", "duct fittings"] }
+    ]
+  }
+}

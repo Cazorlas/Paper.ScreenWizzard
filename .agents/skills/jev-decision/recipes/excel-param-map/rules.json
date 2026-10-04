@@ -1,0 +1,40 @@
+{
+  "target_parameter": {
+    "default": "(do not import)",
+    "default_confidence": 0.3,
+    "rules": [
+      { "option": "Comments", "any": ["comments", "remarks", "notes", "ghi chu"] },
+      { "option": "Voltage", "any": ["voltage", "power supply", "electrical", "dien ap", "nguon dien"] },
+      { "option": "External Static Pressure", "any": ["esp", "external static pressure", "static pressure", "ap suat tinh"] },
+      { "option": "Cooling Capacity", "any": ["cooling capacity", "total cooling", "qc", "cong suat lanh", "nang suat lanh"] },
+      { "option": "Heating Capacity", "any": ["heating capacity", "qh", "cong suat suoi", "cong suat nhiet"] },
+      { "option": "Water Flow", "any": ["water flow", "flow rate", "gpm", "luu luong nuoc"] },
+      { "option": "Airflow", "any": ["airflow", "air flow", "air volume", "air flow rate", "luu luong gio"] },
+      { "option": "Power", "any": ["power", "motor", "input power", "rated power", "cong suat dien", "cong suat dong co"] },
+      { "option": "Type Mark", "any": ["type mark", "type", "loai"] },
+      { "option": "Model", "any": ["model", "model no", "catalogue no", "ma hieu", "model may"] },
+      { "option": "Mark", "any": ["mark", "tag", "tag no", "equipment no", "ref", "ky hieu", "ma thiet bi"] },
+      { "option": "Manufacturer", "any": ["manufacturer", "make", "brand", "hang san xuat", "nha san xuat"] },
+      { "option": "Description", "any": ["description", "equipment", "name", "ten thiet bi", "mo ta"] },
+      { "option": "Cost", "any": ["cost", "price", "unit price", "don gia"] },
+      { "option": "Width", "any": ["width", "chieu rong"] },
+      { "option": "Height", "any": ["height", "chieu cao"] },
+      { "option": "Length", "any": ["length", "depth", "chieu dai"] },
+      { "option": "Weight", "any": ["weight", "operating weight", "khoi luong", "trong luong"] },
+      { "option": "(do not import)", "any": ["stt", "item", "quantity", "number of units", "cot ap", "refrigerant"] }
+    ]
+  },
+  "unit": {
+    "default": "none",
+    "default_confidence": 0.3,
+    "rules": [
+      { "option": "m3/h", "any": ["m3 h", "m3 hr", "cmh", "m3 gio"] },
+      { "option": "L/s", "any": ["l s", "lps", "lit s"] },
+      { "option": "kW", "any": ["kw"] },
+      { "option": "other", "any": ["v", "pa", "kpa", "kg", "hp", "btu h", "cfm", "gpm", "m s", "db a"] },
+      { "option": "mm", "any": ["mm"] },
+      { "option": "m", "any": ["m"] },
+      { "option": "not stated", "any": ["flow", "airflow", "power", "capacity", "size", "pressure"], "confidence": 0.5 }
+    ]
+  }
+}

@@ -1,0 +1,56 @@
+{
+ "library_category": {
+  "type": "choice",
+  "criteria": {
+   "Doors": "Doors, door leaves, gates, rolling shutters and access doors placed in walls (cửa đi, cửa cuốn). Revit: Doors",
+   "Windows": "Windows, louvred windows and skylights placed in walls or roofs (cửa sổ). Revit: Windows",
+   "Curtain panels and railings": "Curtain wall panels, and the parts of a railing such as balusters, posts and handrail supports (lan can). Revit: Curtain Panels, Railings",
+   "Furniture and casework": "Loose furniture and built-in cabinets: tables, chairs, sofas, beds, wardrobes, shelving, kitchen and vanity cabinets (bàn, ghế, tủ). Revit: Furniture, Furniture Systems, Casework",
+   "Specialty equipment": "Building equipment that serves no building service: kitchen, food service and laundry equipment, lifts and escalators, medical, gym and parking equipment, toilet partitions. Revit: Specialty Equipment, Food Service Equipment, Medical Equipment, Vertical Circulation",
+   "Plumbing fixtures": "Sanitary fixtures and drains: WCs, urinals, basins, sinks, showers, bathtubs, floor and roof drains (thiết bị vệ sinh). Revit: Plumbing Fixtures",
+   "Mechanical equipment": "Plant and equipment of the building services: air handling and fan coil units, indoor and outdoor air conditioning units, chillers, cooling towers, fans, pumps of every system, tanks, water heaters and boilers. Revit: Mechanical Equipment, Plumbing Equipment",
+   "Air terminals": "Supply, return and exhaust grilles, diffusers, slot diffusers and louvres at the end of a duct (miệng gió). Revit: Air Terminals",
+   "Duct fittings and accessories": "Duct elbows, tees, transitions and takeoffs, and the accessories in a duct run: volume and fire dampers, flexible connectors, silencers, filters. Revit: Duct Fittings, Duct Accessories",
+   "Pipe fittings and accessories": "Pipe elbows, tees, reducers and couplings, and the accessories in a pipe run: valves of every system, strainers, meters, gauges, alarm valve sets and flow switches. Revit: Pipe Fittings, Pipe Accessories",
+   "Fire protection devices": "Fire fighting and fire alarm devices: sprinklers, hose reels and fire hose cabinets, fire extinguishers, hydrants and fire brigade inlets, smoke and heat detectors, manual call points, sounders and fire alarm panels. Revit: Sprinklers, Fire Alarm Devices, Fire Protection. Fire pumps are Mechanical equipment and fire valves are Pipe fittings and accessories",
+   "Lighting fixtures": "Luminaires: downlights, panels, battens, spotlights, outdoor and emergency luminaires, and exit signs that light up (đèn). Revit: Lighting Fixtures",
+   "Electrical equipment": "Switchboards, distribution boards and panels, transformers, generators, UPS and ATS cabinets, meter cabinets (tủ điện). Revit: Electrical Equipment",
+   "Electrical devices": "Wall, floor and ceiling devices: sockets, switches, isolators, data, telephone and TV outlets, CCTV cameras, access control readers, speakers and audio visual devices, nurse call, thermostats and other control devices on walls (ổ cắm, công tắc). Revit: Electrical Fixtures, Lighting Devices, Communication Devices, Data Devices, Telephone Devices, Security Devices, Nurse Call Devices, Audio Visual Devices, Mechanical Control Devices",
+   "Cable tray and conduit fittings": "Bends, tees, crosses and reducers of cable trays and cable ladders, and conduit elbows and junction boxes on conduit runs (máng cáp, ống luồn). Revit: Cable Tray Fittings, Conduit Fittings",
+   "MEP hangers and supports": "Hangers, threaded rods, brackets, channel and trapeze supports and seismic braces that carry pipes, ducts, cable trays or conduits (giá đỡ, ty treo). Revit has no category of its own for them: they are made in Generic Models, Pipe Accessories, Structural Framing or another category",
+   "Columns and framing": "Columns of every kind and the structural frame: load-bearing columns, beams, braces, joists and trusses in concrete, steel or timber, and architectural columns and column casings (cột, dầm). Revit: Columns, Structural Columns, Structural Framing, Structural Trusses",
+   "Structural foundations and connections": "Piles, pile caps, footings and foundation beams, and steel connections, base plates, anchors and stiffeners (cọc, móng). Revit: Structural Foundations, Structural Connections, Structural Stiffeners",
+   "Site and planting": "Trees and shrubs, site furniture, hardscape such as paving, kerbs and bollards, parking components, temporary site structures, and people and vehicles for presentation (cây, xe). Revit: Site, Planting, Parking, Entourage, Hardscape, Temporary Structures",
+   "Signage": "Signs and sign boards that do not light up: room and toilet signs, wayfinding signs to rooms and places, safety signs, escape route and exit signs, fire equipment signs (biển báo). Revit: Signage. A sign with its own lamp is Lighting fixtures",
+   "Generic model": "A 3D object that is none of the above: placeholders, void and opening cutters, massing blocks, clearance zones. Revit: Generic Models, Mass. Only when the object itself fits no other category",
+   "Profiles": "2D profile families that sweep model geometry: railing, handrail, mullion, slab edge, gutter, fascia and reveal profiles. Revit: Profiles",
+   "Detail items": "2D detail components drawn at real size in views, so they grow and shrink with the view scale: section and construction details, repeating detail patterns, break lines, and outlines of objects such as a door swing or a fixture drawn as a detail component. Revit: Detail Items. A 2D family made in Detail Items is Detail items, whatever object its name says",
+   "Tags": "Tags that read the parameters of the element they label: door, window, room, equipment, duct, pipe and multi-category tags. Revit: every category whose name ends in Tags",
+   "Annotation symbols": "2D symbols drawn at paper size, so they keep their printed size at every view scale, placed in views or nested in other families: north arrows, section, elevation and callout heads, level and grid heads, spot elevation symbols, view titles, revision marks, and plan symbols of fixtures and devices (ký hiệu). Revit: Generic Annotations, Section Marks, Elevation Marks, Callout Heads, Level Heads, Grid Heads, View Titles, Spot Elevation Symbols. A 2D family made in Generic Annotations is Annotation symbols, whatever object its name says",
+   "Title blocks": "Drawing sheet borders with their title block (khung tên). Revit: Title Blocks"
+  },
+  "instructions": "Which category of the family library does this Revit family file (.rfa) belong to? The state holds the file name, the Revit category the family was made in, its type names and its shared parameter names. Decide by what the object is. The Revit category is usually right, but families are often made in the wrong category, for example equipment, fire fighting devices or signs drawn in Generic Models or in another category. File names may be copies (Copy of, (2)), Vietnamese abbreviations, or the name of the family a part or symbol was nested in, with or without accents."
+ },
+ "discipline": {
+  "type": "choice",
+  "criteria": {
+   "Architecture": "Building fabric and interiors: doors, windows, curtain panels, railings, architectural columns, furniture, casework, specialty equipment such as kitchens and lifts, room and toilet signs and wayfinding signs to rooms and places, and their tags, symbols, details and profiles (kiến trúc). Signs for escape routes, exits and fire equipment are Fire protection",
+   "Structure": "Load-bearing structure: columns, beams, braces, trusses, foundations, piles, connections and rebar, and their tags and details (kết cấu)",
+   "Mechanical": "Air conditioning and ventilation: air handling and fan coil units, indoor and outdoor air conditioning units, chillers, cooling towers, fans including smoke extract and stair pressurisation fans, air terminals, ducts, duct fittings and dampers, thermostats and controls, chilled water and refrigerant pipework, and their tags and symbols (điều hoà, thông gió)",
+   "Plumbing": "Water supply and drainage: sanitary fixtures such as WCs, basins and sinks, floor drains, domestic water pumps, water tanks and water heaters, water and drainage pipework with its valves and fittings, and their tags and symbols (cấp nước, thoát nước)",
+   "Electrical": "Power, lighting and low voltage: switchboards and panels, transformers, generators, luminaires including emergency luminaires and exit signs that light up, sockets and switches, data, telephone, CCTV, access control and sound systems, cable trays and conduits, and their tags and symbols (điện, chiếu sáng)",
+   "Fire protection": "Fire fighting and fire alarm: sprinklers, hose reels and hose cabinets, extinguishers, hydrants, fire pumps and fire water tanks, fire valves, detectors, call points, sounders and alarm panels, and signs without a lamp that mark escape routes and exits or point the way to them, and fire equipment signs (PCCC, chữa cháy, báo cháy)",
+   "General": "Families every discipline uses: title blocks, north arrows, section, elevation, callout, level and grid heads, view titles, revision marks, and multi-category tags that belong to no one discipline",
+   "Other": "Site, landscape and presentation families such as trees, vehicles, people and parking, civil works, placeholders and blocks that show no discipline, or too little to tell"
+  },
+  "instructions": "Which discipline uses this Revit family? The state holds the .rfa file name, the Revit category the family was made in, its type names and shared parameter names. Judge by what the object is and which system it serves, not by the category alone: a pump, valve, tank, sign or cabinet can belong to several disciplines, a tag, symbol or detail takes the discipline of the elements it shows, and a hanger or support takes the discipline of what it carries. File names may be copies or Vietnamese abbreviations, with or without accents."
+ },
+ "is_annotation": {
+  "type": "choice",
+  "criteria": {
+   "yes": "A view-specific 2D family that is not part of the 3D model: tags, annotation symbols, section, level and grid heads, title blocks and detail items. It is 2D even when its file name is the name of a door, a fixture or a piece of equipment",
+   "no": "A model family with 3D geometry that is placed in the model, including one made in the wrong model category, and a profile family, which is a 2D sketch used to sweep 3D geometry"
+  },
+  "instructions": "Is this Revit family a 2D annotation or detail family drawn only in views, rather than a model family? Judge by the Revit category and what the family is; the file name may repeat the name of the model family it was nested in."
+ }
+}

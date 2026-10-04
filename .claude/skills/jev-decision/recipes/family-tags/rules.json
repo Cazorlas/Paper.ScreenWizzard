@@ -1,0 +1,61 @@
+{
+  "library_category": {
+    "default": "Generic model",
+    "default_confidence": 0,
+    "rules": [
+      { "option": "Tags", "any": ["tags types"], "confidence": 0.8 },
+      { "option": "Title blocks", "any": ["category title blocks"], "confidence": 0.8 },
+      { "option": "Annotation symbols", "any": ["category generic annotations", "category section marks", "category elevation marks", "category callout heads", "category level heads", "category grid heads", "category view titles", "category spot elevation symbols"], "confidence": 0.8 },
+      { "option": "Detail items", "any": ["category detail items"], "confidence": 0.8 },
+      { "option": "Profiles", "any": ["category profiles"], "confidence": 0.8 },
+      { "option": "Doors", "any": ["category doors"], "confidence": 0.8 },
+      { "option": "Windows", "any": ["category windows"], "confidence": 0.8 },
+      { "option": "Curtain panels and railings", "any": ["category curtain panels", "category railings"], "confidence": 0.8 },
+      { "option": "Furniture and casework", "any": ["category furniture", "category furniture systems", "category casework"], "confidence": 0.8 },
+      { "option": "Specialty equipment", "any": ["category specialty equipment", "category food service equipment", "category medical equipment", "category vertical circulation"], "confidence": 0.8 },
+      { "option": "Plumbing fixtures", "any": ["category plumbing fixtures"], "confidence": 0.8 },
+      { "option": "Mechanical equipment", "any": ["category mechanical equipment", "category plumbing equipment"], "confidence": 0.8 },
+      { "option": "Air terminals", "any": ["category air terminals"], "confidence": 0.8 },
+      { "option": "Duct fittings and accessories", "any": ["category duct fittings", "category duct accessories"], "confidence": 0.8 },
+      { "option": "Pipe fittings and accessories", "any": ["category pipe fittings", "category pipe accessories"], "confidence": 0.8 },
+      { "option": "Fire protection devices", "any": ["category sprinklers", "category fire alarm devices", "category fire protection"], "confidence": 0.8 },
+      { "option": "Lighting fixtures", "any": ["category lighting fixtures"], "confidence": 0.8 },
+      { "option": "Electrical equipment", "any": ["category electrical equipment"], "confidence": 0.8 },
+      { "option": "Electrical devices", "any": ["category electrical fixtures", "category lighting devices", "category communication devices", "category data devices", "category telephone devices", "category security devices", "category nurse call devices", "category audio visual devices", "category mechanical control devices"], "confidence": 0.8 },
+      { "option": "Cable tray and conduit fittings", "any": ["category cable tray fittings", "category conduit fittings"], "confidence": 0.8 },
+      { "option": "Columns and framing", "any": ["category columns", "category structural columns", "category structural framing", "category structural trusses"], "confidence": 0.8 },
+      { "option": "Structural foundations and connections", "any": ["category structural foundations", "category structural connections", "category structural stiffeners"], "confidence": 0.8 },
+      { "option": "Site and planting", "any": ["category site", "category planting", "category parking", "category entourage", "category hardscape", "category temporary structures"], "confidence": 0.8 },
+      { "option": "Signage", "any": ["category signage"], "confidence": 0.8 },
+      { "option": "Generic model", "any": ["category generic models", "category mass"], "confidence": 0.8 }
+    ]
+  },
+  "discipline": {
+    "default": "Other",
+    "default_confidence": 0,
+    "rules": [
+      { "option": "Architecture", "any": ["category doors", "category windows", "category curtain panels", "category railings", "category furniture", "category furniture systems", "category casework", "category specialty equipment", "category food service equipment", "category medical equipment", "category vertical circulation", "category columns", "category signage", "category door tags", "category window tags", "category room tags"], "confidence": 0.8 },
+      { "option": "Structure", "any": ["category structural columns", "category structural framing", "category structural trusses", "category structural foundations", "category structural connections", "category structural stiffeners"], "confidence": 0.8 },
+      { "option": "Mechanical", "any": ["category air terminals", "category duct fittings", "category duct accessories", "category mechanical control devices"], "confidence": 0.8 },
+      { "option": "Plumbing", "any": ["category plumbing fixtures"], "confidence": 0.8 },
+      { "option": "Electrical", "any": ["category lighting fixtures", "category lighting devices", "category electrical equipment", "category electrical fixtures", "category communication devices", "category data devices", "category telephone devices", "category security devices", "category nurse call devices", "category audio visual devices", "category cable tray fittings", "category conduit fittings"], "confidence": 0.8 },
+      { "option": "Fire protection", "any": ["category sprinklers", "category fire alarm devices", "category fire protection"], "confidence": 0.8 },
+      { "option": "General", "any": ["category title blocks", "category section marks", "category elevation marks", "category callout heads", "category level heads", "category grid heads", "category view titles", "category spot elevation symbols", "category multi category tags"], "confidence": 0.8 },
+      { "option": "Other", "any": ["category site", "category planting", "category parking", "category entourage", "category hardscape", "category temporary structures"], "confidence": 0.8 },
+      { "option": "Fire protection", "any": ["pccc", "chua chay", "bao chay", "fire", "sprinkler", "hydrant", "hose reel", "extinguisher"], "confidence": 0.7 },
+      { "option": "Mechanical", "any": ["dieu hoa", "thong gio", "ahu", "fcu", "vrf", "chiller", "cooling tower", "fan", "duct", "refrigerant", "chilled water"], "confidence": 0.7 },
+      { "option": "Plumbing", "any": ["cap nuoc", "thoat nuoc", "wc", "sanitary", "drain", "domestic water", "water heater"], "confidence": 0.7 },
+      { "option": "Electrical", "any": ["dien", "chieu sang", "electrical", "lighting", "luminaire", "socket", "switch", "cctv", "cable"], "confidence": 0.7 },
+      { "option": "Structure", "any": ["ket cau", "structural", "rebar"], "confidence": 0.7 },
+      { "option": "Architecture", "any": ["kien truc", "architectural", "door", "window", "cua di", "cua so", "railing", "lan can", "furniture"], "confidence": 0.7 },
+      { "option": "General", "any": ["north arrow", "section head", "level head", "grid head", "revision"], "confidence": 0.7 }
+    ]
+  },
+  "is_annotation": {
+    "default": "no",
+    "default_confidence": 0.8,
+    "rules": [
+      { "option": "yes", "any": ["tags types", "category title blocks", "category generic annotations", "category section marks", "category elevation marks", "category callout heads", "category level heads", "category grid heads", "category view titles", "category spot elevation symbols", "category detail items"], "confidence": 0.8 }
+    ]
+  }
+}

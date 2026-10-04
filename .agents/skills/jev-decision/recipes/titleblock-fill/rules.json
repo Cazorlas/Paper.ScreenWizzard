@@ -1,0 +1,24 @@
+{
+  "field": {
+    "default": "none",
+    "default_confidence": 0.3,
+    "rules": [
+      { "option": "sheet number", "any": ["sheet number", "sheet no", "drawing no", "drawing number", "dwg no", "so ban ve", "ky hieu ban ve"] },
+      { "option": "sheet name", "any": ["sheet name", "title", "drawing title", "ten ban ve"] },
+      { "option": "drawn by", "any": ["drawn", "drawn by", "drn", "nguoi ve"] },
+      { "option": "checked by", "any": ["checked", "checked by", "chk", "kiem tra", "nguoi kiem tra", "kcs"] },
+      { "option": "designed by", "any": ["designed", "designed by", "des", "thiet ke", "nguoi thiet ke"] },
+      { "option": "approved by", "any": ["approved", "approved by", "app", "appd", "duyet", "phe duyet", "chu nhiem", "chu tri"] },
+      { "option": "date", "any": ["date", "issue date", "sheet issue date", "ngay", "ngay phat hanh"] },
+      { "option": "revision", "any": ["rev", "revision", "current revision", "lan sua doi", "phien ban"] },
+      { "option": "scale", "any": ["scale", "ty le", "tl"] }
+    ]
+  },
+  "value_ok": {
+    "default": "yes",
+    "default_confidence": 0.5,
+    "rules": [
+      { "option": "missing", "any": ["empty", "tbc", "tba", "n a", "xx", "author", "checker", "designer", "approver", "unnamed", "mm dd yy"], "confidence": 0.8 }
+    ]
+  }
+}

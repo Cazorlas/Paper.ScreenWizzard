@@ -1,0 +1,55 @@
+{
+ "discipline": {
+  "type": "choice",
+  "criteria": {
+   "Architecture": "Building fabric and fit-out: walls, doors, windows, floors, ceilings, stairs, furniture, rooms, fire shutters, fire curtains and fire stopping. Names often hold A-, ARCH, WALL, DOOR, WINDOW, FURN, FFE, ROOM, CEIL",
+   "Structure": "Columns, beams, slabs, foundations and the structural grid. Names often hold S-, STRUC, STRC, COLUMN, BEAM, SLAB, FOUND, RC",
+   "Mechanical/HVAC": "Air conditioning, ventilation, smoke extract, chilled, condenser and heating water, refrigerant: ducts, grilles, dampers, AHU, FCU, fans, chillers. Names often hold M-, MVAC, ACMV, HVAC, DUCT, CHW, VRV, REF",
+   "Plumbing/Drainage": "Water supply, hot water, drainage, soil and waste, vent pipes, rainwater, sewage treatment, LPG and gas: pipes, tanks, pumps, sanitary fixtures. Names often hold P-, PLUMB, WS, CW, DRAIN, SAN, SOIL, WASTE, LPG",
+   "Fire protection": "Fire fighting, and fire alarm and detection: sprinklers, hydrants, hose reels, fire fighting pipes and pumps, FM200 or gas suppression, extinguishers, smoke and heat detectors, manual call points, sounders and fire alarm panels. Names often hold FF, FP, FS, SPK, SPRINK, HYDRANT, FHC, FA (fire alarm), ALARM, DETECTOR. Fire alarm is Fire protection also when an electrical engineer drew it on an E- layer",
+   "Electrical": "Power, lighting, sockets, cable trays and ducts, wiring, panels, generators, and low-voltage systems such as data, telephone, CCTV and access control. Names often hold E-, ELEC, LITE, POWER, CABLE, TRAY, SOCKET. Fire alarm and detection is not Electrical",
+   "General/annotation": "Shared annotation: title blocks, borders, viewports, revision clouds, notes, dimensions and grids that name no discipline. Names often hold G-, Z-, ANNO, TITLE, VPORT, VIEWPORT, DIM, NOTE, TEXT, KHUNG",
+   "Other": "Drafting only or unknown: pens and line styles (THIN, THICK, HIDDEN, CENTER, NET), construction lines, PDF or image imports, unnamed layers such as Layer1"
+  },
+  "instructions": "Which design discipline owns the CAD layer described in the state? The layer name is often a code: a discipline letter or word first (M, P, F or FF, E, A, S, G or Z), then system and element abbreviations; it may be Vietnamese, Chinese or Japanese. Read the whole name and the block names: one word such as FIRE, FA, AC or VENT does not decide alone."
+ },
+ "element_kind": {
+  "type": "choice",
+  "criteria": {
+   "duct": "Ductwork of any air system; system codes followed by D such as SAD, RAD, EAD, FAD, OAD, KED, SMD are ducts",
+   "pipe": "Pipework of any system: water, drainage, vent, chilled, condenser and heating water, refrigerant, gas, sprinkler and hydrant; names such as PIPE, ONG, 管道, CHWS, CWS, HWS, WS, CD, REF, LPG, DRAINAGE",
+   "fitting/accessory": "In-line valves, dampers, flanges, bends, tees and strainers; names such as VALVE, DAMPER, VCD, FITT, PHU KIEN, 阀门",
+   "air terminal": "Diffusers, grilles, registers and louvres, also when the layer name says duct but its blocks are grilles; names such as DIFF, GRILLE, SAG, RAG, EAG, LOUVRE",
+   "equipment": "Plant: AHU, FCU, fans, pumps, chillers, tanks, generators, panels; names such as EQUIP, EQPM, EQ, EQP, PUMP, TANK, THIET BI, 设备",
+   "fixture/device": "Point devices: light fittings, sockets, switches, detectors, fire alarm devices, sprinkler heads, sanitary fixtures such as WC, basin and bath",
+   "wall": "Walls",
+   "grid/axis": "Building grid lines and axes with their bubbles; names such as GRID, AXIS, TRUC",
+   "dimension": "Dimensions; names such as DIM, KICH THUOC",
+   "text/tag": "Notes, labels and tags; names such as TEXT, TXT, NOTE, TAG, GHI CHU, 注释",
+   "hatch": "Hatch patterns and zoning fills",
+   "title block/border": "Title blocks, sheet borders and frames; names such as TITLE, TTLB, BORDER, FRAME, KHUNG",
+   "other": "Anything else or a mix: supports, cable trays, wiring, doors, furniture, zones, drafting lines such as hidden, centre and thin lines"
+  },
+  "instructions": "What kind of element is drawn on the CAD layer described in the state? The layer name is often a code: a discipline letter or word first (M, P, F or FF, E, A, S, G or Z), then system and element abbreviations; it may be Vietnamese, Chinese or Japanese. Read the whole name and the block names: one word such as FIRE, FA, AC or VENT does not decide alone."
+ },
+ "mep_system": {
+  "type": "choice",
+  "criteria": {
+   "supply air": "Supply air ducts and diffusers; codes SA, SAD, SAG",
+   "return air": "Return air; codes RA, RAD, RAG",
+   "exhaust air": "General, toilet and kitchen exhaust; codes EA, EAD, EAG, KE, KEA, KED",
+   "fresh air": "Fresh, outdoor, make-up and pressurisation air; codes FA, OA, MA, MAD, OAD, PA on mechanical layers",
+   "smoke extract": "Smoke spill and smoke exhaust; codes SM, SMD, SE, SEA, SMOKE",
+   "chilled water supply": "Chilled water supply; code CHWS",
+   "chilled water return": "Chilled water return; code CHWR",
+   "heating water": "Heating water to radiators and coils; LPHW, HTG, HW or HWS on mechanical layers, radiators",
+   "condensate/drain": "Condensate from AC units and cooling towers; codes CD, ACD. Not soil, waste or foul drainage",
+   "domestic water": "Cold and hot water supply to fixtures; codes CW, DCW, DHW, WS, HWS on plumbing layers, water supply, flushing water",
+   "sanitary": "Soil, waste, foul and kitchen drainage, vent pipes, sewage and sludge; codes SAN, SOIL, WASTE, FW, KD, VENT on plumbing layers",
+   "fire sprinkler": "Sprinkler pipes and heads only; codes SPK, SPRINK, FS. Hydrant, hose reel and gas suppression are not known",
+   "not known": "A mechanical, plumbing or fire fighting layer whose pipe or duct system is none of the others or cannot be told: condenser water, refrigerant, LPG, hydrant, supports",
+   "none": "Not a pipe or duct system: architecture, structure, electrical, fire alarm and detection, annotation and drafting-only layers"
+  },
+  "instructions": "Which building services system does the CAD layer described in the state carry? The layer name is often a code: a discipline letter or word first (M, P, F or FF, E, A, S, G or Z), then system and element abbreviations; it may be Vietnamese, Chinese or Japanese. Read the whole name and the block names: one word such as FIRE, FA, AC or VENT does not decide alone."
+ }
+}

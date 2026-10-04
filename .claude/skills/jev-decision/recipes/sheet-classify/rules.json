@@ -1,0 +1,44 @@
+{
+  "discipline": {
+    "default": "Other",
+    "default_confidence": 0,
+    "rules": [
+      { "option": "Architecture", "any": ["sheet number a", "sheet number kt"], "confidence": 0.8 },
+      { "option": "Structure", "any": ["sheet number s", "sheet number kc"], "confidence": 0.8 },
+      { "option": "Mechanical", "any": ["sheet number m", "sheet number dh", "sheet number hvac", "sheet number tg"], "confidence": 0.8 },
+      { "option": "Plumbing", "any": ["sheet number p", "sheet number ctn", "sheet number n"], "confidence": 0.8 },
+      { "option": "Electrical", "any": ["sheet number e", "sheet number d"], "confidence": 0.8 },
+      { "option": "Fire protection", "any": ["sheet number fp", "sheet number f", "sheet number pccc"], "confidence": 0.8 },
+      { "option": "General", "any": ["sheet number g", "sheet number tm", "sheet number c"], "confidence": 0.8 },
+      { "option": "Architecture", "any": ["kien truc", "architectural"], "confidence": 0.7 },
+      { "option": "Structure", "any": ["ket cau", "structural"], "confidence": 0.7 },
+      { "option": "Mechanical", "any": ["dieu hoa", "thong gio", "ong gio", "chiller", "hvac", "mechanical"], "confidence": 0.7 },
+      { "option": "Plumbing", "any": ["cap nuoc", "thoat nuoc", "plumbing"], "confidence": 0.7 },
+      { "option": "Electrical", "any": ["dien", "chieu sang", "mang cap", "electrical", "lighting"], "confidence": 0.7 },
+      { "option": "Fire protection", "any": ["pccc", "chua chay", "sprinkler", "fire"], "confidence": 0.7 },
+      { "option": "General", "any": ["bia", "cover", "thuyet minh", "general"], "confidence": 0.7 }
+    ]
+  },
+  "drawing_type": {
+    "default": "other",
+    "default_confidence": 0,
+    "rules": [
+      { "option": "ceiling plan", "any": ["mat bang tran", "tran", "ceiling", "rcp"], "confidence": 0.7 },
+      { "option": "plan", "any": ["mat bang", "plan"], "confidence": 0.7 },
+      { "option": "section", "any": ["mat cat", "section"], "confidence": 0.7 },
+      { "option": "elevation", "any": ["mat dung", "elevation"], "confidence": 0.7 },
+      { "option": "detail", "any": ["chi tiet", "detail"], "confidence": 0.7 },
+      { "option": "schedule/legend", "any": ["thong ke", "schedule", "legend", "chu thich"], "confidence": 0.7 },
+      { "option": "schematic", "any": ["so do nguyen ly", "riser", "single line", "schematic", "diagram"], "confidence": 0.7 },
+      { "option": "3D", "any": ["3d", "phoi canh", "so do khong gian", "isometric"], "confidence": 0.7 },
+      { "option": "cover/index", "any": ["bia", "cover", "danh muc", "muc luc", "index"], "confidence": 0.7 }
+    ]
+  },
+  "starts_new_document": {
+    "default": "yes",
+    "default_confidence": 0.6,
+    "rules": [
+      { "option": "no", "any": ["same number", "cont", "continued", "tiep theo"], "confidence": 0.8 }
+    ]
+  }
+}

@@ -1,0 +1,41 @@
+{"id":"TF01","input":"target: Sheet Number | value: M-101","expect":{"field":"sheet number","value_ok":"yes"},"case":"plain","synthetic":true}
+{"id":"TF02","input":"target: Số bản vẽ | target plain: So ban ve | value: KT-02","expect":{"field":"sheet number","value_ok":"yes"},"case":"plain","synthetic":true}
+{"id":"TF03","input":"target: Drawing No. | value: E-201","expect":{"field":"sheet number","value_ok":"yes"},"case":"plain","synthetic":true}
+{"id":"TF04","input":"target: Sheet Name | value: LEVEL 2 LIGHTING LAYOUT","expect":{"field":"sheet name","value_ok":"yes"},"case":"plain","synthetic":true}
+{"id":"TF05","input":"target: Tên bản vẽ | target plain: Ten ban ve | value: MẶT BẰNG CHIẾU SÁNG TẦNG 2 | value plain: MAT BANG CHIEU SANG TANG 2","expect":{"field":"sheet name","value_ok":"yes"},"case":"plain","synthetic":true}
+{"id":"TF06","input":"target: Drawing Title | value: ROOF PLAN","expect":{"field":"sheet name","value_ok":"yes"},"case":"plain","synthetic":true}
+{"id":"TF07","input":"target: Drawn By | value: [PERSON-1]","expect":{"field":"drawn by","value_ok":"yes"},"case":"plain","synthetic":true}
+{"id":"TF08","input":"target: Người vẽ | target plain: Nguoi ve | value: [PERSON-2]","expect":{"field":"drawn by","value_ok":"yes"},"case":"plain","synthetic":true}
+{"id":"TF09","input":"target: Checked By | value: [PERSON-3]","expect":{"field":"checked by","value_ok":"yes"},"case":"plain","synthetic":true}
+{"id":"TF10","input":"target: Kiểm tra | target plain: Kiem tra | value: [PERSON-4]","expect":{"field":"checked by","value_ok":"yes"},"case":"plain","synthetic":true}
+{"id":"TF11","input":"target: Designed By | value: [PERSON-5]","expect":{"field":"designed by","value_ok":"yes"},"case":"plain","synthetic":true}
+{"id":"TF12","input":"target: Approved By | value: [PERSON-6]","expect":{"field":"approved by","value_ok":"yes"},"case":"plain","synthetic":true}
+{"id":"TF13","input":"target: Chủ nhiệm | target plain: Chu nhiem | value: [PERSON-7]","expect":{"field":"approved by","value_ok":"yes"},"case":"plain","synthetic":true}
+{"id":"TF14","input":"target: Date | value: 2026-09-15","expect":{"field":"date","value_ok":"yes"},"case":"plain","synthetic":true}
+{"id":"TF15","input":"target: Ngày phát hành | target plain: Ngay phat hanh | value: 25/09/2026","expect":{"field":"date","value_ok":"yes"},"case":"plain","synthetic":true}
+{"id":"TF16","input":"target: Issue Date | value: 15 September 2026","expect":{"field":"date","value_ok":"yes"},"case":"plain","synthetic":true}
+{"id":"TF17","input":"target: Revision | value: C05","expect":{"field":"revision","value_ok":"yes"},"case":"plain","synthetic":true}
+{"id":"TF18","input":"target: Lần sửa đổi | target plain: Lan sua doi | value: B","expect":{"field":"revision","value_ok":"yes"},"case":"plain","synthetic":true}
+{"id":"TF19","input":"target: Scale | value: 1:50","expect":{"field":"scale","value_ok":"yes"},"case":"plain","synthetic":true}
+{"id":"TF20","input":"target: Tỷ lệ | target plain: Ty le | value: 1:100","expect":{"field":"scale","value_ok":"yes"},"case":"plain","synthetic":true}
+{"id":"TF21","input":"target: Drawn By | value: (empty)","expect":{"field":"drawn by","value_ok":"missing"},"case":"plain","synthetic":true}
+{"id":"TF22","input":"target: Date | value: TBC","expect":{"field":"date","value_ok":"missing"},"case":"plain","synthetic":true}
+{"id":"TF23","input":"target: Sheet Name | value: Unnamed","expect":{"field":"sheet name","value_ok":"missing"},"case":"plain","synthetic":true}
+{"id":"TF24","input":"target: Approved By | value: Approver","expect":{"field":"approved by","value_ok":"missing"},"case":"plain","synthetic":true}
+{"id":"TF25","input":"target: Sheet Size | value: A1","expect":{"field":"none","value_ok":"yes"},"case":"plain","synthetic":true}
+{"id":"TF26","input":"target: Status | value: FOR CONSTRUCTION","expect":{"field":"none","value_ok":"yes"},"case":"plain","synthetic":true}
+{"id":"TF27","input":"target: Date | value: 01/10/26","expect":{"field":"date","value_ok":"needs fixing"},"case":"hard","synthetic":true,"note":"day and month both 12 or under and a two-digit year: 1 Oct 2026 or 10 Jan 2026"}
+{"id":"TF28","input":"target: NGÀY | target plain: NGAY | value: 10/01/2026","expect":{"field":"date","value_ok":"needs fixing"},"case":"hard","synthetic":true,"note":"a four-digit year does not settle which of day and month comes first"}
+{"id":"TF29","input":"target: SCALE | value: 1:100 @A1","expect":{"field":"scale","value_ok":"yes"},"case":"hard","synthetic":true,"note":"scale at a paper size is one whole scale value; A1 looks like a sheet number"}
+{"id":"TF30","input":"target: REV | value: P03","expect":{"field":"revision","value_ok":"yes"},"case":"hard","synthetic":true,"note":"P03 looks like a plumbing sheet number"}
+{"id":"TF31","input":"target: Revision | value: C01 - FOR CONSTRUCTION","expect":{"field":"revision","value_ok":"needs fixing"},"case":"hard","synthetic":true,"note":"revision code with status words after it; C01 looks like a sheet number"}
+{"id":"TF32","input":"target: Date | value: P03","expect":{"field":"revision","value_ok":"needs fixing"},"case":"hard","synthetic":true,"note":"a revision code sitting in the date column"}
+{"id":"TF33","input":"target: DRAWN | value: [PERSON-1] / [PERSON-2]","expect":{"field":"drawn by","value_ok":"needs fixing"},"case":"hard","synthetic":true,"note":"two people in the drawn cell"}
+{"id":"TF34","input":"target: Drawn By | value: CHECKED: [PERSON-2]","expect":{"field":"checked by","value_ok":"needs fixing"},"case":"hard","synthetic":true,"note":"a value labelled checked in the drawn target"}
+{"id":"TF35","input":"target: Tên bản vẽ | target plain: Ten ban ve | value: CHI TIẾT CỬA KIỂM TRA ỐNG GIÓ | value plain: CHI TIET CUA KIEM TRA ONG GIO","expect":{"field":"sheet name","value_ok":"yes"},"case":"hard","synthetic":true,"note":"Vietnamese accented sheet name holding kiem tra, the word for checked"}
+{"id":"TF36","input":"target: Sheet Name | value: Máº¶T Báº°NG Cáº¤P NÆ¯á»šC Táº¦NG 3 | value plain: Maº¶T Baº°NG Caº¤P NÆ¯a»sC Taº¦NG 3","expect":{"field":"sheet name","value_ok":"needs fixing"},"case":"hard","synthetic":true,"note":"Vietnamese sheet name in UTF-8 read as Windows-1252"}
+{"id":"TF37","input":"target: Checked By | value: Checker","expect":{"field":"checked by","value_ok":"missing"},"case":"hard","synthetic":true,"note":"the template default text left unchanged"}
+{"id":"TF38","input":"target: Sheet Issue Date | value: 46296","expect":{"field":"date","value_ok":"needs fixing"},"case":"hard","synthetic":true,"note":"date stored as a spreadsheet serial number (46296 is 2026-10-01)"}
+{"id":"TF39","input":"target: THIẾT KẾ | target plain: THIET KE | value: [PERSON-3]","expect":{"field":"designed by","value_ok":"yes"},"case":"hard","synthetic":true,"note":"Vietnamese designer cell: a person, but not the drafter"}
+{"id":"TF40","input":"target: DWG NO | value: M-101 REV C02","expect":{"field":"sheet number","value_ok":"needs fixing"},"case":"hard","synthetic":true,"note":"revision appended to the sheet number; REV pulls toward revision"}
+{"id":"TF41","input":"target: Ngày phát hành | target plain: Ngay phat hanh | value: ngày 01 tháng 10 năm 2026 | value plain: ngay 01 thang 10 nam 2026","expect":{"field":"date","value_ok":"yes"},"case":"hard","synthetic":true,"note":"day and month both 12 or under, but labelled in Vietnamese so it reads one way"}
