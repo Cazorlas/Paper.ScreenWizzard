@@ -1,6 +1,6 @@
 {
-  "version": "1.46.31",
-  "payloadHash": "0db56f39c5cc8dab33fd497c131c85056550dc93abe651ff8a99457988f6951e",
+  "version": "1.46.32",
+  "payloadHash": "a678bfa89cd672b85a6b76e545ec022fc14adfce9835aacbed1d8550ffe811b6",
   "hosts": ["desktop", "ai"],
   "files": {
     ".agents/skills/accessibility-review/LICENSE": "a6946284993aeec75c7d75906064b66210c46051e562077efb30eb6dcfe72e26",
@@ -257,7 +257,7 @@
     ".claude/paperflow/tasks-gate.ps1": "5717f68f589d558f4dfb94f7fa3ab5c5cd5ba80238d9539937ed5888c08345f1",
     ".claude/paperflow/verb-plan.ps1": "47b8d09afe688e8b506f1b27ce8a22cf8d2fdf92e8220e3d7c037a33d52049fd",
     ".claude/paperflow/worktree-plan.ps1": "1ec043ca1d7d40b0a318a093801b613e8a7e544765191da13eeb366cd1a38212",
-    ".claude/paperflow/worktree.ps1": "24249cc5e8a9fcbd60569d69a34a7456a906373ffe563bdc644e3355a548a264",
+    ".claude/paperflow/worktree.ps1": "e0008aeff0a61495d20cc7cc6878107369eaa2b0c49a6735731a0c9a11e8250b",
     ".claude/skills/accessibility-review/LICENSE": "a6946284993aeec75c7d75906064b66210c46051e562077efb30eb6dcfe72e26",
     ".claude/skills/accessibility-review/SKILL.md": "0b73ae3d0c431f633ed286a31179c809cf60aa13e5e82a3641887fdeba2466db",
     ".claude/skills/accessibility-review/agents/openai.yaml": "a1499d95abd8447558c535fe5554adcc3c9b988a0a39264a6283d430effe1e94",

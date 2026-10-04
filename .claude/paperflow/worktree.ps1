@@ -151,15 +151,32 @@ switch ($Command) {
         $record = Invoke-PaperGit -C $main config "branch.$branch.paperflowParent" $parentPath
         if ($record.Code -ne 0) { Fail 1 "worktree: created $path but could not record parent $parentPath - worktree kept" }
         if ($orca) {
-            try {
-                $linked = & $orca worktree set --worktree "path:$path" --parent-worktree "id:$parentId" --json
-                if ($LASTEXITCODE -ne 0) { throw 'Orca could not attach the parent' }
-                $childJson = & $orca worktree show --worktree "path:$path" --json
-                if ($LASTEXITCODE -ne 0) { throw 'Orca could not read back the child' }
-                $child = ($childJson -join "`n" | ConvertFrom-Json).result.worktree
-                if ($child.parentWorktreeId -ne $parentId) { throw 'Orca parent readback did not match' }
+            # Right after `git worktree add` Orca may not know the new worktree yet (measured 2026-10-04: `set` failed, the same
+            # call succeeded minutes later), so the link is tried a few times, 2 seconds apart, before it is reported.
+            $tries = 5
+            $waitSec = 2
+            if ($env:PAPER_ORCA_LINK_WAIT_SEC -match '^\d+$') { $waitSec = [int] $env:PAPER_ORCA_LINK_WAIT_SEC }
+            $linkError = ''
+            for ($try = 1; $try -le $tries; $try++) {
+                try {
+                    $linked = & $orca worktree set --worktree "path:$path" --parent-worktree "id:$parentId" --json
+                    if ($LASTEXITCODE -ne 0) { throw 'Orca could not attach the parent' }
+                    $setObj = $null
+                    try { $setObj = ($linked -join "`n" | ConvertFrom-Json) } catch { $setObj = $null }
+                    if ($null -ne $setObj -and $null -ne $setObj.PSObject.Properties['ok'] -and $setObj.ok -eq $false) { throw 'Orca could not attach the parent' }
+                    $childJson = & $orca worktree show --worktree "path:$path" --json
+                    if ($LASTEXITCODE -ne 0) { throw 'Orca could not read back the child' }
+                    $child = ($childJson -join "`n" | ConvertFrom-Json).result.worktree
+                    if ($child.parentWorktreeId -ne $parentId) { throw 'Orca parent readback did not match' }
+                    $linkError = ''
+                    break
+                }
+                catch {
+                    $linkError = $_.Exception.Message
+                    if ($try -lt $tries) { Start-Sleep -Seconds $waitSec }
+                }
             }
-            catch { Fail 1 "worktree: created $path but parent link failed - $($_.Exception.Message). Worktree kept; repair the parent before continuing" }
+            if ($linkError) { Fail 1 "worktree: created $path but parent link failed - $linkError. Worktree kept; repair the parent before continuing" }
         }
 
         # Local files git does not carry (personal settings and the like), declared by the project.
