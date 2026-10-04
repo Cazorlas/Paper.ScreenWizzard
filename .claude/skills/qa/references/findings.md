@@ -61,6 +61,14 @@ input; confirmed needs that INPUT.
 
 On an external repository, also give the reader the repository line check prints: it locates the code there, read only.
 
+**Who reads.** `qa.ps1 prompt -Run <run> -Verify <id>` builds the reader's prompt (RULE verbatim, INPUT, and for a static
+finding WHERE; nothing else). `check` names the reader on every `verify:` line: `reader claude` or `reader codex`. A
+finding Codex found is read by Claude; a finding of the Claude worker, or of a batch with no record, is read by Codex; a run
+whose lanes were answered by subagents, a static finding, and a run planned before this rule go to a Claude subagent, as
+before. collab writes `<lane>-<b>.turn.json` beside each answer and `verdicts/<id>.turn.json` beside each verdict it answered
+(agent, role, model, tokens, time); the report's `Who answered` and `Readers` sections come from them, and say `same agent
+family` when the reader is of the finder's family because the other was not available.
+
 ## A verdict
 
 Saved by the main session as `.paper/qa/<run>/verdicts/<id>.md`:

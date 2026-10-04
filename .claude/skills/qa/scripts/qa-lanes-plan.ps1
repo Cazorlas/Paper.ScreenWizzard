@@ -25,7 +25,8 @@ function Format-PaperQaLaneList {
     line per lane that does not apply or is turned off, the verify readers, the total and the option groups.
     ExitCode 5 when no lane applies.
     #>
-    param([string] $Mode, [string] $Reason, [int] $FileCount, [int] $ExcludedCount, $Estimate, [string] $RepoRoot = '', [string[]] $ScopeLines = @())
+    param([string] $Mode, [string] $Reason, [int] $FileCount, [int] $ExcludedCount, $Estimate, [string] $RepoRoot = '', [string[]] $ScopeLines = @(),
+        [string] $Executor = '', [string] $ExecutorReason = '', $Collab = $null)
     $out = @("qa-lanes: scope $Mode ($Reason) - $FileCount file(s), $ExcludedCount excluded")
     if ($RepoRoot) { $out += "repo: $RepoRoot (external, read only)" }
     # The base: and changes: lines of an external branch scope (ADR-0037), right after the repo line.
@@ -37,6 +38,7 @@ function Format-PaperQaLaneList {
         $i++
         if ($r.Name -eq 'static') { $out += "$i. static - free - $($r.Files) file(s), a build with the analyzers, no agent"; continue }
         $line = "$i. $($r.Name) - $(Format-PaperQaNumber $r.Tokens) tokens - $($r.Files) file(s), $($r.Agents) agent(s)"
+        if ($Executor -eq 'collab') { $line = "$i. $($r.Name) - $(Format-PaperQaNumber $r.Tokens) tokens - $($r.Files) file(s), $($r.Agents) turn(s) on codex" }
         if ($r.Reason) { $line += ", $($r.Reason)" }
         $out += $line
     }
@@ -50,7 +52,16 @@ function Format-PaperQaLaneList {
         return [pscustomobject]@{ Lines = $out; ExitCode = 5 }
     }
     $names = @($run | ForEach-Object { "$($_.Name)" })
-    if ([long] $Estimate.Total -gt 0) { $out += "all: $(Format-PaperQaNumber $Estimate.Total) tokens - $($names -join ', ')" }
+    # F205, F210: who answers the agent lanes, and what the whole run takes on Codex.
+    $wallText = ''
+    if ($Executor -and @($run | Where-Object { $script:PaperQaLlmLanes -contains $_.Name }).Count -gt 0) {
+        $out += @(Get-PaperQaExecutorLines -Executor $Executor -Reason $ExecutorReason -Collab $Collab -Run '' -Brief)
+        if ($Executor -eq 'collab') {
+            $secs = @(@($Collab.TurnTokens) | ForEach-Object { Get-PaperQaCodexTurnSec -Tokens ([long] $_) })
+            $wallText = ', about ' + (Format-PaperQaDuration -Seconds (Get-PaperQaWallClock -Durations ([int[]] $secs) -Parallel ([int] $Collab.Parallel) -GapSec ([int] $Collab.GapSec)))
+        }
+    }
+    if ([long] $Estimate.Total -gt 0) { $out += "all: $(Format-PaperQaNumber $Estimate.Total) tokens$wallText - $($names -join ', ')" }
     else { $out += "all: free - $($names -join ', ')" }
     $ask = @(Get-PaperQaLaneAsk -Names $names)
     if ($ask.Count -gt 0) { $out += 'ask: ' + (@($ask | ForEach-Object { $_ -replace ',', ', ' }) -join ' | ') }

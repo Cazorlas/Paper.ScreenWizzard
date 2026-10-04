@@ -1,7 +1,7 @@
 # /qa lanes
 
 Read by the main session when it hands out the agent lanes (step 4 of `/qa`). `qa.ps1 plan` already
-decided which lanes run; this page says why, which files each lane reads, and what each agent is told.
+decided which lanes run; this page says why, which files each lane reads, who answers it and what it is told.
 `qa.ps1 lanes` prints the same decision before any run, with no choice applied, for the lane question of the skill.
 
 ## Which lanes run
@@ -41,17 +41,24 @@ static: .cs .vb - security: code and config - bug: code - architecture: code, pr
 screenshots `qa.ui.screens` names.
 
 A lane bigger than `qa.batchTokens` content tokens (default 120000) is split into batches, files in path
-order; one file over the cap is a batch alone. Each batch is one agent.
+order; one file over the cap is a batch alone. Each batch is one agent. When Codex answers the lanes through collab
+the cap is `qa.codexBatchTokens` (default 160000, at least 20000): a Codex turn has room for it, and fewer turns
+mean less waiting at collab's Codex start gate. Each batch is then one Codex turn.
 
 ## Who runs each lane
 
-| Lane | Agent | Instructions it reads | Id prefix | KIND it reports |
+`qa.ps1 plan` says who answers in its `lanes run:` line (`-Executor auto|collab|subagents`, ADR-0043). With collab and
+codex on this machine every lane batch is a question to Codex in a read-only collab session on the real checkout
+(uncommitted work included; the Claude Sonnet worker answers when Codex is out of usage); otherwise, and when Codex or a
+collab turn runs `/qa`, it is a read-only subagent of the session.
+
+| Lane | Answered by | Instructions pasted into the prompt | Id prefix | KIND it reports |
 | --- | --- | --- | --- | --- |
-| security | read-only subagent (Claude: general-purpose; Codex: a sub-agent) | `.claude/skills/qa/references/security.md` | SEC | vulnerability |
-| bug | read-only subagent | `.claude/skills/find-bug/SKILL.md` (with "No SPEC.md for the file") | BUG | bug |
-| architecture | the `architecture-reviewer` agent | its own definition; it reports in the finding format instead of one line per violation | ARC | architecture |
-| smell | read-only subagent | `.claude/skills/qa/references/smell.md` | SML | smell |
-| ui | read-only subagent | `.claude/skills/design-critique/SKILL.md`, `.claude/skills/accessibility-review/SKILL.md`, and the project's UI style skill if it has one | UI | ux |
+| security | Codex via a read-only collab turn, or a read-only subagent (step 4) | `references/security.md` | SEC | vulnerability |
+| bug | Codex via a read-only collab turn, or a read-only subagent (step 4) | `find-bug/SKILL.md` (with "No SPEC.md for the file") | BUG | bug |
+| architecture | Codex via a read-only collab turn, or a read-only subagent (step 4) | `architecture-reviewer.md`, front matter removed; reports finding blocks instead of one line per violation | ARC | architecture |
+| smell | Codex via a read-only collab turn, or a read-only subagent (step 4) | `references/smell.md` | SML | smell |
+| ui | Codex via a read-only collab turn, or a read-only subagent (step 4) | `design-critique/SKILL.md`, then `accessibility-review/SKILL.md`, and the project's UI style skill if it has one | UI | ux |
 
 The UI lane reads the `SKILL.md` of `design-critique` and `accessibility-review` as instructions because
 those skills run only when the user types them - here the user typed `/qa` and agreed to the estimate.
@@ -60,18 +67,12 @@ With more than one batch, the prefix carries the batch number from the second ba
 
 ## The prompt of one batch
 
-The main session pastes this, filling the `<...>`:
-
-```
-/qa lane <lane>, batch <b> of <n>, run <run>
-Instructions: read <instruction file> and follow it for this lane.
-Read every file in the list below - no more, no fewer - and nothing outside it except the documents the
-instructions name (SPEC.md, ADRs, CODEMAP.md, the project's CLAUDE.md).
-<output of: qa.ps1 files -Run <run> -Lane <lane> -Batch <b>>
-Report each finding as one block in the format of .claude/skills/qa/references/findings.md, ids <PREFIX>-1,
-<PREFIX>-2, ... Do not fix anything. End with the line "seen N/N" and, if any file was not read,
-"not read: <path>, <path>".
-```
+`qa.ps1 prompt -Run <run> -Lane <lane> -Batch <b> [-Retry]` builds it from [prompts.md](prompts.md) and writes it to
+`<run>/prompts/<lane>-<b>.md` (a retry: `<lane>-<b>.2.md`): the opening, the output of `qa.ps1 files` for that batch
+word for word, the finding format of [findings.md](findings.md) and the instruction files above pasted word for word
+(front matter removed) - so an agent that cannot read the kit's folders, such as Codex in another repository, still gets
+every rule. It prints `prompt:` (the file), `answer:` (where the answer goes) and `task:` (the name of the collab question).
+A reader's prompt: `qa.ps1 prompt -Run <run> -Verify <id>`. Nobody pastes a prompt by hand.
 
 When the static lane ran, the list of the smell lane ends with `Already reported by analyzers (do not
 repeat): <rule> x<count>, ...` - the ten biggest static smell groups in scope - and the security lane's
@@ -88,7 +89,7 @@ With `-Out` (ADR-0034) the lanes read a repository that is not this project, by 
   folder. `"rules": []` is no rule file: the architecture lane is not applicable (row 6e).
 - **A folder's own rules.** A `CLAUDE.md` or `AGENTS.md` below the root goes only to a batch with a file
   under that folder; every other rule file goes to every architecture batch. The estimate counts them.
-- **The prompt** of every batch gains two lines after the instructions line:
+- **The prompt** of every batch gains these two lines (`qa.ps1 prompt` writes them, with the repository's path):
 
 ```
 The repository is <repo> (read only): every path of the list is relative to it; read <repo>\<path>.

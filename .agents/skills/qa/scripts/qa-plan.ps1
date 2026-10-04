@@ -90,7 +90,7 @@ function ConvertFrom-PaperQaProfile {
     foreach ($k in $script:PaperQaDefaultAnalyzers.Keys) { $analyzers[$k] = $script:PaperQaDefaultAnalyzers[$k] }
     $cfg = [pscustomobject]@{
         Errors = @(); Hosts = $hosts; FeatureDocs = $featureDocs; ArchitectureDeclared = $archDeclared
-        Lanes = @{}; Exclude = @(); Report = $report; VerifyCap = 10; BatchTokens = 120000; UiScreens = ''
+        Lanes = @{}; Exclude = @(); Report = $report; VerifyCap = 10; BatchTokens = 120000; CodexBatchTokens = 160000; UiScreens = ''
         Analyzers = $analyzers; GlobalConfig = ''; SarifDir = ''; Kinds = @{}
     }
     $q = $null
@@ -122,6 +122,9 @@ function ConvertFrom-PaperQaProfile {
             }
             'batchTokens' {
                 if (-not (Test-PaperQaWholeNumber $v 20000)) { $errors += 'qa.batchTokens: not a whole number >= 20000' } else { $cfg.BatchTokens = [int] $v }
+            }
+            'codexBatchTokens' {
+                if (-not (Test-PaperQaWholeNumber $v 20000)) { $errors += 'qa.codexBatchTokens: not a whole number >= 20000' } else { $cfg.CodexBatchTokens = [int] $v }
             }
             'ui' {
                 if ($v -isnot [System.Collections.IDictionary]) { $errors += 'qa.ui: not an object'; break }
@@ -165,7 +168,7 @@ function ConvertFrom-PaperQaProfile {
                     }
                 }
             }
-            default { $errors += "qa.${key}: unknown key (lanes, exclude, report, verifyCap, batchTokens, ui, staticAnalysis)" }
+            default { $errors += "qa.${key}: unknown key (lanes, exclude, report, verifyCap, batchTokens, codexBatchTokens, ui, staticAnalysis)" }
         }
     }
     $cfg.Errors = $errors
@@ -427,9 +430,13 @@ function Get-PaperQaEstimate {
     Agents and tokens of each lane and of the verify readers (table E). Static is free; a lane that does not
     run costs nothing; verify is the cap times one reader, only when an LLM lane runs.
     #>
-    param($Lanes, $LaneFiles, $Config, [switch] $StaticOnly, $Rules = $null)
+    param($Lanes, $LaneFiles, $Config, [switch] $StaticOnly, $Rules = $null, [string] $Executor = '')
     $rows = @()
     $total = 0
+    # F210: a Codex turn (executor collab) carries up to qa.codexBatchTokens content tokens, a subagent up to qa.batchTokens.
+    $maxTokens = [int] $Config.BatchTokens
+    if ($Executor -eq 'collab' -and $null -ne $Config.PSObject.Properties['CodexBatchTokens'] -and [int] $Config.CodexBatchTokens -gt 0) { $maxTokens = [int] $Config.CodexBatchTokens }
+    $turnTokens = New-Object System.Collections.Generic.List[long]
     foreach ($l in @($Lanes)) {
         $files = @()
         if ($null -ne $LaneFiles -and $LaneFiles.Contains($l.Name)) { $files = @($LaneFiles[$l.Name] | Where-Object { $null -ne $_ }) }
@@ -437,18 +444,25 @@ function Get-PaperQaEstimate {
         if ($l.State -eq 'run') {
             $row.Files = $files.Count
             if ($l.Name -ne 'static') {
-                $batches = Split-PaperQaBatches -Files $files -MaxTokens $Config.BatchTokens
+                $batches = Split-PaperQaBatches -Files $files -MaxTokens $maxTokens
                 $content = 0
                 foreach ($f in $files) { $content += Get-PaperQaFileTokens $f }
                 # An external repository: each architecture batch also reads its rule files (ADR-0034).
                 $ruleList = @($Rules | Where-Object { $null -ne $_ })
-                if ($l.Name -eq 'architecture' -and $ruleList.Count -gt 0) {
-                    foreach ($bt in $batches) {
+                foreach ($bt in $batches) {
+                    $bc = [long] 0
+                    foreach ($f in $bt) { $bc += Get-PaperQaFileTokens $f }
+                    if ($l.Name -eq 'architecture' -and $ruleList.Count -gt 0) {
                         $paths = @($bt | ForEach-Object { "$($_.Path)" })
-                        foreach ($rf in @(Get-PaperQaBatchRules -Rules $ruleList -BatchPaths $paths)) { $content += [long] [math]::Ceiling([double] $rf.Bytes / $script:PaperQaBytesPerToken) }
+                        foreach ($rf in @(Get-PaperQaBatchRules -Rules $ruleList -BatchPaths $paths)) {
+                            $rt = [long] [math]::Ceiling([double] $rf.Bytes / $script:PaperQaBytesPerToken)
+                            $content += $rt
+                            $bc += $rt
+                        }
                     }
-                    $row.Reason = "rules: $($ruleList.Count) file(s)"
+                    $turnTokens.Add($bc)
                 }
+                if ($l.Name -eq 'architecture' -and $ruleList.Count -gt 0) { $row.Reason = "rules: $($ruleList.Count) file(s)" }
                 $row.Batches = @($batches).Count
                 $row.Agents = @($batches).Count
                 $row.Tokens = [long] ($row.Agents * $script:PaperQaLaneOverhead + [math]::Ceiling($content * $script:PaperQaReadFactor))
@@ -462,7 +476,7 @@ function Get-PaperQaEstimate {
     else { $verify = [pscustomobject]@{ Name = 'verify'; State = '0'; Reason = ''; Files = 0; Agents = 0; Tokens = 0; Batches = 0 } }
     $total += $verify.Tokens
     $rows += $verify
-    return [pscustomobject]@{ Rows = $rows; Total = [long] $total }
+    return [pscustomobject]@{ Rows = $rows; Total = [long] $total; TurnTokens = [long[]] $turnTokens.ToArray() }
 }
 
 function Format-PaperQaEstimate {
@@ -471,7 +485,8 @@ function Format-PaperQaEstimate {
     The estimate table the user sees before any token is spent (table E): one line per lane, verify, total,
     how to skip, and whether the run waits for approval.
     #>
-    param([string] $Run, [string] $Mode, [string] $Reason, [int] $FileCount, [int] $ExcludedCount, $Estimate, [bool] $Approved, [string] $RepoRoot = '', [string] $RunDir = '', [string[]] $ScopeLines = @())
+    param([string] $Run, [string] $Mode, [string] $Reason, [int] $FileCount, [int] $ExcludedCount, $Estimate, [bool] $Approved, [string] $RepoRoot = '', [string] $RunDir = '', [string[]] $ScopeLines = @(),
+        [string] $Executor = '', [string] $ExecutorReason = '', $Collab = $null)
     $cells = { param($a, $b, $c, $d, $e, $f) ("$a".PadRight(14) + "$b".PadRight(16) + "$c".PadRight(7) + "$d".PadRight(8) + "$e".PadRight(9) + "$f").TrimEnd() }
     $out = @("qa: run $Run - scope $Mode ($Reason) - $FileCount file(s), $ExcludedCount excluded")
     if ($RepoRoot) { $out += "repo: $RepoRoot (external, read only) - run folder $RunDir" }
@@ -488,6 +503,10 @@ function Format-PaperQaEstimate {
         $out += & $cells $r.Name $r.State $r.Files $r.Agents (Format-PaperQaNumber $r.Tokens) $r.Reason
     }
     $out += ('total'.PadRight(45) + (Format-PaperQaNumber $Estimate.Total))
+    # F205, F210: who answers the agent lanes - only when an agent lane runs and the caller knows (a plan from before has no executor).
+    if ($Executor -and @($Estimate.Rows | Where-Object { $null -ne $_ -and $script:PaperQaLlmLanes -contains $_.Name -and $_.State -eq 'run' }).Count -gt 0) {
+        $out += @(Get-PaperQaExecutorLines -Executor $Executor -Reason $ExecutorReason -Collab $Collab -Run $Run)
+    }
     $out += 'skip a lane: -Skip <lane>   free run: -StaticOnly'
     if ($Approved) { $out += 'approved: lanes may start' } else { $out += "waiting for approval: qa.ps1 approve -Run $Run" }
     return $out
@@ -919,6 +938,19 @@ function Format-PaperQaReport {
         $seen = if ($l.Seen) { $l.Seen } else { '-' }
         $out += "| $($l.Name) | run | $(& $count 'Severity' 'critical') | $(& $count 'Severity' 'major') | $(& $count 'Severity' 'minor') | $(& $count 'Severity' 'info') | $(& $count 'Status' 'confirmed') | $(& $count 'Status' 'rejected') | $(& $count 'Status' 'needs_validation') | $seen |"
     }
+    if ($null -ne $r.Who) {
+        $out += @('', '## Who answered', '')
+        if ($r.Who.Kind -eq 'collab') {
+            $out += '| Batch | Agent | Role | Model | Tokens in/out | Time | Status |'
+            $out += '| --- | --- | --- | --- | --- | --- | --- |'
+            foreach ($row in @($r.Who.Rows)) { $out += $row }
+        }
+        else { $out += 'Lanes answered by Claude subagents of the session.' }
+        if (@($r.Readers).Count -gt 0) {
+            $out += @('', '## Readers', '', '| Finding | Finder | Reader | Note |', '| --- | --- | --- | --- |')
+            foreach ($row in @($r.Readers)) { $out += $row }
+        }
+    }
     if ($r.External -eq $true) {
         $out += @('', '## Rules used', '')
         $used = @($r.Rules | Where-Object { $null -ne $_ } | ForEach-Object { "$($_.Path)" } | Where-Object { $_ })
@@ -1188,8 +1220,23 @@ function ConvertTo-PaperQaStaticFindings($Static) {
 # "<lane>-<b>.2" -> lines), checked; what to send back, the lanes not verifiable, seen a/b per lane, and
 # the verify queue with the static findings. ExitCode 1 when something goes back.
 function Get-PaperQaCheck {
-    param($Plan, $Answers, $Static, [int] $VerifyCap)
+    # -Records: answer name ("bug-1", "bug-1.2") -> the record collab wrote beside it (agent, role, model ...). Every finding names its
+    # Answer, its Finder (the agent of that record, else empty) and its Reader (F211, G.6).
+    param($Plan, $Answers, $Static, [int] $VerifyCap, $Records = $null)
     $errors = @(); $findings = @(); $laneStates = @{}; $seen = @{}
+    $executor = "$($Plan.Executor)"
+    $answerNames = New-Object System.Collections.Generic.List[string]
+    $mark = {
+        param($list, $name)
+        foreach ($f in @($list)) {
+            if ($null -eq $f) { continue }
+            $agent = ''
+            if ($null -ne $Records -and $Records.Contains($name)) { $agent = "$($Records[$name].agent)" }
+            $f | Add-Member -NotePropertyName Answer -NotePropertyValue $name -Force
+            $f | Add-Member -NotePropertyName Finder -NotePropertyValue $agent -Force
+            $f | Add-Member -NotePropertyName Reader -NotePropertyValue (Get-PaperQaReader -Executor $executor -Lane "$($f.Lane)" -FinderAgent $agent) -Force
+        }
+    }
     foreach ($l in @($Plan.Lanes)) {
         if ($l.State -ne 'run' -or $l.Name -eq 'static') { continue }
         $batches = @(Get-PaperQaPlanBatches $Plan $l.Name)
@@ -1212,6 +1259,9 @@ function Get-PaperQaCheck {
                 if (-not $first.Complete) { $count = @(Get-PaperQaNotReadPaths -NotRead $first.NotRead -Paths $paths -Seen $first.Seen).Count }
                 $second = Test-PaperQaLaneAnswer -Lines $Answers["$tag.2"] -Lane $l.Name -Prefix $prefix -ListPaths $paths -FileCount $count
             }
+            & $mark $first.Findings $tag
+            $answerNames.Add($tag)
+            if ($null -ne $second) { & $mark $second.Findings "$tag.2"; $answerNames.Add("$tag.2") }
             $res = Resolve-PaperQaLaneBatch -First $first -Second $second
             $findings += @($res.Findings)
             if ($res.State -eq 'ok') { $a += $paths.Count }
@@ -1230,7 +1280,9 @@ function Get-PaperQaCheck {
         }
         $seen[$l.Name] = "$a/$b"
     }
-    $findings += @(ConvertTo-PaperQaStaticFindings $Static)
+    $staticFindings = @(ConvertTo-PaperQaStaticFindings $Static)
+    & $mark $staticFindings ''
+    $findings += $staticFindings
     # No agent lane runs (-StaticOnly, -Only static, all skipped): the estimate counted no reader and the run
     # approved itself, so no reader starts (F63, find-bug FB17).
     $noAgent = [bool] $Plan.StaticOnly -or -not (Test-PaperQaAgentLaneRuns -Lanes $Plan.Lanes)
@@ -1238,10 +1290,10 @@ function Get-PaperQaCheck {
     $lines = @($errors)
     foreach ($k in @($laneStates.Keys | Sort-Object)) { $lines += "${k}: not verifiable ($($laneStates[$k]))" }
     $queued = Sort-PaperQaByKey @($queue | Where-Object { $_.Status -eq 'queued' }) { param($f) ([int] $f.QueueOrder).ToString('D9') }
-    foreach ($f in $queued) { $lines += "verify: $($f.Id) ($($f.Lane), $($f.Severity))" }
+    foreach ($f in $queued) { $lines += "verify: $($f.Id) ($($f.Lane), $($f.Severity)) reader $($f.Reader)" }
     $code = 0
     if ($errors.Count -gt 0) { $code = 1 }
-    return [pscustomobject]@{ ExitCode = $code; Errors = $errors; Queue = $queue; LaneStates = $laneStates; Seen = $seen; Lines = $lines }
+    return [pscustomobject]@{ ExitCode = $code; Errors = $errors; Queue = $queue; LaneStates = $laneStates; Seen = $seen; Lines = $lines; AnswerNames = [string[]] $answerNames.ToArray() }
 }
 
 # The Summary rows of the report (J, F56): a static lane that ran but has no static.json, or failed, is
@@ -1292,8 +1344,45 @@ function ConvertFrom-PaperQaStaticJson {
 # `qa.ps1 report` (J): the report's name and text, and the lines to print. VerdictLines: one string[]
 # per saved verdict file.
 function New-PaperQaReport {
-    param($Plan, $Check, $VerdictLines, $Static, [string] $Run, [string] $Date, [string] $ReportDir, [string[]] $Existing)
+    param($Plan, $Check, $VerdictLines, $Static, [string] $Run, [string] $Date, [string] $ReportDir, [string[]] $Existing, $Records = $null, $VerdictRecords = $null)
     $pending = @($Check.Queue | Where-Object { $_.Status -eq 'queued' } | ForEach-Object { $_.Id })
+    # F212: who answered each batch and who read each queued finding (a plan from before this change has no executor: nothing to say).
+    $who = $null; $readers = @()
+    $executor = "$($Plan.Executor)"
+    if ($executor -eq 'collab' -or $executor -eq 'subagents') {
+        $who = [pscustomobject]@{ Kind = $executor; Rows = @() }
+        if ($executor -eq 'collab') {
+            $rows = @()
+            foreach ($lane in $script:PaperQaLaneNames) {
+                $lr = Get-PaperQaLaneRow $Plan $lane
+                if ($null -eq $lr -or $lr.State -ne 'run' -or $lane -eq 'static') { continue }
+                foreach ($bt in @(Get-PaperQaPlanBatches $Plan $lane)) {
+                    $tag = "$lane-$([int] $bt.Batch)"
+                    foreach ($name in @($tag, "$tag.2")) {
+                        $rec = $null
+                        if ($null -ne $Records -and $Records.Contains($name)) { $rec = $Records[$name] }
+                        if ($name.EndsWith('.2') -and $null -eq $rec -and -not (@($Check.AnswerNames) -contains $name)) { continue }
+                        if ($null -eq $rec) { $rows += "| $name | subagent | - | session model | - | - | - |"; continue }
+                        $model = "$($rec.model)"; if ($model -eq '') { $model = 'default' }
+                        $rows += "| $name | $($rec.agent) | $($rec.role) | $model | $(Format-PaperQaNumber ([double] $rec.tokens.input))/$(Format-PaperQaNumber ([double] $rec.tokens.output)) | $([int] $rec.seconds) s | $($rec.status) |"
+                    }
+                }
+            }
+            $who.Rows = $rows
+        }
+        $family = { param($a) if ("$a" -eq 'codex') { return 'codex' }; if ("$a".StartsWith('claude')) { return 'claude' }; return '' }
+        foreach ($qf in @($Check.Queue | Where-Object { $_.Status -eq 'queued' })) {
+            $finder = 'claude subagent'
+            if ("$($qf.Lane)" -eq 'static') { $finder = 'static analysis' }
+            elseif ("$($qf.Finder)" -ne '') { $finder = "$($qf.Finder)" }
+            $reader = 'claude subagent'
+            if ($null -ne $VerdictRecords -and $VerdictRecords.Contains($qf.Id) -and "$($VerdictRecords[$qf.Id].agent)" -ne '') { $reader = "$($VerdictRecords[$qf.Id].agent)" }
+            $note = ''
+            $ff = & $family $finder
+            if ($ff -ne '' -and $ff -eq (& $family $reader)) { $note = 'same agent family' }
+            $readers += "| $($qf.Id) | $finder | $reader | $note |"
+        }
+    }
     $verdicts = @()
     foreach ($v in @($VerdictLines)) { if ($null -ne $v) { $verdicts += ConvertFrom-PaperQaVerdict -Lines $v -Pending $pending } }
     $merged = @(Merge-PaperQaVerdicts -Findings $Check.Queue -Verdicts $verdicts)
@@ -1307,6 +1396,7 @@ function New-PaperQaReport {
         Findings = $merged; Proposals = $proposals; Static = (ConvertFrom-PaperQaStaticJson -Static $Static); Excluded = @($Plan.Excluded)
         External = $external; RepoRoot = $(if ($external) { "$($Plan.RepoRoot)" } else { '' }); ProfilePath = "$($Plan.ProfilePath)"; Rules = @($Plan.Rules | Where-Object { $null -ne $_ })
         ScopeLines = @($Plan.ScopeLines | Where-Object { $_ })
+        Who = $who; Readers = @($readers)
     }
     $text = ((Format-PaperQaReport -Report $report) -join "`n") + "`n"
     $notVerified = @($merged | Where-Object { $_.Status -eq 'needs_validation' }).Count
