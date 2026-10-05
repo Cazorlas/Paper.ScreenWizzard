@@ -2,13 +2,21 @@
 
 Planner là phiên chính: session chính lập plan, viết test đỏ, duyệt từng task và rà cuối; không giao planner cho subagent. Việc chỉ có hai vai - planner (phiên chính) và worker (Codex hoặc Claude Sonnet).
 
-## Planner viết test đỏ
+## Planner viết hợp đồng test
 
-Planner viết test đỏ trước khi giao worker: mọi test quyết định task xong và dữ liệu vào của nó, chạy một lần, ghi dòng đỏ vào plan, commit trên nhánh của việc.
+Planner viết hợp đồng test trong plan trước khi giao worker: một bảng ghi mã ca, đầu vào, file test và kết quả mong đợi đến từng dòng in hoặc mã thoát.
+
+## Lượt đỏ
+
+Worker lượt đỏ viết mã test theo bảng hợp đồng, chạy mỗi file một lần và ghi bằng chứng đỏ; lượt này không sửa mã sản phẩm. Planner đọc diff test, kiểm đủ ca và lý do đỏ, rồi duyệt test rồi khóa chúng.
 
 Profile khai `live.loop`: test đỏ viết từ dòng baseline của task `live` trước nó.
 
-Worker không sửa, không nới, không xoá test của planner.
+Worker không sửa, không nới, không xoá test đã khóa của planner.
+
+## Lượt xanh
+
+Worker lượt xanh ở lượt khác làm mã sản phẩm cho test xanh, không sửa file test đã khóa. Planner duyệt task sau khi lượt xanh báo xong.
 
 Không có dòng baseline thì không viết test: hỏi task `live` đo trước.
 
