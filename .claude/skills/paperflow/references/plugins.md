@@ -26,7 +26,7 @@ chưa ghi nhận và plugin trái danh sách — chỉ đọc, không sửa máy
 | Đọc/hiểu code C# | — | `csharp-lsp` tự do: nó không chạm vòng đời |
 | E2E, giao diện web | verb `e2e`, skill style của host | `playwright` **chỉ** cho host `web`. `frontend-design` đã tắt tới khi có host `web`: nó tự nhận mọi cửa sổ WPF, mà chủ thật là skill style của host cộng wireframe đã duyệt |
 | UI/UX design review | wireframe in the plan, the host's style skill | `/design-critique`, `/accessibility-review`, `/ux-copy`, `/design-system`, `/ui-ux-pro-max` ship in the kit as **manual-only** skills (`disable-model-invocation`, ADR-0024): they run only when the user types them, and a finding that should change the UI becomes a task in the plan, never an edit outside it |
-| Rà theo yêu cầu cả dự án, nhánh, thư mục | `/qa` (chỉ chạy khi người gõ, ADR-0031) | `security-audit` toàn cục và `code-review` không thay `/qa`; phát hiện của chúng thành đề xuất như của `/qa` |
+| Rà theo yêu cầu: kiến trúc, bug, bảo mật, giao diện | `/review-architecture`, `/review-bugs`, `/review-security`, `/review-ui` (chỉ chạy khi người gõ, ADR-0044) | `/code-review` (Claude Code, một PR hay diff), `/security-review` (thay đổi đang chờ), `/simplify` (gọn code đã sửa), `security-audit` toàn cục không thay chúng; `find-bug` và `/task-verify` giữ việc kiểm một plan; phát hiện của mọi lệnh này là đề xuất |
 | Tri thức liên dự án | `/wiki` (skill `wiki`, ADR-0036) | trí nhớ của agent giữ điều riêng một dự án; không plugin nào thay wiki - điều đúng cho nhiều dự án được chuyển lên wiki, có duyệt |
 
 Một plugin ngoài chạy ngoài ô của nó là một lần đi tắt: kết quả không có dòng nào trong plan, và cổng

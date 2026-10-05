@@ -136,8 +136,86 @@
       "type": "string",
       "default": "docs/features"
     },
+    "review": {
+      "description": "Read by the four review skills (/review-architecture, /review-bugs, /review-security, /review-ui, run only when the user types one): an on-demand look at the project, a branch, a folder or some files. Every key is optional; absent, lanes follow the hosts and the profile (static analysis needs a .NET project and the build verb), the report goes to reviews beside the featureDocs folder, verifyCap is 10, batchTokens 120000, soloTokens 40000, and the analyzers are the kit defaults. A wrong key stops the run before anything is planned or built. The old key qa is read when review is absent.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "$comment": { "type": "string" },
+        "lanes": {
+          "description": "true runs a lane whatever the hosts say (it still needs files in scope; static still needs a .NET project and the build verb); false turns it off.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "static": { "type": "boolean" },
+            "security": { "type": "boolean" },
+            "bug": { "type": "boolean" },
+            "architecture": { "type": "boolean" },
+            "smell": { "type": "boolean" },
+            "ui": { "type": "boolean" }
+          }
+        },
+        "exclude": { "description": "Globs (** crosses folders, * stays in one) left out of the scope, with the reason 'profile exclude'.", "type": "array", "items": { "type": "string" } },
+        "report": { "description": "Report folder, relative to the project root and inside it.", "type": "string" },
+        "verifyCap": { "description": "How many findings a second reader verifies; the rest stay needs_validation. 0 verifies none.", "type": "integer", "minimum": 0 },
+        "batchTokens": { "description": "Most content tokens one review agent is handed; a lane over it is split into batches.", "type": "integer", "minimum": 20000 },
+        "codexBatchTokens": { "description": "Most content tokens one Codex turn is handed when Codex answers the lanes through collab.", "type": "integer", "minimum": 20000 },
+        "soloTokens": { "description": "Content tokens up to which the session reads the files of the reading lanes alone, with no Codex turn per lane; 0 turns solo reading off.", "type": "integer", "minimum": 0 },
+        "complexityTop": { "description": "Rows of each table of the report's Complexity section (members, files, expressions).", "type": "integer", "minimum": 1, "maximum": 200 },
+        "complexity": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "limits": {
+              "description": "Limits of the complexity table: cognitive (S3776, default 15), cyclomatic (S1541, default 10), expression (S1067, default 3).",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "cognitive": { "type": "integer", "minimum": 1, "maximum": 1000 },
+                "cyclomatic": { "type": "integer", "minimum": 1, "maximum": 1000 },
+                "expression": { "type": "integer", "minimum": 1, "maximum": 100 }
+              }
+            }
+          }
+        },
+        "sonarqube": {
+          "description": "The optional self-hosted SonarQube layer of /review-architecture. The access key is never a profile key: it is the machine variable PAPER_SONARQUBE_TOKEN.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "projectKey": { "description": "The project's key on the server; without it the layer is off.", "type": "string" },
+            "url": { "description": "The server, http or https; absent: PAPER_SONARQUBE_URL, then http://localhost:9000.", "type": "string" },
+            "hotspots": { "description": "How many files the architecture and smell lanes are handed when the server ranked them.", "type": "integer", "minimum": 1, "maximum": 500 },
+            "timeoutSec": { "description": "Seconds to wait for the server to come up and for the analysis.", "type": "integer", "minimum": 60, "maximum": 3600 }
+          }
+        },
+        "ui": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "screens": { "description": "Glob of .png/.jpg screenshots handed to the ui lane.", "type": "string" } }
+        },
+        "staticAnalysis": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "analyzers": {
+              "description": "Analyzer package id to version or \"off\", merged over the kit defaults (Microsoft.CodeAnalysis.NetAnalyzers, Roslynator.Analyzers, SonarAnalyzer.CSharp); a new id adds an analyzer.",
+              "type": "object",
+              "additionalProperties": { "type": "string" }
+            },
+            "globalconfig": { "description": "A .globalconfig used instead of the kit's, relative to the project root.", "type": "string" },
+            "sarifDir": { "description": "Folder the run's SARIF files are copied to, relative to the project root.", "type": "string" },
+            "kinds": {
+              "description": "Rule id to the kind of its findings; ignore leaves the rule out of the list (counted only).",
+              "type": "object",
+              "additionalProperties": { "enum": ["bug", "vulnerability", "smell", "ignore"] }
+            }
+          }
+        }
+      }
+    },
     "qa": {
-      "description": "Read by the qa skill (/qa, run only when the user types it): an on-demand sweep of the project, a branch or a folder. Every key is optional; absent, lanes follow the hosts and the profile (static analysis needs a .NET project and the build verb), the report goes to qa beside the featureDocs folder, verifyCap is 10, batchTokens 120000, and the analyzers are the kit defaults. A wrong key stops the run before anything is planned or built.",
+      "description": "Deprecated: read only when \"review\" is absent; rename it to \"review\".",
       "type": "object",
       "additionalProperties": false,
       "properties": {
