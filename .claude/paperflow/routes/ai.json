@@ -5,8 +5,8 @@
   ],
   "liveFirst": false,
   "loop": [
-    "red - a unit test with a fake model reply, seen failing on its assertion",
-    "green - the smallest code that passes it",
-    "e2e - the real call (verb e2e), model ids and parameters looked up in skill claude-api"
+    "red - the planner writes a unit test with a fake model reply, seen failing on its assertion",
+    "green - the worker writes the smallest code that passes it",
+    "e2e - the real call (verb e2e), never Codex because it needs the network; model ids and parameters looked up in skill claude-api"
   ]
 }

@@ -121,6 +121,11 @@ người dùng bảo, khi phiên khác đang làm ở cây chính, hay khi build
 
 ## 4. Làm — `/task-do <plan>`
 
+Planner viết test đỏ trước khi giao worker; worker theo lane và planner duyệt từng task. Worker không sửa, không nới,
+không xoá test của planner. Việc nhỏ (cấu hình, câu chữ, một chỗ) session chính làm thẳng, không planner, không worker.
+Worker theo lane: `unit` là Codex qua collab (lane-logic làm thay khi hết usage), còn `ui`/`e2e`, `live`, `model` là
+Claude Sonnet; đo cần mạng không giao Codex. Planner có thể viết thêm test đỏ khi duyệt và trả task về worker.
+
 `/task-do` giữ luật; tóm tắt để biết chờ gì:
 
 - Theo từng nhóm `### n.`: mỗi lane trong nhóm một lane agent, gọi **trong cùng một lượt**, chạy nền —
@@ -130,9 +135,10 @@ người dùng bảo, khi phiên khác đang làm ở cây chính, hay khi build
   màn hình).
 - Session chính giữ plan, SPEC.md, dấu tick, mọi câu hỏi cho người dùng và mọi bước cần công cụ host mà
   lane agent không có; tick từ dòng bằng chứng agent trả về.
-- Mọi lane xong: session chính chạy **một lần** verb `build` và verb `test` đầy đủ.
+- Mọi lane xong: session chính chạy **một lần** verb `build`; planner duyệt mọi task đã tick kèm bằng chứng và verb `build`
+  phải pass. Không chạy lại toàn bộ test ở đây.
 
-**Cổng:** mọi task đã tick kèm bằng chứng; bản chạy đầy đủ `pass` theo `knownFailures`.
+**Cổng:** mọi task đã tick kèm bằng chứng (được planner duyệt), và verb `build` đã chạy một lần và pass.
 
 ## 5. Kiểm — `/task-verify <plan>`
 `find-bug` trên SPEC.md, agent `architecture-reviewer` trên file đã đổi (plan code), bảng kiểm luật (plan
