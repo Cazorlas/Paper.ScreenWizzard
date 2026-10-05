@@ -102,7 +102,7 @@ function ConvertFrom-PaperReviewProfile {
         Lanes = @{}; Exclude = @(); Report = $report; VerifyCap = 10; BatchTokens = 120000; CodexBatchTokens = 160000; UiScreens = ''
         Analyzers = $analyzers; GlobalConfig = ''; SarifDir = ''; Kinds = @{}
         SoloTokens = $script:PaperReviewSoloTokens; ComplexityTop = $script:PaperReviewComplexityTop; ComplexityLimits = [ordered]@{}; Notes = @()
-        Sonar = [pscustomobject]@{ ProjectKey = ''; Url = ''; Hotspots = 20; TimeoutSec = 600 }
+        Sonar = [pscustomobject]@{ ProjectKey = ''; Url = ''; Hotspots = 20; TimeoutSec = 600; Scanner = 'auto'; Sources = @(); Tests = @(); Exclusions = @() }
     }
     $q = $null
     $kn = 'review'
@@ -1202,6 +1202,13 @@ function Format-PaperReviewReport {
             $out += ''
             $out += @(Format-PaperReviewComplexity -Complexity $st.Result.Complexity -Top $top -ReportDir $dir -RepoRoot $repo)
         }
+        elseif ($sl.Count -gt 0 -and $sl[0].State -ne 'run' -and $null -ne $r.PSObject.Properties['Sonar'] -and $null -ne $r.Sonar -and $null -ne $r.Sonar.PSObject.Properties['Complexity'] -and $null -ne $r.Sonar.Complexity) {
+            # F252: no .NET project (or the static lane did not run): the table is built from the issues of the server, and says so.
+            $top = 20; if ($null -ne $r.PSObject.Properties['ComplexityTop'] -and [int] $r.ComplexityTop -gt 0) { $top = [int] $r.ComplexityTop }
+            $src = Format-PaperReviewSonarComplexitySource -Head "$($r.Sonar.Head)" -State "$($sl[0].State)" -Reason "$($sl[0].Reason)"
+            $out += ''
+            $out += @(Format-PaperReviewComplexity -Complexity (ConvertFrom-PaperReviewSavedComplexity -Complexity $r.Sonar.Complexity) -Top $top -ReportDir $dir -RepoRoot $repo -Source $src)
+        }
         elseif ($sl.Count -gt 0 -and $sl[0].State -eq 'not verifiable') {
             $out += ''
             $out += @(Format-PaperReviewComplexity -Complexity ([pscustomobject]@{ Members = @(); Files = @(); Expressions = @(); NotRead = @(); Counts = [ordered]@{ 'generated' = 0; 'outside scope' = 0; 'suppressed' = 0; 'outside repo' = 0 }; Limits = $null }) -Top 1 -ReportDir $dir -NotVerifiable "$($sl[0].Reason)")
@@ -1308,6 +1315,26 @@ function Resolve-PaperReviewBranchScope {
 function Test-PaperReviewDotnetProject {
     param([string[]] $Paths)
     return (@($Paths | Where-Object { "$_" -match '\.(csproj|vbproj|fsproj|sln)$' }).Count -gt 0)
+}
+
+# F249 (D1): .NET code anywhere in the repository - a project file or a C# or VB source file. The SonarScanner CLI does not read C# or VB, so
+# a repository with any goes to dotnet-sonarscanner unless review.sonarqube.scanner says cli.
+function Test-PaperReviewDotnetCode {
+    param([string[]] $Paths)
+    return (@($Paths | Where-Object { "$_" -match '(?i)\.(csproj|vbproj|fsproj|sln|slnx|cs|vb)$' }).Count -gt 0)
+}
+
+# F252 (D12): the complexity table as static.json or plan.json saved it, the counts and the limits as dictionaries again (a saved object is
+# a PSCustomObject, which Format-PaperReviewComplexity cannot index). $null when nothing was saved.
+function ConvertFrom-PaperReviewSavedComplexity {
+    param($Complexity)
+    if ($null -eq $Complexity) { return $null }
+    $cnt = [ordered]@{}; if ($null -ne $Complexity.Counts) { foreach ($p in $Complexity.Counts.PSObject.Properties) { $cnt[$p.Name] = $p.Value } }
+    $lim = [ordered]@{}; if ($null -ne $Complexity.Limits) { foreach ($p in $Complexity.Limits.PSObject.Properties) { $lim[$p.Name] = $p.Value } }
+    return [pscustomobject]@{
+        Members = @($Complexity.Members | Where-Object { $null -ne $_ }); Files = @($Complexity.Files | Where-Object { $null -ne $_ }); Expressions = @($Complexity.Expressions | Where-Object { $null -ne $_ })
+        NotRead = @($Complexity.NotRead | Where-Object { $null -ne $_ }); Counts = $cnt; Limits = $lim
+    }
 }
 
 # qa.ui.screens: the images of the repository its glob matches.
@@ -1571,15 +1598,7 @@ function ConvertFrom-PaperReviewStaticJson {
     if ($null -ne $Static.Counts) { foreach ($p in $Static.Counts.PSObject.Properties) { $counts[$p.Name] = $p.Value } }
     # The complexity table (F235): the lists as they are, the counts and the limits as dictionaries again.
     $cx = $null
-    if ($null -ne $Static.PSObject.Properties['Complexity'] -and $null -ne $Static.Complexity) {
-        $cc = $Static.Complexity
-        $cnt = [ordered]@{}; if ($null -ne $cc.Counts) { foreach ($p in $cc.Counts.PSObject.Properties) { $cnt[$p.Name] = $p.Value } }
-        $lim = [ordered]@{}; if ($null -ne $cc.Limits) { foreach ($p in $cc.Limits.PSObject.Properties) { $lim[$p.Name] = $p.Value } }
-        $cx = [pscustomobject]@{
-            Members = @($cc.Members | Where-Object { $null -ne $_ }); Files = @($cc.Files | Where-Object { $null -ne $_ }); Expressions = @($cc.Expressions | Where-Object { $null -ne $_ })
-            NotRead = @($cc.NotRead | Where-Object { $null -ne $_ }); Counts = $cnt; Limits = $lim
-        }
-    }
+    if ($null -ne $Static.PSObject.Properties['Complexity'] -and $null -ne $Static.Complexity) { $cx = ConvertFrom-PaperReviewSavedComplexity -Complexity $Static.Complexity }
     return [pscustomobject]@{
         Verdict = $Static.Verdict; Reason = $Static.Reason; Analyzers = $Static.Analyzers; Build = $Static.Build
         Result = [pscustomobject]@{ Groups = $groups; Counts = $counts; Findings = @($Static.Findings); Hints = @($Static.Hints | Where-Object { $null -ne $_ }); Complexity = $cx }

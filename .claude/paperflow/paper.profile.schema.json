@@ -186,7 +186,11 @@
             "projectKey": { "description": "The project's key on the server; without it the layer is off.", "type": "string" },
             "url": { "description": "The server, http or https; absent: PAPER_SONARQUBE_URL, then http://localhost:9000.", "type": "string" },
             "hotspots": { "description": "How many files the architecture and smell lanes are handed when the server ranked them.", "type": "integer", "minimum": 1, "maximum": 500 },
-            "timeoutSec": { "description": "Seconds to wait for the server to come up and for the analysis.", "type": "integer", "minimum": 60, "maximum": 3600 }
+            "timeoutSec": { "description": "Seconds to wait for the server to come up and for the analysis.", "type": "integer", "minimum": 60, "maximum": 3600 },
+            "scanner": { "description": "Which scanner runs: auto (dotnet-sonarscanner when the repository has .NET code, else the SonarScanner CLI), dotnet or cli.", "type": "string", "enum": ["auto", "dotnet", "cli"] },
+            "sources": { "description": "SonarScanner CLI only: the folders to analyse, relative to the repository root; absent: src, else the whole repository.", "oneOf": [ { "type": "string" }, { "type": "array", "items": { "type": "string" }, "minItems": 1 } ] },
+            "tests": { "description": "SonarScanner CLI only: the test folders, outside the sources; absent: tests or test when there.", "oneOf": [ { "type": "string" }, { "type": "array", "items": { "type": "string" }, "minItems": 1 } ] },
+            "exclusions": { "description": "SonarScanner CLI only: file patterns to leave out (sonar.exclusions), one per item.", "oneOf": [ { "type": "string" }, { "type": "array", "items": { "type": "string" }, "minItems": 1 } ] }
           }
         },
         "ui": {

@@ -525,7 +525,7 @@ function Get-ReviewPlanParts($all, [string[]] $allPaths, $sel, [string[]] $OnlyL
     foreach ($l in $script:PaperReviewLaneNames) { $laneFiles[$l] = @(Get-PaperReviewLaneFiles -Files $files -Lane $l -Screens $screens) }
     # M.7: when an analysis of this commit is saved, the architecture and smell lanes of the architecture review read only the hot spots.
     $sonar = $null
-    if ($reviewKind -eq 'architecture' -and -not $AllFiles) { $sonar = Get-ReviewSonarForPlan $sel }
+    if ($reviewKind -eq 'architecture' -and -not $AllFiles) { $sonar = Get-ReviewSonarForPlan $sel $allPaths $files }
     if ($null -ne $sonar) {
         $scopeLines += @($sonar.Lines)
         if ($null -ne $sonar.Allowed) {
@@ -537,7 +537,8 @@ function Get-ReviewPlanParts($all, [string[]] $allPaths, $sel, [string[]] $OnlyL
             }
             $names = [string[]] @($dropped.Keys)
             [Array]::Sort($names, [StringComparer]::Ordinal)
-            $scopeLines += @($names | ForEach-Object { "excluded: $_ (not in the top $($sonar.TopCount) SonarQube hotspots)" })
+            # F253: a file the analysis measured is "not in the top N"; one it has no number for says so.
+            $scopeLines += @($names | ForEach-Object { "excluded: $_ ($(Get-PaperReviewSonarExcludedReason -Path $_ -Measured $sonar.Measured -Top $sonar.TopCount))" })
         }
     }
     $hasDotnet = Test-PaperReviewDotnetProject -Paths $allPaths
@@ -986,8 +987,8 @@ function Invoke-ReviewStatic {
         if ($kind -eq 'architecture' -and -not $external -and $config.Sonar.ProjectKey -and @($changes).Count -eq 0) {
             $sres = Read-ReviewSonarResult $config.Sonar.ProjectKey $head
             if ($null -ne $sres) {
+                $cxResults += @(ConvertTo-PaperReviewSonarComplexityResults -Issues @($sres.Issues) -RepoRoot $root)
                 foreach ($i in @($sres.Issues | Where-Object { $script:PaperReviewComplexityRules -ccontains "$($_.Rule)" })) {
-                    $cxResults += [pscustomobject]@{ RuleId = "$($i.Rule)"; Level = 'warning'; Message = "$($i.Message)"; Uri = "file:///$($root.Replace('\', '/'))/$($i.Path)"; Line = [int] $i.Line; Column = 0; Category = ''; Title = ''; Suppressed = $false; File = 'sonarqube' }
                     $full = Get-ReviewFullPath "$($i.Path)"
                     if (-not $lineMap.ContainsKey("$($i.Path)") -and (Test-Path -LiteralPath $full -PathType Leaf)) { try { $lineMap["$($i.Path)"] = [string[]] [IO.File]::ReadAllLines($full) } catch { } }
                 }

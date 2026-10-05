@@ -127,8 +127,10 @@ the files and the open issues. `plan` then hands the architecture and smell lane
 `review.sonarqube.hotspots` files (default 20); `-AllFiles` reads them all. Exit 4: not verifiable (the server does not
 answer, did not come up, the analysis failed) - say the reason and go on with `plan`, which reads every file; exit 5: not
 applicable (a branch scope, not the base branch, uncommitted work, an external repository, no key, no scanner...) - say the
-reason and go on. Never print, write or pass the access key on a command line. Mechanics:
-[SonarQube](../../skills/review-architecture/references/sonarqube.md).
+reason and go on. A repository without .NET code (a Python or TypeScript project) is scanned by the SonarScanner CLI, with no
+build: the static lane is then not applicable, the report's `## Complexity` is built from the server's issues and says so, and
+a file the analysis did not measure is left out with its own reason. Never print, write or pass the access key on a command
+line. Mechanics: [SonarQube](../../skills/review-architecture/references/sonarqube.md).
 
 ## Which lanes: ask first
 

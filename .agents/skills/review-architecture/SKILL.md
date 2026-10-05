@@ -65,7 +65,9 @@ for the commit you are on (scanning first only when the server has no analysis o
 install when the machine declares one), and `plan` then hands the reading lanes only the top `review.sonarqube.hotspots`
 files (default 20) - say `--all-files` (`-AllFiles`) to read every file. Exit 5 is not applicable with the reason (a branch
 scope, not the base branch, uncommitted work, an external repository...), exit 4 not verifiable: either way go on with
-`plan`, which then uses the analyzer build alone. Never print, write or pass the token on a command line. Mechanics:
+`plan`, which then uses the analyzer build alone. On a repository without .NET code the static lane is not applicable; the
+SonarScanner CLI scans it (no build) and the server's issues give the complexity table. Never print, write or pass the
+token on a command line. Mechanics:
 [SonarQube](references/sonarqube.md).
 
 ## Never
