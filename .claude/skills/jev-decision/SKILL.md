@@ -136,6 +136,8 @@ mục của mình mà không đụng mục kề bên.
 
 - [spec-clause-search](recipes/spec-clause-search/recipe.md) — chấm từng đoạn spec/tiêu chuẩn theo câu hỏi · ai · Question search over contract PDF
 
+- [worker-turn-triage](recipes/worker-turn-triage/recipe.md) — lọc sơ lượt worker trước khi planner duyệt · ai · việc của chủ dự án; lỗi thật planner bắt 2026-10-05/06
+
 Mục nào chưa có link thì công thức đó chưa có trong kit. Link demo nằm trong mục "Nguồn" của từng `recipe.md`. Danh
 mục đầy đủ các demo ở https://webdevcody.github.io/jev-demos/. Sổ nghiên cứu (số đo thật, trạng thái từng công
 thức) nằm ở `docs/reference/jev-ung-dung-cad-revit.md` của kho Paper-skills.

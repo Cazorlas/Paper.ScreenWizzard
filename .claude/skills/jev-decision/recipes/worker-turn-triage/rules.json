@@ -1,0 +1,18 @@
+{
+  "verdict": {
+    "default": "ready",
+    "default_confidence": 0.3,
+    "rules": [
+      { "option": "needs-look", "any": ["locked file changed", "outside files", "no b report", "status failed", "status violation"], "confidence": 0.95 }
+    ]
+  },
+  "concern": {
+    "default": "none",
+    "default_confidence": 0.3,
+    "rules": [
+      { "option": "test-touched", "any": ["locked file changed"], "confidence": 0.95 },
+      { "option": "scope", "any": ["outside files"], "confidence": 0.95 },
+      { "option": "incomplete", "any": ["no b report", "status failed", "status violation"], "confidence": 0.95 }
+    ]
+  }
+}
