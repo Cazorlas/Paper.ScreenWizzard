@@ -1,7 +1,7 @@
 ---
 name: lane-ui
-description: Worker for the UI lane of an approved plan - only the ui or e2e task ids it is handed, only files inside their files globs, windows, dialogs, pages and view models built on MOCK data, red first, every screenshot opened and judged against the plan's wireframe, with no host running. Runs beside the logic lane but never beside lane-live, because both need the desktop. Returns one evidence row per task and never ticks the plan, commits or pushes.
-model: inherit
+description: Worker for the UI lane of an approved plan - only the ui or e2e task ids it is handed, only files inside their files globs, windows, dialogs, pages and view models built on MOCK data, the planner's red test is already present, every screenshot opened and judged against the plan's wireframe, with no host running. Runs beside the logic lane but never beside lane-live, because both need the desktop. Returns one evidence row per task and never ticks the plan, commits or pushes.
+model: sonnet
 isolation: worktree
 tools: Read, Grep, Glob, Edit, Write, Bash, PowerShell
 ---
@@ -45,7 +45,7 @@ driver; if you find one running, stop and report instead of starting yours.
   → a plain unit test (on an STA thread for WPF). Needs a real window - hover, popup, hit testing, how it
   is drawn → a UI harness case plus a driver test. Needs the host's document or command system → it cannot
   render outside the host: hand the case back as lane `live` in your report, with the reason.
-- **Red first.** A `[red]` task: the UI test first (view model test, harness case, or page test) — seen
+- **The red test is the planner's.** It is already present: make it green; never change, weaken or delete it. A `[red]` task: the UI test — seen
   failing on its assertion. A build error is not red.
 - Next task: build until it passes; run `.claude/paperflow/paperflow.ps1 ui` (or `e2e`), narrowed to the
   task's cases after `--`.

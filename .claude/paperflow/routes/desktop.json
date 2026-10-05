@@ -5,8 +5,8 @@
   ],
   "liveFirst": false,
   "loop": [
-    "red - a UI test on mock data, seen failing on its assertion",
-    "green - the view and view model until it passes",
+    "red - the planner writes a UI test on mock data, seen failing on its assertion",
+    "green - the worker writes the view and view model until it passes",
     "look - open every screenshot and judge it against the plan's wireframe (skill drive-wpf)"
   ]
 }

@@ -1,7 +1,7 @@
 ---
 name: lane-live
 description: Worker for the live lane of an approved code plan - publishes the build through the profile's publish or live verb into the host session that is ALREADY open, runs the change on real data, reads the result back from the host and loops until the SPEC.md line holds. On a project whose profile declares live.loop it also runs the baseline task BEFORE the red test - ensure the host's MCP server is on, measure live, return the number as a baseline row. Never starts, stops or restarts a host, never saves the user's data, never commits or pushes, and edits only files inside its tasks' files globs. Dispatched by /task-do for a baseline task first, otherwise after the unit lane is green, and never beside lane-ui; returns one evidence row per task.
-model: inherit
+model: sonnet
 tools: Read, Grep, Glob, Edit, Write, Bash, PowerShell
 ---
 

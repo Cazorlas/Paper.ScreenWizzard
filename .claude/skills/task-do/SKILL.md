@@ -63,6 +63,10 @@ người khác đã vấp; không biết tên thì viết lại một bản kém
 Luật không phải là "đổi thuật toán", mà là **gọi tên nó trong comment**. Một `O(n²)` chạy 8 ms không
 phải bug; một `O(n²)` **không ai biết là `O(n²)`** mới là thứ treo máy người dùng ở model thật.
 
+## Planner/worker flow
+
+Planner viết test đỏ trước khi giao worker; worker không sửa, không nới, không xoá test của planner. Worker theo lane và planner duyệt từng task theo [references/planner-worker.md](references/planner-worker.md).
+
 ## 3. Các task, theo đúng thứ tự trong plan
 
 **Test lấy từ các dòng `Cho … →` của `SPEC.md`, không lấy từ code vừa viết**: mỗi dòng là một case,
@@ -72,7 +76,7 @@ chứng minh code bằng chính nó.
 
 | Lane | Lane agent | Bằng chứng nào được tính |
 | --- | --- | --- |
-| `unit` | `lane-logic` | Test **trước**, thấy đỏ **ở assertion**; rồi code tới khi xanh. Verb `test` |
+| `unit` | `lane-logic` | Codex qua collab; lane-logic làm thay khi Codex hoặc collab hết. Planner viết test đỏ, worker làm cho xanh. Verb `test` |
 | `ui` / `e2e` | `lane-ui` | Mock trên dữ liệu giả theo wireframe trong plan trước khi chạy host thật; mở ảnh ra **xem** và tự phán xét. Verb `ui` / `e2e` |
 | `live` | `lane-live` | Task `baseline` (dự án khai `live.loop`): đo hành vi **hôm nay** trên host, trả số trong dòng bằng chứng có chữ `baseline`. Task kiểm: verb `publish`, rồi lái **phiên host đang kết nối** trên một case thật và **đọc lại** kết quả từ chính host. Dọn thứ đã tạo. Không bao giờ lưu dữ liệu của người dùng. Mở, tắt hay restart host - kể cả bản copy - phải hỏi người dùng trước, và ghi câu trả lời vào dòng bằng chứng |
 | `model` | `lane-model` | Mỗi nhóm: khảo sát chỉ đọc → chạy thử không giữ gì → thực hiện → **đọc lại bằng script khác**; mỗi dòng nêu mã luật. Script giữ lại trong `harness/` |
@@ -149,10 +153,7 @@ nhóm sau chỉ giao khi mọi task của nhóm trước đã tick (F35) — m�
    tick task `pass`; dòng API vào bảng API; file agent báo đã sửa phải nằm trong glob của task — một file
    ngoài glob là fail của task đó. Task `fail` hay `not verifiable` không tick: xử lý theo phần 4 (vòng test).
 6. Sang nhóm kế. Nhóm không lane (Close) để cho `/task-verify`.
-7. **Hết mọi lane: session chính chạy một lần** verb `build` rồi verb `test` **đầy đủ** — lane agent chỉ
-   chạy phần của mình, nên đây là lần duy nhất mọi thay đổi gặp nhau. Pass cần exit 0 **và** số test đã
-   chạy > 0; fail ngoài `knownFailures` là fail, bất kể lane nào gây ra. Ghi dòng số test vào bằng chứng
-   của task lane cuối cùng. Plan model không đổi code nào: bước này là `không áp dụng`, ghi rõ như vậy.
+7. **Hết mọi lane: session chính chạy verb `build` một lần.** Không chạy lại toàn bộ test; `/task-verify` chạy test của mọi task một lần cộng test mà file đã đổi nuôi.
 
 - Code tính năng đặt theo skill `clean-architecture`. Agent `architecture-reviewer` chạy trong
   `/task-verify` trên các file plan đã đổi (hook `layer-guard` không thấy file ghi qua lệnh shell); một
@@ -196,5 +197,4 @@ thứ hai hay thứ ba — rồi kết thúc lượt. Không sửa code cho kh�
 
 ## 5. Giao lại
 
-Khi mọi task có lane đã tick và bản chạy đầy đủ ở mục 3 đã `pass`, chạy `/task-verify <plan>` và đưa
-nó dòng số test đó. Đừng báo xong trước khi nó chạy.
+Khi mọi task có lane đã tick, chạy `/task-verify <plan>` và đưa nó dòng số test đó. Đừng báo xong trước khi nó chạy.

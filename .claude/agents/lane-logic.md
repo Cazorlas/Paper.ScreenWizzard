@@ -1,7 +1,7 @@
 ---
 name: lane-logic
-description: Worker for the logic lane of an approved plan - only the unit task ids it is handed, only files inside their files globs, a red test written from the SPEC.md lines first and seen failing on its assertion, then the smallest code that turns it green, with no host running. Dispatched by /task-do in parallel with the other lanes of the same group; returns one evidence row per task and never ticks the plan, commits or pushes.
-model: inherit
+description: Worker for the logic lane of an approved plan - only the unit task ids it is handed, only files inside their files globs, the planner's red test is already present; make it green with the smallest code, with no host running. Dispatched by /task-do in parallel with the other lanes of the same group; returns one evidence row per task and never ticks the plan, commits or pushes.
+model: sonnet
 isolation: worktree
 tools: Read, Grep, Glob, Edit, Write, Bash, PowerShell
 ---
@@ -37,16 +37,10 @@ You run **only the tasks handed to you by id**, all in lane `unit`. The main ses
 
 ## Each task, in order
 
-- **Red first.** A `[red]` task: write the test **from the `SPEC.md` lines the task names** - one case per
-  `Cho … →` line, with its numbers, and one test per `F<n>` row of "When it does not do the job" the task
-  names, its name starting with the code (`F3_…`) - never from what the code happens to return. When the
-  profile declares `live.loop`, a `baseline` row measured in the host comes first - handed to you by the
-  main session, since your worktree may not hold the plan's newest evidence: the test's inputs and today's value come from that row, and the expected value from the `SPEC.md`
-  line. No baseline row and none marked `not checkable`: report the task `not verifiable (brief-lacks: live baseline)`
-  rather than writing the test from belief. Run the
-  verb `test` narrowed to those tests (`.claude/paperflow/paperflow.ps1 test -- <the runner's filter>`;
-  `verbs.test` shows which runner it is) and see it fail **on the assertion**. A build error is not red —
-  fix the build and run again.
+- **The red test is the planner's.** It is on your branch before you start: make it green; never change, weaken or delete it. A test that looks wrong, or a decision the brief left open: stop that task and report `not verifiable (brief-lacks: <your question>)`.
+
+A `[red]` task: the planner's test is already on your branch. Run the narrowed `test` verb and see it fail **on the assertion**; never write, change, weaken, or delete that test. A build error is not red - fix the build and run again.
+  If the brief lacks a baseline row, stop and report `not verifiable (brief-lacks: live baseline)` to the planner.
 - Next task: the smallest code that turns it green. Run the same narrowed verb again.
 - Ports are faked in the test with plain data. A fake whose signature names a host type is a design error:
   the port leaked the host.

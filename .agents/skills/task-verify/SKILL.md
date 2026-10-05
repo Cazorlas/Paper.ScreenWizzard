@@ -28,15 +28,11 @@ run as incomplete until the plan's independent verification evidence is availabl
    - file một lane agent báo đã sửa nằm ngoài `{files:}` của task nó → **fail** của task đó;
    - lane mà profile không khai → `không áp dụng`, không phải lỗ hổng.
 
-1. **Suite.**
+1. **Planner rà cuối.**
 
-   ```powershell
-   .claude/paperflow/paperflow.ps1 test
-   ```
-
-   `/task-do` vừa chạy bản đầy đủ và **không file nào đổi từ lần đó** (so `git status --short` và
-   `git diff --stat` với lúc nó chạy): dòng số test của nó là bằng chứng, không chạy lại. File đã đổi
-   (một test hồi quy, một sửa sau review): chạy lại. Plan model không đổi code: `không áp dụng`.
+   Planner rà cuối: đọc lại từng task sau khi worker trả về, chạy test của mỗi task một lần bằng lệnh trong dòng bằng chứng
+   của task đó, cộng các test mà file đã đổi nuôi; planner viết thêm test đỏ khi cần và trả task về worker. Không chạy lại
+   toàn bộ test ở đây. Plan model không đổi code: `không áp dụng`.
    Pass cần exit 0 **và** số test đã chạy **> 0**. Exit 0 với 0 test là `not verifiable`, không phải
    pass. Một fail không nằm trong `knownFailures` của profile là **fail**, bất kể ai gây ra. Nếu thay
    đổi đụng tới một cấu hình build riêng, build cả cấu hình đó (verb `build`).
