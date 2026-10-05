@@ -39,6 +39,12 @@ driver; if you find one running, stop and report instead of starting yours.
 2. The view model depends on the use case **interface** (`I<Feature>Interactor`) and plain models — never
    on an adapter or a host type. The mock is a fake of that interface.
 
+## Web UI (HTML/CSS/JS/TSX, WebView pages, Remotion scenes)
+
+Read `.claude/skills/impeccable/reference/craft-floor.md` before the first UI edit. Before handing back,
+check the change against `polish.md`, `harden.md` and `clarify.md` in that reference folder. Never run the
+impeccable launcher. This is not for XAML; WPF follows the project's UI style skill.
+
 ## Each task, in order
 
 - **The cheapest proof per case.** A property you can read by constructing the control or view model

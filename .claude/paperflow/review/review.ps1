@@ -688,14 +688,14 @@ function Invoke-ReviewFiles {
 # ------------------------------------------------------------------ prompt (ADR-0043, F213)
 
 # The instruction files of a lane, pasted word for word into its prompt: paths from the engine folder, the checklists in the skills that own them (ADR-0044).
-function Get-ReviewInstructionPaths([string] $LaneName) {
+function Get-ReviewInstructionPaths([string] $LaneName, [string[]] $Files) {
     $skill = $PSScriptRoot
     $rel = @()
     switch ($LaneName) {
         'security' { $rel = @('..\..\skills\review-security\references\checklist.md') }
         'bug' { $rel = @('..\..\skills\find-bug\SKILL.md') }
         'smell' { $rel = @('..\..\skills\review-architecture\references\smell.md') }
-        'ui' { $rel = @('..\..\skills\design-critique\SKILL.md', '..\..\skills\accessibility-review\SKILL.md') }
+        'ui' { $rel = @(Get-PaperReviewUiInstructions -Files $Files | ForEach-Object { Join-Path '..\..' $_ }) }
     }
     if ($LaneName -eq 'architecture') {
         $cands = @('..\..\agents\architecture-reviewer.md', '..\..\..\.claude\agents\architecture-reviewer.md') | ForEach-Object { [IO.Path]::GetFullPath((Join-Path $skill $_)) }
@@ -761,7 +761,7 @@ function Invoke-ReviewPrompt {
         foreach ($e in @($a.Errors)) { $errors += "${tag}: $e" }
         if (-not $a.Complete -and @($a.Errors).Count -eq 0) { $errors += "${tag}: not read: $(@($a.NotRead) -join ', ')" }
     }
-    $instructions = @(Get-ReviewInstructionPaths $Lane | ForEach-Object { [pscustomobject]@{ Path = $_; Text = [IO.File]::ReadAllText($_, [Text.Encoding]::UTF8) } })
+    $instructions = @(Get-ReviewInstructionPaths -LaneName $Lane -Files $paths | ForEach-Object { [pscustomobject]@{ Path = $_; Text = [IO.File]::ReadAllText($_, [Text.Encoding]::UTF8) } })
     $findingsFile = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'findings.md'))
     $text = New-PaperReviewLanePrompt -Template (Get-ReviewPromptTemplate 'Lane prompt') -Lane $Lane -Batch $Batch -BatchCount $all.Count -Run $Run -Prefix $prefix -FilesLines @($r.Lines) `
         -External $external -Repo $repoText -Retry $Retry.IsPresent -RetryErrors $errors -FindingsPath $findingsFile -FindingsText ([IO.File]::ReadAllText($findingsFile, [Text.Encoding]::UTF8)) -Instructions $instructions

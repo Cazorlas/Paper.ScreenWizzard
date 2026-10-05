@@ -43,6 +43,7 @@ $script:PaperHostLanes = @{
     web     = @('e2e')
     desktop = @('ui')
     ai      = @('e2e')
+    video   = @('ui', 'e2e')
     cli     = @('e2e', 'live')  # a tooling repository such as this kit: e2e on a throwaway project, live on a real one
 }
 

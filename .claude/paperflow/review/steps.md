@@ -57,6 +57,11 @@ The user's words map to its parameters:
    It is machine work: start it in the background and go on. Exit 4 is not verifiable with the reason - never "0 findings";
    exit 5 is not applicable.
 4. **Agent lanes.** The estimate's `lanes run:` line says who answers the batches; never a lane before `approve`. Do not start a second big review on this machine while one runs its batches: Codex has a fixed number of places and a second sweep takes them.
+   For `/review-ui`, each batch's file extensions select the instructions: web reads [ui-web.md](ui-web.md), then
+   `skills/impeccable/reference/critique.md`, `skills/impeccable/reference/audit.md` and `skills/impeccable/reference/craft-floor.md`; desktop (`.xaml .axaml .dcl`) or no web reads
+   `design-critique` then `accessibility-review`. Mixed batches read web first, then desktop. Exact extensions and
+   paths: [lanes](lanes.md). The web preface requires read-only assessments in the same turn, no launcher, browser,
+   sub-agents or writes, closing questions skipped, and this command's finding format.
    - `A alone - ...` (a small scope, "Who reads", below): read the files yourself. For each lane in state `run`:
      `review.ps1 prompt -Run <run> -Lane <lane> -Batch 1` writes the lane's prompt; follow it - read each file of its list
      once, answer in the format of [findings](findings.md) - and save the answer word for word to `answer:`.
