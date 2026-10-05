@@ -40,6 +40,26 @@ $script:PaperReviewProjectExt = @('.csproj', '.vbproj', '.fsproj', '.sln', '.pro
 
 function Format-PaperReviewNumber([double] $Value) { return $Value.ToString('N0', [Globalization.CultureInfo]::InvariantCulture) }
 
+# F302: instruction paths relative to .claude, chosen from this batch only; no disk access.
+function Get-PaperReviewUiInstructions([string[]] $Files) {
+    $web = $false
+    $desktop = $false
+    foreach ($file in @($Files)) {
+        if ($file -match '\.(html|htm|css|scss|less|vue|svelte|tsx|jsx|cshtml|razor)$') { $web = $true }
+        if ($file -match '\.(xaml|axaml|dcl)$') { $desktop = $true }
+    }
+    if ($web) {
+        'paperflow\review\ui-web.md'
+        'skills\impeccable\reference\critique.md'
+        'skills\impeccable\reference\audit.md'
+        'skills\impeccable\reference\craft-floor.md'
+    }
+    if ($desktop -or -not $web) {
+        'skills\design-critique\SKILL.md'
+        'skills\accessibility-review\SKILL.md'
+    }
+}
+
 function Test-PaperReviewWholeNumber($Value, [long] $Min) {
     if ($Value -is [bool] -or $Value -is [string] -or $null -eq $Value) { return $false }
     # At most [int]::MaxValue: the value is used as an [int] (find-bug FB5).

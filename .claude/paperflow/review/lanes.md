@@ -82,10 +82,16 @@ The checklists a lane pastes live with the skill that owns them (ADR-0044): `rev
 | bug | the session alone (small scope), Codex via a read-only collab turn, or a read-only subagent (step 4) | `find-bug/SKILL.md` (with "No SPEC.md for the file") | BUG | bug |
 | architecture | the session alone (small scope), Codex via a read-only collab turn, or a read-only subagent (step 4) | `architecture-reviewer.md`, front matter removed; reports finding blocks instead of one line per violation | ARC | architecture |
 | smell | the session alone (small scope), Codex via a read-only collab turn, or a read-only subagent (step 4) | `review-architecture/references/smell.md` | SML | smell |
-| ui | the session alone (small scope), Codex via a read-only collab turn, or a read-only subagent (step 4) | `design-critique/SKILL.md`, then `accessibility-review/SKILL.md`, and the project's UI style skill if it has one | UI | ux |
+| ui | the session alone (small scope), Codex via a read-only collab turn, or a read-only subagent (step 4) | web: `paperflow/review/ui-web.md`, then `skills/impeccable/reference/critique.md`, `skills/impeccable/reference/audit.md`, `skills/impeccable/reference/craft-floor.md`; desktop or no web: `design-critique/SKILL.md`, then `accessibility-review/SKILL.md`; mixed: web then desktop | UI | ux |
 
-The UI lane reads the `SKILL.md` of `design-critique` and `accessibility-review` as instructions because
-those skills run only when the user types them - here the user typed `/review-ui` and agreed to the estimate.
+The UI lane chooses instructions from the files of each batch, case-insensitively. Web extensions are
+`.html .htm .css .scss .less .vue .svelte .tsx .jsx .cshtml .razor`; desktop extensions are `.xaml .axaml .dcl`.
+A batch with both reads web first, then desktop; a batch with no web (including screenshots only) keeps the two
+desktop skills. Paths in the table are relative to `.claude`, with impeccable's references under `skills/impeccable`.
+The [web preface](ui-web.md) overrides writing, launcher, browser and sub-agent steps in those references: one
+read-only reader performs Assessment A then B and uses this review's finding format, with closing questions skipped.
+The manual skills are read because the user typed `/review-ui` and agreed to the estimate. For a project review the
+reader also reads the project's UI style skill under `.claude/skills` if it has one.
 
 With more than one batch, the prefix carries the batch number from the second batch on: `BUG2-1`.
 

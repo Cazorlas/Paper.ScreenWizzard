@@ -33,10 +33,10 @@
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
-      "items": { "enum": ["revit", "cad", "web", "desktop", "ai", "cli"] }
+      "items": { "enum": ["revit", "cad", "web", "desktop", "ai", "video", "cli"] }
     },
     "lanes": {
-      "description": "The ways this project proves a change. 'unit' needs no host; 'ui' needs desktop; 'e2e' needs web or ai; 'live' needs revit or cad; 'model' (building in the user's model or drawing, proved by reading it back) needs revit or cad. A lane no declared host can prove is refused.",
+      "description": "The ways this project proves a change. 'unit' needs no host; 'ui' needs desktop or video; 'e2e' needs web, ai or video; 'live' needs revit or cad; 'model' (building in the user's model or drawing, proved by reading it back) needs revit or cad. A lane no declared host can prove is refused.",
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,

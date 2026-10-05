@@ -25,10 +25,19 @@ No lane question: one lane. The estimate is still the stop before paid reading.
 
 ## What the lane reads with
 
-`review.ps1 prompt` pastes, word for word: `.claude/skills/design-critique/SKILL.md` (usability, visual hierarchy,
-consistency), then `.claude/skills/accessibility-review/SKILL.md` (WCAG 2.1 AA: contrast, keyboard, focus, target size,
-names), and tells the reader to use the project's UI style skill under `.claude/skills` when it has one. Those two skills
-run here because the user typed `/review-ui` and agreed to the estimate.
+`review.ps1 prompt` selects instructions from each batch's files, case-insensitively, and pastes them word for word:
+
+- Web (`.html .htm .css .scss .less .vue .svelte .tsx .jsx .cshtml .razor`):
+  [.claude/paperflow/review/ui-web.md](../../paperflow/review/ui-web.md), then impeccable's
+  `reference/critique.md`, `reference/audit.md` and `reference/craft-floor.md` under `.claude/skills/impeccable`.
+- Desktop (XAML `.xaml .axaml`, DCL `.dcl`), or no web file (including screenshots only):
+  `.claude/skills/design-critique/SKILL.md`, then `.claude/skills/accessibility-review/SKILL.md`.
+- A mixed web/desktop batch: the web instructions first, then the desktop instructions; each applies to its files.
+
+The web preface keeps critique and audit read only: no launcher, browser, sub-agents or writes; Assessment A then B
+in the same turn, closing questions skipped, findings in this command's format. These manual skills are read here
+because the user typed `/review-ui` and agreed to the estimate. For a project review the reader also uses the project's
+UI style skill under `.claude/skills` when it has one.
 
 For depth on one finding - a palette, a font pair, a stack's guideline - you (not a lane) may run
 `.claude/skills/ui-ux-pro-max/SKILL.md`'s search script and quote its row in the finding's FIX. Never as a lane: its data
