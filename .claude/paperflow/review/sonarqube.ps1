@@ -1,6 +1,7 @@
 # The optional self-hosted SonarQube layer of the architecture review, the I/O part (plan 2026-10-05-qa-split, section M; SPEC F243-F248; ADR-0044):
 # `review.ps1 sonar` talks to the server (a Web API call with the access key in an Authorization header), starts and stops the unzipped server
-# when the machine declares one, runs the scanner around a build that never deploys, waits for the analysis, reads the numbers of the files and
+# when the machine declares one, runs the scanner - dotnet-sonarscanner around a build that never deploys when the repository has .NET code, else
+# the SonarScanner CLI with no build (F249-F251) - waits for the analysis, reads the numbers of the files and
 # the open issues, and saves them under the run folder of the project; `plan` then reads only the hot spots. Every decision is in
 # sonarqube-plan.ps1 (pure, tested); this file only reads and starts things. Dot-sourced by review.ps1, which defines what it uses ($root,
 # $config, $runsDir, $paperflow, Say, Write-Text, Write-Json, Invoke-Native, Invoke-ReviewGit, Invoke-ReviewWithEnvironment, Select-ReviewScope).
@@ -8,7 +9,8 @@
 # The access key (PAPER_SONARQUBE_TOKEN) goes only into the environment of the scanner process (SONAR_TOKEN) and the Authorization header of a
 # call; nothing is saved or printed without Protect-PaperReviewSecret first. The machine's own settings are environment variables of the user:
 # PAPER_SONARQUBE_TOKEN (needed), PAPER_SONARQUBE_URL (default http://localhost:9000), PAPER_SONARQUBE_HOME (the unzipped folder),
-# PAPER_SONARQUBE_JAVA (java.exe, or the folder of a JRE), PAPER_SONARQUBE_KEEP=1 (do not stop a server this run started).
+# PAPER_SONARQUBE_JAVA (java.exe, or the folder of a JRE: it starts the server and is the JAVA_HOME of the CLI), PAPER_SONARQUBE_KEEP=1 (do not
+# stop a server this run started), PAPER_SONARQUBE_SCANNER (the SonarScanner CLI: sonar-scanner.bat or its unzipped folder; else sonar-scanner on PATH).
 # ASCII only: PowerShell 5.1 reads a .ps1 without a BOM as ANSI.
 
 function Get-ReviewSonarSettings {
@@ -17,7 +19,8 @@ function Get-ReviewSonarSettings {
     if (-not $url) { $url = 'http://localhost:9000' }
     return [pscustomobject]@{
         Url = $url.Trim().TrimEnd('/'); Token = "$env:PAPER_SONARQUBE_TOKEN"; Home = "$env:PAPER_SONARQUBE_HOME"; Java = "$env:PAPER_SONARQUBE_JAVA"
-        Keep = ("$env:PAPER_SONARQUBE_KEEP" -eq '1'); ProjectKey = "$($config.Sonar.ProjectKey)"
+        Keep = ("$env:PAPER_SONARQUBE_KEEP" -eq '1'); ProjectKey = "$($config.Sonar.ProjectKey)"; ScannerSetting = "$($config.Sonar.Scanner)"
+        CliVariable = "$env:PAPER_SONARQUBE_SCANNER"
     }
 }
 
@@ -64,13 +67,37 @@ function Get-ReviewSonarGit {
     return [pscustomobject]@{ Branch = $branch; Head = $head; BaseBranch = $base; Dirty = $dirty; Ignored = $ignored }
 }
 
-function Get-ReviewSonarApplicabilityNow($Selection) {
+# Does the layer apply, with which scanner (F249): .NET code in the repository (a project file or a C#/VB source) -> dotnet-sonarscanner, else the
+# SonarScanner CLI, unless review.sonarqube.scanner says. The CLI: where it is (F250), the folders it analyses and the tests (F251), checked here so
+# plan and sonar give the same answer. AllPaths: the files of the repository when the caller has them (plan), else asked of git.
+function Get-ReviewSonarApplicabilityNow($Selection, [string[]] $AllPaths = $null) {
     $s = Get-ReviewSonarSettings
     $g = Get-ReviewSonarGit
-    $scanner = [bool] (Get-Command dotnet-sonarscanner -CommandType Application -ErrorAction SilentlyContinue)
+    $paths = $AllPaths
+    if ($null -eq $paths) { $listing = Get-ReviewRepoFiles; $paths = @($listing.Tracked) + @($listing.Untracked) }
+    $sc = Get-PaperReviewSonarScanner -Setting $s.ScannerSetting -HasDotnetCode (Test-PaperReviewDotnetCode -Paths $paths)
+    $cliPath = ''; $cliProblem = ''; $found = $false; $srcs = @(); $tsts = @(); $srcProblem = ''
+    if ($sc.Scanner -eq 'cli') {
+        $var = $s.CliVariable.Trim()
+        $isFile = $false; $hasBin = $false
+        if ($var) {
+            $isFile = (Test-Path -LiteralPath $var -PathType Leaf)
+            $hasBin = (-not $isFile) -and (Test-Path -LiteralPath (Join-Path $var 'bin\sonar-scanner.bat') -PathType Leaf)
+        }
+        $hit = ''
+        $cmd = @(Get-Command sonar-scanner -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1)
+        if ($cmd.Count -gt 0) { $hit = "$($cmd[0].Source)" }
+        $cr = Resolve-PaperReviewSonarCli -Variable $var -VariableIsFile $isFile -VariableHasBinBat $hasBin -PathHit $hit
+        $cliPath = "$($cr.Path)"; $cliProblem = "$($cr.Problem)"; $found = (-not $cliProblem)
+        $declared = @($config.Sonar.Sources) + @($config.Sonar.Tests)
+        $existing = @(@('src', 'tests', 'test') + $declared | Where-Object { $_ -and $_ -ne '.' } | Select-Object -Unique | Where-Object { Test-Path -LiteralPath (Join-Path $root ($_.Replace('/', '\'))) -PathType Container })
+        $rs = Resolve-PaperReviewSonarSources -Sources @($config.Sonar.Sources) -Tests @($config.Sonar.Tests) -Existing $existing
+        $srcProblem = "$($rs.Problem)"; $srcs = @($rs.Sources); $tsts = @($rs.Tests)
+    }
+    else { $found = [bool] (Get-Command dotnet-sonarscanner -CommandType Application -ErrorAction SilentlyContinue) }
     $a = Get-PaperReviewSonarApplicability -ProjectKey $s.ProjectKey -External $external -Mode "$($Selection.Mode)" -Branch $g.Branch -BaseBranch $g.BaseBranch -Dirty $g.Dirty `
-        -Ignored $g.Ignored -TokenSet ([bool] $s.Token) -ScannerFound $scanner
-    return [pscustomobject]@{ Result = $a; Settings = $s; Git = $g }
+        -Ignored $g.Ignored -TokenSet ([bool] $s.Token) -ScannerFound $found -Scanner $sc.Scanner -ScannerProblem $sc.Problem -CliProblem $cliProblem -SourcesProblem $srcProblem
+    return [pscustomobject]@{ Result = $a; Settings = $s; Git = $g; Scanner = $sc; CliPath = $cliPath; Sources = $srcs; Tests = $tsts }
 }
 
 function Get-ReviewSonarResultFile([string] $ProjectKey, [string] $Head) {
@@ -96,23 +123,32 @@ function Get-ReviewSonarHotspots($Result, $Selection) {
 
 # plan and lanes (M.7): the lanes of the architecture review read only the hot spots when an analysis of this commit is saved. Lines say so (and
 # which files are left out and why); Allowed is the set of paths the architecture and smell lanes keep, $null when they keep all.
-function Get-ReviewSonarForPlan($Selection) {
-    $none = [pscustomobject]@{ Lines = @(); Allowed = $null; Plan = $null }
+function Get-ReviewSonarForPlan($Selection, [string[]] $AllPaths = $null, $ScopeFiles = @()) {
+    $none = [pscustomobject]@{ Lines = @(); Allowed = $null; Plan = $null; Measured = $null }
     if ($external -or -not "$($config.Sonar.ProjectKey)") { return $none }
-    $now = Get-ReviewSonarApplicabilityNow $Selection
+    $now = Get-ReviewSonarApplicabilityNow $Selection $AllPaths
     if (-not $now.Result.Applies) { return $none }
     $res = Read-ReviewSonarResult $now.Settings.ProjectKey $now.Git.Head
-    if ($null -eq $res) { return [pscustomobject]@{ Lines = @(Format-PaperReviewSonarNoAnalysisLine -Head $now.Git.Head); Allowed = $null; Plan = $null } }
+    if ($null -eq $res) { return [pscustomobject]@{ Lines = @(Format-PaperReviewSonarNoAnalysisLine -Head $now.Git.Head); Allowed = $null; Plan = $null; Measured = $null } }
     $h = Get-ReviewSonarHotspots $res $Selection
     $allowed = @{}
     foreach ($row in @($h.Top)) { $allowed["$($row.Path)".ToLowerInvariant()] = $true }
     $take = @($h.Top).Count
     $line = Format-PaperReviewSonarEstimateLine -Head $now.Git.Head -Url $now.Settings.Url -ProjectKey $now.Settings.ProjectKey -Read $take -Total ([int] $h.InScope)
+    # F252: the complexity table from the issues of the server, kept in plan.json for the report of a repository whose static lane does not run.
+    $cxResults = @(ConvertTo-PaperReviewSonarComplexityResults -Issues @($res.Issues) -RepoRoot $root)
+    $lineMap = @{}
+    foreach ($i in @($res.Issues | Where-Object { $script:PaperReviewComplexityRules -ccontains "$($_.Rule)" })) {
+        $full = Get-ReviewFullPath "$($i.Path)"
+        if (-not $lineMap.ContainsKey("$($i.Path)") -and (Test-Path -LiteralPath $full -PathType Leaf)) { try { $lineMap["$($i.Path)"] = [string[]] [IO.File]::ReadAllLines($full) } catch { } }
+    }
+    $scopePaths = @(@($ScopeFiles) | ForEach-Object { "$($_.Path)" })
+    $complexity = Get-PaperReviewComplexity -Results $cxResults -RepoRoot $root -ScopePaths $scopePaths -ScopeMode "$($Selection.Mode)" -Lines $lineMap
     $planObj = [pscustomobject]@{
         Head = $now.Git.Head; Url = $now.Settings.Url; ProjectKey = $now.Settings.ProjectKey; Top = $take; InScope = [int] $h.InScope
-        IssuesRead = [long] $res.IssuesRead; IssuesTotal = [long] $res.IssuesTotal; Files = @($h.Top)
+        IssuesRead = [long] $res.IssuesRead; IssuesTotal = [long] $res.IssuesTotal; Files = @($h.Top); Complexity = $complexity
     }
-    return [pscustomobject]@{ Lines = @($line); Allowed = $allowed; Plan = $planObj; TopCount = $take }
+    return [pscustomobject]@{ Lines = @($line); Allowed = $allowed; Plan = $planObj; TopCount = $take; Measured = $h.Measured }
 }
 
 function Stop-ReviewSonarServer([string] $SonarHome) {
@@ -132,6 +168,10 @@ function Invoke-ReviewSonar {
     $head = $now.Git.Head
     $secret = $s.Token
     $say = { param([string] $line) foreach ($l in @(Protect-PaperReviewSecret -Lines @($line) -Secret $secret)) { Say $l } }
+    # F249, F251: which scanner, and why - before the first question to the server.
+    $isCli = ($now.Scanner.Scanner -eq 'cli')
+    & $say (Format-PaperReviewSonarScannerLine -Scanner $now.Scanner.Scanner -Why $now.Scanner.Why -Sources $now.Sources -Tests $now.Tests -Exclusions @($config.Sonar.Exclusions))
+    if (-not $isCli -and (@($config.Sonar.Sources).Count + @($config.Sonar.Tests).Count + @($config.Sonar.Exclusions).Count) -gt 0) { & $say (Format-PaperReviewSonarCliKeysNote) }
     $code = 0
     $started = $false
     # The folder of the results is inside the runs folder, which git is told to ignore.
@@ -177,44 +217,69 @@ function Invoke-ReviewSonar {
             $logLines = @()
             $scanEnv = @{ SONAR_TOKEN = $s.Token }
             $savedCwd = (Get-Location).Path
+            # F251: the CLI keeps its work folder inside the run folder (git ignores it) and no build runs; an old report-task.txt is never taken
+            # for this scan's. dotnet-sonarscanner keeps its own under .sonarqube.
+            $reportTaskRel = '.sonarqube/out/.sonar/report-task.txt'
+            if ($isCli) { $reportTaskRel = "$($script:PaperReviewSonarCliWorkDir)/report-task.txt" }
+            $reportTask = Join-Path $root ($reportTaskRel.Replace('/', '\'))
+            if ($isCli) { Remove-Item -LiteralPath $reportTask -Force -ErrorAction SilentlyContinue }
             Set-Location -LiteralPath $root
             try {
-                $b = Invoke-ReviewWithEnvironment $scanEnv { Invoke-Native 'dotnet-sonarscanner' @('begin', "/k:$($s.ProjectKey)", "/d:sonar.host.url=$($s.Url)") }
-                $logLines += @($b.Lines)
-                if ($b.Code -ne 0) {
+                if ($isCli) {
+                    $cliArgs = Get-PaperReviewSonarCliArgs -ProjectKey $s.ProjectKey -Url $s.Url -Sources $now.Sources -Tests $now.Tests -Exclusions @($config.Sonar.Exclusions) -WorkDir $script:PaperReviewSonarCliWorkDir
+                    $cliEnv = @{ SONAR_TOKEN = $s.Token }
+                    $javaHome = Get-PaperReviewSonarJavaHome -Java $s.Java
+                    if ($javaHome) { $cliEnv['JAVA_HOME'] = $javaHome }
+                    $cliPath = $now.CliPath
+                    $c = Invoke-ReviewWithEnvironment $cliEnv { Invoke-Native $cliPath $cliArgs }
+                    $logLines += @($c.Lines)
                     Write-Text $scanLog ((@(Protect-PaperReviewSecret -Lines $logLines -Secret $secret) -join "`r`n") + "`r`n")
-                    & $say "review: sonarqube not verifiable - the scanner could not begin (exit $($b.Code))"
-                    foreach ($l in @($b.Lines | Select-Object -Last 5)) { & $say "  $l" }
-                    return 4
+                    if ($c.Code -ne 0) {
+                        & $say (Format-PaperReviewSonarCliFailedLine -Code $c.Code)
+                        foreach ($l in @($c.Lines | Select-Object -Last 5)) { & $say "  $l" }
+                        return 4
+                    }
                 }
-                # The build of the project, as the static lane runs it but without the kit's .targets: it never deploys.
-                $buildEnv = @{ PaperDeployDebug = 'false'; MSBUILDDISABLENODEREUSE = '1'; CustomAfterMicrosoftCommonTargets = '' }
-                $bd = Invoke-ReviewWithEnvironment $buildEnv { Invoke-Native $script:PowerShellExe @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $paperflow 'paperflow.ps1'), 'build', '-Repo', $root, '-Full') }
-                $logLines += @($bd.Lines)
-                if ($bd.Code -ne 0) {
+                else {
+                    $b = Invoke-ReviewWithEnvironment $scanEnv { Invoke-Native 'dotnet-sonarscanner' @('begin', "/k:$($s.ProjectKey)", "/d:sonar.host.url=$($s.Url)") }
+                    $logLines += @($b.Lines)
+                    if ($b.Code -ne 0) {
+                        Write-Text $scanLog ((@(Protect-PaperReviewSecret -Lines $logLines -Secret $secret) -join "`r`n") + "`r`n")
+                        & $say "review: sonarqube not verifiable - the scanner could not begin (exit $($b.Code))"
+                        foreach ($l in @($b.Lines | Select-Object -Last 5)) { & $say "  $l" }
+                        return 4
+                    }
+                    # The build of the project, as the static lane runs it but without the kit's .targets: it never deploys.
+                    $buildEnv = @{ PaperDeployDebug = 'false'; MSBUILDDISABLENODEREUSE = '1'; CustomAfterMicrosoftCommonTargets = '' }
+                    $bd = Invoke-ReviewWithEnvironment $buildEnv { Invoke-Native $script:PowerShellExe @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $paperflow 'paperflow.ps1'), 'build', '-Repo', $root, '-Full') }
+                    $logLines += @($bd.Lines)
+                    if ($bd.Code -ne 0) {
+                        Write-Text $scanLog ((@(Protect-PaperReviewSecret -Lines $logLines -Secret $secret) -join "`r`n") + "`r`n")
+                        & $say "review: sonarqube not verifiable - build failed (exit $($bd.Code))"
+                        foreach ($l in @($bd.Lines | Select-Object -Last 5)) { & $say "  $l" }
+                        return 4
+                    }
+                    $e = Invoke-ReviewWithEnvironment $scanEnv { Invoke-Native 'dotnet-sonarscanner' @('end') }
+                    $logLines += @($e.Lines)
                     Write-Text $scanLog ((@(Protect-PaperReviewSecret -Lines $logLines -Secret $secret) -join "`r`n") + "`r`n")
-                    & $say "review: sonarqube not verifiable - build failed (exit $($bd.Code))"
-                    foreach ($l in @($bd.Lines | Select-Object -Last 5)) { & $say "  $l" }
-                    return 4
-                }
-                $e = Invoke-ReviewWithEnvironment $scanEnv { Invoke-Native 'dotnet-sonarscanner' @('end') }
-                $logLines += @($e.Lines)
-                Write-Text $scanLog ((@(Protect-PaperReviewSecret -Lines $logLines -Secret $secret) -join "`r`n") + "`r`n")
-                if ($e.Code -ne 0) {
-                    & $say "review: sonarqube not verifiable - the scanner could not end (exit $($e.Code))"
-                    foreach ($l in @($e.Lines | Select-Object -Last 5)) { & $say "  $l" }
-                    return 4
+                    if ($e.Code -ne 0) {
+                        & $say "review: sonarqube not verifiable - the scanner could not end (exit $($e.Code))"
+                        foreach ($l in @($e.Lines | Select-Object -Last 5)) { & $say "  $l" }
+                        return 4
+                    }
                 }
             }
             finally { Set-Location -LiteralPath $savedCwd }
             # --- wait for the server to finish the analysis
-            $reportTask = Join-Path $root '.sonarqube\out\.sonar\report-task.txt'
             $ceId = ''
             if (Test-Path -LiteralPath $reportTask -PathType Leaf) {
                 $m = [regex]::Match([IO.File]::ReadAllText($reportTask), '(?m)^ceTaskId=(\S+)')
                 if ($m.Success) { $ceId = $m.Groups[1].Value }
             }
-            if (-not $ceId) { & $say 'review: sonarqube not verifiable - the scanner left no ceTaskId in .sonarqube/out/.sonar/report-task.txt'; return 4 }
+            if (-not $ceId) {
+                & $say $(if ($isCli) { Format-PaperReviewSonarNoTaskLine -Path $reportTaskRel } else { "review: sonarqube not verifiable - the scanner left no ceTaskId in $reportTaskRel" })
+                return 4
+            }
             $clock = [Diagnostics.Stopwatch]::StartNew()
             while ($true) {
                 $ce = Invoke-ReviewSonarRest $s.Url "/api/ce/task?id=$([Uri]::EscapeDataString($ceId))" $s.Token

@@ -874,11 +874,13 @@ function Format-PaperReviewComplexity {
     .SYNOPSIS
     The "## Complexity" section of the architecture report (E): the intro with the limits and what was not listed, then the three tables
     (members, files, expressions - the first Top rows of each, "top N of M") and the results whose numbers could not be read. Nothing
-    over a limit: the section says so and never "clean". NotVerifiable: the section says why and has no table.
+    over a limit: the section says so and never "clean". NotVerifiable: the section says why and has no table. Source (F252): a line, when the table comes from the
+    SonarQube issues and not from a build, right after the heading.
     #>
-    param($Complexity, [int] $Top, [string] $ReportDir, [string] $RepoRoot = '', [string] $NotVerifiable = '')
+    param($Complexity, [int] $Top, [string] $ReportDir, [string] $RepoRoot = '', [string] $NotVerifiable = '', [string] $Source = '')
     $out = @('## Complexity (Sonar S3776, S1541, S1067)', '')
     if ($NotVerifiable) { return @($out + "Not verifiable: $NotVerifiable.") }
+    if ($Source) { $out += @($Source, '') }
     $lim = $Complexity.Limits
     $defaults = $script:PaperReviewComplexityDefaults
     $changed = $false
