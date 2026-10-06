@@ -1,5 +1,5 @@
-# The shared body of the two tool-event dispatchers, pre-tool.ps1 and post-tool.ps1 (ADR-0021). Dot-sourced
-# by them after they set $DispatchEvent; declares no param() block.
+# The shared body of the tool-event and Stop dispatchers - pre-tool.ps1, post-tool.ps1 and stop.ps1
+# (ADR-0021). Dot-sourced by them after they set $DispatchEvent; declares no param() block.
 #
 # Reads stdin once, hands it to every script of the event's row in hook-dispatch-plan.ps1 through
 # $global:PaperHookRaw (Read-PaperHookPayload takes it from there), and runs each script with & in this

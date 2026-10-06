@@ -1,6 +1,6 @@
 ---
 name: adr
-description: Record an architecture decision as an ADR in the project's decision log - only when it is hard to reverse, surprising without context and a real trade-off - numbered next in the log, never edited once accepted but superseded by a new ADR, and pointed to from the project's CLAUDE.md where the rule applies. Use when a task settles where layers, projects or module boundaries go, when a reviewer or a reader would "fix" something deliberate, or when an accepted decision is being changed.
+description: Use when a task settles something hard to reverse, surprising without context and a real trade-off - where layers, projects or module boundaries go, something a reviewer would "fix" that is deliberate - or when an accepted decision is being changed; records it as an ADR in the project's decision log.
 ---
 
 # ADR — quyết định kiến trúc có ghi chép

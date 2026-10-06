@@ -34,6 +34,7 @@
     ],
     "PreToolUse": [
       {
+        "matcher": "Bash|Edit|Write",
         "hooks": [
           {
             "type": "command",
@@ -45,6 +46,7 @@
     ],
     "PostToolUse": [
       {
+        "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
@@ -59,28 +61,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/code-map-nag.ps1\"",
-            "timeout": 10
-          },
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/plan-nag.ps1\"",
-            "timeout": 10
-          },
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/link-nag.ps1\"",
-            "timeout": 10
-          },
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/verify-on-stop.ps1\"",
+            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/stop.ps1\"",
             "timeout": 600
-          },
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \".claude/hooks/harness-event.ps1\"",
-            "timeout": 10
           }
         ]
       }

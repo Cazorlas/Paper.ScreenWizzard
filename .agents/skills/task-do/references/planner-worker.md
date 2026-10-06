@@ -22,11 +22,11 @@ Không có dòng baseline thì không viết test: hỏi task `live` đo trướ
 
 ## Worker theo lane
 
-Lane `unit`: Codex qua collab - session chính restore trước (.NET `dotnet restore`, Python `uv sync`) trong thư mục làm việc của lần cộng tác, lệnh test của brief chạy không mạng (.NET `--no-restore`); Codex hết usage thì Claude Sonnet làm thay; máy không có Codex hay collab: `lane-logic`.
+Mọi lane - `unit`, `ui`, `e2e`, `live`, `model` - giao worker theo thứ tự: Codex qua collab, rồi DeepSeek (dsh), rồi Claude Sonnet (`lane-ui`, `lane-live`, `lane-model`, hay `lane-logic` khi máy không có Codex hoặc collab); bỏ qua worker không chạy được phép kiểm của task. Codex và DeepSeek không có màn hình, host đang chạy hay MCP, Codex không có mạng: task cần những thứ đó đi tới worker kế tiếp làm được. Session chính không tự làm task: nó phân tích, giao, kiểm và chịu trách nhiệm cuối.
 
-Lane `ui`, `e2e`, `live`, `model`: Claude Sonnet - `lane-ui`, `lane-live`, `lane-model`.
+Trước lượt Codex, session chính restore trước (.NET `dotnet restore`, Python `uv sync`) trong thư mục làm việc của lần cộng tác; lệnh test của brief chạy không mạng (.NET `--no-restore`).
 
-Đo cần mạng (Jev, OpenRouter, host `ai`) không giao Codex: Claude hay session chính.
+Đo cần mạng (Jev, OpenRouter, host `ai`) không giao Codex: DeepSeek hay Claude Sonnet.
 
 ## Planner duyệt và câu hỏi
 

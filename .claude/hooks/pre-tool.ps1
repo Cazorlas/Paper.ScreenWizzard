@@ -1,6 +1,6 @@
-# PreToolUse, every tool: the one process that runs every PreToolUse script the tool needs - the harness
-# recorder, the shell guards (destructive, build, test) for Bash and PowerShell, live-first for a file edit.
-# The table is hook-dispatch-plan.ps1; the body is hook-dispatch.ps1. Why one process: ADR-0021.
+# PreToolUse, matcher Bash|PowerShell|Edit|Write: the one process that runs every PreToolUse script the
+# tool needs - the shell guards (destructive, build, test) for Bash and PowerShell, live-first for a file
+# edit. The table is hook-dispatch-plan.ps1; the body is hook-dispatch.ps1. Why one process: ADR-0021.
 #
 # ASCII only: PowerShell 5.1 reads a .ps1 without a BOM as ANSI.
 
