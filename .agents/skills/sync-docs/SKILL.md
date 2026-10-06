@@ -1,6 +1,6 @@
 ---
 name: sync-docs
-description: End-of-session documentation sync - make each changed feature's SPEC.md and every changed folder's CODEMAP.md match the code changed this session, check open plans with the gate, flag SPEC.md drafts or change markers left behind by finished plans, check the bug ledger, present pending lessons (chờ xét) to the project owner and write only the accepted ones into their home, prune the red baseline, and write a handover when work remains. Use when the user types /sync-docs or before closing a session.
+description: Use when the user types /sync-docs or before closing a session, to bring the changed features' SPEC.md and CODEMAP.md files, open plans, the bug ledger and pending lessons in line with the code changed this session.
 ---
 
 # /sync-docs
