@@ -90,6 +90,10 @@ Chạy từ bản checkout chính, không từ trong worktree.
   nhánh và số commit. Worktree còn thay đổi chưa commit → từ chối.
 - `-Discard`: bỏ hết — chỉ khi người dùng xác nhận bỏ.
 
+Việc xong là dọn ngay, kể cả việc chỉ làm ở local: worktree, nhánh local, nhánh remote nếu đã push, rồi
+`git worktree prune`; kiểm trước khi xoá. Worktree hay nhánh không do mình tạo, hay còn việc chưa gộp, chưa
+commit: liệt kê cho chủ dự án, không xoá.
+
 ## 6. Báo cáo
 
 Nhánh và đường dẫn worktree, dòng số test của baseline, kết quả `/task-verify`, và kết quả `done`: đã gộp

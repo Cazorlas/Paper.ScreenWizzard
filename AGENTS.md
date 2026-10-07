@@ -13,7 +13,7 @@ Read in this order:
 
 Lifecycle: task-spec (SPEC.md, brief, plan) -> stop for the user's approval -> task-do -> task-verify, end to end in paperflow; each step is `.agents/skills/<name>/SKILL.md`, and `.claude/paperflow/paperflow.ps1 tasks -Path <plan>` is the gate.
 
-Every task worktree must be attached to the checkout that created it as its immediate parent. Follow task-worktree to record and verify that parent; in Orca pass an explicit --parent-worktree and read it back. Use --no-parent only when the user explicitly requests independent work.
+Every task worktree must be attached to the checkout that created it as its immediate parent. Follow task-worktree to record and verify that parent; in Orca pass an explicit --parent-worktree and read it back. Use --no-parent only when the user explicitly requests independent work. When the work ends, check, then remove the worktree, its local branch and its remote branch if pushed, and run `git worktree prune`; list for the owner anything you did not create or that holds unmerged or uncommitted work.
 
 Memory is Claude Code's memory of this repository, shared: Claude and Codex read and write the same folder, and there is no second store - no memory or notes file in the repository. The session-start hook hands you the folder, its index (MEMORY.md) and the rules for writing it. If that block did not reach you, run `powershell -NoProfile -ExecutionPolicy Bypass -File .claude/paperflow/paperflow.ps1 memory` and follow what it prints.
 
