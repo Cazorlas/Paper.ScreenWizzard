@@ -40,6 +40,7 @@ Viết yêu cầu, brief và plan — theo đúng thứ tự đó — rồi kế
 5. **Viết brief `<featureDocs>/<slug>/YYYY-MM-DD-<task>.md` từ `spec/brief-template.md`**: ai hỏi gì, vì
    sao, tài liệu đi kèm, mục nào của `SPEC.md` đổi (và file phần nào, khi yêu cầu đã tách), model và id được đụng tới. Không tên code, không task.
    Với màn hình web mới, planner có thể chạy `/impeccable shape` với chủ dự án trước wireframe của plan.
+   Khi plan còn câu hỏi "trông thế nào" hay "logic này đúng chưa" mà bàn không chốt được, chạy `/prototype` với chủ dự án trước wireframe và hợp đồng test.
 6. **Viết plan `<featureDocs>/<slug>/YYYY-MM-DD-<task>-plan.md` từ `spec/plan-template.md`**: Context,
    Rules that apply, Decisions, wireframe khi có giao diện (plan model: khối "Plan model" của khuôn), rồi
    Tasks. Plan được phép nêu tên code.
