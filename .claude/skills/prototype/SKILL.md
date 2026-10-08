@@ -31,7 +31,15 @@ The two branches produce very different artifacts, so getting this wrong wastes 
 Use this when discussion cannot settle "What should this look like?" or "Is this logic right?".
 Skip it when the task is clear, an existing project pattern can be copied, or only one approach is reasonable.
 Keep it on a separate `prototype/<task>` branch, apart from the task branch; never merge it.
+Start from one written question the prototype must answer; no question, no prototype.
+At most three variants, with mock data, runnable outside the host (a WebView2 page in a browser with a fake bridge,
+as the host's webview skill says); a collab worker may build them unattended (overnight). Shoot every variant.
 For WPF/WebView2 UI, show variants with mock data in one test window or page and switch them with a small bar.
 For logic, use a single HTML file.
-The project owner chooses the variant; turn that choice into the plan's wireframe and test contract, and record the prototype branch in the plan.
-Rewrite production code to follow the project's architecture; do not copy prototype code.
+The project owner chooses the variant, or mixes them, in at most two rounds of comments; after the second the owner decides.
+Turn that choice into the plan's wireframe and test contract: the shots as reference pictures, the demo's inputs and
+results as rows, plus the cases the demo skipped (error, empty, large data, cancel, each host year) - a demo only
+shows the happy path. Record the prototype branch in the plan.
+Rewrite production code to follow the project's architecture; do not copy prototype code. Before done, shoot the
+real screen beside the reference pictures and run it once on the real host.
+Note in the plan's Decisions how many variants and rounds it took and the hours from question to choice.
