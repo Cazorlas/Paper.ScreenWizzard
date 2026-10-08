@@ -761,6 +761,10 @@ function Invoke-ReviewPrompt {
     if ($null -ne $static) { $groups = @($static.Groups); if ($null -ne $static.PSObject.Properties['Hints']) { $hints = @($static.Hints | Where-Object { $null -ne $_ }) } }
     $r = Get-PaperReviewFilesList -Plan $plan -Lane $Lane -Batch $Batch -Run $Run -Retry $Retry.IsPresent -RetryAnswer $answer -StaticGroups $groups -StaticHints $hints
     if ($r.ExitCode -ne 0) { foreach ($line in @($r.Lines)) { Say $line }; exit $r.ExitCode }
+    $shotDir = Join-Path $dir 'screens'
+    $shots = @()
+    if (Test-Path -LiteralPath $shotDir -PathType Container) { $shots = @(Get-ChildItem -LiteralPath $shotDir -File | ForEach-Object { $_.FullName }) }
+    $fileLines = @($r.Lines) + @(Get-PaperReviewRunScreenLines -Lane $Lane -Paths $shots)
     $all = @(Get-PaperReviewPlanBatches $plan $Lane)
     $paths = @($all[$Batch - 1].Files)
     $prefix = Get-PaperReviewPrefix $Lane $Batch $all.Count
@@ -772,7 +776,7 @@ function Invoke-ReviewPrompt {
     }
     $instructions = @(Get-ReviewInstructionPaths -LaneName $Lane -Files $paths | ForEach-Object { [pscustomobject]@{ Path = $_; Text = [IO.File]::ReadAllText($_, [Text.Encoding]::UTF8) } })
     $findingsFile = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'findings.md'))
-    $text = New-PaperReviewLanePrompt -Template (Get-ReviewPromptTemplate 'Lane prompt') -Lane $Lane -Batch $Batch -BatchCount $all.Count -Run $Run -Prefix $prefix -FilesLines @($r.Lines) `
+    $text = New-PaperReviewLanePrompt -Template (Get-ReviewPromptTemplate 'Lane prompt') -Lane $Lane -Batch $Batch -BatchCount $all.Count -Run $Run -Prefix $prefix -FilesLines $fileLines `
         -External $external -Repo $repoText -Retry $Retry.IsPresent -RetryErrors $errors -FindingsPath $findingsFile -FindingsText ([IO.File]::ReadAllText($findingsFile, [Text.Encoding]::UTF8)) -Instructions $instructions
     $name = $tag; $retryText = ''
     if ($Retry) { $name = "$tag.2"; $retryText = ' - retry' }
@@ -1071,7 +1075,7 @@ function Invoke-ReviewReport {
     else { $reportDir = Get-ReviewFullPath $config.Report; $reportArg = $config.Report }
     $existing = @()
     if (Test-Path -LiteralPath $reportDir -PathType Container) { $existing = @(Get-ChildItem -LiteralPath $reportDir -File | ForEach-Object { $_.Name }) }
-    $rep = New-PaperReviewReport -Plan $plan -Check $c -VerdictLines $verdictLines -Static $static -Run $Run -Date (Get-Date).ToString('yyyy-MM-dd') -ReportDir $reportArg -Existing $existing -Records $laneRecords -VerdictRecords (Read-ReviewRecords $dir 'verdicts') -ComplexityTop ([int] $config.ComplexityTop)
+    $rep = New-PaperReviewReport -Plan $plan -Check $c -VerdictLines $verdictLines -Static $static -Run $Run -Date (Get-Date).ToString('yyyy-MM-dd') -ReportDir $reportArg -Existing $existing -Records $laneRecords -VerdictRecords (Read-ReviewRecords $dir 'verdicts') -ComplexityTop ([int] $config.ComplexityTop) -RunScreens @(Get-ChildItem -LiteralPath (Join-Path $dir 'screens') -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '\.(png|jpe?g|webp)$' } | ForEach-Object { $_.FullName })
     Write-Text (Join-Path $reportDir $rep.Name) $rep.Text
     foreach ($line in @($rep.Lines)) { Say $line }
     exit 0

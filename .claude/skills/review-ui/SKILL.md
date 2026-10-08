@@ -31,7 +31,7 @@ finding. `seen N/N` is coverage information; a valid WHERE outside the list is m
 ## Visual pass before the lane
 
 After approval and before starting the lane, the main session captures the screens in scope when the host
-can run: desktop with `drive-wpf`, web with Playwright MCP. Save the captures in the run folder and put
+can run: desktop with `drive-wpf`, web with Playwright MCP, a video project with its still command (`remotion still`). Save the captures in the run folder and put
 their paths in `screens` for the lane, alongside the screenshots the profile names. Open the captures
 and check that each shows the intended screen and current state.
 
@@ -39,7 +39,8 @@ When capture cannot run, the report says `visual pass: not run - <reason>` and i
 code-only review. Reading UI files does not prove how a screen renders.
 
 For every screen with a screenshot, the lane returns one finding of severity `info`, RULE `overall`:
-its first impression and the order in which to fix the screen's issues, with WHERE `<screenshot path>:1`.
+its first impression and the order in which to fix the screen's issues. WHERE is the source file that draws the screen (`path:line`);
+the screenshot is named in WHY. Save captures in `<run>/screens/`: `review.ps1 prompt` lists them on the lane's `screens:` line.
 
 ## What the lane reads with
 
