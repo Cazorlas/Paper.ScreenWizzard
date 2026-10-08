@@ -294,6 +294,17 @@ function Test-PaperLockOnlyBuildFailure([string[]] $Lines) {
     return $true
 }
 
+# Stop builds by default; a test suite runs only when the profile explicitly asks for it.
+function Get-PaperStopVerbs {
+    param($Profile)
+
+    'build'
+    if ($null -ne $Profile -and $null -ne $Profile['verify']) {
+        $onStopTests = $Profile['verify']['onStopTests']
+        if ($onStopTests -is [bool] -and $onStopTests) { 'test' }
+    }
+}
+
 function Get-PaperStopVerdict {
     <#
     .SYNOPSIS

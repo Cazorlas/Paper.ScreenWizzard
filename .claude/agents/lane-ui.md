@@ -1,6 +1,6 @@
 ---
 name: lane-ui
-description: Worker for the UI lane of an approved plan - only the ui or e2e task ids it is handed, only files inside their files globs, windows, dialogs, pages and view models built on MOCK data, write tests from the contract table in a red turn or make locked tests green in a green turn, every screenshot opened and judged against the plan's wireframe, with no host running. Runs beside the logic lane but never beside lane-live, because both need the desktop. Returns one evidence row per task and never ticks the plan, commits or pushes.
+description: Worker for the UI lane of an approved plan - only the ui or e2e task ids it is handed, only files inside their files globs, windows, dialogs, pages and view models built on MOCK data, write tests from the contract table in a red turn or make locked tests green in a green turn, every screenshot opened and judged against the plan's wireframe, with no host running. Runs beside the logic lane but never beside lane-live, because both need the desktop. Returns one evidence row per task, commits once on its own worktree branch to hand the work back, and never ticks the plan or pushes.
 model: sonnet
 isolation: worktree
 tools: Read, Grep, Glob, Edit, Write, Bash, PowerShell
@@ -11,7 +11,7 @@ session owns the plan, `SPEC.md`, the ticks, any host session and every git comm
 
 ## What you were given
 
-- **A brief** — the output of `paperflow.ps1 brief` (ADR-0023): your task lines, each task's `{files:}`, the
+- **A brief** — the output of `paperflow.ps1 brief` (paper-kit ADR-0023): your task lines, each task's `{files:}`, the
   `F<n>` rows of `SPEC.md` the tasks name, the wireframe for a ui task, the baseline rows for a `[red]` task,
   and the `Given ... ->` lines the main session chose. **Work from it: do not read the whole plan or the whole
   `SPEC.md`.** A line you need that is not there: search for it by its id (`T3`, `F4`) and read that line
@@ -76,7 +76,7 @@ main session builds. Without it, two lanes of one group would write the same fol
 The price is that nothing comes back on its own. **When your last task is green and every screenshot has
 been looked at, commit everything you changed on your worktree's branch and report the branch name and the
 commit.** One commit is enough; the message names the task ids. Then the main session merges your branch
-before it runs the one full build and suite of the group.
+before it runs the one build and the task's checks plus tests fed by touched files.
 
 Screenshots are part of the work: commit them too, and give their paths in your report so the main session
 can open the ones you judged.

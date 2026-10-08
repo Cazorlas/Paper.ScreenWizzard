@@ -39,7 +39,7 @@ function Format-PaperReviewLaneList {
     foreach ($r in @($run | Where-Object { $_.Name -ne 'static' })) {
         $i++
         $line = "$i. $($r.Name) - $(Format-PaperReviewNumber $r.Tokens) tokens - $($r.Files) file(s), $($r.Agents) agent(s)"
-        if ($Executor -eq 'collab') { $line = "$i. $($r.Name) - $(Format-PaperReviewNumber $r.Tokens) tokens - $($r.Files) file(s), $($r.Agents) turn(s) on codex" }
+        if ($Executor -eq 'collab' -and (Get-PaperReviewLaneExecutor -Lane $r.Name -Base $Executor) -eq 'collab') { $line = "$i. $($r.Name) - $(Format-PaperReviewNumber $r.Tokens) tokens - $($r.Files) file(s), $($r.Agents) turn(s) on codex" }
         if ($r.Reason) { $line += ", $($r.Reason)" }
         $out += $line
     }

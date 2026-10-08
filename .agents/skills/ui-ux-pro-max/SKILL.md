@@ -12,9 +12,7 @@ Searchable local UI/UX guidance: 79 searchable styles (50 active), 192 product p
 
 ## When to Apply
 
-Use this Skill when the task involves **UI structure, visual design decisions, interaction patterns, or user experience quality control**: designing new pages, creating/refactoring UI components, choosing color/typography/spacing/layout systems, reviewing UI for UX/accessibility/consistency, implementing navigation/animation/responsive behavior, or improving perceived quality and usability.
-
-Skip it for pure backend logic, API/database design, non-visual performance work, infrastructure/DevOps, or non-visual scripts — unless the task changes how something **looks, feels, moves, or is interacted with**.
+Only when the user asks for it by name, or `/review-ui` quotes one search row in a finding. While UI is being built, the project's UI style skill and the plan's wireframe decide; skip it for anything that does not change how something looks or is interacted with.
 
 ## Rule Categories by Priority
 

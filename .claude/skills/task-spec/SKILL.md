@@ -88,7 +88,7 @@ Khi người dùng đồng ý, ghi vào dòng trạng thái **của plan**:
 
 `**Trạng thái:** đã duyệt <ngày> ("lời họ nói")`
 
-Rồi **mỗi plan một phiên** (ADR-0023, luật đủ ở skill `paperflow` mục 2): in liên kết tới plan và hai lệnh
+Rồi **mỗi plan một phiên** (ADR-0023 của kit, luật đủ ở skill `paperflow` mục 2): in liên kết tới plan và hai lệnh
 `/clear` rồi `/task-do <đường dẫn plan>` cho phiên mới, và kết thúc lượt. Người dùng đã bảo "làm luôn" thì đi
 tiếp `/task-do <plan>` ngay, ghi một dòng Decisions. Từ đây brief đóng băng. Yêu cầu đổi sau khi duyệt thì sửa `SPEC.md`
 (dấu `chờ kiểm`), thêm dòng `Spec bổ sung <ngày>` vào Decisions của plan, đặt trạng thái về `chờ duyệt`

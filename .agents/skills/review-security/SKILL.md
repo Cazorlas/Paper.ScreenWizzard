@@ -26,10 +26,16 @@ plugin, under its `kit:` folder) with `-Kind security`. Scope words are those of
 
 No lane question: one lane reads, the static lane is free. The estimate is still the stop before paid reading.
 
+With the collab base, security stays with Codex through collab. Batches keep files together by their nearest
+ancestor with SPEC.md or CODEMAP.md, splitting only oversized units. Start from the list and read other
+repository files needed to trace a finding; read-only commands that write nothing may prove it. `seen N/N`
+is coverage information. A valid WHERE outside the list is marked `(ngoài lô)` in the report.
+
 - A finding is a place, an attacker-controlled INPUT and the rule it breaks; without an input it is a suspicion
   (INPUT `-`), never a bug ledger proposal.
 - Every vulnerability with an input is read again by the other model before it can become a proposal (the steps,
-  "Verify"). The static lane's critical and major vulnerabilities are verified the same way.
+  "Verify"). Give `WHERE <path:line>` as a starting point; the verifier independently traces and reproduces it.
+  The static lane's critical and major vulnerabilities are verified the same way.
 - The security lane's list ends with the vulnerabilities the analyzers already reported; it looks for what an analyzer
   cannot see.
 

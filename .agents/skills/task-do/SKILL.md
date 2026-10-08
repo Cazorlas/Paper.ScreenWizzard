@@ -130,7 +130,7 @@ nhóm sau chỉ giao khi mọi task của nhóm trước đã tick (F35) — m�
    theo bảng trên, chạy nền. Prompt của nó là output của `.claude/paperflow/paperflow.ps1 brief -Path <plan> -Task <mã>`
    (dòng task, `{files:}`, dòng `F<n>` của `SPEC.md`, wireframe cho `ui`, dòng `baseline` cho `[red]`) cộng
    đúng các dòng `Cho … →` mà task phủ — **không** gửi đường dẫn để lane tự đọc cả plan hay cả `SPEC.md`
-   (ADR-0023: lane tự đọc là thứ đẩy nó tới 200–300k). Lane trả `not verifiable (brief-lacks: <dòng>)` (F28) thì
+   (ADR-0023 của kit: lane tự đọc là thứ đẩy nó tới 200–300k). Lane trả `not verifiable (brief-lacks: <dòng>)` (F28) thì
    bổ sung đúng dòng đó rồi giao lại. Lane agent chỉ sửa file trong các glob đó, không push, không mở hay tắt host; lane `unit` và
    lane `ui` commit **một lần** trên nhánh worktree của chúng để trả việc về (bước 4).
 2. **Nối tiếp, không song song:** task ghi `(sau T<n>)` không giao khi `T<n>` chưa `pass` (F35); lane `ui` và lane `live` không

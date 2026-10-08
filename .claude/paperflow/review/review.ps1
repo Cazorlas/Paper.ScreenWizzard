@@ -557,15 +557,24 @@ function Get-ReviewPlanParts($all, [string[]] $allPaths, $sel, [string[]] $OnlyL
     $maxTokens = [int] $config.BatchTokens
     if ($exec.Kind -eq 'collab') { $maxTokens = [int] $config.CodexBatchTokens }
     if ($exec.Kind -eq 'solo') { $maxTokens = [int]::MaxValue }
-    $estimate = Get-PaperReviewEstimate -Lanes $lanes.Lanes -LaneFiles $laneFiles -Config $config -StaticOnly:$StaticOnlyRun -Rules $ruleObjs -Executor $exec.Kind
-    $batches = @(Get-PaperReviewBatchList -Lanes $lanes.Lanes -LaneFiles $laneFiles -MaxTokens $maxTokens -Rules $ruleObjs)
+    $specPaths = @($allPaths | Where-Object { $_ -match '(?:^|/)SPEC\.md$' })
+    $unitRoots = @($allPaths | Where-Object { $_ -match '(?:^|/)(SPEC|CODEMAP)\.md$' } | ForEach-Object {
+        $p = ConvertTo-PaperReviewRelPath $_
+        $slash = $p.LastIndexOf('/')
+        if ($slash -lt 0) { '' } else { $p.Substring(0, $slash) }
+    } | Select-Object -Unique)
+    $estimate = Get-PaperReviewEstimate -Lanes $lanes.Lanes -LaneFiles $laneFiles -Config $config -StaticOnly:$StaticOnlyRun -Rules $ruleObjs -Executor $exec.Kind -UnitRoots $unitRoots
+    $batches = @(Get-PaperReviewBatchList -Lanes $lanes.Lanes -LaneFiles $laneFiles -MaxTokens $maxTokens -Rules $ruleObjs -UnitRoots $unitRoots -Specs $specPaths -Executor $exec.Kind -SubagentMaxTokens ([int] $config.BatchTokens))
     $collab = $null
     if ($exec.Kind -eq 'collab') {
         $modelsFile = Join-Path (Get-ReviewCollabDir) 'models.json'
         $modelsText = ''
         if (Test-Path -LiteralPath $modelsFile -PathType Leaf) { try { $modelsText = [IO.File]::ReadAllText($modelsFile, [Text.Encoding]::UTF8) } catch { $modelsText = '' } }
         $caps = Get-PaperReviewCollabCaps -ModelsText $modelsText
-        $collab = [pscustomobject]@{ CollabScript = $exec.CollabScript; Parallel = $caps.Parallel; GapSec = $caps.GapSec; TurnTokens = @($estimate.TurnTokens); Root = $root; VerifyCap = [int] $config.VerifyCap }
+        $collab = [pscustomobject]@{ CollabScript = $exec.CollabScript; Parallel = $caps.Parallel; GapSec = $caps.GapSec; TurnTokens = @($estimate.TurnTokens); LaneExecutors = @($lanes.Lanes | Where-Object { $_.State -eq 'run' -and $_.Name -ne 'static' } | ForEach-Object {
+            $kind = Get-PaperReviewLaneExecutor -Lane $_.Name -Base $exec.Kind
+            [pscustomobject]@{ Lane = $_.Name; Reader = $(if ($kind -eq 'subagents') { 'claude subagents' } else { 'codex via collab' }) }
+        }); Root = $root; VerifyCap = [int] $config.VerifyCap }
     }
     $solo = $null
     if ($exec.Kind -eq 'solo') {
@@ -773,6 +782,8 @@ function Invoke-ReviewPrompt {
     Say "prompt: $promptFile"
     Say "answer: $(Join-Path $dir "lanes\$name.md")"
     Say "task: $name"
+    $laneExecutor = Get-PaperReviewLaneExecutor -Lane $Lane -Base "$($plan.Executor)"
+    Say "executor: $laneExecutor"
     exit 0
 }
 

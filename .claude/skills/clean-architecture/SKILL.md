@@ -8,9 +8,8 @@ description: Use when adding or refactoring a feature's code, when a decision is
 **Mục tiêu một câu:** mọi *quyết định* của một tính năng chạy được trong unit test **không cần host** —
 không ứng dụng host đang chạy, không web server, không LLM thật.
 
-Hình dạng này đã được viết ba lần ở ba dự án, mỗi lần gắn tên project riêng (một ADR, một hook
-`platform-free-layers`, một agent reviewer). Ở đây nó viết một lần; cái gì bị cấm ở đâu thì
-`.claude/paper.profile.json` → `architecture` khai.
+Hình dạng dưới đây chung cho mọi dự án; cái gì bị cấm ở đâu thì `.claude/paper.profile.json` →
+`architecture` khai.
 
 ## Từ vựng — bốn từ, dùng đúng nghĩa
 

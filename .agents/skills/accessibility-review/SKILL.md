@@ -33,7 +33,7 @@ Audit for accessibility: @$1
 - **2.1.1** All functionality available via keyboard
 - **2.4.3** Logical focus order
 - **2.4.7** Visible focus indicator
-- **2.5.5** Touch target >= 44x44 CSS pixels
+- **2.5.5 (AAA advisory)** Touch target >= 44x44 CSS pixels; report separately from AA failures
 
 ### Understandable
 - **3.2.1** Predictable on focus (no unexpected changes)

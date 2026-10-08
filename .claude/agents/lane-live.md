@@ -11,7 +11,7 @@ decision that needs the user: starting, closing or restarting a host, saving the
 
 ## What you were given
 
-- **A brief** — the output of `paperflow.ps1 brief` (ADR-0023): your task lines, each task's `{files:}`, the
+- **A brief** — the output of `paperflow.ps1 brief` (paper-kit ADR-0023): your task lines, each task's `{files:}`, the
   `F<n>` rows of `SPEC.md` the tasks name, the wireframe for a ui task, the baseline rows for a `[red]` task,
   and the `Given ... ->` lines the main session chose. **Work from it: do not read the whole plan or the whole
   `SPEC.md`.** A line you need that is not there: search for it by its id (`T3`, `F4`) and read that line

@@ -45,7 +45,13 @@ plugin, under its `kit:` folder); this page says only what is particular to this
    the project's ADRs and profile (on an external repository: that repository's own rule files, the `rules:` line); smell
    - [smell](references/smell.md). A finding cites the rule it breaks - an ADR line, a profile rule, the repository's own
    rule file - and is a proposal for `/task-spec`, never a bug ledger entry. Who reads - you alone, Codex through collab,
-   or subagents - is the estimate's `lanes run:` line.
+   or subagents - is the estimate's `lanes run:` line. With the collab base, architecture uses Claude subagents;
+   smell stays with Codex through collab. Batches keep related files together by the nearest ancestor with
+   SPEC.md or CODEMAP.md; only a unit larger than the batch limit is split.
+
+Start from the batch list. Read any repository file needed to trace a call, another implementation or a test,
+and run read-only commands that write nothing to prove a finding. `seen N/N` reports coverage of the list.
+A valid WHERE outside that list remains a finding, marked `(ngoài lô)` in the report.
 
 ## The complexity table
 
@@ -73,7 +79,7 @@ token on a command line. Mechanics:
 ## Never
 
 - Fix code, restructure, write the bug ledger, commit, or change the project's configuration.
-- Start a reading lane before the user saw the estimate and agreed (`approve`), or hand a lane a file that is not in its list.
+- Start a reading lane before the user saw the estimate and agreed (`approve`).
 - Report an architecture finding without the rule it breaks, or a lane that did not run as clean.
 - Show a complexity table from a build that was not verifiable.
 - Run on another repository without `-Out`, or write or guess its build line.

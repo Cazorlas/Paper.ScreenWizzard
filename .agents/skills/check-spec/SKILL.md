@@ -74,6 +74,3 @@ checks it. The plan beside it names code on purpose and is never checked.
 A spec written in plain words that describes the implementation anyway — a data structure, a layout, a
 step of the algorithm. Only a reader can see that; skill `spec` says what a spec does not contain, and
 `spec-backfill` is the session that reads a spec against its code.
-
-Ported from an earlier project's `check-spec` (see the kit's ADR 0004); only the search root
-changed, from one project's `docs/` to every `SPEC.md` in the repository.

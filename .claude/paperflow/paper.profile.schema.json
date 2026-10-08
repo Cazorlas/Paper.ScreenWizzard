@@ -389,12 +389,13 @@
       }
     },
     "verify": {
-      "description": "Read by verify-on-stop: which changed extensions trigger build + test at the end of a turn, and the configuration its build and test verbs name (what {config} in knownFailures resolves to). PAPER_SKIP_VERIFY=1 turns it off for one session.",
+      "description": "Read by verify-on-stop: which changed extensions trigger build at the end of a turn, whether tests also run, and the configuration its build and test verbs name (what {config} in knownFailures resolves to). PAPER_SKIP_VERIFY=1 turns it off for one session.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "watch": { "type": "array", "items": { "type": "string", "pattern": "^\\." } },
-        "configuration": { "type": "string", "minLength": 1 }
+        "configuration": { "type": "string", "minLength": 1 },
+        "onStopTests": { "description": "true: run the test verb after build at Stop. Default false: build only.", "type": "boolean" }
       }
     },
     "worktree": {

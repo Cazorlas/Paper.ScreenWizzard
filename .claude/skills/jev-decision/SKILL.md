@@ -11,7 +11,7 @@ là chữ, mỗi lần gọi mất khoảng 0.4–0.7 s qua OpenRouter (lần đ
 https://docs.typesafe.ai (`api.md`, `primitives/choice.md`, `models.md`) hoặc trong skill `typesafe:typesafe-ai`,
 **không** viết từ trí nhớ.
 
-Skill này là **kiến thức miền** (ADR-0009, ADR-0029): nó không giữ chặng nào của vòng đời. Việc có code đi theo
+Skill này là **kiến thức miền** (ADR-0009, ADR-0029 của kit): nó không giữ chặng nào của vòng đời. Việc có code đi theo
 `/task-spec` → `/task-do` như mọi việc khác; skill này nói câu hỏi gửi Jev trông thế nào, cái gì được rời máy, và
 đo thế nào.
 

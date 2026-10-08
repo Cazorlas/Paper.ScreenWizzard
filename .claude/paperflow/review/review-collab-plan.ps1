@@ -164,9 +164,19 @@ function Get-PaperReviewExecutorLines {
     $script1 = "$($Collab.CollabScript)"
     $n = [int] $Collab.Parallel; $g = [int] $Collab.GapSec
     $out = @("lanes run: codex via collab - $script1 - $n at once on this machine, Codex starts $g s apart; the Claude Sonnet worker takes a batch when Codex is out (up to $($script:PaperReviewClaudeTurnUsd) USD a batch)")
+    if ($null -ne $Collab.PSObject.Properties['LaneExecutors']) {
+        $out[0] += '; ' + (@($Collab.LaneExecutors | ForEach-Object { "$($_.Lane): $($_.Reader)" }) -join ', ')
+    }
     if ($Brief) { return $out }
     $tokens = @($Collab.TurnTokens | Where-Object { $null -ne $_ })
     $turns = $tokens.Count
+    # F352: every lane that runs went to Claude subagents - no Codex turn; collab opens only for verify, as for solo.
+    if ($turns -eq 0 -and $null -ne $Collab.PSObject.Properties['LaneExecutors']) {
+        $argV = { param($v) if (Get-Command ConvertTo-PaperReviewArg -ErrorAction SilentlyContinue) { return (ConvertTo-PaperReviewArg ([string] $v)) } else { return [string] $v } }
+        $lanesV = @($Collab.LaneExecutors | ForEach-Object { $_.Lane }) -join ', '
+        $budgetV = $script:PaperReviewClaudeTurnUsd * [int] $Collab.VerifyCap
+        return @("lanes run: codex via collab - $script1 - no Codex turn: $lanesV read by claude subagents (F352); collab opens only if check queues a finding", "collab-start: powershell -NoProfile -ExecutionPolicy Bypass -File $(& $argV $script1) start -A claude -B codex -Host claude -Repo $(& $argV $Collab.Root) -Slug $(& $argV "review-$Run") -ReadOnly -TimeoutSec 3600 -ClaudeTurnBudgetUsd $($script:PaperReviewClaudeTurnUsd) -SessionBudgetUsd $budgetV (only if check queues a finding)")
+    }
     $secs = @($tokens | ForEach-Object { Get-PaperReviewCodexTurnSec -Tokens ([long] $_) })
     $wall = Get-PaperReviewWallClock -Durations ([int[]] $secs) -Parallel $n -GapSec $g
     $mean = 0.0
@@ -344,7 +354,7 @@ function New-PaperReviewLanePrompt {
 function New-PaperReviewVerifyPrompt {
     <#
     .SYNOPSIS
-    The prompt of one reader (G.5): the RULE verbatim and the INPUT, never WHERE (a static finding only), WHY, FIX, the lane or who
+    The prompt of one reader (G.5): the RULE verbatim and the INPUT, WHERE as a starting point, never WHY, FIX, the lane or who
     found it, then the section of find-bug on how to verify. A static finding has no input: its rule id, title and link are the
     RULE line and WHERE starts the search.
     #>

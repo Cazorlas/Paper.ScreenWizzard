@@ -22,9 +22,8 @@ If you haven't completed Phase 1, you cannot propose fixes.
 Any technical issue: test failures, production bugs, unexpected behavior, performance problems, build
 failures, integration issues.
 
-**ESPECIALLY when** under time pressure, when "just one quick fix" seems obvious, when you've already
-tried several fixes, or when you don't fully understand the issue. **Don't skip** because it seems simple
-or because someone wants it fixed now - systematic is faster than thrashing.
+It applies just as much when a quick fix looks obvious, several fixes have already failed, or the issue
+is not fully understood: tracing the cause is faster than thrashing.
 
 ## Before anything in a live host: is the code you think is running, running?
 
@@ -103,7 +102,7 @@ If you catch yourself thinking:
 - **"One more fix attempt" (when already tried 2+)**
 - **Each fix reveals a new problem in a different place**
 
-**ALL of these mean: STOP. Return to Phase 1.** If 3+ fixes failed, question the architecture (Phase 4,
+Any of these means going back to Phase 1. If 3+ fixes failed, question the architecture (Phase 4,
 step 5). Tempted to argue your way past the process? Read `references/rationalizations.md` first - it
 also lists the phrases a human partner uses when you are guessing.
 

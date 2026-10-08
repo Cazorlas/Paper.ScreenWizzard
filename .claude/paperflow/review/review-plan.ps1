@@ -591,25 +591,59 @@ function Get-PaperReviewFileTokens($File) {
     return [long] [math]::Ceiling([double] $File.Bytes / $script:PaperReviewBytesPerToken)
 }
 
+# F352: under a collab base, the deep-reading lanes go to Claude subagents; security and smell stay with Codex.
+function Get-PaperReviewLaneExecutor {
+    param([string] $Lane, [string] $Base)
+    if ($Base -eq 'collab' -and $Lane -in @('bug', 'architecture', 'ui')) { return 'subagents' }
+    return $Base
+}
+
+function Get-PaperReviewUnitKey {
+    param([string] $Path, [string[]] $UnitRoots)
+    $pathKey = ConvertTo-PaperReviewRelPath $Path
+    $closest = $null
+    foreach ($root in @($UnitRoots)) {
+        $key = (ConvertTo-PaperReviewRelPath $root).TrimEnd('/')
+        if (($key -eq '' -or $pathKey.StartsWith("$key/", [StringComparison]::OrdinalIgnoreCase)) -and
+            ($null -eq $closest -or $key.Length -gt $closest.Length)) { $closest = $key }
+    }
+    if ($null -ne $closest) { return $closest }
+    $slash = $pathKey.LastIndexOf('/')
+    if ($slash -lt 0) { return '' }
+    return $pathKey.Substring(0, $slash)
+}
+
 function Split-PaperReviewBatches {
-    <#
-    .SYNOPSIS
-    The batches of one lane (table E): files by path, greedy; a file joins the current batch while the total
-    stays within MaxTokens, else opens a new one; a file over MaxTokens alone goes alone. An array of arrays.
-    #>
-    param($Files, [int] $MaxTokens)
-    $sorted = Sort-PaperReviewByKey @($Files | Where-Object { $null -ne $_ }) { param($f) "$($f.Path)" }
-    $batches = @()
-    $current = @()
-    $sum = 0
-    foreach ($f in $sorted) {
-        $t = Get-PaperReviewFileTokens $f
-        if ($current.Count -gt 0 -and ($sum + $t) -gt $MaxTokens) {
-            $batches += , @($current)
-            $current = @(); $sum = 0
+    # Keep a unit together when it fits the cap; split oversized units greedily by path.
+    param($Files, [int] $MaxTokens, [string[]] $UnitRoots)
+    $units = @{}
+    foreach ($f in @($Files | Where-Object { $null -ne $_ })) {
+        $key = Get-PaperReviewUnitKey -Path "$($f.Path)" -UnitRoots $UnitRoots
+        if (-not $units.ContainsKey($key)) { $units[$key] = @() }
+        $units[$key] += $f
+    }
+    # Order units by their first file path, including a containing folder's direct files.
+    $orderedUnits = Sort-PaperReviewByKey @($units.Keys) {
+        param($key)
+        $orderedFiles = Sort-PaperReviewByKey $units[$key] { param($f) "$($f.Path)" }
+        return "$($orderedFiles[0].Path)"
+    }
+    $keys = @($orderedUnits)
+    $batches = @(); $current = @(); $sum = [long] 0
+    foreach ($key in $keys) {
+        $sorted = Sort-PaperReviewByKey $units[$key] { param($f) "$($f.Path)" }
+        $unitTokens = [long] 0
+        foreach ($f in $sorted) { $unitTokens += Get-PaperReviewFileTokens $f }
+        if ($current.Count -gt 0 -and ($sum + $unitTokens) -gt $MaxTokens) {
+            $batches += , @($current); $current = @(); $sum = 0
         }
-        $current += $f
-        $sum += $t
+        foreach ($f in $sorted) {
+            $t = Get-PaperReviewFileTokens $f
+            if ($current.Count -gt 0 -and ($sum + $t) -gt $MaxTokens) {
+                $batches += , @($current); $current = @(); $sum = 0
+            }
+            $current += $f; $sum += $t
+        }
     }
     if ($current.Count -gt 0) { $batches += , @($current) }
     return , $batches
@@ -621,7 +655,7 @@ function Get-PaperReviewEstimate {
     Agents and tokens of each lane and of the verify readers (table E). Static is free; a lane that does not
     run costs nothing; verify is the cap times one reader, only when an LLM lane runs.
     #>
-    param($Lanes, $LaneFiles, $Config, [switch] $StaticOnly, $Rules = $null, [string] $Executor = '')
+    param($Lanes, $LaneFiles, $Config, [switch] $StaticOnly, $Rules = $null, [string] $Executor = '', [string[]] $UnitRoots)
     $rows = @()
     $total = 0
     # F210: a Codex turn (executor collab) carries up to qa.codexBatchTokens content tokens, a subagent up to qa.batchTokens.
@@ -637,7 +671,11 @@ function Get-PaperReviewEstimate {
             if ($l.Name -ne 'static') {
                 # A session that reads alone makes one turn of every lane, whatever batchTokens says (D, F232).
                 if ($Executor -eq 'solo') { $batches = @(, @($files)); $overhead = 5000 }
-                else { $batches = Split-PaperReviewBatches -Files $files -MaxTokens $maxTokens; $overhead = $script:PaperReviewLaneOverhead }
+                else {
+                    $laneMax = $maxTokens
+                    if ((Get-PaperReviewLaneExecutor -Lane $l.Name -Base $Executor) -ne $Executor) { $laneMax = [int] $Config.BatchTokens }
+                    $batches = Split-PaperReviewBatches -Files $files -MaxTokens $laneMax -UnitRoots $UnitRoots; $overhead = $script:PaperReviewLaneOverhead
+                }
                 $content = 0
                 foreach ($f in $files) { $content += Get-PaperReviewFileTokens $f }
                 # An external repository: each architecture batch also reads its rule files (ADR-0034).
@@ -653,7 +691,8 @@ function Get-PaperReviewEstimate {
                             $bc += $rt
                         }
                     }
-                    $turnTokens.Add($bc)
+                    # Only Codex turns count toward collab's turns; a lane sent to subagents is not one.
+                    if ((Get-PaperReviewLaneExecutor -Lane $l.Name -Base $Executor) -eq $Executor) { $turnTokens.Add($bc) }
                 }
                 if ($l.Name -eq 'architecture' -and $ruleList.Count -gt 0) { $row.Reason = "rules: $($ruleList.Count) file(s)" }
                 $row.Batches = @($batches).Count
@@ -814,7 +853,7 @@ function Test-PaperReviewFinding {
     if (-not $where.Success -or [int] $where.Groups[2].Value -lt 1) { $errors += "${tag}: WHERE needs path:line" }
     else {
         $p = ConvertTo-PaperReviewRelPath $where.Groups[1].Value
-        if (@($ListPaths | Where-Object { $_ -and ($_.Replace('\', '/') -ieq $p) }).Count -eq 0) { $errors += "${tag}: WHERE $p is not in this lane's list" }
+        if ($where.Groups[1].Value -match '^(?:[A-Za-z]:|[/\\])' -or $p -match '(?:^|/)\.\.(?:/|$)' -or -not $p) { $errors += "${tag}: WHERE needs a repository-relative path" }
     }
     foreach ($k in @('RULE', 'WHY', 'FIX')) { if (-not "$($Finding[$k])".Trim()) { $errors += "${tag}: $k is empty" } }
     if (-not $Finding.Contains('INPUT') -or -not "$($Finding['INPUT'])".Trim()) { $errors += "${tag}: INPUT is missing (write - for a suspicion)" }
@@ -847,7 +886,7 @@ function Test-PaperReviewLaneAnswer {
         if ($listed.Count -gt 0) { $path = $listed[0].Replace('\', '/') }
         $findings += [pscustomobject]@{
             Id = $id; Lane = $Lane; Kind = "$($b['KIND'])"; Severity = "$($b['SEVERITY'])"
-            Where = "${path}:$($w.Groups[2].Value)"; Path = $path; Line = [int] $w.Groups[2].Value
+            Where = "${path}:$($w.Groups[2].Value)"; Path = $path; Line = [int] $w.Groups[2].Value; OUTSIDE = ($listed.Count -eq 0)
             Rule = "$($b['RULE'])"; Input = "$($b['INPUT'])"; Why = "$($b['WHY'])"; Fix = "$($b['FIX'])"
         }
     }
@@ -1096,8 +1135,10 @@ function Get-PaperReviewReportLink([string] $ReportDir, [string] $Path, [string]
 function ConvertTo-PaperReviewCell([string] $Text) { return ("$Text" -replace '\r?\n', ' ').Replace('|', '\|') }
 
 function Format-PaperReviewWhereLink($Finding, [string] $ReportDir, [string] $RepoRoot = '') {
-    if (-not $Finding.Path) { return "$($Finding.Where)" }
-    return "[$($Finding.Where)]($(Get-PaperReviewReportLink $ReportDir $Finding.Path $RepoRoot))"
+    $suffix = ''
+    if ($null -ne $Finding.PSObject.Properties['OUTSIDE'] -and $Finding.OUTSIDE) { $suffix = ' (ngo' + [char]0x00e0 + 'i l' + [char]0x00f4 + ')' }
+    if (-not $Finding.Path) { return "$($Finding.Where)$suffix" }
+    return "[$($Finding.Where)]($(Get-PaperReviewReportLink $ReportDir $Finding.Path $RepoRoot))$suffix"
 }
 
 function Format-PaperReviewReport {
@@ -1369,7 +1410,7 @@ function Get-PaperReviewScreens {
 
 # The batches of every LLM lane that runs (E), as plan.json keeps them: Lane, Batch, Files (paths).
 function Get-PaperReviewBatchList {
-    param($Lanes, $LaneFiles, [int] $MaxTokens, $Rules = $null)
+    param($Lanes, $LaneFiles, [int] $MaxTokens, $Rules = $null, [string[]] $UnitRoots, [string[]] $Specs, [string] $Executor = '', [int] $SubagentMaxTokens = 0)
     $out = @()
     foreach ($l in @($Lanes)) {
         if ($l.State -ne 'run' -or $l.Name -eq 'static') { continue }
@@ -1377,14 +1418,25 @@ function Get-PaperReviewBatchList {
         if ($null -ne $LaneFiles -and $LaneFiles.Contains($l.Name)) { $files = @($LaneFiles[$l.Name]) }
         $n = 0
         # Split-PaperReviewBatches returns its array of batches as one object; @() around the call would wrap it again.
-        $split = Split-PaperReviewBatches -Files $files -MaxTokens $MaxTokens
+        $laneExecutor = Get-PaperReviewLaneExecutor -Lane $l.Name -Base $Executor
+        $laneMax = $MaxTokens
+        if ($laneExecutor -ne $Executor -and $SubagentMaxTokens -gt 0) { $laneMax = $SubagentMaxTokens }
+        $split = Split-PaperReviewBatches -Files $files -MaxTokens $laneMax -UnitRoots $UnitRoots
         foreach ($b in $split) {
             $n++
             $paths = @($b | ForEach-Object { $_.Path })
             # Not $rules: PowerShell names are case-insensitive, so that would be the -Rules parameter.
             $own = @()
             if ($l.Name -eq 'architecture' -and @($Rules | Where-Object { $null -ne $_ }).Count -gt 0) { $own = @(Get-PaperReviewBatchRules -Rules $Rules -BatchPaths $paths | ForEach-Object { $_.Path }) }
-            $out += [pscustomobject]@{ Lane = $l.Name; Batch = $n; Files = $paths; Rules = $own }
+            $unitKeys = @($paths | ForEach-Object { Get-PaperReviewUnitKey -Path $_ -UnitRoots $UnitRoots })
+            $batchSpecs = @($Specs | Where-Object { (Get-PaperReviewUnitKey -Path $_ -UnitRoots $UnitRoots) -in $unitKeys })
+            # SPEC.md kept apart from the code (featureDocs): no unit owns the batch, so name them all and let the reader pick.
+            if ($batchSpecs.Count -eq 0) {
+                $allSpecs = @($Specs | Where-Object { $_ } | Sort-Object)
+                $batchSpecs = @($allSpecs | Select-Object -First 30)
+                if ($allSpecs.Count -gt 30) { $batchSpecs += "... $($allSpecs.Count - 30) more SPEC.md in the repository" }
+            }
+            $out += [pscustomobject]@{ Lane = $l.Name; Batch = $n; Files = $paths; Rules = $own; Specs = $batchSpecs; Executor = $laneExecutor }
         }
     }
     return $out
@@ -1474,6 +1526,10 @@ function Get-PaperReviewFilesList {
     $batchRules = @()
     if ($null -ne $all[$Batch - 1].PSObject.Properties['Rules']) { $batchRules = @($all[$Batch - 1].Rules | Where-Object { $_ }) }
     if ($batchRules.Count -gt 0) { $lines += "rules: $($batchRules -join ', ')" }
+    if ($null -ne $all[$Batch - 1].PSObject.Properties['Specs']) {
+        $batchSpecs = @($all[$Batch - 1].Specs | Where-Object { $_ })
+        if ($batchSpecs.Count -gt 0) { $lines += "specs: $($batchSpecs -join ', ')" }
+    }
     $already = Get-PaperReviewAlreadyReported -Lane $Lane -Groups $StaticGroups
     if ($already) { $lines += $already }
     if ($Lane -eq 'bug') {
