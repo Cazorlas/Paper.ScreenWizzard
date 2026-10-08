@@ -1,7 +1,8 @@
-# Stop: the claim "done" is made at Stop, so that is where build and test run.
+# Stop: the claim "done" is made at Stop, so that is where build runs.
 #
 # Not PostToolUse: a build and a suite cost minutes, and running them per edit would stall every change.
-# When a watched file was written this session, this runs the project's `build` and then `test` verb -
+# When a watched file was written this session, this runs the project's `build` verb, then `test` only
+# when verify.onStopTests is true -
 # the commands .claude/paper.profile.json declares, planned by paperflow/verb-plan.ps1 exactly as the flow
 # runner plans them - from the project root:
 #   - build exits non-zero                        -> exit 2 with its error lines
@@ -99,7 +100,7 @@ try {
 
     try {
         $deadline = (Get-Date).AddSeconds(570)
-        foreach ($verb in @('build', 'test')) {
+        foreach ($verb in (Get-PaperStopVerbs -Profile $profileMap)) {
             $plan = Get-PaperVerbPlan -ProjectProfile $profileMap -Verb $verb
             if ($plan.ExitCode -eq 5 -or $plan.Internal) { continue }
             if ($plan.ExitCode -ne 0) {

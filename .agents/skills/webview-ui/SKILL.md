@@ -48,6 +48,8 @@ This is the part that bites, and it bites only at run time.
   page that works here and not on a colleague's machine.
 - **Never ship a second Chromium into a host that already embeds one.** Native libraries and a browser
   subprocess cannot be side-by-side versioned inside one process, and no binding redirect reaches them.
+  Revit's companion `revit-webview` supplies the measured exception: the shared Evergreen WebView2 with
+  the unique-window-class switch, subject to its first-environment rule and live coexistence check.
 - **A host that embeds Chromium AND lets you load a newer WebView2 is the configuration that crashes.**
   The vendor of one such host documents its own dialog crashing exactly when a third-party add-in brings
   a recent WebView2 alongside the host's embedded Chromium. If the host is in that shape, every screen

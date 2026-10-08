@@ -7,18 +7,18 @@ argument-hint: "[shape · audit|critique · animate|bolder|colorize|delight|layo
 
 > Adapted from pbakaus/impeccable, `.claude/skills/impeccable`, commit ece38d9904b8a619b3f77cab476eacad09c4fb11 (v4.5.0), Apache License 2.0 - [LICENSE](LICENSE), [NOTICE.md](NOTICE.md). Changed for paper-kit: the front matter (rewritten description, manual-only invocation, no version, license or user-invocable keys, no live or generate in the argument hint), the section "In a Paper project" added, Setup step 1 (the launcher run) replaced by a pointer to that section, the Pin, Hooks and Doctor paragraphs and the live and generate rows removed, and the `scripts/` folder (launcher, binary download, live-browser assets, font index) and the reference files hooks.md, doctor.md, live.md, live-setup.md and generate.md left out; links to those files in reference/ are plain text marked "(not shipped in Paper)", and five dead file names in reference/ (responsive-design.md, cognitive-load.md, heuristics-scoring.md, design-tokens.json, raw-report.json) are unquoted. Everything else is upstream text.
 
-This skill gives you the tools and permission to create design that earns to be called out-of-distribution craft: Whereas before, your design work would have been safe, timid and measured, you now approach every design task as an award-winning design director with impeccable understanding for what makes exceptional design work: production-grade code, peak creativity, a clear POV, deep understanding of the needs of the client and users, and exceptional craft.
+Approach each design task as a design director: production-grade code, a clear point of view, and the needs of the client and users first. The named defaults to avoid are in reference/craft-floor.md.
 
 Core principles:
-- Go all out. No hedging, no shortcuts. The deliverable must be complete (except assets the user must provide).
-- Dream big and bold. Distinct, beautiful, outstanding and highly inspiring work.
+- The deliverable is complete (except assets the user must provide).
+- Aim for a distinct visual world that fits the brief, not the category's usual look.
 - Verify in bounded passes, not a loop, and the ceiling covers the whole cycle: screenshots, defect scans, micro-edits, and rebuilds alike. Build fully, inspect once with a batched round (desktop and mobile together on the web; the shipped device classes on a native platform), fix everything it shows in one batch, confirm with at most one more round, and stop polishing. Open-ended self-QA burns the user's money doing worse what the finish handoffs do better.
 
 ## In a Paper project
 
 This copy runs inside Paper projects, where a task's plan, a planner and workers own the work. These rules replace the upstream steps that conflict with them.
 
-- **No launcher.** Paper projects never run the impeccable launcher: the binary is not shipped, and downloading one is the owner's choice, not a step of a session. In every session follow Launcher unavailable below: read PRODUCT.md and DESIGN.md directly when they exist, do not invent missing context, and skip every step that needs a detector, a browser run or a live session.
+- **No launcher.** Paper projects never run the impeccable launcher: the binary is not shipped, and downloading one is the owner's choice, not a step of a session. In every session follow Launcher unavailable below, without its announcement message (nothing failed): read PRODUCT.md and DESIGN.md directly when they exist, do not invent missing context, and skip every step that needs a detector, a browser run or a live session.
 - **No project state of its own.** Never write the .impeccable folder (critique storage, build, review and mock folders, design.json). Report findings in the answer instead. The skill writes PRODUCT.md or DESIGN.md only when the task or the owner asks; a plan that names them as files counts as the task asking.
 - **Who asks and who decides.** Shape and init run in the main session with the owner, as part of the task's spec, before a wireframe or plan is frozen. A worker asks the planner, never the user: where the upstream text says to ask the user, a worker sends the question to the planner and waits. Do not run the interview or the unconditional comp approval in a worker.
 - **Finish.** The planner's review replaces the finish review: do not start finish-reviewer or documenter (the files under reference/degraded stay as text to read). Write the documenter's output (DESIGN.md) only when the task asks for it.
@@ -30,7 +30,9 @@ This copy runs inside Paper projects, where a task's plan, a planner and workers
 2. Load the request's playbook: its Commands-table reference for an explicit/implied sub-command, or [reference/new-work.md](reference/new-work.md) for a new surface or replacement visual world. Inspect target and incumbent visual truth before editing. When the app cannot run, start with committed visual-regression goldens or screenshot fixtures; verify target and freshness against current tokens, CSS, components, or assets, resolve conflicts, and compare theme/variant captures.
 3. After resolving analysis and direction, read [reference/craft-floor.md](reference/craft-floor.md) immediately before any UI edit, including small refinements. It carries the quality floor, the absolute bans, and the reflexes no detector catches. Do not load it for planning-only work.
 
-**Launcher unavailable:** On refusal or failure, send a separate message **before the next tool call**: “Context loading did not run; I’ll read the existing project context directly.” Then read existing PRODUCT.md and DESIGN.md without inventing missing context, follow applicable steps 2–3, and continue through permitted tools. This applies to planning and editing; launcher failure alone does not block either.
+**Launcher unavailable:** Paper does not ship it. Read existing PRODUCT.md and DESIGN.md without inventing
+missing context, follow applicable steps 2–3, and continue through permitted tools. Report missing context
+when it limits the result; there is no launcher notice to send in every session.
 
 ## How to design
 

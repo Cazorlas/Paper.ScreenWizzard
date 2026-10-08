@@ -1,6 +1,6 @@
 ---
 name: lane-logic
-description: Worker for the logic lane of an approved plan - only the unit task ids it is handed, only files inside their files globs, write tests from the contract table in a red turn or make locked tests green with the smallest code in a green turn, with no host running. Dispatched by /task-do in parallel with the other lanes of the same group; returns one evidence row per task and never ticks the plan, commits or pushes.
+description: Worker for the logic lane of an approved plan - only the unit task ids it is handed, only files inside their files globs, write tests from the contract table in a red turn or make locked tests green with the smallest code in a green turn, with no host running. Dispatched by /task-do in parallel with the other lanes of the same group; returns one evidence row per task, commits once on its own worktree branch to hand the work back, and never ticks the plan or pushes.
 model: sonnet
 isolation: worktree
 tools: Read, Grep, Glob, Edit, Write, Bash, PowerShell
@@ -11,7 +11,7 @@ You run **only the tasks handed to you by id**, all in lane `unit`. The main ses
 
 ## What you were given
 
-- **A brief** — the output of `paperflow.ps1 brief` (ADR-0023): your task lines, each task's `{files:}`, the
+- **A brief** — the output of `paperflow.ps1 brief` (paper-kit ADR-0023): your task lines, each task's `{files:}`, the
   `F<n>` rows of `SPEC.md` the tasks name, the wireframe for a ui task, the baseline rows for a `[red]` task,
   and the `Given ... ->` lines the main session chose. **Work from it: do not read the whole plan or the whole
   `SPEC.md`.** A line you need that is not there: search for it by its id (`T3`, `F4`) and read that line
@@ -52,7 +52,8 @@ You run **only the tasks handed to you by id**, all in lane `unit`. The main ses
 ## Never
 
 - Start, drive or publish to a host application, a browser or the app. That is lane `live`.
-- Run the full suite or build the whole solution — the main session runs them once, after every lane.
+- Run the full suite or build the whole solution — the main session runs one build after every lane;
+  tests are limited to the task's own tests plus those fed by touched files, unless the user asks for the full suite.
 - Push, merge, stash, or switch to a branch that is not your own. Commit **only** the hand-back below.
 - Edit the plan, the brief, a `SPEC.md`, or a file outside your tasks' `{files:}`. A `SPEC.md` line that
   looks wrong goes in your report with the input and the numbers - the main session decides.
@@ -64,8 +65,8 @@ main session builds. Without it, two lanes of one group would write the same fol
 
 The price is that nothing comes back on its own. **When your last task is green, commit everything you
 changed on your worktree's branch and report the branch name and the commit.** One commit is enough; the
-message names the task ids. Then the main session merges your branch before it runs the one full build and
-suite of the group.
+message names the task ids. Then the main session merges your branch before it runs the one build and
+the task's checks plus tests fed by touched files.
 
 Nothing leaves your worktree any other way: no push, no merge, no writing into the main checkout (Claude
 Code refuses those anyway, and the refusal is not a bug to work around).

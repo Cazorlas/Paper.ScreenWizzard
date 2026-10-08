@@ -27,8 +27,8 @@ You review read only: read files, never edit, fix or run anything that writes. A
 {retry}<one line per error, as review.ps1 check printed it: <lane>-<b>: <id>: <error>>
 {external}The repository is <repo> (read only): every path of the list is relative to it; read <repo>\<path>.
 {external}Judge against its own rules - for the architecture lane exactly the files on the rules: line - never against this project's ADRs or profile.
-Read every file in the list below - no more, no fewer - and nothing outside it except the documents the instructions
-name (SPEC.md, ADRs, CODEMAP.md, the project's CLAUDE.md){external}, and on this repository only its own rule files{/external}.
+Start from the files in the list. Read any file in the repository you need to trace a call, find another implementation,
+or find the test, and run read-only commands that write nothing when they prove a finding.
 
 <the lines of: review.ps1 files -Run <run> -Lane <lane> -Batch <b> [-Retry], unchanged>
 
@@ -36,7 +36,7 @@ Report each finding as one block in the format of the section "Finding format" b
 {architecture}This replaces the report of the instructions: never one line per violation, always a finding block.
 {bug}For a file no SPEC.md covers, follow the instructions' section "No SPEC.md for the file".
 {ui}{project}If the project has a UI style skill under .claude/skills, read it too.
-Do not fix anything and do not verify your own findings. End with the line "seen N/N" and, if any file was not read,
+Do not fix anything. Reproduce findings with read-only commands when useful; a separate reader verifies them independently. End with the line "seen N/N" and, if any file was not read,
 "not read: <path>, <path>". Your final message is only the finding blocks and those lines.
 
 ## Finding format (<absolute path of references/findings.md>)
@@ -58,8 +58,8 @@ You are an independent reader: read files only, never edit. Decide whether the r
 {external}The repository is <repo> (read only): look for the code there; read <repo>\<path>.
 RULE      <RULE of the finding, verbatim>
 INPUT     <INPUT of the finding, verbatim>
-{static}WHERE     <path:line>   (a static finding only: its rule id, title and link are the RULE line)
-Find the code the rule is about yourself{static}, starting at WHERE{/static}. Answer with exactly one block:
+WHERE     <path:line>
+Find the code the rule is about yourself, starting at WHERE. Answer with exactly one block:
 
 FOR          <id>
 VERDICT      confirmed | rejected | needs_validation

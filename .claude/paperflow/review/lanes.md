@@ -53,10 +53,10 @@ static: .cs .vb - security: code and config - bug: code - architecture: code, pr
 .vbproj, .fsproj, .sln, .props, .targets) and CODEMAP.md - smell: code - ui: the ui group plus the
 screenshots `review.ui.screens` names.
 
-A lane bigger than `review.batchTokens` content tokens (default 120000) is split into batches, files in path
-order; one file over the cap is a batch alone. Each batch is one agent. When Codex answers the lanes through collab
-the cap is `review.codexBatchTokens` (default 160000, at least 20000): a Codex turn has room for it, and fewer turns
-mean less waiting at collab's Codex start gate. Each batch is then one Codex turn.
+Files are grouped by the nearest ancestor folder containing SPEC.md or CODEMAP.md; without one, their containing
+folder is the unit. Units run in path order. A unit that fits `review.batchTokens` (default 120000) stays together,
+opening a new batch if needed; only an oversized unit is split greedily by file path. A file over the cap runs alone.
+With base executor collab, security and smell batches use `review.codexBatchTokens` (default 160000, at least 20000); bug, architecture and UI keep `review.batchTokens` for their Claude subagents.
 
 ## Who runs each lane
 
@@ -68,9 +68,9 @@ The files the reading lanes read, each once, are counted in content tokens (a sc
    A finding that needs reading back is verified by Codex through a read-only collab session that opens only then
    (the `collab-start: ... (only if check queues a finding)` line), else by a fresh subagent. `-Executor solo` over the
    limit is refused (exit 2) with the tokens and how to narrow the scope.
-2. Over the limit, with collab and codex on this machine, every lane batch is a question to Codex in a read-only collab
+2. Over the limit, with collab and codex on this machine, security and smell batches are questions to Codex in a read-only collab
    session on the real checkout (uncommitted work included; the Claude Sonnet worker answers when Codex is out of
-   usage).
+   usage). Bug, architecture and UI use Claude subagents; the estimate names the reader per lane.
 3. Otherwise, and when Codex or a collab turn runs the review, it is a read-only subagent of the session.
 
 The checklists a lane pastes live with the skill that owns them (ADR-0044): `review-security/references/checklist.md`,
@@ -79,10 +79,10 @@ The checklists a lane pastes live with the skill that owns them (ADR-0044): `rev
 | Lane | Answered by | Instructions pasted into the prompt | Id prefix | KIND it reports |
 | --- | --- | --- | --- | --- |
 | security | the session alone (small scope), Codex via a read-only collab turn, or a read-only subagent (step 4) | `review-security/references/checklist.md` | SEC | vulnerability |
-| bug | the session alone (small scope), Codex via a read-only collab turn, or a read-only subagent (step 4) | `find-bug/SKILL.md` (with "No SPEC.md for the file") | BUG | bug |
-| architecture | the session alone (small scope), Codex via a read-only collab turn, or a read-only subagent (step 4) | `architecture-reviewer.md`, front matter removed; reports finding blocks instead of one line per violation | ARC | architecture |
+| bug | the session alone (small scope), or a read-only subagent (Claude when the base is collab; step 4) | `find-bug/SKILL.md` (with "No SPEC.md for the file") | BUG | bug |
+| architecture | the session alone (small scope), or a read-only subagent (Claude when the base is collab; step 4) | `architecture-reviewer.md`, front matter removed; reports finding blocks instead of one line per violation | ARC | architecture |
 | smell | the session alone (small scope), Codex via a read-only collab turn, or a read-only subagent (step 4) | `review-architecture/references/smell.md` | SML | smell |
-| ui | the session alone (small scope), Codex via a read-only collab turn, or a read-only subagent (step 4) | web: `paperflow/review/ui-web.md`, then `skills/impeccable/reference/critique.md`, `skills/impeccable/reference/audit.md`, `skills/impeccable/reference/craft-floor.md`; desktop or no web: `design-critique/SKILL.md`, then `accessibility-review/SKILL.md`; mixed: web then desktop | UI | ux |
+| ui | the session alone (small scope), or a read-only subagent (Claude when the base is collab; step 4) | web: `paperflow/review/ui-web.md`, then `skills/impeccable/reference/critique.md`, `skills/impeccable/reference/audit.md`, `skills/impeccable/reference/craft-floor.md`; desktop or no web: `design-critique/SKILL.md`, then `accessibility-review/SKILL.md`; mixed: web then desktop | UI | ux |
 
 The UI lane chooses instructions from the files of each batch, case-insensitively. Web extensions are
 `.html .htm .css .scss .less .vue .svelte .tsx .jsx .cshtml .razor`; desktop extensions are `.xaml .axaml .dcl`.
@@ -101,7 +101,7 @@ With more than one batch, the prefix carries the batch number from the second ba
 `<run>/prompts/<lane>-<b>.md` (a retry: `<lane>-<b>.2.md`): the opening, the output of `review.ps1 files` for that batch
 word for word, the finding format of [findings.md](findings.md) and the instruction files above pasted word for word
 (front matter removed) - so an agent that cannot read the kit's folders, such as Codex in another repository, still gets
-every rule. It prints `prompt:` (the file), `answer:` (where the answer goes) and `task:` (the name of the collab question).
+every rule. The `specs:` line names the SPEC.md files of units in the batch; when SPEC.md files live apart from the code (featureDocs), it names them all (up to 30) and the reader picks. The list starts the review; the reader may trace calls, implementations and tests anywhere inside the repository and run read-only commands that write nothing to prove findings. It prints `prompt:` (the file), `answer:` (where the answer goes) and `task:` (the name of the collab question).
 A reader's prompt: `review.ps1 prompt -Run <run> -Verify <id>`. Nobody pastes a prompt by hand.
 
 When the static lane ran, the list of the smell lane ends with `Already reported by analyzers (do not

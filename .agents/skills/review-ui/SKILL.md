@@ -23,6 +23,24 @@ plugin, under its `kit:` folder) with `-Kind ui`. No analyzer build. Scope words
 
 No lane question: one lane. The estimate is still the stop before paid reading.
 
+With the collab base, UI uses Claude subagents. Batches keep related files together by their nearest ancestor
+with SPEC.md or CODEMAP.md, splitting only oversized units. Start from the list; read other repository files
+to trace calls, implementations and tests, and run read-only commands that write nothing when they prove a
+finding. `seen N/N` is coverage information; a valid WHERE outside the list is marked `(ngoài lô)`.
+
+## Visual pass before the lane
+
+After approval and before starting the lane, the main session captures the screens in scope when the host
+can run: desktop with `drive-wpf`, web with Playwright MCP. Save the captures in the run folder and put
+their paths in `screens` for the lane, alongside the screenshots the profile names. Open the captures
+and check that each shows the intended screen and current state.
+
+When capture cannot run, the report says `visual pass: not run - <reason>` and identifies the lane as a
+code-only review. Reading UI files does not prove how a screen renders.
+
+For every screen with a screenshot, the lane returns one finding of severity `info`, RULE `overall`:
+its first impression and the order in which to fix the screen's issues, with WHERE `<screenshot path>:1`.
+
 ## What the lane reads with
 
 `review.ps1 prompt` selects instructions from each batch's files, case-insensitively, and pastes them word for word:
@@ -39,9 +57,9 @@ in the same turn, closing questions skipped, findings in this command's format. 
 because the user typed `/review-ui` and agreed to the estimate. For a project review the reader also uses the project's
 UI style skill under `.claude/skills` when it has one.
 
-For depth on one finding - a palette, a font pair, a stack's guideline - you (not a lane) may run
-`.claude/skills/ui-ux-pro-max/SKILL.md`'s search script and quote its row in the finding's FIX. Never as a lane: its data
-is large and nothing in it is about this project.
+For depth on one finding - a palette, a font pair, a stack's guideline - the lane may run
+`.claude/skills/ui-ux-pro-max/SKILL.md`'s search script and quote a relevant row in the finding's FIX.
+Keep the search tied to that finding; it supplies a proposal, not evidence about this project's rendering.
 
 The lane applies when the scope has UI files or the profile names screenshots, on every host but `cli` and `ai`
 (`review.lanes.ui: true` forces it). A WinForms `.Designer.cs` is generated: only its screenshot reaches the lane.

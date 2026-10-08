@@ -14,7 +14,8 @@ này và trên phiên host **đang mở** — và chỉ thế. Phần còn lại
 
 ## Khi nào dừng
 
-Năm dòng này là **danh sách đầy đủ** những lần `/paperflow` được dừng. Không có dòng thứ sáu.
+Năm dòng này, cộng lần dừng khi một task chặn sau khi đã đổi giả thuyết (task-do mục 4), là **danh sách đầy đủ**
+những lần `/paperflow` được dừng.
 
 | Lúc | Hỏi gì |
 | --- | --- |
@@ -33,20 +34,20 @@ Mười một luật này đúng cho mọi chặng dưới đây, và mỗi lu�
 được lúc nào nó xong thì nó là lời khuyên, không phải luật.
 
 1. **Hồi phục trước đã.** Trước bất cứ việc gì, tìm plan của tính năng này. Có plan thì **đọc nó và mọi
-   artifact nó nhắc**, tóm tắt ngắn trạng thái, rồi hỏi vào chặng nào. *Xong khi:* người dùng
-   đã chọn điểm vào. **Một việc đã có plan thì được tiếp, không bao giờ bị bắt đầu lại.**
+   artifact nó nhắc**, tóm tắt ngắn trạng thái, rồi đi tiếp từ chặng plan đang dừng. *Xong khi:* báo cáo
+   nêu chặng vào và vì sao. **Một việc đã có plan thì được tiếp, không bao giờ bị bắt đầu lại.**
 2. **Một quyết định im lặng là một lỗi.** Mọi lựa chọn — kể cả lựa chọn mình tự tin — phải nằm trong
    `Decisions` của plan hay trong dòng bằng chứng, kèm phương án đã loại. *Xong khi:* đọc plan là biết vì
    sao, không cần đọc hội thoại.
 3. **Đo trước khi kết luận.** Một câu nói về code phải có lệnh sinh ra nó. *Xong khi:* dòng bằng chứng
    mang lệnh, id và giá trị đọc lại.
 4. **Đọc trước khi ghi.** Artifact đã có thì mở rộng, giữ nguyên mục của người khác; tên mục là hợp đồng
-   (`paper-kit/docs/ARTIFACT-REGISTRY.md`). *Xong khi:* file giữ nguyên mọi mục nó có trước đó.
+   (`paper-kit/docs/ARTIFACT-REGISTRY.md` trong kho Paper-skills, không phải kho dự án). *Xong khi:* file giữ nguyên mọi mục nó có trước đó.
 5. **Cổng có thể hoãn, không thể bỏ.** Chặng 2 (duyệt) và chặng 5 (kiểm) là cổng. *Xong khi:* cổng chạy
    và verdict được ghi.
 6. **Nói rõ đang ở chế độ nào.** Thiếu lane agent, thiếu host, thiếu skill của gói host — vẫn chạy được,
    nhưng phải nói ra và ghi vào báo cáo. *Xong khi:* báo cáo nêu tên thứ đã thiếu.
-7. **Không bao giờ lặp lại một lần thử không đổi.** Cùng một lỗi hai lần thì đổi giả thuyết, không đổi
+7. **Không bao giờ lặp lại một lần thử không đổi.** Cùng một test đỏ ba lần trên cùng giả thuyết thì đổi giả thuyết, không đổi
    tham số. *Xong khi:* có một dòng `đổi giả thuyết: <cũ> → <mới>`.
 8. **Chỉ dừng ở một dòng của bảng "Khi nào dừng".** Một plan đã duyệt là uỷ quyền chạy **tới cổng kế
    tiếp**, không phải tới task kế tiếp rồi xin phép lại. *Xong khi:* lần dừng gần nhất khớp một dòng của
@@ -57,7 +58,7 @@ Mười một luật này đúng cho mọi chặng dưới đây, và mỗi lu�
 10. **Effort cao để nghĩ, effort đang set để làm; model không đổi.** Phần *nghĩ* (suy luận, `SPEC.md`,
    plan, chia task, rà soát) chạy ở effort ít nhất `high` — đang `high` thì lên `xhigh`, đang cao hơn thì giữ;
    phần *làm* (code, task, build, test, lái host) chạy ở effort người dùng đang set. Model người dùng chọn chạy
-   cả hai phần, mọi host, mọi loại việc (ADR-0026). Session xin `/effort` một câu rồi đi tiếp, không dừng lượt.
+   cả hai phần, mọi host, mọi loại việc (ADR-0026 của kit). Session xin `/effort` một câu rồi đi tiếp, không dừng lượt.
    Luật đủ: `references/effort-switch.md`. *Xong khi:* báo cáo nói effort nào cho phần nghĩ và phần làm.
 11. **Host kiểm được thì đo trước, rồi mới đỏ.** Profile khai `live.loop` nghĩa là host tự kiểm được một
    thay đổi code: thứ tự là **ensure → đo trên host (dòng `baseline`) → test đỏ viết từ số đo → xanh → đo
@@ -105,7 +106,7 @@ dòng luật mới hay đổi, task theo nhóm, và câu nào còn cần trả l
 `**Trạng thái:** đã duyệt <ngày> ("lời họ nói")` vào plan. **Cổng:** exit không còn là 4 vì người dùng đã
 duyệt, không bao giờ vì agent tự sửa dòng trạng thái.
 
-**Mỗi plan một phiên** (ADR-0023): plan là bản bàn giao, còn phiên viết spec thì đã dài. In liên kết tới plan
+**Mỗi plan một phiên** (ADR-0023 của kit): plan là bản bàn giao, còn phiên viết spec thì đã dài. In liên kết tới plan
 và hai lệnh `/clear` rồi `/task-do <đường dẫn plan>` cho phiên mới, rồi **kết thúc lượt**; hook `session-anchor`
 nhắc plan đang dở khi phiên mới mở. Effort đổi ở đây nếu đổi effort vỡ cache (luật 10). Người dùng nói "làm luôn" thì
 đi tiếp ngay trong phiên này, và ghi một dòng Decisions.

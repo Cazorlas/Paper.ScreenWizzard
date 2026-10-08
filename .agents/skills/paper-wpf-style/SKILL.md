@@ -77,7 +77,8 @@ derives from `BindableBase`/`ViewModelBase`, and the project references the gene
 Use the library's commands rather than adding `RelayCommand` from an outside package. A command is a named class;
 that is what keeps the call flow readable and the workflow testable.
 
-- Workflow logic lives in the command, not the ViewModel and not the code-behind.
+- The command builds the adapter, calls the use case and hands the outcome to the ViewModel; decisions live in the
+  interactor (skill `clean-architecture`).
 - `AsyncCommandBase` already blocks re-entrancy while running; don't add your own guard. Restore UI state
   (`IsBusy`) in `finally`, including on the failure path; surface a recoverable error in the panel.
 - `RaiseCanExecuteChanged()` also calls `CommandManager.InvalidateRequerySuggested()`;

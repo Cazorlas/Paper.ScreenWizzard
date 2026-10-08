@@ -1,7 +1,7 @@
 # Web UI in a read-only review lane
 
 These rules take precedence over the impeccable references pasted after them. Review read only: inspect the batch's
-files and supplied screenshots, never edit or fix them. Apply impeccable only to web files; desktop files use
+files and supplied screenshots, tracing other repository files when needed; never edit or fix them. Apply impeccable only to web files; desktop files use
 design-critique and accessibility-review when those instructions are also present.
 
 - Never run the impeccable launcher or any detector command. Use the references' Launcher unavailable path; read
@@ -11,7 +11,11 @@ design-critique and accessibility-review when those instructions are also presen
 - No sub-agents: perform critique's Assessment A, then Assessment B yourself in the same turn. Do not delegate either
   assessment; no DEGRADED banner is needed.
 - Follow critique.md for usability and hierarchy, audit.md for accessibility, and craft-floor.md for web quality.
-  Report only findings supported by the batch's evidence; label anything requiring runtime validation accordingly.
+  Report only findings supported by repository evidence or supplied screenshots; label anything requiring runtime validation accordingly.
+- Read-only commands that write nothing may prove a finding; ui-ux-pro-max's search script may support FIX.
+  For each supplied screen, include an info finding with RULE `overall`, first impression and repair priorities.
+  Without captured screens, the main session records `visual pass: not run - <reason>`; source inspection alone
+  leaves visual behavior unverified.
 - Never write the .impeccable folder. Skip critique-storage, saving critiques, init, hooks, pinning and all other
   writing steps. Do not create or change PRODUCT.md, DESIGN.md, reports or configuration.
 - Skip the closing questions and owner interview. Include the line `Questions skipped: read-only review lane` in the

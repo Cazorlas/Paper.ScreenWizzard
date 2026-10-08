@@ -23,7 +23,7 @@ FIX       Treat length 0 as an end in the early return at line 40.
 - FINDING: `<PREFIX>-<n>` of your lane (`BUG-1`, `SEC-3`, `BUG2-1` in a second batch), each once.
 - LANE: the lane you were given. KIND: security `vulnerability`, bug `bug`, architecture `architecture`,
   smell `smell`, ui `ux`. SEVERITY: `critical`, `major`, `minor` or `info`.
-- WHERE: `path:line`, line 1 or more, a path of your list.
+- WHERE: `path:line`, line 1 or more, a repository-relative path. A finding outside the batch list is kept with OUTSIDE true and marked "(ngoài lô)" next to WHERE in the report; paths outside the repository are invalid.
 - RULE: the rule broken, with its source - a SPEC line, an ADR, the project's CLAUDE.md, or the code's
   own contract when no SPEC covers the file (find-bug, "No SPEC.md for the file").
 - INPUT: the value that gives the wrong result, or `-` for a suspicion. Never left out.
@@ -55,15 +55,15 @@ Candidates are ordered by severity, then lane (security, bug, static), then id n
 `review.verifyCap` (default 10) are `queued` - `check` prints `verify: <id> (<lane>, <severity>)` - and the
 rest stay `needs_validation (cap N reached)`.
 
-A reader gets, for an agent finding, only the RULE verbatim and the INPUT - not WHERE, WHY, FIX, the
+A reader gets, for an agent finding, the RULE verbatim, INPUT and WHERE as a starting point - never WHY, FIX, the
 lane or who found it (find-bug, "Verifying a finding"); for a static finding, the rule id, its title, its
 link and `path:line`, with: decide whether this code gives a wrong result or an exploitable path for some
 input; confirmed needs that INPUT.
 
 On an external repository, also give the reader the repository line check prints: it locates the code there, read only.
 
-**Who reads.** `review.ps1 prompt -Run <run> -Verify <id>` builds the reader's prompt (RULE verbatim, INPUT, and for a static
-finding WHERE; nothing else). `check` names the reader on every `verify:` line: `reader claude` or `reader codex`. A
+**Who reads.** `review.ps1 prompt -Run <run> -Verify <id>` builds the reader's prompt (RULE verbatim, INPUT and
+WHERE; nothing else). `check` names the reader on every `verify:` line: `reader claude` or `reader codex`. A
 finding Codex found is read by Claude; a finding of the Claude worker, or of a batch with no record, is read by Codex; a run
 whose lanes were answered by subagents, a static finding, and a run planned before this rule go to a Claude subagent, as
 before. collab writes `<lane>-<b>.turn.json` beside each answer and `verdicts/<id>.turn.json` beside each verdict it answered

@@ -31,7 +31,7 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 ## Scope Check
 
-If the spec covers multiple independent subsystems, it should have been broken into sub-project specs during brainstorming. If it wasn't, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
+If the spec covers multiple independent subsystems, it should have been broken into sub-project specs in its SPEC.md. If it wasn't, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
 
 ## File Structure
 
@@ -53,72 +53,35 @@ deliverable needs them; split only where a reviewer could meaningfully
 reject one task while approving its neighbor. Each task ends with an
 independently testable deliverable.
 
-## Bite-Sized Task Granularity
-
-**Each step is one action (2-5 minutes):**
-- "Write the failing test" - step
-- "Run it to make sure it fails" - step
-- "Implement the minimal code to make the test pass" - step
-- "Run the tests and make sure they pass" - step
-- "Commit" - step
-
 ## Plan Document Header
 
-**Every plan MUST start with this header:**
-
-```markdown
-# [Feature Name] Implementation Plan
-
-**Goal:** [One sentence describing what this builds]
-
-**Architecture:** [2-3 sentences about approach]
-
-**Tech Stack:** [Key technologies/libraries]
-
-## Global Constraints
-
-[The spec's project-wide requirements — version floors, dependency limits,
-naming and copy rules, platform requirements — one line each, with exact
-values copied verbatim from the spec. Every task's requirements implicitly
-include this section.]
-
----
-```
+Use the header and sections of `spec/plan-template.md`, including `**Trạng thái:**` and
+`**Loại việc:**`, links to the brief and SPEC.md, Context, Rules that apply, Decisions and evidence.
+Link the spec's constraints rather than copying them into the plan.
 
 ## Task Structure
 
-````markdown
-### Task N: [Component Name]
+Tasks follow `spec/plan-template.md` (`### n.` groups, `- [ ] T<n> [lane] … {files:}`); keep an Interfaces line
+per task where later tasks consume its names. Name consumed and produced signatures exactly.
 
-**Files:**
-- Create: `exact/path/to/file.py`
-- Modify: `exact/path/to/existing.py:123-145`
-- Test: `tests/exact/path/to/test.py`
-
-**Interfaces:**
-- Consumes: [what this task uses from earlier tasks — exact signatures]
-- Produces: [what later tasks rely on — exact function names, parameter
-  and return types. A task's implementer sees only their own task; this
-  block is how they learn the names and types neighboring tasks use.]
-
-Use `spec/plan-template.md`: the planner's test-contract table, a `[red]` task for the red-turn worker, and a `[green]` task with `{locked: tests/**}`.
-````
+Use `spec/plan-template.md`: the planner's test-contract table, a `[red]` task for the red-turn worker, then a
+plain lane task for the green-turn worker; the red task's test files are locked (planner-worker.md).
 
 ## No Placeholders
 
 Every step must contain the actual content an engineer needs. These are **plan failures** — never write them:
 - "TBD", "TODO", "implement later", "fill in details"
 - "Add appropriate error handling" / "add validation" / "handle edge cases"
-- "Write tests for the above" (without actual test code)
-- "Similar to Task N" (repeat the code — the engineer may be reading tasks out of order)
-- Steps that describe what to do without showing how (code blocks required for code steps)
+- "Write tests for the above" (without decisive inputs and expected outputs in the test contract)
+- "Similar to Task N" (state the task's own inputs, interfaces and checks)
+- Steps without allowed files, a concrete success criterion and the command that proves it
 - References to types, functions, or methods not defined in any task
 
 ## Remember
 - Exact file paths always
-- Complete code in every step — if a step changes code, show the code
+- The planner writes the test contract; the red-turn worker writes the tests and the green-turn worker implements
 - Exact commands with expected output
-- DRY, YAGNI, TDD, frequent commits
+- DRY, YAGNI, TDD; commit only when the user asks
 
 ## Self-Review
 

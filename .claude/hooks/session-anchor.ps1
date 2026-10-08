@@ -134,6 +134,9 @@ Restart Claude Code from the git root that holds .claude/paper.profile.json (or 
     }
 
     $line = "paper-kit active: $name, profile hosts: $hosts. (No such line at session start = the project settings did not load; restart from the repo root.)"
+    if (@($profileMap['hosts']) -contains 'revit') {
+        $line += [Environment]::NewLine + 'For a requested live Revit task, ensure the MCP server in the already-running Revit is on; switch it on yourself as revit-live says. Starting, closing or restarting Revit still needs the user to agree.'
+    }
 
     # And whether the vendored copy has fallen behind the kit it came from. Read-only, best effort:
     # any of these files may be absent on a machine that installed the kit another way, and a session

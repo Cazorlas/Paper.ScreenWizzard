@@ -25,7 +25,8 @@ If you haven't run the verification command in this message, you cannot claim it
 BEFORE claiming any status or expressing satisfaction:
 
 1. IDENTIFY: What command proves this claim?
-2. RUN: Execute the FULL command (fresh, complete)
+2. RUN: Run that command now and let it finish - for tests, the task's own tests plus those fed by touched
+   files, never the whole suite unless the user asks (task-verify step 1)
 3. READ: Full output, check exit code, count failures
 4. VERIFY: Does output confirm the claim?
    - If NO: State actual status with evidence
@@ -65,9 +66,8 @@ in the host" is a true sentence, never a pass for the host lane.
 - Expressing satisfaction before verification ("Great!", "Perfect!", "Done!", etc.)
 - About to commit/push/PR without verification
 - Trusting agent success reports
-- Relying on partial verification
+- Relying on a check that does not cover the claim
 - Thinking "just this once"
-- Tired and wanting work over
 - **ANY wording implying success without having run verification**
 
 ## Rationalization Prevention
@@ -79,8 +79,6 @@ in the host" is a true sentence, never a pass for the host lane.
 | "Just this once" | No exceptions |
 | "Linter passed" | Linter ≠ compiler |
 | "Agent said success" | Verify independently |
-| "I'm tired" | Exhaustion ≠ excuse |
-| "Partial check is enough" | Partial proves nothing |
 | "Different words so rule doesn't apply" | Spirit over letter |
 
 ## Key Patterns

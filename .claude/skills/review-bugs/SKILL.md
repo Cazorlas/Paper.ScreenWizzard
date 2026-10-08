@@ -26,6 +26,13 @@ plugin, under its `kit:` folder) with `-Kind bugs`. Scope words are those of `/r
 No lane question: one reading lane. The estimate is the stop before paid reading - on a whole project it is large; say
 so and offer a folder or the branch.
 
+With the collab base, the bug lane uses Claude subagents; the estimate names the executor. Batches keep
+files together by their nearest ancestor with SPEC.md or CODEMAP.md, splitting only oversized units;
+the prompt names the unit's SPEC.md files when present.
+Start from the list and read other repository files to trace calls, implementations and tests. Read-only
+commands that write nothing may prove a finding. `seen N/N` is coverage information; WHERE outside the
+list remains valid within the repository and the report marks it `(ngoài lô)`.
+
 ## Findings
 
 - A finding is a place, the SPEC line (or the code's own contract when no SPEC covers the file) it breaks, and the
@@ -35,7 +42,8 @@ so and offer a folder or the branch.
   copy)` and to the report's hints section; a hint becomes a finding only when the lane names its breaking input.
   Vulnerabilities and smells of that build are counted, left to `/review-security` and `/review-architecture`.
 - Every finding with an input is read again by the other model - Codex for yours or Claude's, Claude for Codex's - given
-  only the rule and the input (the steps, "Verify"). Only a confirmed finding with an input becomes a bug ledger
+  the rule, input and `WHERE <path:line>` as a starting point for independent tracing and reproduction
+  (the steps, "Verify"). Only a confirmed finding with an input becomes a bug ledger
   proposal, and each one waits for the owner: `/task-bug` with the line the report gives.
 
 ## Never

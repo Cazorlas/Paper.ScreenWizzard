@@ -57,6 +57,11 @@ The user's words map to its parameters:
    It is machine work: start it in the background and go on. Exit 4 is not verifiable with the reason - never "0 findings";
    exit 5 is not applicable.
 4. **Agent lanes.** The estimate's `lanes run:` line says who answers the batches; never a lane before `approve`. Do not start a second big review on this machine while one runs its batches: Codex has a fixed number of places and a second sweep takes them.
+   For `/review-ui`, before starting the UI lane, the main session captures screens in scope into the run folder
+   when the host can run (desktop: `drive-wpf`; web: Playwright MCP), and supplies them in `screens`. If capture is
+   unavailable, record `visual pass: not run - <reason>` in the report and identify the lane as a source-only review.
+   For every supplied screen, request an info finding with RULE `overall`, first impression and repair priorities.
+   The lane may use ui-ux-pro-max's search script to support FIX without writing anything.
    For `/review-ui`, each batch's file extensions select the instructions: web reads [ui-web.md](ui-web.md), then
    `skills/impeccable/reference/critique.md`, `skills/impeccable/reference/audit.md` and `skills/impeccable/reference/craft-floor.md`; desktop (`.xaml .axaml .dcl`) or no web reads
    `design-critique` then `accessibility-review`. Mixed batches read web first, then desktop. Exact extensions and
@@ -67,14 +72,15 @@ The user's words map to its parameters:
      once, answer in the format of [findings](findings.md) - and save the answer word for word to `answer:`.
    - `codex via collab - <collab> - ...`: run the `collab-start:` line of the estimate once - a read-only collab session on
      the real checkout (uncommitted work included) or the external repository; nothing is written there. For every lane
-     in state `run` and every batch of it: `review.ps1 prompt -Run <run> -Lane <lane> -Batch <b>` writes the prompt and
+     in state `run` whose batch executor is `collab`, and every batch of it: `review.ps1 prompt -Run <run> -Lane <lane> -Batch <b>` writes the prompt and
      prints `prompt:` and `answer:`; then `<collab> ask -Session <id> -Task <lane>-<b> -Prompt <prompt> -Answer <answer>
      -WaitSec 0`. Exit 11: it runs. Exit 13 (the machine's turns are all taken): `<collab> wait -Session <id>`, then ask
      again. Exit 6 (Codex out of usage): ask that batch again with `-As takeover` (the Claude Sonnet worker), and the next
      batches too, with `<collab> probe -Session <id>` between asks - back to Codex once the probe says ok. Exit 7: the
      checkout changed during the turn - the answer is kept; name the printed paths to the user. Exit 1, 4 or 9: ask that
      batch once more; failing again, it has no answer. When every batch was asked, `wait` until no turn runs.
-   - `claude subagents - <reason>` (no codex on PATH, collab not installed, `-Executor subagents`, a collab turn runs the review):
+   - Batches with executor `subagents` (bug, architecture and UI when the base is collab) go to Claude subagents.
+     The base `claude subagents - <reason>` (no codex on PATH, collab not installed, `-Executor subagents`, a collab turn runs the review):
      hand each batch's `prompt:` file to one read-only subagent (Codex: one sub-agent), all in one message, in the
      background.
 5. **Save each answer.** collab writes the answer word for word to `answer:`, with `<lane>-<b>.turn.json` beside it
@@ -83,7 +89,7 @@ The user's words map to its parameters:
    command with `-Retry` and send that prompt once, the way the batch went first (collab: `-Task <lane>-<b>.2`); its
    answer is `<lane>-<b>.2.md`. Check again. There is no third time: a batch still wrong is reported not verifiable.
 7. **Verify.** Each `verify: <id> (<lane>, <severity>) reader <agent>` line names a reader that is not the agent that
-   found it. `review.ps1 prompt -Run <run> -Verify <id>` writes its prompt - the RULE verbatim and the INPUT, never WHERE,
+   found it. `review.ps1 prompt -Run <run> -Verify <id>` writes its prompt - the RULE verbatim and the INPUT, plus WHERE as a starting point, never
    WHY, FIX, the lane or who found it - and prints `prompt:` and `answer:`. `reader claude`: one read-only Claude
    subagent per finding, all in one message, given only that prompt; save its block word for word to `answer:`.
    `reader codex`: when the run was read alone, run the `collab-start:` line of the estimate now (it was kept for this), then `<collab> ask -Session <id> -Task verify-<id> -Prompt <prompt> -Answer <answer>`; Codex unavailable,
@@ -227,7 +233,7 @@ anything else leaves the static lane not verifiable, naming the files.
 ## Never
 
 - Fix code, write anything under the bug ledger, commit, or change the project's config.
-- Start a reading lane before the user saw the estimate and agreed (`approve`), or hand a lane a file that is not in its list.
+- Start a reading lane before the user saw the estimate and agreed (`approve`), or restrict tracing to the batch list: readers may read any repository file needed to prove a finding.
 - Let a lane verify its own findings, let a finding be read by the agent that found it while the other is available, or put
   a finding that is not `confirmed` with an INPUT in the bug ledger proposals.
 - Report a lane that did not run as clean: not applicable, skipped and not verifiable each say why.

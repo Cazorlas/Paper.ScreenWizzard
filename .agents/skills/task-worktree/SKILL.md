@@ -11,7 +11,7 @@ phiên khác đang làm ở bản checkout chính không bị chặn bởi file 
 Mọi bước là một lệnh của `.claude/paperflow/worktree.ps1`. Exit: **0** ok · **1** từ chối, lệch, gộp
 hỏng hay test đỏ · **2** sai tham số · **5** không áp dụng (ghi lại rồi đi tiếp, không phải lỗi).
 
-**Không dùng công cụ worktree tích hợp của Claude Code** (`EnterWorktree`, subagent `isolation`). Nó đặt
+**Không dùng `EnterWorktree` của Claude Code.** Nó đặt
 bản checkout **bên dưới** kho, và mọi đường dẫn tương đối tính từ gốc kho — tham chiếu build, thư mục
 dùng chung — trỏ sai chỗ từ đó.
 
