@@ -1184,12 +1184,20 @@ function Format-PaperReviewReport {
         }
         elseif ($r.Who.Kind -eq 'solo') { $out += 'Lanes read by A (this session), alone.' }
         else { $out += 'Lanes answered by Claude subagents of the session.' }
+        # D6: a ui review says whether its screens were seen or the lane read code only.
+        if ($r.Kind -eq 'ui') {
+            $shots = @(); if ($null -ne $r.PSObject.Properties['RunScreens']) { $shots = @($r.RunScreens) }
+            if ($shots.Count -gt 0) { $out += @('', "visual pass: $($shots.Count) screen(s) captured - $(@($shots | ForEach-Object { Split-Path -Leaf $_ }) -join ', ')") }
+            else { $out += @('', 'visual pass: not run - no capture in <run>/screens; the ui lane read code only') }
+        }
         if (@($r.Readers).Count -gt 0) {
             $out += @('', '## Readers', '', '| Finding | Finder | Reader | Note |', '| --- | --- | --- | --- |')
             foreach ($row in @($r.Readers)) { $out += $row }
         }
     }
-    if ($r.External -eq $true) {
+    # Only the architecture lane judges against the repository's rule files; other kinds do not list them.
+    $kindR = ''; if ($null -ne $r.PSObject.Properties['Kind']) { $kindR = "$($r.Kind)" }
+    if ($r.External -eq $true -and $kindR -in @('', 'architecture')) {
         $out += @('', '## Rules used', '')
         $used = @($r.Rules | Where-Object { $null -ne $_ } | ForEach-Object { "$($_.Path)" } | Where-Object { $_ })
         if ($used.Count -eq 0) { $out += 'None.' }
@@ -1396,6 +1404,16 @@ function ConvertFrom-PaperReviewSavedComplexity {
         Members = @($Complexity.Members | Where-Object { $null -ne $_ }); Files = @($Complexity.Files | Where-Object { $null -ne $_ }); Expressions = @($Complexity.Expressions | Where-Object { $null -ne $_ })
         NotRead = @($Complexity.NotRead | Where-Object { $null -ne $_ }); Counts = $cnt; Limits = $lim
     }
+}
+
+# The screenshots the main session captured into <run>/screens before the ui lane (D6): one line naming them, sorted;
+# other lanes, or no image, give nothing.
+function Get-PaperReviewRunScreenLines {
+    param([string] $Lane, [string[]] $Paths)
+    if ($Lane -ne 'ui') { return @() }
+    $images = @($Paths | Where-Object { $_ -and $_ -match '\.(png|jpe?g|webp)$' } | Sort-Object)
+    if ($images.Count -eq 0) { return @() }
+    return @("screens: captured this run - read each image; one info finding with RULE overall per screen, WHERE the source file that draws it, the image named in WHY: $($images -join ', ')")
 }
 
 # qa.ui.screens: the images of the repository its glob matches.
@@ -1684,7 +1702,7 @@ function ConvertFrom-PaperReviewStaticJson {
 # `review.ps1 report` (J): the report's name and text, and the lines to print. VerdictLines: one string[]
 # per saved verdict file.
 function New-PaperReviewReport {
-    param($Plan, $Check, $VerdictLines, $Static, [string] $Run, [string] $Date, [string] $ReportDir, [string[]] $Existing, $Records = $null, $VerdictRecords = $null, [int] $ComplexityTop = 20)
+    param($Plan, $Check, $VerdictLines, $Static, [string] $Run, [string] $Date, [string] $ReportDir, [string[]] $Existing, $Records = $null, $VerdictRecords = $null, [int] $ComplexityTop = 20, [string[]] $RunScreens = @())
     $pending = @($Check.Queue | Where-Object { $_.Status -eq 'queued' } | ForEach-Object { $_.Id })
     # F212: who answered each batch and who read each queued finding (a plan from before this change has no executor: nothing to say).
     $who = $null; $readers = @()
@@ -1746,7 +1764,7 @@ function New-PaperReviewReport {
         Findings = $merged; Proposals = $proposals; Static = (ConvertFrom-PaperReviewStaticJson -Static $Static); Excluded = @($Plan.Excluded)
         External = $external; RepoRoot = $(if ($external) { "$($Plan.RepoRoot)" } else { '' }); ProfilePath = "$($Plan.ProfilePath)"; Rules = @($Plan.Rules | Where-Object { $null -ne $_ })
         ScopeLines = @($Plan.ScopeLines | Where-Object { $_ })
-        Who = $who; Readers = @($readers)
+        Who = $who; Readers = @($readers); RunScreens = @($RunScreens | Where-Object { $_ })
     }
     $text = ((Format-PaperReviewReport -Report $report) -join "`n") + "`n"
     $notVerified = @($merged | Where-Object { $_.Status -eq 'needs_validation' }).Count
