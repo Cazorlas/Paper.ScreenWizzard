@@ -1,6 +1,6 @@
 {
-  "version": "1.47.6",
-  "payloadHash": "bd8893f4ff6c1d2fb35fb65cbb957933ab56401ac751e94fb6ed83abb322b425",
+  "version": "1.47.7",
+  "payloadHash": "330441b5e1a00ae8998827998fdd9202f212a89d21fb78428eb791d1dbffdfec",
   "hosts": ["desktop", "ai"],
   "files": {
     ".agents/skills/accessibility-review/LICENSE": "a6946284993aeec75c7d75906064b66210c46051e562077efb30eb6dcfe72e26",
