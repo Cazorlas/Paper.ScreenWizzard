@@ -17,17 +17,12 @@ that spans several features or several people.
 
 Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
 
-**Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
-
-**Context:** If working in an isolated worktree, it should have been created via the `git worktree` skill at execution time.
+**Context:** If working in an isolated worktree, it should have been created with the `task-worktree` skill at execution time.
 
 **Save plans to:** `<featureDocs>/<area>/YYYY-MM-DD-<slug>-plan.md`, beside a brief of the same date.
 - `featureDocs` comes from `.claude/paper.profile.json` (default `docs/features`), and `<area>` is the
   folder naming what the plan spans, not one feature - `architecture`, `platform`, and so on.
-- Earlier versions of this skill said `docs/superpowers/plans/`. That was the folder of the toolchain this
-  kit replaced; a plan written there today sits outside every gate, because the `tasks` gate and
-  `/task-verify` read `featureDocs`. Do not write there, and do not move what is already there: those
-  files are a record of what was done, not work waiting to be done.
+- Do not write plans under `docs/superpowers/plans/`: the `tasks` gate and `/task-verify` read only `featureDocs`. Leave files already there; they are records, not open work.
 - The requirement is never written here: it is each feature's `SPEC.md`, written before any code
   (skill `spec`). A plan links the `SPEC.md` files it serves and never repeats a rule from them.
 - Unfinished work that another session continues gets a `docs/progress/` handover beside it; the plan's
@@ -74,8 +69,6 @@ independently testable deliverable.
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use a fresh subagent per task (recommended) or straight execution to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** [One sentence describing what this builds]
 
 **Architecture:** [2-3 sentences about approach]
@@ -108,37 +101,7 @@ include this section.]
   and return types. A task's implementer sees only their own task; this
   block is how they learn the names and types neighboring tasks use.]
 
-- [ ] **Step 1: Write the failing test**
-
-```python
-def test_specific_behavior():
-    result = function(input)
-    assert result == expected
-```
-
-- [ ] **Step 2: Run test to verify it fails**
-
-Run: `pytest tests/path/test.py::test_name -v`
-Expected: FAIL with "function not defined"
-
-- [ ] **Step 3: Write minimal implementation**
-
-```python
-def function(input):
-    return expected
-```
-
-- [ ] **Step 4: Run test to verify it passes**
-
-Run: `pytest tests/path/test.py::test_name -v`
-Expected: PASS
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add tests/path/test.py src/path/file.py
-git commit -m "feat: add specific feature"
-```
+Use `spec/plan-template.md`: the planner's test-contract table, a `[red]` task for the red-turn worker, and a `[green]` task with `{locked: tests/**}`.
 ````
 
 ## No Placeholders
@@ -171,20 +134,4 @@ If you find issues, fix them inline. No need to re-review — just fix and move 
 
 ## Execution Handoff
 
-After saving the plan, offer execution choice:
-
-**"Plan complete and saved to `<featureDocs>/<area>/<filename>-plan.md`. Two execution options:**
-
-**1. Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
-
-**2. Inline Execution** - Execute tasks in this session using executing-plans, batch execution with checkpoints
-
-**Which approach?"**
-
-**If Subagent-Driven chosen:**
-- **Recommended:** dispatch a fresh subagent per task, with a review after each
-- Fresh subagent per task + two-stage review
-
-**If Inline Execution chosen:**
-- **Alternative:** execute the plan task-by-task in this session
-- Batch execution with checkpoints for review
+After saving the plan, give its link and stop. Execution follows the project's planner/worker flow (`task-do/references/planner-worker.md`).

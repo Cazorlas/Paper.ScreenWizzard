@@ -1,6 +1,6 @@
 ---
 name: lane-ui
-description: Worker for the UI lane of an approved plan - only the ui or e2e task ids it is handed, only files inside their files globs, windows, dialogs, pages and view models built on MOCK data, the planner's red test is already present, every screenshot opened and judged against the plan's wireframe, with no host running. Runs beside the logic lane but never beside lane-live, because both need the desktop. Returns one evidence row per task and never ticks the plan, commits or pushes.
+description: Worker for the UI lane of an approved plan - only the ui or e2e task ids it is handed, only files inside their files globs, windows, dialogs, pages and view models built on MOCK data, write tests from the contract table in a red turn or make locked tests green in a green turn, every screenshot opened and judged against the plan's wireframe, with no host running. Runs beside the logic lane but never beside lane-live, because both need the desktop. Returns one evidence row per task and never ticks the plan, commits or pushes.
 model: sonnet
 isolation: worktree
 tools: Read, Grep, Glob, Edit, Write, Bash, PowerShell
@@ -51,8 +51,7 @@ impeccable launcher. This is not for XAML; WPF follows the project's UI style sk
   → a plain unit test (on an STA thread for WPF). Needs a real window - hover, popup, hit testing, how it
   is drawn → a UI harness case plus a driver test. Needs the host's document or command system → it cannot
   render outside the host: hand the case back as lane `live` in your report, with the reason.
-- **The red test is the planner's.** It is already present: make it green; never change, weaken or delete it. A `[red]` task: the UI test — seen
-  failing on its assertion. A build error is not red.
+- A `[red]` turn: write the test code from the plan's contract table, run it once, see it fail on the assertion, change no product code. A green turn: the tests are locked - never change, weaken or delete them. A build error is not red.
 - Next task: build until it passes; run `.claude/paperflow/paperflow.ps1 ui` (or `e2e`), narrowed to the
   task's cases after `--`.
 - **Open every screenshot and judge it** against the wireframe: clipped text, wrong order, a field the spec
@@ -72,8 +71,7 @@ impeccable launcher. This is not for XAML; WPF follows the project's UI style sk
 ## Hand the work back
 
 You run in **your own git worktree** (`isolation: worktree`), so your edits are not in the checkout the
-main session builds. You and the logic lane used to write the same folder at the same time — the thing the
-task gate's F3 rule exists to catch — and two builds shared one `obj/` tree. Now they cannot.
+main session builds. Without it, two lanes of one group would write the same folder at once - what the task gate's F3 rule catches - and share one `obj/` tree.
 
 The price is that nothing comes back on its own. **When your last task is green and every screenshot has
 been looked at, commit everything you changed on your worktree's branch and report the branch name and the

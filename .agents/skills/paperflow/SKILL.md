@@ -33,7 +33,7 @@ Mười một luật này đúng cho mọi chặng dưới đây, và mỗi lu�
 được lúc nào nó xong thì nó là lời khuyên, không phải luật.
 
 1. **Hồi phục trước đã.** Trước bất cứ việc gì, tìm plan của tính năng này. Có plan thì **đọc nó và mọi
-   artifact nó nhắc**, tóm tắt trạng thái trong 3–5 dòng, rồi hỏi vào chặng nào. *Xong khi:* người dùng
+   artifact nó nhắc**, tóm tắt ngắn trạng thái, rồi hỏi vào chặng nào. *Xong khi:* người dùng
    đã chọn điểm vào. **Một việc đã có plan thì được tiếp, không bao giờ bị bắt đầu lại.**
 2. **Một quyết định im lặng là một lỗi.** Mọi lựa chọn — kể cả lựa chọn mình tự tin — phải nằm trong
    `Decisions` của plan hay trong dòng bằng chứng, kèm phương án đã loại. *Xong khi:* đọc plan là biết vì
@@ -61,7 +61,7 @@ Mười một luật này đúng cho mọi chặng dưới đây, và mỗi lu�
    Luật đủ: `references/effort-switch.md`. *Xong khi:* báo cáo nói effort nào cho phần nghĩ và phần làm.
 11. **Host kiểm được thì đo trước, rồi mới đỏ.** Profile khai `live.loop` nghĩa là host tự kiểm được một
    thay đổi code: thứ tự là **ensure → đo trên host (dòng `baseline`) → test đỏ viết từ số đo → xanh → đo
-   lại, lặp tới khi đạt**. Không khai thì đỏ trước như cũ. Luật đủ: skill `task-do`, "Host kiểm được thì đo
+   lại, lặp tới khi đạt**. Không khai thì đỏ trước. Luật đủ: skill `task-do`, "Host kiểm được thì đo
    trước". *Xong khi:* mỗi nhóm có code kiểm được trên host mang một dòng `baseline` trước dòng đỏ của nó,
    hay `baseline: not checkable - <vì sao>`.
 
@@ -121,16 +121,13 @@ người dùng bảo, khi phiên khác đang làm ở cây chính, hay khi build
 
 ## 4. Làm — `/task-do <plan>`
 
-Planner viết test đỏ trước khi giao worker; worker theo lane và planner duyệt từng task. Worker không sửa, không nới,
-không xoá test của planner. Việc nhỏ (cấu hình, câu chữ, một chỗ) session chính làm thẳng, không planner, không worker.
-Worker theo lane: `unit` là Codex qua collab (lane-logic làm thay khi hết usage), còn `ui`/`e2e`, `live`, `model` là
-Claude Sonnet; đo cần mạng không giao Codex. Planner có thể viết thêm test đỏ khi duyệt và trả task về worker.
+Planner viết hợp đồng test; worker lượt đỏ viết mã test, planner duyệt và khoá; worker lượt xanh không sửa, không nới, không xoá test đã khoá. Việc nhỏ (cấu hình, câu chữ, một chỗ) session chính làm thẳng, không planner, không worker. Mọi lane giao worker theo chuỗi Codex → Antigravity → DeepSeek → Claude Sonnet, bỏ qua worker không chạy được phép kiểm của task (`task-do/references/planner-worker.md`). Planner có thể viết thêm test đỏ khi duyệt và trả task về worker.
 
 `/task-do` giữ luật; tóm tắt để biết chờ gì:
 
 - Theo từng nhóm `### n.`: mỗi lane trong nhóm một lane agent, gọi **trong cùng một lượt**, chạy nền —
-  `lane-logic` (`unit`), `lane-ui` (`ui`, `e2e`), `lane-live` (`live`), `lane-model` (`model`) — mỗi agent
-  nhận mã task, đường dẫn plan và SPEC.md, và `{files:}` của từng task.
+  `lane-logic` (`unit`), `lane-ui` (`ui`, `e2e`), `lane-live` (`live`), `lane-model` (`model`) — mỗi worker
+  nhận đầu ra `paperflow.ps1 brief -Task <mã>` cùng đúng các dòng `Cho … →` task phủ - không nhận đường dẫn plan hay SPEC.md.
 - Nối tiếp: task ghi `(sau T<n>)`, nhóm sau chờ nhóm trước, `ui` và `live` không bao giờ cùng lúc (cùng
   màn hình).
 - Session chính giữ plan, SPEC.md, dấu tick, mọi câu hỏi cho người dùng và mọi bước cần công cụ host mà

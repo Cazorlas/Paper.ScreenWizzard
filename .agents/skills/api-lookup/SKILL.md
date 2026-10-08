@@ -1,6 +1,6 @@
 ---
 name: api-lookup
-description: Look up every host or framework API member in the project's docs source before the code that calls it, and record the lookup in the plan's API table - an MCP docs server, a URL, or the assembly itself when neither exists. Use before calling any member of a host application, framework or LLM API, and whenever an exception or a surprising result names one.
+description: Use before calling any member of a host application, framework or LLM API, and whenever an exception or a surprising result names one.
 ---
 
 # Tra API trước khi gọi

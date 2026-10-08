@@ -1,6 +1,6 @@
 # Planner và worker
 
-Planner là phiên chính: session chính lập plan, viết test đỏ, duyệt từng task và rà cuối; không giao planner cho subagent. Việc chỉ có hai vai - planner (phiên chính) và worker (Codex hoặc Claude Sonnet).
+Planner là phiên chính: session chính lập plan, viết hợp đồng test, duyệt từng task và rà cuối; không giao planner cho subagent. Việc chỉ có hai vai - planner (phiên chính) và worker (Codex, Antigravity, DeepSeek hoặc Claude Sonnet, theo thứ tự ở mục Worker theo lane).
 
 ## Planner viết hợp đồng test
 
@@ -18,11 +18,11 @@ Worker không sửa, không nới, không xoá test đã khóa của planner.
 
 Worker lượt xanh ở lượt khác làm mã sản phẩm cho test xanh, không sửa file test đã khóa. Planner duyệt task sau khi lượt xanh báo xong.
 
-Không có dòng baseline thì không viết test: hỏi task `live` đo trước.
+Profile khai `live.loop` mà chưa có dòng baseline thì chưa viết test: hỏi task `live` đo trước.
 
 ## Worker theo lane
 
-Mọi lane - `unit`, `ui`, `e2e`, `live`, `model` - giao worker theo thứ tự: Codex qua collab, rồi DeepSeek (dsh), rồi Claude Sonnet (`lane-ui`, `lane-live`, `lane-model`, hay `lane-logic` khi máy không có Codex hoặc collab); bỏ qua worker không chạy được phép kiểm của task. Codex và DeepSeek không mở được chương trình hay xem màn hình; Codex không có internet nhưng gọi được localhost (MCP của host đang chạy): chỉ task cần những thứ chúng thiếu mới đi tới worker kế tiếp làm được. Session chính không tự làm task: nó phân tích, giao, kiểm và chịu trách nhiệm cuối.
+Mọi lane - `unit`, `ui`, `e2e`, `live`, `model` - giao worker theo thứ tự: Codex qua collab, rồi Antigravity (model Claude, hết thì Gemini mới nhất), rồi DeepSeek (dsh), rồi Claude Sonnet (`lane-ui`, `lane-live`, `lane-model`, hay `lane-logic` khi máy không có Codex hoặc collab); bỏ qua worker không chạy được phép kiểm của task. Codex, Antigravity và DeepSeek không mở được chương trình hay xem màn hình; Codex và Antigravity không có internet nhưng gọi được localhost (MCP của host đang chạy): chỉ task cần những thứ chúng thiếu mới đi tới worker kế tiếp làm được. Session chính không tự làm task: nó phân tích, giao, kiểm và chịu trách nhiệm cuối.
 
 Trước lượt Codex, session chính restore trước (.NET `dotnet restore`, Python `uv sync`) trong thư mục làm việc của lần cộng tác; lệnh test của brief chạy không mạng (.NET `--no-restore`).
 

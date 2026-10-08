@@ -1,6 +1,6 @@
 ---
 name: clean-architecture
-description: Place a feature's code in the use case / port shape - the decision logic in a host-free interactor, the host behind a port with plain data crossing it, a thin command and a translating adapter - and keep it there with the profile's platform-free rules. Use when adding or refactoring a feature, when a decision is only testable with the host running, or when layer-guard blocks an edit.
+description: Use when adding or refactoring a feature's code, when a decision is only testable with the host running, or when layer-guard blocks an edit.
 ---
 
 # Use case, port, adapter

@@ -19,8 +19,7 @@ Skill này là **kiến thức miền** (ADR-0009, ADR-0029): nó không giữ c
 
 1. **Luật từ khoá trả lời trước, Jev chỉ tinh chỉnh.** Không có khoá, Jev lỗi, hay Jev trả lời một lựa chọn ngoài
    danh sách thì câu đó lùi về luật. Tính năng phải chạy trọn mà không cần mạng.
-2. **Jev bật theo mặc định.** Chủ dự án đổi luật ngày 2026-10-04: "jev cứ cho bật đi bạn, mình ko sợ gửi dữ liệu ra
-   ngoài". Công tắc chung `PAPER_JEV` và công tắc riêng của mỗi tính năng (`PAPER_<TÍNH NĂNG>_JEV`) đọc cùng một cách:
+2. **Jev bật theo mặc định** (ADR-0042). Công tắc chung `PAPER_JEV` và công tắc riêng của mỗi tính năng (`PAPER_<TÍNH NĂNG>_JEV`) đọc cùng một cách:
    `0`, `false`, `off` hay `no` (bỏ khoảng trắng, không phân biệt hoa thường) là tắt; không đặt hay giá trị khác là bật.
    Một trong hai tắt thì **không** có lời gọi mạng nào, kể cả khi có khoá. Bật mà không có khoá thì không gọi,
    `Outcome` là `no-key` và người dùng được nói rõ thiếu khoá.
