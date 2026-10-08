@@ -111,7 +111,7 @@ mock UI trước host thật; lane `live` kiểm lại sau khi unit xanh;
 "When it does not do the job" mà việc này chạm phải có task tới được nó, và task nêu mã `F<n>` nó phủ —
 mỗi `F<n>` là **một** test, tên test bắt đầu bằng mã (`F3_…`).
 
-Hợp đồng test do planner viết trong plan (mã ca, đầu vào, file test, kết quả mong đợi tới dòng in hay mã thoát) trước khi giao worker; worker lượt đỏ viết mã test, chạy một lần, ghi dòng đỏ; planner duyệt rồi khoá. Worker không sửa, không nới, không xoá test đã khoá. Với `live.loop`, hợp đồng viết từ dòng baseline; không có dòng baseline thì chưa viết.
+Hợp đồng test do planner viết trong plan (mã ca, đầu vào, file test, kết quả mong đợi tới dòng in hay mã thoát) trước khi giao worker; worker lượt đỏ viết mã test, chạy một lần, ghi dòng đỏ; planner duyệt rồi khoá. Worker không sửa, không nới, không xoá test đã khoá. Với `live.loop`, hợp đồng viết từ dòng baseline; không có dòng baseline thì chưa viết. Có prototype thì hợp đồng gồm ảnh mẫu và các cặp đầu vào → kết quả của phương án đã chọn, cộng các ca demo bỏ qua (lỗi, rỗng, dữ liệu lớn, huỷ, từng năm host).
 
 Lane trong một nhóm chạy song song, mỗi lane một lane agent, và chỉ sửa file trong `{files:}` của task
 mình; nhóm sau chờ nhóm trước. Lane `ui` và `live` không bao giờ chung một nhóm.
