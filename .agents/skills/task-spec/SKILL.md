@@ -56,8 +56,7 @@ Viết yêu cầu, brief và plan — theo đúng thứ tự đó — rồi kế
      baseline** (nhóm trước task `[red]`, xong khi dòng bằng chứng có chữ `baseline`), và `[red]` viết từ số đó
      (skill `task-do`, "Host kiểm được thì đo trước"); nhóm cuối là
      Close — `find-bug`, agent `architecture-reviewer`, rồi đóng `SPEC.md`. Mỗi task nói **xong khi** nào.
-   - **Test đỏ do planner viết** trước khi giao worker; planner chạy một lần và ghi dòng đỏ vào plan. Worker không sửa,
-     không nới, không xoá test của planner. Với `live.loop`, test đỏ viết từ dòng baseline; không có dòng baseline thì không viết test.
+   - **Hợp đồng test do planner viết** trong plan (mã ca, đầu vào, file test, kết quả mong đợi tới dòng in hay mã thoát) trước khi giao worker; worker lượt đỏ viết mã test, chạy một lần, ghi dòng đỏ; planner duyệt rồi khoá. Worker không sửa, không nới, không xoá test đã khoá. Với `live.loop`, hợp đồng viết từ dòng baseline; không có dòng baseline thì chưa viết.
    - **Mỗi task sửa file ghi `{files: <glob>, <glob>}` ở cuối dòng** — đó là tất cả những gì lane agent
      của nó được đụng. Các lane trong một nhóm chạy song song: glob của hai lane khác nhau trong một nhóm
      không được giao nhau (F3), không thì task sau ghi `(sau T<n>)` hay tách nhóm. Lane `ui` và `live`

@@ -1,6 +1,6 @@
 ---
 name: parity-refactor
-description: Refactor a feature without changing what it does - freeze the old code as a Baseline, run old and new on the same inputs and compare every result, delete the Baseline only when they match. Use for any refactor, split or "clean up without changing behaviour"; a host pack may add its own parity-compare skill with the mechanics of comparing inside that host.
+description: Use for any refactor, split or "clean up without changing behaviour"; a host pack may add its own parity-compare skill for comparing inside that host.
 ---
 
 # Refactor under a parity check

@@ -65,7 +65,7 @@ phải bug; một `O(n²)` **không ai biết là `O(n²)`** mới là thứ tre
 
 ## Planner/worker flow
 
-Planner viết test đỏ trước khi giao worker; worker không sửa, không nới, không xoá test của planner. Worker theo lane và planner duyệt từng task theo [references/planner-worker.md](references/planner-worker.md).
+Planner viết hợp đồng test; worker lượt đỏ viết mã test theo bảng, planner duyệt rồi khoá; worker lượt xanh không sửa, không nới, không xoá test đã khoá. Worker theo lane và planner duyệt từng task theo [references/planner-worker.md](references/planner-worker.md).
 
 ## 3. Các task, theo đúng thứ tự trong plan
 
@@ -76,7 +76,7 @@ chứng minh code bằng chính nó.
 
 | Lane | Lane agent | Bằng chứng nào được tính |
 | --- | --- | --- |
-| `unit` | `lane-logic` | Codex qua collab; lane-logic làm thay khi Codex hoặc collab hết. Planner viết test đỏ, worker làm cho xanh. Verb `test` |
+| `unit` | `lane-logic` | Worker theo chuỗi ở references/planner-worker.md (Codex → Antigravity → DeepSeek → lane-logic). Hợp đồng test của planner, mã test của worker lượt đỏ, worker lượt xanh làm cho xanh. Verb `test` |
 | `ui` / `e2e` | `lane-ui` | Mock trên dữ liệu giả theo wireframe trong plan trước khi chạy host thật; mở ảnh ra **xem** và tự phán xét. Verb `ui` / `e2e` |
 | `live` | `lane-live` | Task `baseline` (dự án khai `live.loop`): đo hành vi **hôm nay** trên host, trả số trong dòng bằng chứng có chữ `baseline`. Task kiểm: verb `publish`, rồi lái **phiên host đang kết nối** trên một case thật và **đọc lại** kết quả từ chính host. Dọn thứ đã tạo. Không bao giờ lưu dữ liệu của người dùng. Mở, tắt hay restart host - kể cả bản copy - phải hỏi người dùng trước, và ghi câu trả lời vào dòng bằng chứng |
 | `model` | `lane-model` | Mỗi nhóm: khảo sát chỉ đọc → chạy thử không giữ gì → thực hiện → **đọc lại bằng script khác**; mỗi dòng nêu mã luật. Script giữ lại trong `harness/` |
@@ -96,7 +96,7 @@ Profile khai `live.loop` nghĩa là host tự kiểm được một thay đổi 
 
 Hành vi host không cho thấy được (phép tính thuần) ghi `baseline: not checkable - <vì sao>` và giữ đỏ
 trước. Hook `live-first-guard` nhắc khi code bị sửa trước khi có dòng baseline (hay chặn, khi profile đặt
-`live.enforceOrder`). Không khai `live.loop`: thứ tự cũ — đỏ trước, `live` sau khi unit xanh.
+`live.enforceOrder`). Không khai `live.loop`: đỏ trước, `live` sau khi unit xanh.
 
 ### Một test xanh ngay lần đầu chưa phải là một test
 
@@ -126,8 +126,8 @@ chính biểu thức của code, hằng so với hằng, snapshot chưa ai đọ
 Đơn vị song song là **nhóm** `### n.` của plan: các lane trong một nhóm chạy cùng lúc;
 nhóm sau chỉ giao khi mọi task của nhóm trước đã tick (F35) — một task chưa đạt thì xử lý nó, hay dừng và nêu task chặn cùng verdict.
 
-1. Với nhóm đầu còn task mở, gom task theo lane. Trong **một** lượt, gọi mỗi lane một `Agent` chạy nền, tên
-   theo bảng trên. Prompt của nó là output của `.claude/paperflow/paperflow.ps1 brief -Path <plan> -Task <mã>`
+1. Với nhóm đầu còn task mở, gom task theo lane. Trong **một** lượt, giao mỗi lane cho worker theo chuỗi ở references/planner-worker.md; tới Claude Sonnet thì gọi lane agent tên
+   theo bảng trên, chạy nền. Prompt của nó là output của `.claude/paperflow/paperflow.ps1 brief -Path <plan> -Task <mã>`
    (dòng task, `{files:}`, dòng `F<n>` của `SPEC.md`, wireframe cho `ui`, dòng `baseline` cho `[red]`) cộng
    đúng các dòng `Cho … →` mà task phủ — **không** gửi đường dẫn để lane tự đọc cả plan hay cả `SPEC.md`
    (ADR-0023: lane tự đọc là thứ đẩy nó tới 200–300k). Lane trả `not verifiable (brief-lacks: <dòng>)` (F28) thì
@@ -159,8 +159,7 @@ nhóm sau chỉ giao khi mọi task của nhóm trước đã tick (F35) — m�
   `/task-verify` trên các file plan đã đổi (hook `layer-guard` không thấy file ghi qua lệnh shell); một
   vi phạm nó báo là **fail** và việc quay về đây.
 - Task không chứng minh được ở lane của nó thì đổi lane ngay trong dòng bằng chứng, kèm lý do.
-- Plan không có lane agent nào dùng được (dự án chưa vendored agent): session chính tự chạy từng lane theo
-  đúng thứ tự trên, cùng các luật đó.
+- Không có lane agent nào dùng được: đi tiếp chuỗi worker; hết chuỗi thì dừng và nêu task chặn.
 
 ## 4. Vòng test — ba verdict, và chỉ một là lý do sửa code
 

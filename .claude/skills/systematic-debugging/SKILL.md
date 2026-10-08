@@ -7,8 +7,7 @@ description: Use when encountering any bug, test failure, or unexpected behavior
 
 Random fixes waste time and create new bugs. Quick patches mask underlying issues.
 
-**Core principle:** ALWAYS find root cause before attempting fixes. Symptom fixes are failure.
-**Violating the letter of this process is violating the spirit of debugging.**
+Core principle: find the root cause before attempting a fix; a symptom fix is not a fix.
 
 ## The Iron Law
 
@@ -36,7 +35,7 @@ a behaviour only the new build has). The host pack's live skill says how to get 
 
 ## The Four Phases
 
-You MUST complete each phase before proceeding to the next.
+Complete each phase before the next.
 
 ### Phase 1: Root Cause Investigation
 
@@ -121,7 +120,7 @@ also lists the phrases a human partner uses when you are guessing.
 
 If investigation shows the issue is truly environmental, timing-dependent or external: document what you
 investigated, implement appropriate handling (retry, timeout, error message), and add monitoring or
-logging for next time. **But** 95% of "no root cause" cases are incomplete investigation.
+logging for next time.
 
 ## Supporting Techniques
 

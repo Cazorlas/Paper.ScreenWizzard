@@ -1,6 +1,6 @@
 ---
 name: spec
-description: Write a Paper feature's requirement first - SPEC.md in the user's words with measurable acceptance, before any code - then a frozen brief and a checkbox plan the user approves, and close SPEC.md (draft banner and change markers out) once verification passes. Use when starting or finishing feature behavior work; use spec-backfill for an existing undocumented feature.
+description: Use when starting a feature's behaviour work - a new or changed requirement, before any code - or closing its SPEC.md after verification; use spec-backfill for an existing undocumented feature.
 ---
 
 # Paper feature spec

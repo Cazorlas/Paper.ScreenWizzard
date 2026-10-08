@@ -114,8 +114,7 @@ that land on the same cause are one task, once a reader has traced both to it.
 
 Verify findings in parallel, one reader per finding - a reader only reads, never fixes.
 
-A suspicion (no concrete input) skips all of this: it stays a line in the report, as before, and is
-never chased into a verdict.
+A suspicion (no concrete input) skips all of this: it stays a line in the report and is never chased into a verdict.
 
 ### What a verdict looks like
 
