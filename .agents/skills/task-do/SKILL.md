@@ -153,7 +153,7 @@ nhóm sau chỉ giao khi mọi task của nhóm trước đã tick (F35) — m�
    tick task `pass`; dòng API vào bảng API; file agent báo đã sửa phải nằm trong glob của task — một file
    ngoài glob là fail của task đó. Task `fail` hay `not verifiable` không tick: xử lý theo phần 4 (vòng test).
 6. Sang nhóm kế. Nhóm không lane (Close) để cho `/task-verify`.
-7. **Hết mọi lane: session chính chạy verb `build` một lần.** Không chạy lại toàn bộ test; `/task-verify` chạy test của mọi task một lần cộng test mà file đã đổi nuôi.
+7. **Hết mọi lane: session chính chạy verb `build` một lần.** Không chạy lại toàn bộ test; `/task-verify` chạy test của mọi task một lần cộng test mà file đã đổi nuôi, rồi cả bộ unit một lần trước khi gộp đợt.
 
 - Code tính năng đặt theo skill `clean-architecture`. Agent `architecture-reviewer` chạy trong
   `/task-verify` trên các file plan đã đổi (hook `layer-guard` không thấy file ghi qua lệnh shell); một

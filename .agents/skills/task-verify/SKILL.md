@@ -32,7 +32,10 @@ run as incomplete until the plan's independent verification evidence is availabl
 
    Planner rà cuối: đọc lại từng task sau khi worker trả về, chạy test của mỗi task một lần bằng lệnh trong dòng bằng chứng
    của task đó, cộng các test mà file đã đổi nuôi; planner viết thêm test đỏ khi cần và trả task về worker. Không chạy lại
-   toàn bộ test ở đây. Plan model không đổi code: `không áp dụng`.
+   toàn bộ test sau mỗi task. Rồi, trước khi gộp đợt, chạy **cả bộ unit một lần**, chạy nền (verb `test` không lọc);
+   test UI và test trong host không nằm ở bước này vì chiếm màn hình. Lý do: test ngoài các file đã đổi mà planner
+   không đoán ra vẫn bị bắt (một bộ 7021 test chạy khoảng 5 phút; đo 2026-10-09). Plan model không đổi code:
+   `không áp dụng`.
    Pass cần exit 0 **và** số test đã chạy **> 0**. Exit 0 với 0 test là `not verifiable`, không phải
    pass. Một fail không nằm trong `knownFailures` của profile là **fail**, bất kể ai gây ra. Nếu thay
    đổi đụng tới một cấu hình build riêng, build cả cấu hình đó (verb `build`).

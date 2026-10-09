@@ -36,7 +36,7 @@ Worker hỏi thì planner quyết ngay: lane agent trả `not verifiable (brief-
 
 ## Rà cuối
 
-Không chạy lại toàn bộ test: hết mọi lane, session chính chạy verb `build` một lần; test của mọi task chạy ở rà cuối (`/task-verify`).
+Không chạy lại toàn bộ test: hết mọi lane, session chính chạy verb `build` một lần; test của mọi task chạy ở rà cuối (`/task-verify`), rồi cả bộ unit một lần, chạy nền, trước khi gộp đợt.
 
 Một worker hỏi thì câu hỏi đi tới planner ngay; nếu không tới được planner thì đi qua `main`.
 
