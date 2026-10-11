@@ -60,7 +60,7 @@ Skill này là **kiến thức miền** (ADR-0009, ADR-0029 của kit): nó khô
   `HttpMessageHandler` giả: chậm quá timeout, `401` ở dòng đầu, `429` rồi `200`.
 - Có hai đường, chọn bằng một policy chứ không bằng URL tự do. **OpenRouter là đường chính**: khoá
   `OPENROUTER_API_KEY`, `https://openrouter.ai/api` + `/v1/systemone`, model `typesafe/jev-1.13`; base `/api/v1` trả 404.
-  TypeSafe `https://api.typesafe.ai/v1/systemone` với model `jev-latest` chỉ khi không có khoá OpenRouter
+  TypeSafe `https://api.typesafe.ai/v1/systemone` với model `jev-1.13` chỉ khi không có khoá OpenRouter
   (`TYPESAFE_API_KEY`).
 - Câu tiếng Việt thì gửi **cả bản gốc lẫn bản bỏ dấu** trong state. Đo trên chatbot: Jev v2 đúng 38/41, so với
   32/41 của luật.

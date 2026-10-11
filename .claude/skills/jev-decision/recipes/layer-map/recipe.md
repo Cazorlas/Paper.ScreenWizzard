@@ -63,7 +63,7 @@ Fixture có 45 dòng bịa: 30 dòng tên theo chuẩn AIA hoặc ISO, và 15 d�
 thật (ống gió trong shaft, cable duct, fire alarm, tên lớp tiếng Việt và tiếng Trung, refrigerant, LPG).
 
 `rules: 31/45 rows, hard 1/15`
-`jev (typesafe/jev-1.13, 2026-10-01): 33/45 rows, hard 11/15`
+`jev (typesafe/jev-1.13, 2026-10-11): 33/45 rows, hard 11/15`
 
 Một lần chạy qua OpenRouter trên fixture bịa, sau khi đổi chữ báo cháy; câu Jev không trả lời thì lấy của luật; chưa
 áp luật sau Jev (a)–(d). Dòng khó Jev vẫn sai: LM31, LM34, LM36, LM37 (theo từng câu: `discipline` 43/45,

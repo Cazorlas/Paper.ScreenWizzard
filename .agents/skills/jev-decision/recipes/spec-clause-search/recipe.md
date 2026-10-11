@@ -89,7 +89,7 @@ quan); giới hạn ngược; chỉ tới bảng; chỉ một trường hợp; t
 dấu. Nhãn của dòng khó: `yes` 7, `partly` 3, `no` 7.
 
 `rules: 28/43 rows, hard 2/17`
-`jev (typesafe/jev-1.13, 2026-10-01): 42/43 rows, hard 16/17`
+`jev (typesafe/jev-1.13, 2026-10-11): 42/43 rows, hard 16/17`
 
 Một lần chạy qua OpenRouter trên fixture bịa; câu Jev không trả lời thì lấy của luật; chưa áp luật (a)–(c). Dòng khó
 Jev vẫn sai: SC42 — câu hỏi Anh về van chặn lửa cho ống hút bếp qua tường ngăn cháy, đoạn Việt nêu một yêu cầu liên

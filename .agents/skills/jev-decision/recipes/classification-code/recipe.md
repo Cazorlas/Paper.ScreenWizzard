@@ -102,7 +102,7 @@ family "Duct Fitting" nhưng là damper; ống gió tròn và ống nước cùn
 đo tầng 3. Hộp VAV không có trong fixture: v1.43 đặt nó ở hai chỗ (Pr_65_65_24_93 và Pr_70_65_04_94).
 
 `rules: 35/45 rows, hard 6/16`
-`jev (typesafe/jev-1.13, 2026-10-01): 44/45 rows, hard 15/16`
+`jev (typesafe/jev-1.13, 2026-10-11): 44/45 rows, hard 15/16`
 
 Một lần chạy qua OpenRouter trên fixture bịa; câu Jev không trả lời thì lấy của luật; chưa áp luật sau Jev. Dòng khó
 Jev vẫn sai: CC44. Theo từng câu Jev đúng `group` 45/45, `subgroup_pr_65` 25/26, `section_pr_65_65` 9/9, nên CC44 sai

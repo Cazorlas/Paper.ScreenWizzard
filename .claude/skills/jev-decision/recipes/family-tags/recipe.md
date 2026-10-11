@@ -119,7 +119,7 @@ kiến trúc, thường) và FT46 (ty treo, khó) thêm 2026-10-01 sau lần đo
 tên lựa chọn.
 
 `rules: 34/46 rows, hard 4/16`
-`jev (typesafe/jev-1.13, 2026-10-01): 43/46 rows, hard 13/16`
+`jev (typesafe/jev-1.13, 2026-10-11): 43/46 rows, hard 13/16`
 
 Một lần chạy qua OpenRouter trên fixture bịa, sau khi đổi ranh giới và danh mục; câu Jev không trả lời thì lấy của
 luật; chưa áp luật sau Jev (a)–(d). Dòng khó Jev vẫn sai: FT32, FT33, FT39 (theo từng câu: `library_category` 43/46,

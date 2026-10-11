@@ -100,7 +100,7 @@ trong ticket tiền, ticket phủ định chính từ khoá, lỗi khởi độn
 độ gấp, cập nhật mà không phải install.
 
 `rules: 30/45 rows, hard 3/18`
-`jev (typesafe/jev-1.13, 2026-10-01): 43/45 rows, hard 16/18`
+`jev (typesafe/jev-1.13, 2026-10-11): 43/45 rows, hard 16/18`
 
 Một lần chạy qua OpenRouter trên fixture bịa; câu Jev không trả lời thì lấy của luật; chưa áp luật (a)–(e). Dòng khó
 Jev vẫn sai: ST32, ST33. Theo từng câu: `queue` 45/45, `urgency` 43/45, và chỉ hai dòng sai, nên cả hai sai đúng câu

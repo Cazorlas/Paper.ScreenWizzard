@@ -115,7 +115,7 @@ Windows-1252); `Checker` còn nguyên trong Checked By; ngày là số serial c�
 kèm `REV C02`; `ngày 01 tháng 10 năm 2026`.
 
 `rules: 32/41 rows, hard 6/15`
-`jev (typesafe/jev-1.13, 2026-10-01): 40/41 rows, hard 14/15`
+`jev (typesafe/jev-1.13, 2026-10-11): 40/41 rows, hard 14/15`
 
 Một lần chạy qua OpenRouter trên fixture bịa, sau khi đổi chữ của `field`; câu Jev không trả lời thì lấy của luật;
 chưa áp luật sau Jev (a)–(d). Dòng khó Jev vẫn sai: TF40 (theo từng câu: `field` 40/41, `value_ok` 40/41). 41 lời

@@ -93,7 +93,7 @@ Việt, trang nối tiếp của bảng không khung tên, chữ "continued" tr�
 tiết chỉ nhận ra qua tỷ lệ, tiền tố Việt `MC`, "sơ đồ hệ thống", "trần" trong ghi chú của mặt bằng ống gió).
 
 `rules: 20/33 rows, hard 0/13`
-`jev (typesafe/jev-1.13, 2026-10-01): 32/33 rows, hard 13/13`
+`jev (typesafe/jev-1.13, 2026-10-11): 32/33 rows, hard 13/13`
 
 Một lần chạy qua OpenRouter trên fixture bịa; câu Jev không trả lời thì lấy của luật; chưa áp luật sau Jev (a)–(e).
 Dòng khó Jev vẫn sai: không có. Cả 13 dòng khó đúng đủ ba câu, kể cả SC28 ("continued" trên số sheet mới), SC23 và

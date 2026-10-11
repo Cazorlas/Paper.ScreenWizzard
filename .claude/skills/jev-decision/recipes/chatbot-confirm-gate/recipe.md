@@ -62,7 +62,7 @@ lỗi: động từ xoá hay đổi ngầm (làm lại, kéo dài, clean up), đ
 đối tượng chứ không là chỗ, chỗ bị loại trừ.
 
 `rules: 36/50 rows, hard 6/20`
-`jev (typesafe/jev-1.13, 2026-10-01): 47/50 rows, hard 18/20`
+`jev (typesafe/jev-1.13, 2026-10-11): 48/50 rows, hard 18/20`
 
 Một lần chạy qua OpenRouter trên fixture bịa; câu Jev không trả lời thì lấy của luật; chưa áp luật (a)–(c). Dòng khó
 Jev vẫn sai: CG35, CG40. Theo từng câu: `destructive` 49/50, `has_negation_or_exception` 50/50, `scope` 48/50, nên mỗi

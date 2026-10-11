@@ -66,7 +66,7 @@ Luật không bắt được dòng khó nào (hard 0/12) là chủ ý: các dòn
 từ khoá không thấy, để đo Jev giúp thêm được bao nhiêu. Luật, câu hỏi và fixture cùng một người viết: đây là số dev.
 Chưa có lượt thật nào được chấm.
 
-`jev (typesafe/jev-1.13, 2026-10-06): 21/30 rows, hard 10/12`
+`jev (typesafe/jev-1.13, 2026-10-11): 23/30 rows, hard 10/12`
 
 Đo bởi planner 2026-10-06 (30 lời gọi, 14,2 s, 29 962 token vào). Theo câu: `verdict` 28/30, `concern` 22/30. Hai
 `verdict` sai: WT01 (lượt sạch chấm `needs-look`, 0,88 - thận trọng) và WT25 (bản vá không chứng minh lời báo, chấm
