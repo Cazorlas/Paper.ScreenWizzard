@@ -1,6 +1,6 @@
 {
-  "version": "1.47.10",
-  "payloadHash": "e8d283a79f3654f15191cf615a7fcccf62618521da8a9f6094183c4eeee77097",
+  "version": "1.47.11",
+  "payloadHash": "51733fd56cec8c151f2dcce45e2cc801c58407ea748b5e63df7c01f02f2e2f10",
   "hosts": ["desktop", "ai"],
   "files": {
     ".agents/skills/accessibility-review/LICENSE": "a6946284993aeec75c7d75906064b66210c46051e562077efb30eb6dcfe72e26",
@@ -72,7 +72,7 @@
     ".agents/skills/impeccable/reference/shape.md": "a55f016c046cb6a27c55bd7f346375aeb506a755c4fbca19a5f92dbd42309c23",
     ".agents/skills/impeccable/reference/typeset.md": "02d022ad590764af54ace0e0987c2d398ce8659f727a7181a3d479fd14461f9b",
     ".agents/skills/impeccable/reference/visualize.md": "cdf8a88b9865599c58fe285041d2d46eea7d9bd2d4075d82de358191742b20ad",
-    ".agents/skills/jev-decision/SKILL.md": "ca65393bcf2d3d0d2502b3f3137f18b0c50780c558699ca7b0fd0bed4cc1f2ba",
+    ".agents/skills/jev-decision/SKILL.md": "8f7507e9a929b3c9879bd14c196daa65cb3a24815fd5fdab65678617d4ffcb65",
     ".agents/skills/jev-decision/recipes/chatbot-confirm-gate/fixture.jsonl": "8609ed28e0b8db614faf79837f803c658ad963d440c1bf58ef1ef690d2a94ec8",
     ".agents/skills/jev-decision/recipes/chatbot-confirm-gate/questions.json": "cc68909636636bdb897ef73641c5a8abcdd1556fa59ce24ef783a2fde9b59d30",
     ".agents/skills/jev-decision/recipes/chatbot-confirm-gate/recipe.md": "9ee358d89a676371e45852a4f462b5896bec726a78968ee2c1f7281d08da58f3",
@@ -395,7 +395,7 @@
     ".claude/skills/impeccable/reference/shape.md": "a55f016c046cb6a27c55bd7f346375aeb506a755c4fbca19a5f92dbd42309c23",
     ".claude/skills/impeccable/reference/typeset.md": "02d022ad590764af54ace0e0987c2d398ce8659f727a7181a3d479fd14461f9b",
     ".claude/skills/impeccable/reference/visualize.md": "cdf8a88b9865599c58fe285041d2d46eea7d9bd2d4075d82de358191742b20ad",
-    ".claude/skills/jev-decision/SKILL.md": "ca65393bcf2d3d0d2502b3f3137f18b0c50780c558699ca7b0fd0bed4cc1f2ba",
+    ".claude/skills/jev-decision/SKILL.md": "8f7507e9a929b3c9879bd14c196daa65cb3a24815fd5fdab65678617d4ffcb65",
     ".claude/skills/jev-decision/recipes/chatbot-confirm-gate/fixture.jsonl": "8609ed28e0b8db614faf79837f803c658ad963d440c1bf58ef1ef690d2a94ec8",
     ".claude/skills/jev-decision/recipes/chatbot-confirm-gate/questions.json": "cc68909636636bdb897ef73641c5a8abcdd1556fa59ce24ef783a2fde9b59d30",
     ".claude/skills/jev-decision/recipes/chatbot-confirm-gate/recipe.md": "9ee358d89a676371e45852a4f462b5896bec726a78968ee2c1f7281d08da58f3",

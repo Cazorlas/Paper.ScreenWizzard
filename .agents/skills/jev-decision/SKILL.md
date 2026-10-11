@@ -62,6 +62,16 @@ Skill này là **kiến thức miền** (ADR-0009, ADR-0029 của kit): nó khô
   `OPENROUTER_API_KEY`, `https://openrouter.ai/api` + `/v1/systemone`, model `typesafe/jev-1.13`; base `/api/v1` trả 404.
   TypeSafe `https://api.typesafe.ai/v1/systemone` với model `jev-1.13` chỉ khi không có khoá OpenRouter
   (`TYPESAFE_API_KEY`).
+- **Chạy lô thì Nemotron :free trước, Jev lùi sau** (chủ dự án 2026-10-11), chỉ cho layer-map, sheet-classify,
+  family-tags, clash-resolution, excel-param-map, titleblock-fill, spec-clause-search, support-triage: đo một lần
+  2026-10-12 trên fixture dev, `nvidia/nemotron-3-ultra-550b-a55b:free` bằng hoặc hơn Jev cả số dòng lẫn dòng khó
+  (cả 12 recipe: 471/488, hard 177/186; Jev 438, hard 161). Gọi `https://openrouter.ai/api/v1/chat/completions`,
+  `temperature 0`, cùng khoá OpenRouter, đúng prompt và cách đọc JSON ghi ở sổ nghiên cứu (đường dẫn ở cuối skill); câu trả lời đọc như
+  `answers` của Jev, rồi luật nhất quán như cũ. Nó chậm (12–50 s/dòng) nên luật timeout 5 s ở trên **không** áp: timeout
+  180 s, thử tối đa 4 lần; hết giờ, `429`, `5xx` hay hết hạn mức free (20 lượt/phút, 1000/ngày) thì dòng đó gọi Jev.
+  Lệnh người dùng đang chờ (chatbot-confirm-gate, csharp-risk-gate, hook) và classification-code, worker-turn-triage
+  (thấp hơn Jev) vẫn gọi Jev. Công tắc của luật 2 tắt thì không gọi cả hai. Endpoint free có thể lưu prompt: hỏi
+  chủ dự án trước khi gửi dữ liệu thật qua nó.
 - Câu tiếng Việt thì gửi **cả bản gốc lẫn bản bỏ dấu** trong state. Đo trên chatbot: Jev v2 đúng 38/41, so với
   32/41 của luật.
 
