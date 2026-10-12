@@ -70,8 +70,8 @@ Skill này là **kiến thức miền** (ADR-0009, ADR-0029 của kit): nó khô
   `answers` của Jev, rồi luật nhất quán như cũ. Nó chậm (12–50 s/dòng) nên luật timeout 5 s ở trên **không** áp: timeout
   180 s, thử tối đa 4 lần; hết giờ, `429`, `5xx` hay hết hạn mức free (20 lượt/phút, 1000/ngày) thì dòng đó gọi Jev.
   Lệnh người dùng đang chờ (chatbot-confirm-gate, csharp-risk-gate, hook) và classification-code, worker-turn-triage
-  (thấp hơn Jev) vẫn gọi Jev. Công tắc của luật 2 tắt thì không gọi cả hai. Endpoint free có thể lưu prompt: hỏi
-  chủ dự án trước khi gửi dữ liệu thật qua nó.
+  (thấp hơn Jev) vẫn gọi Jev. Công tắc của luật 2 tắt thì không gọi cả hai. Endpoint free có thể lưu prompt; chủ dự án
+  đồng ý gửi dữ liệu thật qua nó ngày 2026-10-12, như luật 3.
 - Câu tiếng Việt thì gửi **cả bản gốc lẫn bản bỏ dấu** trong state. Đo trên chatbot: Jev v2 đúng 38/41, so với
   32/41 của luật.
 
