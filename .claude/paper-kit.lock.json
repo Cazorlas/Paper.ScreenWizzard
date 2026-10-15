@@ -1,6 +1,6 @@
 {
-  "version": "1.47.17",
-  "payloadHash": "e16a6e63d138606a77c1eeeb54ef85a1989661616c18ff5558e2fa1d1d51eca5",
+  "version": "1.47.18",
+  "payloadHash": "2e8cd40f99c48e48dd5469b1e946ed700640db3ec19be73cfcc5ed1e761a7b6e",
   "hosts": ["desktop", "ai"],
   "files": {
     ".agents/skills/accessibility-review/LICENSE": "a6946284993aeec75c7d75906064b66210c46051e562077efb30eb6dcfe72e26",
@@ -261,7 +261,7 @@
     ".claude/hooks/harness-event.ps1": "96059750c75766e7161d7b3ab6b2a6d11a135b2b39db93f3ddd32d4834370835",
     ".claude/hooks/hook-dispatch-plan.ps1": "6ef4f23af591a897727d07071816a07b298f0c9fdffcd03135f8e7af8ca680c4",
     ".claude/hooks/hook-dispatch.ps1": "87210ca234575319cd53c9903f21f4b72b237aac13738ed4bbeaa2a65b2803c4",
-    ".claude/hooks/hook-input.ps1": "64ed1641277159aa30ffe298bc12ba277612eed4969f9bad3994ea32026fcee8",
+    ".claude/hooks/hook-input.ps1": "d0440564e71ba58bf788ca4827191d9b8fee1c4d92bf21be4c52c4ad336b49a7",
     ".claude/hooks/kit-version-plan.ps1": "0f5eea5ebe97e62dd77994dbd1017d794ec46de898813fde0273e069fc66413d",
     ".claude/hooks/layer-guard.ps1": "7691346abc16a0daeec19fa82fa4b8c5e16d2e6f170c49dac4d5bdea73179f2a",
     ".claude/hooks/link-nag-plan.ps1": "f0f1dcfb23aea63e55a274344e7023c3326571881c7c853202597b849807f3c2",
