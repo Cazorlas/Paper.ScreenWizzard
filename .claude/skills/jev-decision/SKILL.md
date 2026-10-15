@@ -15,6 +15,8 @@ Skill này là **kiến thức miền** (ADR-0009, ADR-0029 của kit): nó khô
 `/task-spec` → `/task-do` như mọi việc khác; skill này nói câu hỏi gửi Jev trông thế nào, cái gì được rời máy, và
 đo thế nào.
 
+Bản ở `~/.claude/skills/jev-decision`, cài bằng `tools/collab/scripts/setup.ps1 -AllAgents`, thắng bản vendor cùng tên của dự án trong Claude Code; cả hai cùng lấy từ nguồn kit.
+
 ## Bảy luật
 
 1. **Luật từ khoá trả lời trước, Jev chỉ tinh chỉnh.** Không có khoá, Jev lỗi, hay Jev trả lời một lựa chọn ngoài
@@ -90,12 +92,14 @@ Dòng `hard` chép **mẫu lỗi đã gặp trên dữ liệu thật** (tên l�
 bằng dữ liệu bịa. Viết các dòng `hard` **trước**, rồi mới viết luật, và không sửa luật cho tới khi luật đúng các dòng
 đó. Dòng thường được viết cùng lúc với luật nên luật luôn đúng chúng. Chỉ dòng khó mới cho biết Jev giúp được tới đâu.
 
+Trong Codex hoặc agent không thay biến này, `${CLAUDE_SKILL_DIR}` là thư mục chứa SKILL.md này (`.agents/skills/jev-decision` trong repo dùng kit).
+
 ```powershell
 # offline, không tốn tiền: in số của luật
-powershell -NoProfile -File .claude/skills/jev-decision/scripts/jev-eval.ps1 -Recipe .claude/skills/jev-decision/recipes/<slug>
+powershell -NoProfile -File "${CLAUDE_SKILL_DIR}/scripts/jev-eval.ps1" -Recipe "${CLAUDE_SKILL_DIR}/recipes/<slug>"
 # Jev thật: chỉ khi chủ dự án đồng ý tiêu tiền. Một lệnh duy nhất: khoá chỉ sống trong lệnh đó,
 # vì script chỉ đọc khoá từ môi trường của lần chạy (không đọc registry)
-if (-not $env:OPENROUTER_API_KEY) { $env:OPENROUTER_API_KEY = [Environment]::GetEnvironmentVariable('OPENROUTER_API_KEY', 'User') }; powershell -NoProfile -File .claude/skills/jev-decision/scripts/jev-eval.ps1 -Recipe .claude/skills/jev-decision/recipes/<slug> -Jev
+if (-not $env:OPENROUTER_API_KEY) { $env:OPENROUTER_API_KEY = [Environment]::GetEnvironmentVariable('OPENROUTER_API_KEY', 'User') }; powershell -NoProfile -File "${CLAUDE_SKILL_DIR}/scripts/jev-eval.ps1" -Recipe "${CLAUDE_SKILL_DIR}/recipes/<slug>" -Jev
 ```
 
 Dòng `` `rules: X/Y rows, hard H/K` `` trong mục "Đo" của `recipe.md` phải khớp với lần chạy offline (test
