@@ -99,7 +99,7 @@ function Get-PaperRelativePath([string] $ProjectDir, [string] $Path) {
 # are different ON PURPOSE (docs: "Run parallel sessions with worktrees"):
 #
 #   CLAUDE_PROJECT_DIR  stays at the checkout the session was LAUNCHED from, so a hook command written as
-#                       $CLAUDE_PROJECT_DIR/.claude/hooks/x.ps1 still finds its script.
+#                       ${CLAUDE_PROJECT_DIR}/.claude/hooks/x.ps1 (or $CLAUDE_PROJECT_DIR/...) still finds its script.
 #   payload.cwd         follows the session into the worktree, and moves again when Claude runs cd.
 #
 # Reading the variable first pointed every hook at the main checkout while the session worked in a
