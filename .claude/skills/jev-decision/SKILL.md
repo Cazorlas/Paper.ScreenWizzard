@@ -59,8 +59,8 @@ Skill này là **kiến thức miền** (ADR-0009, ADR-0029 của kit): nó khô
   **cả lô** ngay từ dòng đầu (`no-key`), không hỏng N lần; `4xx` khác không thử lại. Test adapter bằng
   `HttpMessageHandler` giả: chậm quá timeout, `401` ở dòng đầu, `429` rồi `200`.
 - Có hai đường, chọn bằng một policy chứ không bằng URL tự do. **OpenRouter là đường chính**: khoá
-  `OPENROUTER_API_KEY`, `https://openrouter.ai/api` + `/v1/systemone`, model `typesafe/jev-1.13`; base `/api/v1` trả 404.
-  TypeSafe `https://api.typesafe.ai/v1/systemone` với model `jev-1.13` chỉ khi không có khoá OpenRouter
+  `OPENROUTER_API_KEY`, `https://openrouter.ai/api` + `/v1/systemone`, model `typesafe/jev-1.14`; base `/api/v1` trả 404.
+  TypeSafe `https://api.typesafe.ai/v1/systemone` với model `jev-1.13` chỉ khi không có khoá OpenRouter (chưa đo được với 1.14: không có khoá TypeSafe)
   (`TYPESAFE_API_KEY`).
 - **Chạy lô thì Nemotron :free trước, Jev lùi sau** (chủ dự án 2026-10-11), chỉ cho layer-map, sheet-classify,
   family-tags, clash-resolution, excel-param-map, titleblock-fill, spec-clause-search, support-triage: đo một lần

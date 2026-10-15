@@ -8,9 +8,14 @@ Planner viết hợp đồng test trong plan trước khi giao worker: một b�
 
 ## Lượt đỏ
 
+Lượt đỏ tái hiện trước: ca chạy thật được (phiên host đang mở, app, CLI) và đã có hôm nay thì worker chạy ca lỗi hay hành vi
+`SPEC.md` nêu một lần trên host, đọc lại kết quả, tự phân tích rồi mới viết test; trả dòng `repro:` (ca, các bước, thấy gì so
+với mong đợi, bằng chứng) để planner đưa vào báo cáo. Tính năng mới chưa có gì để chạy, hay host không cho thấy được:
+`repro: not checkable - <vì sao>` rồi làm tiếp. Lỗi không tái hiện được, hay số đo trái hợp đồng: hỏi planner trước khi viết test.
+
 Worker lượt đỏ viết mã test theo bảng hợp đồng, chạy mỗi file một lần và ghi bằng chứng đỏ; lượt này không sửa mã sản phẩm. Planner đọc diff test, kiểm đủ ca và lý do đỏ, rồi duyệt test rồi khóa chúng.
 
-Profile khai `live.loop`: test đỏ viết từ dòng baseline của task `live` trước nó.
+Profile khai `live.loop`: task `baseline` của lane `live` là bước tái hiện; test đỏ viết từ dòng baseline đó.
 
 Worker không sửa, không nới, không xoá test đã khóa của planner.
 

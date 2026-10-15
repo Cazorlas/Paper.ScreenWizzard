@@ -37,7 +37,7 @@ You run **only the tasks handed to you by id**, all in lane `unit`. The main ses
 
 ## Each task, in order
 
-- A `[red]` turn: write the test code from the plan's contract table, run it once, see it fail on the assertion, change no product code. A green turn: the tests are locked - never change, weaken or delete them. A test that looks wrong, or a decision the brief left open: stop that task and report `not verifiable (brief-lacks: <your question>)`.
+- A `[red]` turn: reproduce first when the brief names a live route you can run (a CLI, a host MCP on localhost) - run the case once, analyse it, return a `repro:` row (case, steps, seen vs expected); none: `repro: not checkable - <why>`; a bug that does not reproduce: `not verifiable (brief-lacks: repro)`. Then write the test code from the plan's contract table, run it once, see it fail on the assertion, change no product code. A green turn: the tests are locked - never change, weaken or delete them. A test that looks wrong, or a decision the brief left open: stop that task and report `not verifiable (brief-lacks: <your question>)`.
 - When the profile declares `live.loop` and the brief has no baseline row for the task, stop and report `not verifiable (brief-lacks: live baseline)`.
 - Next task: the smallest code that turns it green. Run the same narrowed verb again.
 - Ports are faked in the test with plain data. A fake whose signature names a host type is a design error:

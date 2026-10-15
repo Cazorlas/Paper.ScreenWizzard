@@ -65,6 +65,12 @@ thật (ống gió trong shaft, cable duct, fire alarm, tên lớp tiếng Việ
 `rules: 31/45 rows, hard 1/15`
 `jev (typesafe/jev-1.13, 2026-10-11): 33/45 rows, hard 11/15`
 
+`jev (typesafe/jev-1.14, 2026-10-15): 34/45 rows, hard 10/15`
+
+`jev (typesafe/jev-1.14, 2026-10-15): 36/45 rows, hard 11/15`
+
+Hai lần chạy cùng ngày; chênh lệch là dao động giữa các lần chạy.
+
 Một lần chạy qua OpenRouter trên fixture bịa, sau khi đổi chữ báo cháy; câu Jev không trả lời thì lấy của luật; chưa
 áp luật sau Jev (a)–(d). Dòng khó Jev vẫn sai: LM31, LM34, LM36, LM37 (theo từng câu: `discipline` 43/45,
 `element_kind` 38/45, `mep_system` 37/45). 45 lời gọi, 0 hỏng, 100121 token đầu vào, 25.6 s. LM33 (báo cháy, nhãn

@@ -117,6 +117,8 @@ kèm `REV C02`; `ngày 01 tháng 10 năm 2026`.
 `rules: 32/41 rows, hard 6/15`
 `jev (typesafe/jev-1.13, 2026-10-11): 40/41 rows, hard 14/15`
 
+`jev (typesafe/jev-1.14, 2026-10-15): 40/41 rows, hard 14/15`
+
 Một lần chạy qua OpenRouter trên fixture bịa, sau khi đổi chữ của `field`; câu Jev không trả lời thì lấy của luật;
 chưa áp luật sau Jev (a)–(d). Dòng khó Jev vẫn sai: TF40 (theo từng câu: `field` 40/41, `value_ok` 40/41). 41 lời
 gọi, 0 hỏng, 68869 token đầu vào, 23.7 s. TF40 (`M-101 REV C02` dưới `DWG NO`) vẫn sai, và là dòng sai duy nhất nên

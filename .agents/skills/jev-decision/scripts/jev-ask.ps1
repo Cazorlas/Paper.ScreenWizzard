@@ -51,7 +51,7 @@ for ($i = 0; $i -lt $lines.Count; $i++) {
 }
 
 if ($DryRun) {
-    $previewModel = 'typesafe/jev-1.13'
+    $previewModel = 'typesafe/jev-1.14'
     if ($Model) { $previewModel = $Model }
     foreach ($it in $list) {
         $body = New-JevRequestBody ([string]$it.Input) $questionSet $previewModel | ConvertTo-Json -Depth 20

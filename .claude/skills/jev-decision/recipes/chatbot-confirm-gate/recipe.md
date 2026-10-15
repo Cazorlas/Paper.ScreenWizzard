@@ -64,6 +64,8 @@ lỗi: động từ xoá hay đổi ngầm (làm lại, kéo dài, clean up), đ
 `rules: 36/50 rows, hard 6/20`
 `jev (typesafe/jev-1.13, 2026-10-11): 48/50 rows, hard 18/20`
 
+`jev (typesafe/jev-1.14, 2026-10-15): 48/50 rows, hard 18/20`
+
 Một lần chạy qua OpenRouter trên fixture bịa; câu Jev không trả lời thì lấy của luật; chưa áp luật (a)–(c). Dòng khó
 Jev vẫn sai: CG35, CG40. Theo từng câu: `destructive` 49/50, `has_negation_or_exception` 50/50, `scope` 48/50, nên mỗi
 dòng sai chỉ sai một câu, và câu sai là `destructive` hoặc `scope`:

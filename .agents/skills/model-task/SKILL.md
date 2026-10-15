@@ -76,7 +76,7 @@ duyệt hay học được. Chụp trên view hay layout sẵn có, trả lại 
 
 ## 4. Mỗi nhóm: bốn bước, mỗi bước có bằng chứng
 
-`/task-do` giao các task `[model]` cho agent `lane-model`; nó làm đúng bảng này.
+`/task-do` giao các task `[model]` theo chuỗi worker ở [task-do/references/planner-worker.md](../task-do/references/planner-worker.md): Codex qua collab trước, lái host đang chạy qua MCP của host; `lane-model` là bước Claude Sonnet của chuỗi. Worker nào chạy cũng làm đúng bảng này; session chính chỉ đọc lại độc lập ở bước kiểm cuối.
 
 | Bước | Làm gì | Dòng bằng chứng |
 |---|---|---|
