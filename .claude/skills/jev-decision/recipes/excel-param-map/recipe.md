@@ -88,6 +88,8 @@ ghi chú có số và đơn vị, tiếng Việt và tiếng Anh; cột `STT`; `
 `rules: 29/34 rows, hard 7/12`
 `jev (typesafe/jev-1.13, 2026-10-11): 32/34 rows, hard 10/12`
 
+`jev (typesafe/jev-1.14, 2026-10-15): 33/34 rows, hard 11/12`
+
 Một lần chạy qua OpenRouter trên fixture bịa; câu Jev không trả lời thì lấy của luật; chưa áp luật sau Jev (a)–(d).
 Dòng khó Jev vẫn sai: EP32. Đó là cột `H` với hàng đơn vị `m`: cột áp bơm theo mét, không phải chiều cao của thiết bị.
 

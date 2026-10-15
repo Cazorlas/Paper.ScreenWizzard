@@ -55,6 +55,9 @@ One shared case catalogue, read by the gallery, the screenshot shooter and the t
   times the search out with a `COMException`.
 - **A control that appears in response to something else needs the settle first** - priority buttons come
   alive when a row is selected, and WPF builds them a frame after the click that caused them.
+- **A panel's AutomationId is invisible unless the panel has a peer.** `StackPanel`, `Border`, `Grid` create no
+  automation peer, so UIA never sees them: a notice drawn on the screenshot was "not found" 3 of 3 runs. Give it
+  a subclass whose `OnCreateAutomationPeer` returns `new FrameworkElementAutomationPeer(this)` (measured 2026-10-13).
 
 ## Look at it
 

@@ -51,7 +51,7 @@ impeccable launcher. This is not for XAML; WPF follows the project's UI style sk
   → a plain unit test (on an STA thread for WPF). Needs a real window - hover, popup, hit testing, how it
   is drawn → a UI harness case plus a driver test. Needs the host's document or command system → it cannot
   render outside the host: hand the case back as lane `live` in your report, with the reason.
-- A `[red]` turn: write the test code from the plan's contract table, run it once, see it fail on the assertion, change no product code. A green turn: the tests are locked - never change, weaken or delete them. A build error is not red.
+- A `[red]` turn: reproduce first when the brief names a live route you can run (a CLI, a host MCP on localhost) - run the case once, analyse it, return a `repro:` row (case, steps, seen vs expected); none: `repro: not checkable - <why>`; a bug that does not reproduce: `not verifiable (brief-lacks: repro)`. Then write the test code from the plan's contract table, run it once, see it fail on the assertion, change no product code. A green turn: the tests are locked - never change, weaken or delete them. A build error is not red.
 - Next task: build until it passes; run `.claude/paperflow/paperflow.ps1 ui` (or `e2e`), narrowed to the
   task's cases after `--`.
 - **Open every screenshot and judge it** against the wireframe: clipped text, wrong order, a field the spec

@@ -280,7 +280,7 @@ function Get-JevRoute {
     param([string] $Switch, [string] $TypeSafeKey, [string] $OpenRouterKey)
     if (Test-JevSwitchOff $Switch) { return @{ Outcome = 'off'; Endpoint = ''; Model = ''; Key = '' } }
     # OpenRouter: base https://openrouter.ai/api + /v1/systemone. Base /api/v1 plus /v1 answers 404.
-    if ($OpenRouterKey) { return @{ Outcome = 'call'; Endpoint = 'https://openrouter.ai/api/v1/systemone'; Model = 'typesafe/jev-1.13'; Key = $OpenRouterKey } }
+    if ($OpenRouterKey) { return @{ Outcome = 'call'; Endpoint = 'https://openrouter.ai/api/v1/systemone'; Model = 'typesafe/jev-1.14'; Key = $OpenRouterKey } }
     if ($TypeSafeKey) { return @{ Outcome = 'call'; Endpoint = 'https://api.typesafe.ai/v1/systemone'; Model = 'jev-1.13'; Key = $TypeSafeKey } }
     return @{ Outcome = 'no-key'; Endpoint = ''; Model = ''; Key = '' }
 }

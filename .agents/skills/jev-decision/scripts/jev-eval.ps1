@@ -6,7 +6,7 @@
 # only when PAPER_JEV holds an off value (0, false, off, no - trimmed, any case) or no key exists. The key comes
 # from this run's environment only (never the registry, never a file) and is never printed: OPENROUTER_API_KEY
 # first (base https://openrouter.ai/api + /v1/systemone - NOT /api/v1, which answers 404 - model
-# typesafe/jev-1.13), else TYPESAFE_API_KEY (api.typesafe.ai, model jev-1.13). Get-JevRoute decides.
+# typesafe/jev-1.14), else TYPESAFE_API_KEY (api.typesafe.ai, model jev-1.13). Get-JevRoute decides.
 # Only fixture rows marked synthetic are ever sent - the fixture ships into every ai project and its numbers
 # must re-run; the fixture check runs before the switch and refuses any other row.
 # A Jev answer that is missing, outside the options or with a confidence outside 0-1 falls back to the rule's

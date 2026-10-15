@@ -104,6 +104,8 @@ family "Duct Fitting" nhưng là damper; ống gió tròn và ống nước cùn
 `rules: 35/45 rows, hard 6/16`
 `jev (typesafe/jev-1.13, 2026-10-11): 44/45 rows, hard 15/16`
 
+`jev (typesafe/jev-1.14, 2026-10-15): 44/45 rows, hard 15/16`
+
 Một lần chạy qua OpenRouter trên fixture bịa; câu Jev không trả lời thì lấy của luật; chưa áp luật sau Jev. Dòng khó
 Jev vẫn sai: CC44. Theo từng câu Jev đúng `group` 45/45, `subgroup_pr_65` 25/26, `section_pr_65_65` 9/9, nên CC44 sai
 ở tầng 2: van xả khí tự động trên ống nước (Pr_65_54_93_05, một phụ kiện van) không được xếp vào Pr_65_54 Valve

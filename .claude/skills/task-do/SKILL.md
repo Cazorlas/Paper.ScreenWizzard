@@ -79,7 +79,7 @@ chứng minh code bằng chính nó.
 | `unit` | `lane-logic` | Worker theo chuỗi ở references/planner-worker.md (Codex → Antigravity → DeepSeek → lane-logic). Hợp đồng test của planner, mã test của worker lượt đỏ, worker lượt xanh làm cho xanh. Verb `test` |
 | `ui` / `e2e` | `lane-ui` | Mock trên dữ liệu giả theo wireframe trong plan trước khi chạy host thật; mở ảnh ra **xem** và tự phán xét. Verb `ui` / `e2e` |
 | `live` | `lane-live` | Task `baseline` (dự án khai `live.loop`): đo hành vi **hôm nay** trên host, trả số trong dòng bằng chứng có chữ `baseline`. Task kiểm: verb `publish`, rồi lái **phiên host đang kết nối** trên một case thật và **đọc lại** kết quả từ chính host. Dọn thứ đã tạo. Không bao giờ lưu dữ liệu của người dùng. Mở, tắt hay restart host - kể cả bản copy - phải hỏi người dùng trước, và ghi câu trả lời vào dòng bằng chứng |
-| `model` | `lane-model` | Mỗi nhóm: khảo sát chỉ đọc → chạy thử không giữ gì → thực hiện → **đọc lại bằng script khác**; mỗi dòng nêu mã luật. Script giữ lại trong `harness/` |
+| `model` | Worker theo chuỗi ở references/planner-worker.md (Codex → Antigravity → DeepSeek → lane-model) | Mỗi nhóm: khảo sát chỉ đọc → chạy thử không giữ gì → thực hiện → **đọc lại bằng script khác**; mỗi dòng nêu mã luật. Script giữ lại trong `harness/` |
 
 ### Host kiểm được thì đo trước, rồi mới đỏ
 
@@ -96,7 +96,8 @@ Profile khai `live.loop` nghĩa là host tự kiểm được một thay đổi 
 
 Hành vi host không cho thấy được (phép tính thuần) ghi `baseline: not checkable - <vì sao>` và giữ đỏ
 trước. Hook `live-first-guard` nhắc khi code bị sửa trước khi có dòng baseline (hay chặn, khi profile đặt
-`live.enforceOrder`). Không khai `live.loop`: đỏ trước, `live` sau khi unit xanh.
+`live.enforceOrder`). Không khai `live.loop`: worker lượt đỏ vẫn tái hiện trên host trước khi viết test khi ca chạy được
+(dòng `repro:`, references/planner-worker.md), rồi đỏ, `live` sau khi unit xanh.
 
 ### Một test xanh ngay lần đầu chưa phải là một test
 

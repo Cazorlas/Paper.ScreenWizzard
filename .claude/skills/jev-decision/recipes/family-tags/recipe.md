@@ -121,6 +121,8 @@ tên lựa chọn.
 `rules: 34/46 rows, hard 4/16`
 `jev (typesafe/jev-1.13, 2026-10-11): 43/46 rows, hard 13/16`
 
+`jev (typesafe/jev-1.14, 2026-10-15): 45/46 rows, hard 15/16`
+
 Một lần chạy qua OpenRouter trên fixture bịa, sau khi đổi ranh giới và danh mục; câu Jev không trả lời thì lấy của
 luật; chưa áp luật sau Jev (a)–(d). Dòng khó Jev vẫn sai: FT32, FT33, FT39 (theo từng câu: `library_category` 43/46,
 `discipline` 45/46, `is_annotation` 46/46). 46 lời gọi, 0 hỏng, 140046 token đầu vào, 26.6 s. Cả ba dòng sai đều là

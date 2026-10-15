@@ -121,6 +121,12 @@ trên.
 `rules: 29/40 rows, hard 5/16`
 `jev (typesafe/jev-1.13, 2026-10-11): 36/40 rows, hard 13/16`
 
+`jev (typesafe/jev-1.14, 2026-10-15): 36/40 rows, hard 12/16`
+
+`jev (typesafe/jev-1.14, 2026-10-15): 37/40 rows, hard 14/16`
+
+Hai lần chạy cùng ngày; chênh lệch là dao động giữa các lần chạy.
+
 Một lần chạy qua OpenRouter trên fixture bịa, sau khi đổi biên 25 %; câu Jev không trả lời thì lấy của luật; chưa áp
 luật sau Jev (a)–(d). Dòng khó Jev vẫn sai: CL34, CL35, CL39 (theo từng câu: `which_moves` 39/40, `action` 36/40).
 40 lời gọi, 0 hỏng, 45101 token đầu vào, 28.5 s. Bốn dòng sai (ba dòng khó và một dòng thường) đều sai `action`, một
