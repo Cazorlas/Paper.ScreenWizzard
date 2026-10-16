@@ -1,5 +1,5 @@
 {
-  "version": "1.47.18",
+  "version": "1.47.19",
   "payloadHash": "2e8cd40f99c48e48dd5469b1e946ed700640db3ec19be73cfcc5ed1e761a7b6e",
   "hosts": ["desktop", "ai"],
   "files": {
