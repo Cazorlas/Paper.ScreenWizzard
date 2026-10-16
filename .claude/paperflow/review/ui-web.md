@@ -16,6 +16,12 @@ design-critique and accessibility-review when those instructions are also presen
   For each supplied screen, include an info finding with RULE `overall`, first impression and repair priorities.
   Without captured screens, the main session records `visual pass: not run - <reason>`; source inspection alone
   leaves visual behavior unverified.
+- A screen that runs an outside tool (an AI CLI such as Claude Code or Codex, a runtime) shows its version states:
+  too old (blocks, with an update action) and a newer one available (says so, does not block). A missing state is a
+  finding; INPUT names the tool and the state.
+- Motion and effect proposals may cite React Bits (reactbits.dev; vue-bits, svelte-bits, canvas-ui for plain JS).
+  Licence MIT + Commons Clause: copy one effect into the product with its notice, never redistribute the set; a page
+  without React ports the effect instead of adding React; every effect honours `prefers-reduced-motion`.
 - Never write the .impeccable folder. Skip critique-storage, saving critiques, init, hooks, pinning and all other
   writing steps. Do not create or change PRODUCT.md, DESIGN.md, reports or configuration.
 - Skip the closing questions and owner interview. Include the line `Questions skipped: read-only review lane` in the

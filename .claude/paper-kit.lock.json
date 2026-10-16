@@ -1,6 +1,6 @@
 {
-  "version": "1.47.19",
-  "payloadHash": "2e8cd40f99c48e48dd5469b1e946ed700640db3ec19be73cfcc5ed1e761a7b6e",
+  "version": "1.47.20",
+  "payloadHash": "b547dff30dd7d74f9874cd4c3cb479c57ffe5d5beb752bf421b152c11eabd231",
   "hosts": ["desktop", "ai"],
   "files": {
     ".agents/skills/accessibility-review/LICENSE": "a6946284993aeec75c7d75906064b66210c46051e562077efb30eb6dcfe72e26",
@@ -315,7 +315,7 @@
     ".claude/paperflow/review/sonarqube-plan.ps1": "e1cf816f089d5c9107b5f3e7042a0a7788fa197eda96582d89109341df36186b",
     ".claude/paperflow/review/sonarqube.ps1": "1dfa4c61d8e2bb32f196f47d54cabd803d4d92f6624db802f634c03249f9bdce",
     ".claude/paperflow/review/steps.md": "d432bc328aef82916de9b8480d5a358e30ec5d618b030fc28decc7d14e635d2c",
-    ".claude/paperflow/review/ui-web.md": "2a8f9782b1ab964a9c67dd9f4960482286f6dd3bed02d1af8a83e440bf9215d7",
+    ".claude/paperflow/review/ui-web.md": "4e7e0b32aaf3a2fa340285f1d0b9568c106a373c89156ac634b1ad0eef993c20",
     ".claude/paperflow/routes/ai.json": "aae38bf59ddb5dc1663ebc1fe8390832c6f6242689aacfbeff5fbfbd09a5ca80",
     ".claude/paperflow/routes/desktop.json": "2bf39d15dec9a95a1aab33d736bcfad6ae78ef07e7344eb39945a8432b7f660d",
     ".claude/paperflow/run-lock.ps1": "cc31ab24ebe4c633c491e3a55a3896edc9a546309d1557c06a05b9900aa3696d",
