@@ -1,6 +1,6 @@
 {
-  "version": "1.47.25",
-  "payloadHash": "9b89dff84d3c4acffa4984ee06143ef418011664d247884d19793c353ec7559b",
+  "version": "1.47.26",
+  "payloadHash": "8b4d11bcfc5bc163b4debbb83a8d1e4a1d589dad0d9c171b4f8434ce4463918d",
   "hosts": ["desktop", "ai"],
   "files": {
     ".agents/skills/accessibility-review/LICENSE": "a6946284993aeec75c7d75906064b66210c46051e562077efb30eb6dcfe72e26",
@@ -181,7 +181,7 @@
     ".agents/skills/task-bug/bugs-readme-template.md": "9b00ae1ce238a4c2bf5aea338124b3d3d49f83e20b3c49345927539cffffb380",
     ".agents/skills/task-do/SKILL.md": "b9daa3c6a7591154998e9f6f96956ae534bf898da9465b452f51d975f2ede4d7",
     ".agents/skills/task-do/references/empty-tests.md": "866a3d95aa4e0d4761aeb07273a1afaecbdfcb0f954b03f12d5a1b02f07cdb0f",
-    ".agents/skills/task-do/references/planner-worker.md": "2b8b685349d918b63541b2e9c074ad07c94af0abe65272e857220368dc46ba6b",
+    ".agents/skills/task-do/references/planner-worker.md": "9eaa411f56a9c8989e14fb136ed4f58162195418b3aee26d818516b9a8a0b214",
     ".agents/skills/task-spec/SKILL.md": "30fd7281f0192438483945ceed13596afc8018106d68ae58557d92063297ff94",
     ".agents/skills/task-verify/SKILL.md": "fe41e5bb41fbe3baaee0ad24f4ba142b90b13eb30a47f8852f002dfb66328f82",
     ".agents/skills/task-verify/retro-readme-template.md": "47671033a6b6e22a3c89590528a78ddd204b2ccff691972401188be9c79bfb97",
@@ -504,7 +504,7 @@
     ".claude/skills/task-bug/bugs-readme-template.md": "9b00ae1ce238a4c2bf5aea338124b3d3d49f83e20b3c49345927539cffffb380",
     ".claude/skills/task-do/SKILL.md": "b9daa3c6a7591154998e9f6f96956ae534bf898da9465b452f51d975f2ede4d7",
     ".claude/skills/task-do/references/empty-tests.md": "866a3d95aa4e0d4761aeb07273a1afaecbdfcb0f954b03f12d5a1b02f07cdb0f",
-    ".claude/skills/task-do/references/planner-worker.md": "2b8b685349d918b63541b2e9c074ad07c94af0abe65272e857220368dc46ba6b",
+    ".claude/skills/task-do/references/planner-worker.md": "9eaa411f56a9c8989e14fb136ed4f58162195418b3aee26d818516b9a8a0b214",
     ".claude/skills/task-spec/SKILL.md": "30fd7281f0192438483945ceed13596afc8018106d68ae58557d92063297ff94",
     ".claude/skills/task-verify/SKILL.md": "fe41e5bb41fbe3baaee0ad24f4ba142b90b13eb30a47f8852f002dfb66328f82",
     ".claude/skills/task-verify/retro-readme-template.md": "47671033a6b6e22a3c89590528a78ddd204b2ccff691972401188be9c79bfb97",
