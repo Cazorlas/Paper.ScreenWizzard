@@ -82,12 +82,15 @@ The checklists a lane pastes live with the skill that owns them (ADR-0044): `rev
 | bug | the session alone (small scope), or a read-only subagent (Claude when the base is collab; step 4) | `find-bug/SKILL.md` (with "No SPEC.md for the file") | BUG | bug |
 | architecture | the session alone (small scope), or a read-only subagent (Claude when the base is collab; step 4) | `architecture-reviewer.md`, front matter removed; reports finding blocks instead of one line per violation | ARC | architecture |
 | smell | the session alone (small scope), Codex via a read-only collab turn, or a read-only subagent (step 4) | `review-architecture/references/smell.md` | SML | smell |
-| ui | the session alone (small scope), or a read-only subagent (Claude when the base is collab; step 4) | web: `paperflow/review/ui-web.md`, then `skills/impeccable/reference/critique.md`, `skills/impeccable/reference/audit.md`, `skills/impeccable/reference/craft-floor.md`; desktop or no web: `design-critique/SKILL.md`, then `accessibility-review/SKILL.md`; mixed: web then desktop | UI | ux |
+| ui | the session alone (small scope), or a read-only subagent (Claude when the base is collab; step 4) | web: `paperflow/review/ui-web.md`, then `skills/impeccable/reference/critique.md`, `skills/impeccable/reference/audit.md`, `skills/impeccable/reference/craft-floor.md`; native: `paperflow/review/ui-native.md`, `skills/impeccable/reference/audit.native.md`, then `ios.md` and/or `android.md`; desktop or neither: `design-critique/SKILL.md`, then `accessibility-review/SKILL.md`; then `paperflow/review/ui-libraries.md` when web or native | UI | ux |
 
 The UI lane chooses instructions from the files of each batch, case-insensitively. Web extensions are
-`.html .htm .css .scss .less .vue .svelte .tsx .jsx .cshtml .razor`; desktop extensions are `.xaml .axaml .dcl`.
-A batch with both reads web first, then desktop; a batch with no web (including screenshots only) keeps the two
-desktop skills. Paths in the table are relative to `.claude`, with impeccable's references under `skills/impeccable`.
+`.html .htm .css .scss .less .vue .svelte .tsx .jsx .cshtml .razor .astro`; desktop extensions are `.xaml .axaml .dcl`.
+Native (F384): `.qml`, `res/layout/*.xml`, and `.swift`/`.kt`/`.dart` only when the file says `import SwiftUI`,
+`@Composable` or `package:flutter/`. A batch reads web, then native, then desktop instructions for the kinds it holds;
+a batch with neither web nor native (including screenshots only) keeps the two desktop skills. Skill files listed in
+`upstreams.json` are pasted from the upstream cache when `plan` fetched a newer release, each with a `source:` line
+(F382); a batch also gets the `## Detector findings` of its own files once `detect` ran (F383). Paths in the table are relative to `.claude`, with impeccable's references under `skills/impeccable`.
 The [web preface](ui-web.md) overrides writing, launcher, browser and sub-agent steps in those references: one
 read-only reader performs Assessment A then B and uses this review's finding format, with closing questions skipped.
 The manual skills are read because the user typed `/review-ui` and agreed to the estimate. For a project review the

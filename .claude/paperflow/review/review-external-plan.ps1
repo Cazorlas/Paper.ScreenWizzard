@@ -7,7 +7,7 @@
 # paperflow/review-files-plan.ps1, review-sarif-plan.ps1 and review-plan.ps1 first; declares no param() block.
 # ASCII only: PowerShell 5.1 reads a .ps1 without a BOM as ANSI.
 
-$script:PaperReviewExternalKeys = @('repo', 'hosts', 'build', 'rules', 'review', 'qa')
+$script:PaperReviewExternalKeys = @('repo', 'hosts', 'build', 'rules', 'review', 'qa', 'readOnly')
 $script:PaperReviewPropertyPattern = '^[A-Za-z_][A-Za-z0-9_.]*=[^\s;"]+$'
 $script:PaperReviewProfileComment = 'review profile of a repository the review commands read but never write into (review.ps1 -Repo <repository> -Out <this folder>). build.command: the build line, run from the repository root. build.noDeploy: every MSBuild property that turns deployment off, as Name=Value, each also written in build.command as -p:Name=Value. rules: the repository''s own rule files the architecture lane judges against (paths or globs; remove the key for the defaults). review: the review keys of a project profile (the old name qa is read too), except report and staticAnalysis.sarifDir.'
 
@@ -92,6 +92,7 @@ function ConvertFrom-PaperReviewExternalProfile {
     $base.SarifDir = ''
     $base.ArchitectureDeclared = $false
     $cfg = $base
+    $cfg | Add-Member -NotePropertyName ReadOnly -NotePropertyValue $false -Force
     $cfg | Add-Member -NotePropertyName External -NotePropertyValue $true -Force
     $cfg | Add-Member -NotePropertyName Repo -NotePropertyValue '' -Force
     $cfg | Add-Member -NotePropertyName BuildCommand -NotePropertyValue '' -Force
@@ -113,6 +114,7 @@ function ConvertFrom-PaperReviewExternalProfile {
                     if ((ConvertTo-PaperReviewPathKey $v) -ne (ConvertTo-PaperReviewPathKey $RepoRoot)) { $errors += "repo: this profile is for $v, not $RepoRoot" }
                 }
             }
+            'readOnly' { if ($v -isnot [bool]) { $errors += 'readOnly: not a boolean' } else { $cfg.ReadOnly = $v } }
             'hosts' { if (-not (Test-PaperReviewStringList $v)) { $errors += 'hosts: not a list of strings' } }
             'build' {
                 if ($v -isnot [System.Collections.IDictionary]) { $errors += 'build: not an object'; break }
