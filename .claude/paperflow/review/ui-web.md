@@ -4,9 +4,10 @@ These rules take precedence over the impeccable references pasted after them. Re
 files and supplied screenshots, tracing other repository files when needed; never edit or fix them. Apply impeccable only to web files; desktop files use
 design-critique and accessibility-review when those instructions are also present.
 
-- Never run the impeccable launcher or any detector command. Use the references' Launcher unavailable path; read
-  PRODUCT.md and DESIGN.md if present as context, without creating or changing them. Skip the detector step and state
-  that detector evidence is unavailable; source inspection and supplied screenshots do not prove live behavior.
+- Use the `## Detector findings` section the prompt supplies; never run the detector or the launcher yourself.
+  Never run the impeccable launcher or any detector command in the lane.
+  Use the references' Launcher unavailable path; read PRODUCT.md and DESIGN.md if present as context, without creating
+  or changing them. Source inspection and supplied screenshots do not prove live behavior.
 - No browser: do not launch a browser, navigate, capture screenshots or run live checks. Use only supplied evidence.
 - No sub-agents: perform critique's Assessment A, then Assessment B yourself in the same turn. Do not delegate either
   assessment; no DEGRADED banner is needed.
@@ -19,9 +20,7 @@ design-critique and accessibility-review when those instructions are also presen
 - A screen that runs an outside tool (an AI CLI such as Claude Code or Codex, a runtime) shows its version states:
   too old (blocks, with an update action) and a newer one available (says so, does not block). A missing state is a
   finding; INPUT names the tool and the state.
-- Motion and effect proposals may cite React Bits (reactbits.dev; vue-bits, svelte-bits, canvas-ui for plain JS).
-  Licence MIT + Commons Clause: copy one effect into the product with its notice, never redistribute the set; a page
-  without React ports the effect instead of adding React; every effect honours `prefers-reduced-motion`.
+- Motion and effect proposals, including React Bits, follow the framework choices and licence rules in ui-libraries.md.
 - Never write the .impeccable folder. Skip critique-storage, saving critiques, init, hooks, pinning and all other
   writing steps. Do not create or change PRODUCT.md, DESIGN.md, reports or configuration.
 - Skip the closing questions and owner interview. Include the line `Questions skipped: read-only review lane` in the

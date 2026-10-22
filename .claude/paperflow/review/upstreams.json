@@ -1,0 +1,15 @@
+{
+  "skills": {
+    "impeccable": {
+      "repo": "pbakaus/impeccable",
+      "path": ".claude/skills/impeccable",
+      "commit": "aeeb3d8c30b5f95aeeb3e893b0f1a308af8fdb8f",
+      "tag": "skill-v4.7.0",
+      "tagPattern": "skill-v*",
+      "replace": ["reference/critique.md", "reference/audit.md", "reference/craft-floor.md", "reference/audit.native.md", "reference/ios.md", "reference/android.md"]
+    },
+    "ui-ux-pro-max":        { "repo": "nextlevelbuilder/ui-ux-pro-max-skill", "path": ".claude/skills/ui-ux-pro-max", "commit": "09170eec67eefd46a7ae85de61b40c194020f997", "tag": "v2.13.0", "tagPattern": "v*", "replace": [] },
+    "design-critique":      { "repo": "anthropics/knowledge-work-plugins", "path": "design/skills/design-critique", "commit": "da38ec1ee89d41e5380e652a97382695003396e7", "tag": "", "tagPattern": "", "replace": [] },
+    "accessibility-review": { "repo": "anthropics/knowledge-work-plugins", "path": "design/skills/accessibility-review", "commit": "da38ec1ee89d41e5380e652a97382695003396e7", "tag": "", "tagPattern": "", "replace": [] }
+  }
+}

@@ -10,10 +10,11 @@ architecture|bugs|security|ui` on `lanes` and `plan` (the later commands read th
 | `/review-architecture` | does the structure follow the rules; where is it too tangled | static (smells, complexity table), architecture, smell |
 | `/review-bugs` | does the code do what its SPEC says, for every input | static (bug diagnostics are hints), bug |
 | `/review-security` | can an attacker reach what trusts a value | static (vulnerabilities), security |
-| `/review-ui` | can the screens be used | ui |
+| `/review-ui` | can the screens be used; then fix what the owner picks | ui (plus the impeccable detector) |
 
-**One command, one report, nothing fixed.** Every finding lands in one report; a bug enters the ledger only after a
-second reader confirmed it and the owner approved it.
+**One command, one report, nothing fixed by the review.** Every finding lands in one report; a bug enters the ledger
+only after a second reader confirmed it and the owner approved it. `/review-ui` alone has a later fix stage, run only on
+the findings the owner picks (its SKILL.md, ADR-0049).
 
 ## The reviews and /task-verify
 
@@ -57,15 +58,17 @@ The user's words map to its parameters:
    It is machine work: start it in the background and go on. Exit 4 is not verifiable with the reason - never "0 findings";
    exit 5 is not applicable.
 4. **Agent lanes.** The estimate's `lanes run:` line says who answers the batches; never a lane before `approve`. Do not start a second big review on this machine while one runs its batches: Codex has a fixed number of places and a second sweep takes them.
-   For `/review-ui`, before starting the UI lane, the main session captures screens in scope into `<run>/screens/`
+   For `/review-ui`, before starting the UI lane, the main session runs `review.ps1 detect -Run <run>` (background;
+   exit 4 and 5 are reported, never fatal) and captures screens in scope into `<run>/screens/`
    when the host can run (desktop: `drive-wpf`; web: Playwright MCP; a video project: its still command, e.g. `remotion still`). If capture is
    unavailable, record `visual pass: not run - <reason>` in the report and identify the lane as a source-only review.
    For every supplied screen, request an info finding with RULE `overall`, first impression and repair priorities.
    The lane may use ui-ux-pro-max's search script to support FIX without writing anything.
-   For `/review-ui`, each batch's file extensions select the instructions: web reads [ui-web.md](ui-web.md), then
-   `skills/impeccable/reference/critique.md`, `skills/impeccable/reference/audit.md` and `skills/impeccable/reference/craft-floor.md`; desktop (`.xaml .axaml .dcl`) or no web reads
-   `design-critique` then `accessibility-review`. Mixed batches read web first, then desktop. Exact extensions and
-   paths: [lanes](lanes.md). The web preface requires read-only assessments in the same turn, no launcher, browser,
+   For `/review-ui`, each batch's files select the instructions: web reads [ui-web.md](ui-web.md), then
+   `skills/impeccable/reference/critique.md`, `skills/impeccable/reference/audit.md` and `skills/impeccable/reference/craft-floor.md`;
+   native reads [ui-native.md](ui-native.md) and impeccable's native references; desktop (`.xaml .axaml .dcl`) or
+   neither reads `design-critique` then `accessibility-review`; web or native also read [ui-libraries.md](ui-libraries.md).
+   Mixed batches read web, native, then desktop. Exact extensions and paths: [lanes](lanes.md). The web preface requires read-only assessments in the same turn, no launcher, browser,
    sub-agents or writes, closing questions skipped, and this command's finding format.
    - `A alone - ...` (a small scope, "Who reads", below): read the files yourself. For each lane in state `run`:
      `review.ps1 prompt -Run <run> -Lane <lane> -Batch 1` writes the lane's prompt; follow it - read each file of its list

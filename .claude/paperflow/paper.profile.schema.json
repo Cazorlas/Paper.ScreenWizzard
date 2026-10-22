@@ -141,6 +141,7 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "upstreamRefresh": { "type": "boolean", "default": true, "description": "Check upstream skill revisions before a review and cache replaceable instruction files." },
         "$comment": { "type": "string" },
         "lanes": {
           "description": "true runs a lane whatever the hosts say (it still needs files in scope; static still needs a .NET project and the build verb); false turns it off.",
@@ -196,7 +197,11 @@
         "ui": {
           "type": "object",
           "additionalProperties": false,
-          "properties": { "screens": { "description": "Glob of .png/.jpg screenshots handed to the ui lane.", "type": "string" } }
+          "properties": {
+            "screens": { "description": "Glob of .png/.jpg screenshots handed to the ui lane.", "type": "string" },
+            "detector": { "type": "boolean", "default": true },
+            "detectorTimeoutSec": { "type": "integer", "minimum": 30, "default": 600 }
+          }
         },
         "staticAnalysis": {
           "type": "object",
@@ -244,7 +249,11 @@
         "ui": {
           "type": "object",
           "additionalProperties": false,
-          "properties": { "screens": { "description": "Glob of .png/.jpg screenshots handed to the ui lane.", "type": "string" } }
+          "properties": {
+            "screens": { "description": "Glob of .png/.jpg screenshots handed to the ui lane.", "type": "string" },
+            "detector": { "type": "boolean", "default": true },
+            "detectorTimeoutSec": { "type": "integer", "minimum": 30, "default": 600 }
+          }
         },
         "staticAnalysis": {
           "type": "object",

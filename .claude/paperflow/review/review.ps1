@@ -6,6 +6,7 @@
 #   review.ps1 plan    -Kind architecture|bugs|security|ui [-Scope project|branch|path|files] [-Path <folder>] [-Files <a>,<b>] [-Base <branch>] [-Only a,b] [-Skip a,b] [-StaticOnly] [-Yes] [-Executor auto|collab|subagents]
 #   review.ps1 lanes   -Kind architecture|bugs|security|ui [-Scope project|branch|path|files] [-Path <folder>] [-Files <a>,<b>] [-Base <branch>] [-Pick <numbers|lanes|all>] [-Executor auto|collab|subagents]
 #   review.ps1 approve -Run <run>
+#   review.ps1 detect  -Run <run>                                      (main session, after approval)
 #   review.ps1 static  -Run <run>
 #   review.ps1 files   -Run <run> -Lane <lane> [-Batch <n>] [-Retry]
 #   review.ps1 check   -Run <run>
@@ -61,6 +62,7 @@ param(
     [string[]] $Pick,
     [string] $Executor = 'auto',
     [string] $Verify,
+    [string[]] $Ids,
     [string] $Session = 'claude',
     [string] $Kind,
     [string[]] $Files,
@@ -73,6 +75,9 @@ try { [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding $false } c
 
 . (Join-Path $PSScriptRoot 'review-sarif-plan.ps1')
 . (Join-Path $PSScriptRoot 'review-plan.ps1')
+. (Join-Path $PSScriptRoot 'review-fix-plan.ps1')
+. (Join-Path $PSScriptRoot 'review-upstream-plan.ps1')
+. (Join-Path $PSScriptRoot 'review-detector-plan.ps1')
 . (Join-Path $PSScriptRoot 'review-external-plan.ps1')
 . (Join-Path $PSScriptRoot 'review-branch-plan.ps1')
 . (Join-Path $PSScriptRoot 'review-lanes-plan.ps1')
@@ -90,7 +95,7 @@ function Show-Help {
     Say 'review - on-demand review of a project, a branch, a folder or a few files'
     Say '  review.ps1 plan -Kind architecture|bugs|security|ui [-Scope project|branch|path|files] [-Path <folder>] [-Files <a>,<b>] [-Base <branch>] [-Only a,b] [-Skip a,b] [-StaticOnly] [-Yes]'
     Say '  review.ps1 lanes -Kind <kind> [-Scope ...] [-Path <folder>] [-Files <a>,<b>] [-Base <branch>] [-Pick 1,3|all|<lanes>]   (the lanes that apply and their cost; writes nothing)'
-    Say '  review.ps1 approve|static|check|report -Run <run>'
+    Say '  review.ps1 approve|detect|static|check|report -Run <run>'
     Say '  review.ps1 files -Run <run> -Lane <lane> [-Batch <n>] [-Retry]'
     Say '  review.ps1 prompt -Run <run> -Lane <lane> [-Batch <n>] [-Retry]   |   review.ps1 prompt -Run <run> -Verify <id>   (writes the prompt, prints where)'
     Say '  plan and lanes take -Executor auto|collab|subagents (who answers the agent lanes)'
@@ -119,7 +124,7 @@ function Read-Lines([string] $File) { return , [IO.File]::ReadAllLines($File, [T
 # ------------------------------------------------------------------ where things are
 
 if ($Command -in @('help', '-h', '--help', '/?')) { Show-Help; exit 0 }
-if ($Command -notin @('init', 'lanes', 'plan', 'approve', 'static', 'files', 'prompt', 'check', 'report', 'sonar')) { Stop-Review 2 "review: unknown command '$Command' (init, lanes, plan, approve, static, files, prompt, check, report, sonar)" }
+if ($Command -notin @('init', 'lanes', 'plan', 'approve', 'detect', 'static', 'files', 'prompt', 'check', 'report', 'fix', 'sonar')) { Stop-Review 2 "review: unknown command '$Command' (init, lanes, plan, approve, detect, static, files, prompt, check, report, fix, sonar)" }
 # The lane question (ADR-0035): -Pick belongs to lanes, and lanes lists every lane with no choice applied.
 $pickGiven = $PSBoundParameters.ContainsKey('Pick')
 if ($pickGiven -and $Command -ne 'lanes') { Stop-Review 2 'review: -Pick goes with review.ps1 lanes' }
@@ -522,7 +527,29 @@ function Get-ReviewPlanParts($all, [string[]] $allPaths, $sel, [string[]] $OnlyL
 
     $screens = @(Get-PaperReviewScreens -Paths $allPaths -Glob $config.UiScreens -Folder $sel.Folder)
     $laneFiles = @{}
-    foreach ($l in $script:PaperReviewLaneNames) { $laneFiles[$l] = @(Get-PaperReviewLaneFiles -Files $files -Lane $l -Screens $screens) }
+    # Read content only for ambiguous native extensions, bounded to the first 64 KB.
+    $markedUiFiles = @()
+    $uiMarkers = @{ '.swift' = 'import SwiftUI'; '.kt' = '@Composable'; '.dart' = 'package:flutter/' }
+    foreach ($f in $files) {
+        $ext = [IO.Path]::GetExtension($f.Path).ToLowerInvariant()
+        if (-not $uiMarkers.ContainsKey($ext)) { continue }
+        $stream = [IO.File]::OpenRead((Join-Path $Repo $f.Path))
+        try {
+            $buffer = New-Object byte[] ([int] [math]::Min(65536, $stream.Length))
+            $count = 0
+            while ($count -lt $buffer.Length) {
+                $read = $stream.Read($buffer, $count, $buffer.Length - $count)
+                if ($read -eq 0) { break }
+                $count += $read
+            }
+            $memory = New-Object IO.MemoryStream(, $buffer)
+            $reader = New-Object IO.StreamReader($memory, [Text.Encoding]::UTF8, $true)
+            try { $text = $reader.ReadToEnd() } finally { $reader.Dispose() }
+            if ($text.Contains($uiMarkers[$ext])) { $markedUiFiles += $f.Path }
+        }
+        finally { $stream.Dispose() }
+    }
+    foreach ($l in $script:PaperReviewLaneNames) { $laneFiles[$l] = @(Get-PaperReviewLaneFiles -Files $files -Lane $l -Screens $screens -MarkedUiFiles $markedUiFiles) }
     # M.7: when an analysis of this commit is saved, the architecture and smell lanes of the architecture review read only the hot spots.
     $sonar = $null
     if ($reviewKind -eq 'architecture' -and -not $AllFiles) { $sonar = Get-ReviewSonarForPlan $sel $allPaths $files }
@@ -585,6 +612,123 @@ function Get-ReviewPlanParts($all, [string[]] $allPaths, $sel, [string[]] $OnlyL
     return [pscustomobject]@{ Files = $files; Excluded = $excluded; Screens = $screens; LaneFiles = $laneFiles; Lanes = $lanes.Lanes; Estimate = $estimate; Batches = $batches; Rules = $ruleObjs; ScopeLines = $scopeLines; Executor = $exec; Collab = $collab; Solo = $solo; Sonar = $(if ($null -ne $sonar) { $sonar.Plan } else { $null }) }
 }
 
+function Get-ReviewUpstreamCache {
+    if ($env:PAPER_REVIEW_UPSTREAM_CACHE) { return $env:PAPER_REVIEW_UPSTREAM_CACHE }
+    return (Join-Path $env:LOCALAPPDATA 'paper-kit\upstream')
+}
+
+# Bounded process I/O also supports the offline .cmd override on Windows PowerShell 5.1.
+function Invoke-ReviewUpstreamGit([string[]] $Arguments, [string] $Directory) {
+    $exe = if ($env:PAPER_REVIEW_GIT) { $env:PAPER_REVIEW_GIT } else { 'git' }
+    $resolved = Get-Command $exe -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($null -eq $resolved) { throw 'git not found' }
+    $start = New-Object Diagnostics.ProcessStartInfo
+    $start.UseShellExecute = $false; $start.CreateNoWindow = $true
+    $start.RedirectStandardOutput = $true; $start.RedirectStandardError = $true
+    $start.WorkingDirectory = $Directory
+    $start.EnvironmentVariables['GIT_TERMINAL_PROMPT'] = '0'
+    $quoted = @($Arguments | ForEach-Object { if ($_ -match '^[A-Za-z0-9:/._*-]+$') { $_ } else { '"' + $_ + '"' } }) -join ' '
+    if ($resolved.Source -match '\.(cmd|bat)$') {
+        $start.FileName = $env:ComSpec
+        $start.Arguments = '/d /s /c ""' + $resolved.Source + '" ' + $quoted + '"'
+    }
+    else { $start.FileName = $resolved.Source; $start.Arguments = $quoted }
+    $process = New-Object Diagnostics.Process
+    $process.StartInfo = $start
+    try {
+        [void] $process.Start()
+        $stdout = $process.StandardOutput.ReadToEndAsync()
+        $stderr = $process.StandardError.ReadToEndAsync()
+        if (-not $process.WaitForExit(15000)) {
+            # Only this invocation's process tree is terminated, including a .cmd wrapper's git child.
+            & "$env:SystemRoot\System32\taskkill.exe" /PID $process.Id /T /F 2>&1 | Out-Null
+            throw 'git timed out after 15 s'
+        }
+        if ($process.ExitCode -ne 0) { throw "git exit $($process.ExitCode)" }
+        return @($stdout.Result -split '\r?\n')
+    }
+    finally { $process.Dispose() }
+}
+
+function Initialize-ReviewUpstreams($Plan, [string] $Directory) {
+    $records = [ordered]@{}
+    if (-not $config.UpstreamRefresh) { Say 'update: off (profile)' }
+    # The UI lane reads all four skills (including the supporting search skill); other lanes read none.
+    if (@($Plan.Lanes | Where-Object { $_.Name -eq 'ui' -and $_.State -eq 'run' }).Count -eq 0) { return }
+    $manifest = Read-Json (Join-Path $PSScriptRoot 'upstreams.json')
+    foreach ($property in $manifest.skills.PSObject.Properties) {
+        $name = $property.Name; $skill = $property.Value
+        $records[$name] = [pscustomobject]@{ commit = $skill.commit; source = 'vendored' }
+        if (-not $config.UpstreamRefresh) { continue }
+        try {
+            $url = "https://github.com/$($skill.repo).git"
+            $arguments = if ($skill.tagPattern) { @('ls-remote', '--tags', $url, $skill.tagPattern) } else { @('ls-remote', $url, 'HEAD') }
+            $latest = Get-PaperReviewUpstreamCommit -Lines @(Invoke-ReviewUpstreamGit $arguments $Directory) -TagPattern $skill.tagPattern
+            $decision = Get-PaperReviewUpstreamDecision $skill $latest
+            $pin7 = $skill.commit.Substring(0, 7)
+            if ($decision -eq 'skipped') { throw 'no matching upstream ref' }
+            if ($decision -eq 'current') { Say "update: $name current ($pin7)"; continue }
+            $new7 = $latest.Substring(0, 7)
+            if ($decision -eq 'check-only') { Say "update: $name $pin7 -> $new7 check-only"; continue }
+            $cache = [IO.Path]::GetFullPath((Get-ReviewUpstreamCache))
+            $repoPath = [IO.Path]::GetFullPath($root).TrimEnd('\', '/')
+            if ($cache -eq $repoPath -or $cache.StartsWith($repoPath + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw 'cache must be outside reviewed repository' }
+            foreach ($file in @($skill.replace)) {
+                $destination = Get-PaperReviewUpstreamCachePath $cache $name $latest $file
+                if (Test-Path -LiteralPath $destination -PathType Leaf) { continue }
+                [IO.Directory]::CreateDirectory((Split-Path -Parent $destination)) | Out-Null
+                # Publish only a complete download. A failed transfer cannot become a valid cached file.
+                $temporary = $destination + '.' + [guid]::NewGuid().ToString('N') + '.tmp'
+                try {
+                    if ($env:PAPER_REVIEW_UPSTREAM_RAW) {
+                        $source = Join-Path $env:PAPER_REVIEW_UPSTREAM_RAW "$($skill.repo)/$latest/$($skill.path)/$file"
+                        Copy-Item -LiteralPath $source -Destination $temporary -ErrorAction Stop
+                    }
+                    else {
+                        $tls = [Net.ServicePointManager]::SecurityProtocol
+                        try {
+                            [Net.ServicePointManager]::SecurityProtocol = $tls -bor [Net.SecurityProtocolType]::Tls12
+                            Invoke-WebRequest -UseBasicParsing -TimeoutSec 15 -Uri "https://raw.githubusercontent.com/$($skill.repo)/$latest/$($skill.path)/$file" -OutFile $temporary -ErrorAction Stop | Out-Null
+                        }
+                        finally { [Net.ServicePointManager]::SecurityProtocol = $tls }
+                    }
+                    Move-Item -LiteralPath $temporary -Destination $destination -Force
+                }
+                finally { if (Test-Path -LiteralPath $temporary) { Remove-Item -LiteralPath $temporary -Force } }
+            }
+            $records[$name] = [pscustomobject]@{ commit = $latest; source = 'cache' }
+            Say "update: $name $pin7 -> $new7 fetched ($(@($skill.replace).Count) files)"
+        }
+        catch { Say "update: $name skipped - $($_.Exception.Message)" }
+    }
+    Write-Json (Join-Path $Directory 'upstreams.json') $records
+}
+
+function Get-ReviewInstruction([string] $Path, $Records) {
+    $text = [IO.File]::ReadAllText($Path, [Text.Encoding]::UTF8)
+    $relative = $Path.Substring([IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..')).TrimEnd('\', '/').Length).TrimStart('\', '/').Replace('\', '/')
+    if ($relative -match '^skills/([^/]+)/(.+)$') {
+        $name = $Matches[1]; $file = $Matches[2]
+        $manifest = Read-Json (Join-Path $PSScriptRoot 'upstreams.json')
+        $entry = $manifest.skills.PSObject.Properties[$name]
+        if ($null -ne $entry) {
+            $skill = $entry.Value; $commit = $skill.commit; $source = 'vendored'
+            $record = if ($null -ne $Records) { $Records.PSObject.Properties[$name] } else { $null }
+            if ($null -ne $record -and $record.Value.source -eq 'cache' -and @($skill.replace) -contains $file) {
+                $cached = Get-PaperReviewUpstreamCachePath (Get-ReviewUpstreamCache) $name $record.Value.commit $file
+                if (Test-Path -LiteralPath $cached -PathType Leaf) {
+                    $text = [IO.File]::ReadAllText($cached, [Text.Encoding]::UTF8)
+                    $commit = $record.Value.commit; $source = 'cache'
+                }
+            }
+            # Strip front matter before adding provenance, as the prompt renderer does for vendored skills.
+            $text = [regex]::Replace($text, '\A---\r?\n.*?\r?\n---\s*', '', 'Singleline')
+            $text = (Get-PaperReviewUpstreamSource $name $commit $source) + "`n" + $text
+        }
+    }
+    return [pscustomobject]@{ Path = $Path; Text = $text }
+}
+
 function Invoke-ReviewPlan {
     $all = Get-ReviewRepoFiles
     $allPaths = @($all.Tracked) + @($all.Untracked)
@@ -619,6 +763,7 @@ function Invoke-ReviewPlan {
         $repoLine = $root
     }
     Write-Json (Join-Path $dir 'plan.json') $plan
+    Initialize-ReviewUpstreams $plan $dir
     foreach ($line in (Format-PaperReviewEstimate -Run $runId -Mode $sel.Mode -Reason $sel.Reason -FileCount $files.Count -ExcludedCount $excluded.Count -Estimate $estimate -Approved $approved -RepoRoot $repoLine -RunDir $dir -ScopeLines @($parts.ScopeLines) -Executor $parts.Executor.Kind -ExecutorReason $parts.Executor.Reason -Collab $parts.Collab -Solo $parts.Solo)) { Say $line }
     foreach ($note in @($config.Notes)) { Say $note }
     exit 0
@@ -678,6 +823,83 @@ function Read-ReviewStatic([string] $Dir) {
     $file = Join-Path $Dir 'static.json'
     if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { return $null }
     return Read-Json $file
+}
+
+function Read-ReviewDetectorStatus([string] $Dir) {
+    $file = Join-Path $Dir 'detector-status.txt'
+    $recorded = if (Test-Path -LiteralPath $file -PathType Leaf) { [IO.File]::ReadAllText($file) } else { '' }
+    return Get-PaperReviewDetectorStatus $recorded
+}
+
+function Invoke-ReviewDetector {
+    $dir = Get-ReviewRunDir
+    $plan = Read-Json (Join-Path $dir 'plan.json')
+    if (-not $plan.Approved) { Stop-Review 4 "review: run $Run is not approved - show the estimate, then review.ps1 approve -Run $Run" }
+    $resultFile = Join-Path $dir 'detector.json'
+    if (Test-Path -LiteralPath $resultFile) { Remove-Item -LiteralPath $resultFile -Force }
+    $finish = {
+        param([int] $code, [string] $line)
+        Write-Text (Join-Path $dir 'detector-status.txt') ($line + "`n")
+        Stop-Review $code $line
+    }
+    if (-not $config.UiDetector) { & $finish 5 'detector pass: off (profile)' }
+    $files = @(Get-PaperReviewPlanBatches $plan 'ui' | ForEach-Object { $_.Files } | Sort-Object -Unique)
+    $exe = if ($env:PAPER_IMPECCABLE_CMD) { $env:PAPER_IMPECCABLE_CMD } elseif ($env:OS -eq 'Windows_NT') { 'npx.cmd' } else { 'npx' }
+    $items = @()
+    try {
+        $chunks = @(Get-PaperReviewDetectorChunks -Files $files -RepoRoot $root -Executable $exe)
+        if (-not $chunks.Count) { & $finish 5 'detector pass: not applicable - no web file' }
+        $application = Get-Command $exe -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+        if (-not $application) { throw 'npx not found' }
+        $exe = $application.Source
+        $chunks = @(Get-PaperReviewDetectorChunks -Files $files -RepoRoot $root -Executable $exe)
+        foreach ($chunk in $chunks) {
+            $psi = New-Object Diagnostics.ProcessStartInfo
+            $psi.UseShellExecute = $false
+            $psi.CreateNoWindow = $true
+            $psi.RedirectStandardOutput = $true
+            $psi.RedirectStandardError = $true
+            $psi.WorkingDirectory = $dir
+            $psi.EnvironmentVariables['IMPECCABLE_NO_TELEMETRY'] = '1'
+            $psi.EnvironmentVariables['DO_NOT_TRACK'] = '1'
+            $arguments = '-y impeccable@latest detect --json --no-config ' + (($chunk.Directories | ForEach-Object { '"' + $_ + '"' }) -join ' ')
+            if ($exe -match '\.(cmd|bat)$') {
+                $psi.FileName = $env:ComSpec
+                $psi.Arguments = '/d /s /c ""' + $exe + '" ' + $arguments + '"'
+            } else { $psi.FileName = $exe; $psi.Arguments = $arguments }
+            $process = New-Object Diagnostics.Process
+            $process.StartInfo = $psi
+            try {
+                if (-not $process.Start()) { throw 'process did not start' }
+                $stdout = $process.StandardOutput.ReadToEndAsync()
+                $stderr = $process.StandardError.ReadToEndAsync()
+                if (-not $process.WaitForExit($config.UiDetectorTimeoutSec * 1000)) {
+                    # Windows PowerShell 5.1 has no Process.Kill(entireProcessTree) overload.
+                    $killInfo = New-Object Diagnostics.ProcessStartInfo
+                    $killInfo.FileName = 'taskkill.exe'
+                    $killInfo.Arguments = "/PID $($process.Id) /T /F"
+                    $killInfo.UseShellExecute = $false
+                    $killInfo.CreateNoWindow = $true
+                    $killInfo.RedirectStandardOutput = $true
+                    $killInfo.RedirectStandardError = $true
+                    $killer = [Diagnostics.Process]::Start($killInfo)
+                    try {
+                        $killOut = $killer.StandardOutput.ReadToEndAsync()
+                        $killErr = $killer.StandardError.ReadToEndAsync()
+                        $killer.WaitForExit()
+                    } finally { $killer.Dispose() }
+                    throw "timeout after $($config.UiDetectorTimeoutSec) seconds"
+                }
+                $output = $stdout.GetAwaiter().GetResult()
+                $errorOutput = $stderr.GetAwaiter().GetResult()
+                if ($process.ExitCode -notin @(0, 2)) { throw (Format-PaperReviewDetectorExitReason $process.ExitCode $errorOutput) }
+                $parsed = @(ConvertFrom-PaperReviewDetectorJson $output)
+                $items += @(ConvertFrom-PaperReviewDetectorItems -Items $parsed -Files $files -RepoRoot $root)
+            } finally { $process.Dispose() }
+        }
+        Write-Text $resultFile ((ConvertTo-Json -InputObject @($items) -Depth 8) + "`n")
+    } catch { & $finish 4 "detector pass: not run - $($_.Exception.Message)" }
+    & $finish 0 (Format-PaperReviewDetectorLine $items)
 }
 
 function Invoke-ReviewFiles {
@@ -774,10 +996,19 @@ function Invoke-ReviewPrompt {
         foreach ($e in @($a.Errors)) { $errors += "${tag}: $e" }
         if (-not $a.Complete -and @($a.Errors).Count -eq 0) { $errors += "${tag}: not read: $(@($a.NotRead) -join ', ')" }
     }
-    $instructions = @(Get-ReviewInstructionPaths -LaneName $Lane -Files $paths | ForEach-Object { [pscustomobject]@{ Path = $_; Text = [IO.File]::ReadAllText($_, [Text.Encoding]::UTF8) } })
+    $upstreamsFile = Join-Path $dir 'upstreams.json'
+    $upstreams = if (Test-Path -LiteralPath $upstreamsFile) { Read-Json $upstreamsFile } else { $null }
+    $instructions = @(Get-ReviewInstructionPaths -LaneName $Lane -Files $paths | ForEach-Object { Get-ReviewInstruction $_ $upstreams })
     $findingsFile = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'findings.md'))
     $text = New-PaperReviewLanePrompt -Template (Get-ReviewPromptTemplate 'Lane prompt') -Lane $Lane -Batch $Batch -BatchCount $all.Count -Run $Run -Prefix $prefix -FilesLines $fileLines `
         -External $external -Repo $repoText -Retry $Retry.IsPresent -RetryErrors $errors -FindingsPath $findingsFile -FindingsText ([IO.File]::ReadAllText($findingsFile, [Text.Encoding]::UTF8)) -Instructions $instructions
+    if ($Lane -eq 'ui') {
+        $detectorFile = Join-Path $dir 'detector.json'
+        $hasResults = Test-Path -LiteralPath $detectorFile -PathType Leaf
+        $detected = @()
+        if ($hasResults) { $detected = @(ConvertFrom-PaperReviewDetectorJson ([IO.File]::ReadAllText($detectorFile, [Text.Encoding]::UTF8))) }
+        $text += "`n`n" + (Format-PaperReviewDetectorSection -Items $detected -Files $paths -HasResults $hasResults -Status (Read-ReviewDetectorStatus $dir))
+    }
     $name = $tag; $retryText = ''
     if ($Retry) { $name = "$tag.2"; $retryText = ' - retry' }
     $promptFile = Join-Path $dir "prompts\$name.md"
@@ -1076,8 +1307,53 @@ function Invoke-ReviewReport {
     $existing = @()
     if (Test-Path -LiteralPath $reportDir -PathType Container) { $existing = @(Get-ChildItem -LiteralPath $reportDir -File | ForEach-Object { $_.Name }) }
     $rep = New-PaperReviewReport -Plan $plan -Check $c -VerdictLines $verdictLines -Static $static -Run $Run -Date (Get-Date).ToString('yyyy-MM-dd') -ReportDir $reportArg -Existing $existing -Records $laneRecords -VerdictRecords (Read-ReviewRecords $dir 'verdicts') -ComplexityTop ([int] $config.ComplexityTop) -RunScreens @(Get-ChildItem -LiteralPath (Join-Path $dir 'screens') -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '\.(png|jpe?g|webp)$' } | ForEach-Object { $_.FullName })
+    $upstreamsFile = Join-Path $dir 'upstreams.json'
+    if (Test-Path -LiteralPath $upstreamsFile) {
+        $upstreams = Read-Json $upstreamsFile
+        foreach ($property in $upstreams.PSObject.Properties) {
+            $rep.Text += "`n" + (Get-PaperReviewUpstreamSource $property.Name $property.Value.commit $property.Value.source 'instructions')
+        }
+        $rep.Text += "`n"
+    }
+    $rep.Text += "`n" + (Read-ReviewDetectorStatus $dir) + "`n"
     Write-Text (Join-Path $reportDir $rep.Name) $rep.Text
+    Write-Json (Join-Path $dir 'report-findings.json') ([pscustomobject]@{ Findings = $c.Queue })
     foreach ($line in @($rep.Lines)) { Say $line }
+    exit 0
+}
+
+function Invoke-ReviewFix {
+    $dir = Get-ReviewRunDir
+    $plan = Read-Json (Join-Path $dir 'plan.json')
+    if ($plan.Kind -ne 'ui') { Stop-Review 2 'review: fix is a /review-ui step' }
+    if ($external -and $config.ReadOnly) { Stop-Review 2 'review: readOnly profile refuses fixing' }
+    $snapshot = Join-Path $dir 'report-findings.json'
+    if (-not (Test-Path -LiteralPath $snapshot -PathType Leaf)) { Stop-Review 2 'review: no report yet - run review.ps1 report first' }
+    $findings = @()
+    foreach ($finding in (Read-Json $snapshot).Findings) { if ($null -ne $finding) { $findings += $finding } }
+    $fix = Get-PaperReviewFixPlan -Findings $findings -Ids $Ids
+    if ($fix.Error) { Stop-Review 2 "review: $($fix.Error)" }
+    if ($external) {
+        $collabDir = $env:PAPER_REVIEW_COLLAB_DIR
+        if (-not $collabDir) { $collabDir = Join-Path $env:USERPROFILE '.claude\collab' }
+        $collab = Join-Path $collabDir 'scripts\collab.ps1'
+        $quote = { param($value) '"' + $value.Replace('"', '`"') + '"' }
+        Say "collab-start: powershell -NoProfile -ExecutionPolicy Bypass -File $(& $quote $collab) start -A claude -Host claude -Repo $(& $quote $root) -Slug $(& $quote "review-fix-$Run")"
+        $n = 0
+        foreach ($group in $fix.Groups) {
+            $n++
+            $file = Join-Path $dir "fix\T$n.md"
+            Write-Text $file (New-PaperReviewFixBrief -Group $group -Run $Run -Repo $root)
+            Say "brief: $file"
+            Say "dispatch: $collab dispatch -Session <id> -Task T$n -Brief $(& $quote $file)"
+        }
+    }
+    else {
+        $file = Join-Path $dir 'fix\task-spec-input.md'
+        Write-Text $file (New-PaperReviewFixTaskSpec -Groups $fix.Groups -Run $Run)
+        Say "task-spec: $file"
+        Say "next: /task-spec $file"
+    }
     exit 0
 }
 
@@ -1086,10 +1362,12 @@ switch ($Command) {
     'lanes' { Invoke-ReviewLanes }
     'plan' { Invoke-ReviewPlan }
     'approve' { Invoke-ReviewApprove }
+    'detect' { Invoke-ReviewDetector }
     'static' { Invoke-ReviewStatic }
     'files' { Invoke-ReviewFiles }
     'prompt' { Invoke-ReviewPrompt }
     'check' { Invoke-ReviewCheck }
     'report' { Invoke-ReviewReport }
+    'fix' { Invoke-ReviewFix }
     'sonar' { $sonarCode = @(Invoke-ReviewSonar); exit ([int] $sonarCode[-1]) }
 }

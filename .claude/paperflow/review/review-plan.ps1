@@ -31,9 +31,9 @@ $script:PaperReviewVerifyTokens = 20000
 $script:PaperReviewLaneKinds = @{ 'security' = 'vulnerability'; 'bug' = 'bug'; 'architecture' = 'architecture'; 'smell' = 'smell'; 'ui' = 'ux' }
 $script:PaperReviewLanePrefix = @{ 'security' = 'SEC'; 'bug' = 'BUG'; 'architecture' = 'ARC'; 'smell' = 'SML'; 'ui' = 'UI' }
 
-$script:PaperReviewCodeExt = @('.cs', '.vb', '.fs', '.ps1', '.psm1', '.psd1', '.py', '.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.go', '.java', '.c', '.cc', '.cpp', '.h', '.hpp', '.rs', '.sql', '.sh')
+$script:PaperReviewCodeExt = @('.cs', '.vb', '.fs', '.ps1', '.psm1', '.psd1', '.py', '.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.go', '.java', '.c', '.cc', '.cpp', '.h', '.hpp', '.rs', '.sql', '.sh', '.swift', '.kt', '.dart')
 $script:PaperReviewConfigExt = @('.json', '.config', '.xml', '.yml', '.yaml', '.props', '.targets', '.csproj', '.vbproj', '.fsproj', '.sln', '.addin', '.manifest', '.toml', '.ini')
-$script:PaperReviewUiExt = @('.xaml', '.axaml', '.cshtml', '.razor', '.html', '.htm', '.css', '.scss', '.less', '.vue', '.svelte', '.tsx', '.jsx', '.dcl')
+$script:PaperReviewUiExt = @('.xaml', '.axaml', '.cshtml', '.razor', '.html', '.htm', '.css', '.scss', '.less', '.vue', '.svelte', '.tsx', '.jsx', '.dcl', '.astro', '.qml')
 # The hosts with no user interface of their own; every other host has one (ADR-0035).
 $script:PaperReviewNoUiHosts = @('cli', 'ai')
 $script:PaperReviewProjectExt = @('.csproj', '.vbproj', '.fsproj', '.sln', '.props', '.targets')
@@ -44,9 +44,16 @@ function Format-PaperReviewNumber([double] $Value) { return $Value.ToString('N0'
 function Get-PaperReviewUiInstructions([string[]] $Files) {
     $web = $false
     $desktop = $false
+    $native = $false
+    $ios = $false
+    $android = $false
     foreach ($file in @($Files)) {
-        if ($file -match '\.(html|htm|css|scss|less|vue|svelte|tsx|jsx|cshtml|razor)$') { $web = $true }
+        if ($file -match '\.(html|htm|css|scss|less|vue|svelte|tsx|jsx|cshtml|razor|astro)$') { $web = $true }
         if ($file -match '\.(xaml|axaml|dcl)$') { $desktop = $true }
+        # These are already the UI lane's files: content markers were checked by the I/O layer.
+        if ($file -match '\.(swift|dart)$') { $ios = $true; $native = $true }
+        if ($file -match '\.(kt|dart)$' -or $file -match '(^|[\\/])res[\\/]layout[\\/].*\.xml$') { $android = $true; $native = $true }
+        if ($file -match '\.qml$') { $native = $true }
     }
     if ($web) {
         'paperflow\review\ui-web.md'
@@ -54,10 +61,17 @@ function Get-PaperReviewUiInstructions([string[]] $Files) {
         'skills\impeccable\reference\audit.md'
         'skills\impeccable\reference\craft-floor.md'
     }
-    if ($desktop -or -not $web) {
+    if ($native) {
+        'paperflow\review\ui-native.md'
+        'skills\impeccable\reference\audit.native.md'
+        if ($ios) { 'skills\impeccable\reference\ios.md' }
+        if ($android) { 'skills\impeccable\reference\android.md' }
+    }
+    if ($desktop -or (-not $web -and -not $native)) {
         'skills\design-critique\SKILL.md'
         'skills\accessibility-review\SKILL.md'
     }
+    if ($web -or $native) { 'paperflow\review\ui-libraries.md' }
 }
 
 function Test-PaperReviewWholeNumber($Value, [long] $Min) {
@@ -119,7 +133,8 @@ function ConvertFrom-PaperReviewProfile {
     foreach ($k in $script:PaperReviewDefaultAnalyzers.Keys) { $analyzers[$k] = $script:PaperReviewDefaultAnalyzers[$k] }
     $cfg = [pscustomobject]@{
         Errors = @(); Hosts = $hosts; FeatureDocs = $featureDocs; ArchitectureDeclared = $archDeclared
-        Lanes = @{}; Exclude = @(); Report = $report; VerifyCap = 10; BatchTokens = 120000; CodexBatchTokens = 160000; UiScreens = ''
+        Lanes = @{}; Exclude = @(); Report = $report; VerifyCap = 10; BatchTokens = 120000; CodexBatchTokens = 160000; UiScreens = ''; UpstreamRefresh = $true
+        UiDetector = $true; UiDetectorTimeoutSec = 600
         Analyzers = $analyzers; GlobalConfig = ''; SarifDir = ''; Kinds = @{}
         SoloTokens = $script:PaperReviewSoloTokens; ComplexityTop = $script:PaperReviewComplexityTop; ComplexityLimits = [ordered]@{}; Notes = @()
         Sonar = [pscustomobject]@{ ProjectKey = ''; Url = ''; Hotspots = 20; TimeoutSec = 600; Scanner = 'auto'; Sources = @(); Tests = @(); Exclusions = @() }
@@ -140,6 +155,9 @@ function ConvertFrom-PaperReviewProfile {
     foreach ($key in @($q.Keys)) {
         $v = $q[$key]
         switch -CaseSensitive ($key) {
+            'upstreamRefresh' {
+                if ($v -isnot [bool]) { $errors += "${kn}.upstreamRefresh: not true or false" } else { $cfg.UpstreamRefresh = $v }
+            }
             'lanes' {
                 if ($v -isnot [System.Collections.IDictionary]) { $errors += "${kn}.lanes: not an object"; break }
                 foreach ($l in @($v.Keys)) {
@@ -192,9 +210,18 @@ function ConvertFrom-PaperReviewProfile {
             }            'ui' {
                 if ($v -isnot [System.Collections.IDictionary]) { $errors += "${kn}.ui: not an object"; break }
                 foreach ($u in @($v.Keys)) {
-                    if ($u -ne 'screens') { $errors += "${kn}.ui.${u}: unknown key (screens)" }
-                    elseif ($v[$u] -isnot [string]) { $errors += "${kn}.ui.screens: not a string" }
-                    else { $cfg.UiScreens = $v[$u] }
+                    switch -CaseSensitive ($u) {
+                        'screens' {
+                            if ($v[$u] -isnot [string]) { $errors += "${kn}.ui.screens: not a string" } else { $cfg.UiScreens = $v[$u] }
+                        }
+                        'detector' {
+                            if ($v[$u] -isnot [bool]) { $errors += "${kn}.ui.detector: not true or false" } else { $cfg.UiDetector = $v[$u] }
+                        }
+                        'detectorTimeoutSec' {
+                            if (-not (Test-PaperReviewWholeNumber $v[$u] 30)) { $errors += "${kn}.ui.detectorTimeoutSec: not a whole number >= 30" } else { $cfg.UiDetectorTimeoutSec = [int] $v[$u] }
+                        }
+                        default { $errors += "${kn}.ui.${u}: unknown key (screens, detector, detectorTimeoutSec)" }
+                    }
                 }
             }
             'staticAnalysis' {
@@ -231,7 +258,7 @@ function ConvertFrom-PaperReviewProfile {
                     }
                 }
             }
-            default { $errors += "${kn}.${key}: unknown key (lanes, exclude, report, verifyCap, batchTokens, codexBatchTokens, soloTokens, complexityTop, complexity, sonarqube, ui, staticAnalysis)" }
+            default { $errors += "${kn}.${key}: unknown key (lanes, exclude, report, verifyCap, batchTokens, codexBatchTokens, soloTokens, complexityTop, complexity, sonarqube, ui, staticAnalysis, upstreamRefresh)" }
         }
     }
     $cfg.Errors = $errors
@@ -484,7 +511,7 @@ function Get-PaperReviewLaneFiles {
     .SYNOPSIS
     The files of the scope one lane reads, by extension (D.2); the ui lane adds the screens as images.
     #>
-    param($Files, [string] $Lane, [string[]] $Screens)
+    param($Files, [string] $Lane, [string[]] $Screens, [string[]] $MarkedUiFiles)
     $out = @()
     foreach ($f in @($Files)) {
         if ($null -eq $f) { continue }
@@ -497,7 +524,7 @@ function Get-PaperReviewLaneFiles {
             'bug' { $script:PaperReviewCodeExt -contains $ext }
             'smell' { $script:PaperReviewCodeExt -contains $ext }
             'architecture' { ($script:PaperReviewCodeExt -contains $ext) -or ($script:PaperReviewProjectExt -contains $ext) -or ($leaf -ieq 'CODEMAP.md') }
-            'ui' { $script:PaperReviewUiExt -contains $ext }
+            'ui' { ($script:PaperReviewUiExt -contains $ext) -or ($MarkedUiFiles -contains $path) -or ($path -match '(^|[\\/])res[\\/]layout[\\/].*\.xml$') }
             default { $false }
         }
         if ($take) { $out += $f }
