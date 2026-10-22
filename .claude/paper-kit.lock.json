@@ -1,6 +1,6 @@
 {
-  "version": "1.47.27",
-  "payloadHash": "2fd6c6bb732e116f0f190489fd33555eb3fb0a2757f9188f59189a0f9dea5c37",
+  "version": "1.48.0",
+  "payloadHash": "f1ab475c95d93b82893a7d77c89cde0d2e7e316f8c2fea65fafb2773262b0dc3",
   "hosts": ["desktop", "ai"],
   "files": {
     ".agents/skills/accessibility-review/LICENSE": "a6946284993aeec75c7d75906064b66210c46051e562077efb30eb6dcfe72e26",
@@ -236,7 +236,7 @@
     ".agents/skills/ux-copy/SKILL.md": "bf594eaa6458ee9c2ec0c1ab2140e6c2a446d9300069af4402935fb16c30dd1f",
     ".agents/skills/ux-copy/agents/openai.yaml": "a1499d95abd8447558c535fe5554adcc3c9b988a0a39264a6283d430effe1e94",
     ".agents/skills/verification-before-completion/SKILL.md": "6c6695373307bd0d6170baa25a53f125fc6ab9a6c521251b80d50b86bcb8e1bc",
-    ".agents/skills/webview-ui/SKILL.md": "3ff000595928a7957c6d1f1b1508ce31a33b57f8a8468809cf4f1d375d014773",
+    ".agents/skills/webview-ui/SKILL.md": "fd4f2c9d560c622435c38d2faa9313736ef7c67cf2910d0f487ec51545f396ef",
     ".agents/skills/wiki/SKILL.md": "027ca52d5a651b43de7c9bb3b824c3abd2df363dd7db024a230874e0952a526a",
     ".agents/skills/wiki/scripts/wiki-lint-plan.ps1": "5699072515e114185e447039ff834059e8118b182f9de0745a29ae1298b75963",
     ".agents/skills/wiki/scripts/wiki-plan.ps1": "5ff4f16a8834561944ded221777b32d282f8be05432ee98b3d6caf1289bc80dd",
@@ -559,7 +559,7 @@
     ".claude/skills/ux-copy/SKILL.md": "bf594eaa6458ee9c2ec0c1ab2140e6c2a446d9300069af4402935fb16c30dd1f",
     ".claude/skills/ux-copy/agents/openai.yaml": "a1499d95abd8447558c535fe5554adcc3c9b988a0a39264a6283d430effe1e94",
     ".claude/skills/verification-before-completion/SKILL.md": "6c6695373307bd0d6170baa25a53f125fc6ab9a6c521251b80d50b86bcb8e1bc",
-    ".claude/skills/webview-ui/SKILL.md": "3ff000595928a7957c6d1f1b1508ce31a33b57f8a8468809cf4f1d375d014773",
+    ".claude/skills/webview-ui/SKILL.md": "fd4f2c9d560c622435c38d2faa9313736ef7c67cf2910d0f487ec51545f396ef",
     ".claude/skills/wiki/SKILL.md": "027ca52d5a651b43de7c9bb3b824c3abd2df363dd7db024a230874e0952a526a",
     ".claude/skills/wiki/scripts/wiki-lint-plan.ps1": "5699072515e114185e447039ff834059e8118b182f9de0745a29ae1298b75963",
     ".claude/skills/wiki/scripts/wiki-plan.ps1": "5ff4f16a8834561944ded221777b32d282f8be05432ee98b3d6caf1289bc80dd",
