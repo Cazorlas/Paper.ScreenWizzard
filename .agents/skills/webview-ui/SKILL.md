@@ -69,6 +69,24 @@ This is the part that bites, and it bites only at run time.
 4. **Dispose the control with the window.** A WebView2 left alive holds its browser process, and a host
    that opens the window twice then has two.
 
+## The page's types come from the host, not from a second hand
+
+A page that declares its own copy of the host's answer shapes drifts the first time a field is renamed on
+the host, and nothing fails until a user opens the screen.
+
+- **Generate the page's contract from the host code** - the endpoints and the types they take and return -
+  with the same field-naming rule the host's serializer uses. Commit the generated file and mark it
+  "do not edit".
+- **A test compares the generated text with the committed file and goes red on any difference.** It
+  rewrites the file only when a switch (an environment variable) is set; **the build never writes it**,
+  because a build that repairs drift hides it from the reviewer too.
+- **A field the serializer leaves out when empty is optional in the contract (`name?: T`)**, not
+  `T | null`. Refuse what the generator cannot state exactly - an untyped object, two types with one name,
+  an enum whose wire form is not settled - instead of writing `any`.
+- **Type-check the page in its build**, so a page that reads a field the contract no longer has fails the
+  host's build, not the user's session.
+- Two endpoints claiming one method and path are refused when the router is built, naming both.
+
 ## Proving it, because the usual tools cannot see inside
 
 `drive-wpf` drives the window; it sees the **control**, never the DOM. A UI test that finds the WebView2
@@ -81,6 +99,14 @@ Three ways in, in the order worth trying:
 | **Ask the page** | `ExecuteScriptAsync` returning JSON, from the test | the DOM is what the plan said |
 | **Look at it** | screenshot the window, open the PNG and judge it | it rendered, in both themes |
 | **Drive the bridge** | call the host-side handler the page calls | the contract, without a browser |
+
+**Page tests outside the host** (a DOM test runner with the host answers faked) follow one standard:
+
+- find elements as a user does - by **role**, then **label**, then **visible text**; a CSS selector only
+  where none of those exists;
+- **an unexpected `console.warn` or `console.error` fails the test** - a test that expects one declares it;
+- clean the DOM and restore every mock after each test;
+- **no sleeps**: wait for the thing the user would see.
 
 **A pass that only checked the control exists is not a pass** - say so in the evidence row rather than
 rounding it up. Every WebView2 task ends with at least one screenshot **opened and judged**, and at least
