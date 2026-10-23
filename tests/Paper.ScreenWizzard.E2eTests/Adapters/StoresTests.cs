@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json.Nodes;
 using NUnit.Framework;
 using Paper.ScreenWizzard.Domain.Capture;
+using Paper.ScreenWizzard.Domain.Recorder;
 using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.E2eTests.Support;
@@ -43,7 +44,10 @@ public sealed class StoresTests
         true,
         AppLanguage.Vietnamese,
         AppTheme.Dark,
-        new PixelPoint(-1200, 40));
+        new PixelPoint(-1200, 40),
+        new RecordingHotkeys(new(HotkeyModifiers.Shift, "F9"), new(HotkeyModifiers.Control | HotkeyModifiers.Shift, "F10")),
+        new RecorderSettings(RecordTargetKind.Window, 1, false, true, false, 5, 60, @"E:\Phim quay\Đợt 2"),
+        false);
 
     // What the app runs on for a loaded file; nothing may have fallen back to a default, or the store forgot a setting.
     private static AppSettings Completed(SettingsLoadResult load)

@@ -1,3 +1,4 @@
+using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.Presentation.Mvvm;
 using Paper.ScreenWizzard.Presentation.Shell.ViewModels;
 using Paper.ScreenWizzard.UseCases.Shared.Models;
@@ -44,7 +45,7 @@ public sealed class SaveSettingsCommand : CommandBase
         // The start-up entry goes before Apply on purpose: SetAutostart does not save, it only returns the settings with the
         // new switch, so Apply must run after it to write that value to the file (and a refusal must stop before anything
         // says the switch is on).
-        if (!SaveFolderIsUsable() || !HotkeysAreAccepted() || !AutostartIsAccepted())
+        if (!SaveFolderIsUsable() || !VideoFolderIsUsable() || !HotkeysAreAccepted() || !RecordHotkeysAreAccepted() || !AutostartIsAccepted())
         {
             return;
         }
@@ -136,6 +137,52 @@ public sealed class SaveSettingsCommand : CommandBase
         return allAccepted;
     }
 
+    // The video folder may be missing: the recorder makes it at the first recording (SPEC recorder, "The file"). It must be a path.
+    private bool VideoFolderIsUsable()
+    {
+        if (_shell.CheckSaveFolder(_owner.VideoFolder) != FolderCheck.Invalid)
+        {
+            return true;
+        }
+
+        _owner.ShowMessage(NotificationMessage.Of("Shell.FolderMissing", _owner.VideoFolder));
+        return false;
+    }
+
+    // The recording hotkeys follow the capture ones' rules (SPEC shell F4): a refused chord goes back to the one that works.
+    private bool RecordHotkeysAreAccepted()
+    {
+        foreach (var key in Enum.GetValues<RecordHotkey>())
+        {
+            var typed = key == RecordHotkey.StartStop ? _owner.RecordStartStop : _owner.RecordPause;
+            if (typed == _owner.Current.RecordHotkeys[key])
+            {
+                continue;
+            }
+
+            var result = _shell.ChangeRecordHotkey(_owner.Current, key, typed);
+            if (result.Accepted)
+            {
+                _owner.Current = result.Settings;
+                continue;
+            }
+
+            if (key == RecordHotkey.StartStop)
+            {
+                _owner.RecordStartStop = _owner.Current.RecordHotkeys.StartStop;
+            }
+            else
+            {
+                _owner.RecordPause = _owner.Current.RecordHotkeys.Pause;
+            }
+
+            _owner.ShowMessage(result.Message);
+            return false;
+        }
+
+        return true;
+    }
+
     // F3: when Windows will not take the start-up entry the switch returns to its old state and the reason shows.
     private bool AutostartIsAccepted()
     {
@@ -168,6 +215,28 @@ public sealed class CancelSettingsCommand : CommandBase
     }
 
     public override void Execute(object? parameter) => _owner.RequestClose(false);
+}
+
+/// <summary>The Browse button next to the video folder.</summary>
+public sealed class BrowseVideoFolderCommand : CommandBase
+{
+    private readonly SettingsViewModel _owner;
+    private readonly IFolderPickerService _folderPicker;
+
+    public BrowseVideoFolderCommand(SettingsViewModel owner, IFolderPickerService folderPicker)
+    {
+        _owner = owner;
+        _folderPicker = folderPicker;
+    }
+
+    public override void Execute(object? parameter)
+    {
+        var picked = _folderPicker.PickFolder(_owner.VideoFolder);
+        if (!string.IsNullOrWhiteSpace(picked))
+        {
+            _owner.VideoFolder = picked;
+        }
+    }
 }
 
 /// <summary>The Browse button next to the save folder.</summary>

@@ -21,4 +21,11 @@
   <Geometry x:Key="Icon.Undo">M6,2.5 L3,5.5 L6,8.5 M3,5.5 H10 C14,5.5 14,13 10,13 H5</Geometry>
   <Geometry x:Key="Icon.Redo">M10,2.5 L13,5.5 L10,8.5 M13,5.5 H6 C2,5.5 2,13 6,13 H11</Geometry>
   <Geometry x:Key="Icon.Plus">M8,3 V13 M3,8 H13</Geometry>
+  <!-- Recorder: a monitor on its stand, two monitors (the whole desktop), a speaker, a microphone, a pointer arrow, the record dot. -->
+  <Geometry x:Key="Icon.Monitor">M2,3 H14 V11 H2 Z M6,14 H10 M8,11 V14</Geometry>
+  <Geometry x:Key="Icon.Desktop">M1,4 H7.5 V10 H1 Z M8.5,4 H15 V10 H8.5 Z M3,13 H13</Geometry>
+  <Geometry x:Key="Icon.Speaker">M2,6 H5 L9,3 V13 L5,10 H2 Z M11.5,5.5 C13,7 13,9 11.5,10.5</Geometry>
+  <Geometry x:Key="Icon.Microphone">M6,3 C6,1.5 10,1.5 10,3 V8 C10,9.5 6,9.5 6,8 Z M4,7.5 C4,12 12,12 12,7.5 M8,11 V14 M6,14 H10</Geometry>
+  <Geometry x:Key="Icon.Pointer">M4,2 L4,13 L7,10 L9.5,14.5 L11,13.7 L8.6,9.3 L12.5,9 Z</Geometry>
+  <EllipseGeometry x:Key="Icon.Record" Center="8,8" RadiusX="5" RadiusY="5" />
 </ResourceDictionary>

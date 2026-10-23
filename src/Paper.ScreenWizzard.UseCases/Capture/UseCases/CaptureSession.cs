@@ -80,10 +80,7 @@ public sealed class CaptureSession : ICaptureSession
 
     public WindowHit HitTestWindow(PixelPoint pointer)
     {
-        var top = Snapshot.Windows
-            .Where(w => w.IsVisible && !w.IsMinimized && !w.IsCloaked && !w.IsOwnOverlay && !w.IsDesktop && CaptureGeometry.Contains(w.VisibleFrame, pointer))
-            .OrderBy(w => w.ZOrder)
-            .FirstOrDefault();
+        var top = WindowPicking.TopmostAt(Snapshot.Windows, pointer);
         if (top is not null)
         {
             return new WindowHit(true, top.VisibleFrame, top.Title, false);

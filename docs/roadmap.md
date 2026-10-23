@@ -7,10 +7,12 @@ Mỗi đợt là một plan riêng đi hết vòng đời (SPEC -> duyệt -> l�
 | --- | --- | --- | --- |
 | 1 | Khung ứng dụng, khay hệ thống, phím tắt, cài đặt; chụp 4 kiểu; trình sửa ảnh | `shell`, `capture`, `editor` | xong 2026-09-21; phát hành `v0.1.0` (xem CLAUDE.md, mục Deploy) |
 | 1b | File cài `Setup.exe` hai ngôn ngữ theo người dùng, bản zip di động, workflow phát hành | `release` | xong 2026-09-21 (chưa ký số; thẻ phát hành do Hùng đẩy) |
-| 2 | Quay màn hình ra MP4 (vùng / cửa sổ / toàn màn hình) | `recorder` | chưa viết |
+| 2a | Quay màn hình ra MP4 (một màn hình / vùng / cửa sổ / cả desktop), tiếng hệ thống và micro, con trỏ, đếm ngược, phím tắt; thanh ẩn khi quay, điều khiển ở khay | `recorder` | đang làm: SPEC duyệt 2026-09-27, plan `docs/features/recorder/2026-09-27-quay-man-hinh-plan.md` |
+| 2b | Webcam chồng lên video: hình dạng khung, kéo, đổi cỡ, bật tắt khi đang quay | `recorder` | chưa viết |
+| 2c | Icon, bộ lọc chèn lên mặt trong khung webcam (Hùng hỏi 2026-09-27) | `recorder` | chưa viết; cần 2b |
 | 3 | Ghi chú lên màn hình kiểu EpicPen | `screen-note` | chưa viết |
 
-## Yêu cầu đã nhận cho đợt 2 (quay màn hình, Hùng nói 2026-09-20, chưa thành SPEC)
+## Yêu cầu đã nhận cho đợt 2 (quay màn hình, Hùng nói 2026-09-20; phần 2a đã thành `docs/features/recorder/SPEC.md`)
 
 Làm như FastStone Screen Recorder:
 

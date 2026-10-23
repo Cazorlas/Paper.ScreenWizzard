@@ -40,6 +40,11 @@ public sealed class SettingsViewModel : BindableBase, IDisposable
     private bool _checkForUpdates;
     private AppLanguage _language;
     private AppTheme _theme;
+    private HotkeyChord _recordStartStop;
+    private HotkeyChord _recordPause;
+    private string _videoFolder;
+    private int _framesPerSecond;
+    private int _recordCountdown;
     private NotificationMessage? _message;
 
     public SettingsViewModel(
@@ -65,6 +70,11 @@ public sealed class SettingsViewModel : BindableBase, IDisposable
         _checkForUpdates = settings.CheckForUpdates;
         _language = settings.Language;
         _theme = settings.Theme;
+        _recordStartStop = settings.RecordHotkeys.StartStop;
+        _recordPause = settings.RecordHotkeys.Pause;
+        _videoFolder = settings.Recorder.VideoFolder;
+        _framesPerSecond = settings.Recorder.FramesPerSecond;
+        _recordCountdown = settings.Recorder.CountdownSeconds;
 
         var rows = new List<HotkeyRowViewModel>();
         foreach (var kind in Enum.GetValues<CaptureKind>())
@@ -76,6 +86,7 @@ public sealed class SettingsViewModel : BindableBase, IDisposable
         SaveCommand = new SaveSettingsCommand(this, shell, prompts, appearance, notifications, systemCultureName);
         CancelCommand = new CancelSettingsCommand(this);
         BrowseFolderCommand = new BrowseFolderCommand(this, folderPicker);
+        BrowseVideoFolderCommand = new BrowseVideoFolderCommand(this, folderPicker);
         _localizer.LanguageChanged += OnLanguageChanged;
     }
 
@@ -89,6 +100,39 @@ public sealed class SettingsViewModel : BindableBase, IDisposable
     public CancelSettingsCommand CancelCommand { get; }
 
     public BrowseFolderCommand BrowseFolderCommand { get; }
+
+    public BrowseVideoFolderCommand BrowseVideoFolderCommand { get; }
+
+    /// <summary>The start/stop recording hotkey as typed; Save tries it (SPEC recorder, Inputs).</summary>
+    public HotkeyChord RecordStartStop
+    {
+        get => _recordStartStop;
+        set => SetProperty(ref _recordStartStop, value);
+    }
+
+    public HotkeyChord RecordPause
+    {
+        get => _recordPause;
+        set => SetProperty(ref _recordPause, value);
+    }
+
+    public string VideoFolder
+    {
+        get => _videoFolder;
+        set => SetProperty(ref _videoFolder, value);
+    }
+
+    public int FramesPerSecond
+    {
+        get => _framesPerSecond;
+        set => SetProperty(ref _framesPerSecond, value);
+    }
+
+    public int RecordCountdown
+    {
+        get => _recordCountdown;
+        set => SetProperty(ref _recordCountdown, value);
+    }
 
     /// <summary>The settings the use case last accepted; what the caller reads after the window closed as saved.</summary>
     public AppSettings Current { get; internal set; }
@@ -199,6 +243,12 @@ public sealed class SettingsViewModel : BindableBase, IDisposable
         Language = _language,
         Theme = _theme,
         CheckForUpdates = _checkForUpdates,
+        Recorder = Current.Recorder with
+        {
+            VideoFolder = _videoFolder,
+            FramesPerSecond = _framesPerSecond,
+            CountdownSeconds = _recordCountdown,
+        },
     };
 
     internal void RequestClose(bool saved) => CloseRequested?.Invoke(this, new SettingsClosedEventArgs(saved));

@@ -1,0 +1,44 @@
+<!-- The "Recorded" window (SPEC recorder, "What the user does" 5): the saved file, its size, length and weight, why it stopped when it
+     stopped by itself (F1, F2), and Open video, Show in folder, Close. DataContext: RecordedViewModel. -->
+<Window x:Class="Paper.ScreenWizzard.Presentation.Recorder.Views.RecordedWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{DynamicResource Recorded.Title}"
+        AutomationProperties.AutomationId="RecordedWindow"
+        Background="{DynamicResource Brush.Window}"
+        Foreground="{DynamicResource Brush.Text}"
+        FontFamily="Segoe UI"
+        FontSize="13"
+        ResizeMode="NoResize"
+        ShowInTaskbar="True"
+        SizeToContent="WidthAndHeight"
+        Topmost="True"
+        UseLayoutRounding="True"
+        WindowStartupLocation="Manual">
+  <Window.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Paper.ScreenWizzard.Presentation;component/Resources/Controls.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <BooleanToVisibilityConverter x:Key="Visible" />
+    </ResourceDictionary>
+  </Window.Resources>
+
+  <StackPanel Margin="16" MinWidth="360">
+    <TextBlock AutomationProperties.AutomationId="RecordedFileName" FontWeight="SemiBold" Text="{Binding FileName}" TextTrimming="CharacterEllipsis" MaxWidth="520" />
+    <TextBlock AutomationProperties.AutomationId="RecordedDetails" Margin="0,4,0,0" Foreground="{DynamicResource Brush.TextMuted}" Text="{Binding Details}" />
+    <TextBlock AutomationProperties.AutomationId="RecordedNote" Margin="0,8,0,0" TextWrapping="Wrap" MaxWidth="520"
+               Text="{Binding Note}" Visibility="{Binding HasNote, Converter={StaticResource Visible}}" />
+    <TextBlock AutomationProperties.AutomationId="RecordedProblem" Margin="0,8,0,0" TextWrapping="Wrap" MaxWidth="520"
+               Foreground="{DynamicResource Brush.Error}"
+               Text="{Binding ProblemText}" Visibility="{Binding HasProblem, Converter={StaticResource Visible}}" />
+    <StackPanel Margin="0,16,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
+      <Button AutomationProperties.AutomationId="OpenVideoButton" Style="{StaticResource Style.Button.Accent}" IsDefault="True"
+              Content="{DynamicResource Recorded.OpenVideo}" Command="{Binding OpenVideoCommand}" Margin="0,0,8,0" />
+      <Button AutomationProperties.AutomationId="ShowInFolderButton" Style="{StaticResource Style.Button}"
+              Content="{DynamicResource Recorded.ShowInFolder}" Command="{Binding ShowInFolderCommand}" Margin="0,0,8,0" />
+      <Button AutomationProperties.AutomationId="CloseRecordedButton" Style="{StaticResource Style.Button}" IsCancel="True"
+              Content="{DynamicResource Recorded.Close}" Command="{Binding CloseCommand}" />
+    </StackPanel>
+  </StackPanel>
+</Window>

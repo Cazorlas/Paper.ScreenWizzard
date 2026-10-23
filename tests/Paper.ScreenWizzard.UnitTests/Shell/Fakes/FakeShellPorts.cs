@@ -73,6 +73,25 @@ public sealed class FakeHotkeys : IHotkeys
 
     public void Unregister(CaptureKind kind) => _registered.Remove(kind);
 
+    public Dictionary<RecordHotkey, HotkeyChord> RecordRegistered { get; } = [];
+
+    public event Action<RecordHotkey>? RecordPressed;
+
+    public PortResult Register(RecordHotkey key, HotkeyChord chord)
+    {
+        if (HeldByOtherPrograms.Contains(chord))
+        {
+            return PortResult.Fail("Hot key is already registered by another program.");
+        }
+
+        RecordRegistered[key] = chord;
+        return PortResult.Ok;
+    }
+
+    public void Unregister(RecordHotkey key) => RecordRegistered.Remove(key);
+
+    public void PressRecord(RecordHotkey key) => RecordPressed?.Invoke(key);
+
     /// <summary>The user presses a chord: every kind registered on it fires.</summary>
     public void Press(HotkeyChord chord)
     {

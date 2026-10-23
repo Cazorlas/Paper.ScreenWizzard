@@ -19,14 +19,16 @@ taskbar, comes up with one key, and lets me set the keys, the save folder, and w
 1. Opens the app. Its icon appears in the notification area and the capture bar comes up (the first time). No main window takes the
    screen.
 2. Right-clicks the tray icon: the menu has Capture rectangle, Capture freeform, Capture window, Capture full screen, Open image…,
-   Capture bar (show or hide), Settings, Check for updates, Exit; while a newer version is out, also Download the new version….
+   Record screen… (while recording: Pause or Resume, and Stop; SPEC recorder), Capture bar (show or hide), Settings, Check for updates, Exit; while a newer version is out, also Download the new version….
    Double-clicking the
    icon shows the capture bar.
-3. The capture bar is a small window always on top, with one button per kind of capture and a Settings button. It can be dragged
+3. The capture bar is a small window always on top, with one button per kind of capture, a Record button
+   that opens the recording bar (SPEC recorder), and a Settings button. It can be dragged
    anywhere; next time it opens exactly there.
 4. In Settings the user changes: the hotkey of each kind of capture, what happens after a capture, the save folder, the file
    format, the delay, including the pointer, starting with Windows, the language (follow Windows, Vietnamese, English), the theme
-   (follow Windows, light, dark), and whether to check for a new version.
+   (follow Windows, light, dark), whether to check for a new version, and in the "Screen recording" group the two recording hotkeys
+   (start/stop Ctrl+Alt+R, pause Ctrl+Alt+P), the video folder, frames per second (15, 30, 60) and the countdown (0, 3, 5 seconds).
 5. Closing the capture bar or the editor with X closes only that window; the app keeps running in the tray. Only "Exit" in the tray
    menu ends the app.
 
@@ -46,6 +48,7 @@ taskbar, comes up with one key, and lets me set the keys, the save folder, and w
 | Language | follow Windows | the text of every window |
 | Theme | follow Windows | light or dark |
 | Check for a new version | on | once a day the app asks GitHub whether a newer version is published, and says so |
+| Recording hotkeys, video folder, frames per second, countdown | Ctrl+Alt+R, Ctrl+Alt+P, the Videos folder, Paper.ScreenWizzard, 30, 3 seconds | see the recorder SPEC |
 
 ## Outputs
 
@@ -205,13 +208,15 @@ bằng một phím, và tôi tự đặt được phím, thư mục lưu, và vi
 
 1. Mở ứng dụng. Biểu tượng hiện ở khay hệ thống, thanh chụp hiện lên (lần đầu). Không có cửa sổ chính chiếm màn hình.
 2. Bấm chuột phải biểu tượng khay: menu có Chụp vùng chữ nhật, Chụp vùng tự do, Chụp cửa sổ, Chụp toàn màn hình,
-   Mở ảnh…, Thanh chụp (hiện hoặc ẩn), Cài đặt, Kiểm bản mới, Thoát; khi có bản mới thì có thêm Tải bản mới…. Bấm đúp biểu tượng
+   Mở ảnh…, Quay màn hình… (khi đang quay: Tạm dừng quay hoặc Tiếp tục quay, và Dừng quay; SPEC recorder), Thanh chụp (hiện hoặc ẩn), Cài đặt, Kiểm bản mới, Thoát; khi có bản mới thì có thêm Tải bản mới…. Bấm đúp biểu tượng
    thì hiện thanh chụp.
-3. Thanh chụp là một cửa sổ nhỏ luôn nằm trên cùng, có một nút cho mỗi kiểu chụp và nút Cài đặt. Kéo nó đi đâu cũng
+3. Thanh chụp là một cửa sổ nhỏ luôn nằm trên cùng, có một nút cho mỗi kiểu chụp, nút Quay mở thanh quay
+   (SPEC recorder) và nút Cài đặt. Kéo nó đi đâu cũng
    được; lần sau mở lại nó ở đúng chỗ đó.
 4. Trong Cài đặt, người dùng đổi: phím tắt của từng kiểu chụp, việc làm sau khi chụp, thư mục lưu, định dạng file, độ
    trễ, kèm con trỏ, khởi động cùng Windows, ngôn ngữ (tự theo Windows, tiếng Việt, tiếng Anh), giao diện (tự theo
-   Windows, sáng, tối), và có kiểm bản mới không.
+   Windows, sáng, tối), có kiểm bản mới không, và trong nhóm "Quay màn hình": hai phím tắt quay (bắt đầu/dừng Ctrl+Alt+R,
+   tạm dừng Ctrl+Alt+P), thư mục video, số khung hình mỗi giây (15, 30, 60) và đếm ngược (0, 3, 5 giây).
 5. Đóng thanh chụp hay cửa sổ sửa bằng nút X chỉ đóng cửa sổ đó; ứng dụng vẫn chạy ở khay. Chỉ "Thoát" trong menu khay
    mới tắt ứng dụng.
 
@@ -231,6 +236,7 @@ bằng một phím, và tôi tự đặt được phím, thư mục lưu, và vi
 | Ngôn ngữ | theo Windows | chữ trên mọi cửa sổ |
 | Giao diện | theo Windows | sáng hay tối |
 | Kiểm bản mới | bật | mỗi ngày một lần ứng dụng hỏi GitHub xem có bản mới hơn đã phát hành không, có thì báo |
+| Phím quay, thư mục video, khung hình mỗi giây, đếm ngược | Ctrl+Alt+R, Ctrl+Alt+P, thư mục Video mục Paper.ScreenWizzard, 30, 3 giây | xem SPEC recorder |
 
 ## Outputs
 

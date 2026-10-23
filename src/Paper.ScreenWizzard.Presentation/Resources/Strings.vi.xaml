@@ -82,6 +82,7 @@
   <sys:String x:Key="Shell.UpdateCheckFailed">Không kiểm được bản mới: {0}. Thử lại sau.</sys:String>
   <sys:String x:Key="Shell.HotkeyNeedsModifier">Phím {0} đứng một mình sẽ cướp việc gõ chữ. Hãy thêm Ctrl, Alt hoặc Shift. Phím cũ được giữ nguyên.</sys:String>
   <sys:String x:Key="Shell.HotkeyUsedByOtherKind">Phím này đã dùng cho kiểu chụp "{0}". Phím cũ được giữ nguyên.</sys:String>
+  <sys:String x:Key="Shell.HotkeyUsedByRecording">Phím này đã dùng cho việc quay màn hình. Phím cũ được giữ nguyên.</sys:String>
   <sys:String x:Key="Shell.HotkeyHeldByAnotherProgram">Không đăng ký được phím {0}: Windows hoặc ứng dụng khác đang giữ phím này. Phím cũ được giữ nguyên.</sys:String>
   <sys:String x:Key="Shell.SettingsUnreadable">Không đọc được tập tin cài đặt ({0}) nên ứng dụng dùng cài đặt mặc định. Tập tin không bị đổi; hãy đóng chương trình đang giữ nó rồi mở lại ứng dụng.</sys:String>
   <sys:String x:Key="Shell.HotkeyUnsafeAtStart">Phím tắt {0} trong cài đặt là một phím trơn, sẽ chặn mọi lần bấm phím đó, nên ứng dụng dùng phím mặc định thay thế.</sys:String>
@@ -184,4 +185,49 @@
   <sys:String x:Key="Editor.FileChangedOnDisk">File {0} đã bị chương trình khác đổi hoặc xoá nên không ghi đè. Hãy chọn Lưu thành…</sys:String>
   <sys:String x:Key="Editor.Saved">Đã lưu ảnh vào {0}</sys:String>
   <sys:String x:Key="Editor.Copied">Đã sao chép ảnh {0} × {1} vào clipboard</sys:String>
+
+  <!-- Recorder (SPEC recorder). -->
+  <sys:String x:Key="Recorder.Title">Quay màn hình</sys:String>
+  <sys:String x:Key="Recorder.Target.Monitor">Màn hình</sys:String>
+  <sys:String x:Key="Recorder.Target.Region">Vùng</sys:String>
+  <sys:String x:Key="Recorder.Target.Window">Cửa sổ</sys:String>
+  <sys:String x:Key="Recorder.Target.Desktop">Cả desktop</sys:String>
+  <sys:String x:Key="Recorder.WhichMonitor">Màn hình nào</sys:String>
+  <sys:String x:Key="Recorder.MonitorPrimary">{0} ({1}, chính)</sys:String>
+  <sys:String x:Key="Recorder.MonitorOther">{0} ({1})</sys:String>
+  <sys:String x:Key="Recorder.SystemSound">Tiếng hệ thống</sys:String>
+  <sys:String x:Key="Recorder.Microphone">Micro</sys:String>
+  <sys:String x:Key="Recorder.Pointer">Con trỏ chuột</sys:String>
+  <sys:String x:Key="Recorder.Record">Quay</sys:String>
+  <sys:String x:Key="Recorder.Close">Đóng thanh quay</sys:String>
+  <sys:String x:Key="Recorded.Title">Đã quay</sys:String>
+  <sys:String x:Key="Recorded.OpenVideo">Mở video</sys:String>
+  <sys:String x:Key="Recorded.ShowInFolder">Mở thư mục</sys:String>
+  <sys:String x:Key="Recorded.Close">Đóng</sys:String>
+  <sys:String x:Key="Recorder.AreaTooSmall">Vùng chọn nhỏ quá. Hãy chọn một vùng ít nhất 16 × 16 điểm ảnh.</sys:String>
+  <sys:String x:Key="Recorder.AreaOffScreen">Vùng chọn không nằm trên màn hình nào.</sys:String>
+  <sys:String x:Key="Recorder.FolderNotWritable">Không ghi được vào thư mục video {0}: {1}</sys:String>
+  <sys:String x:Key="Recorder.CannotRecord">Không bắt đầu quay được: {0}</sys:String>
+  <sys:String x:Key="Recorder.SystemSoundMissing">Không thu được tiếng hệ thống ({0}). Vẫn quay, không có tiếng máy.</sys:String>
+  <sys:String x:Key="Recorder.MicrophoneMissing">Không tìm thấy micro ({0}). Vẫn quay, không có tiếng micro.</sys:String>
+  <sys:String x:Key="Recorder.MicrophoneLost">Mất micro trong lúc quay ({0}). Vẫn quay tiếp, không có tiếng micro.</sys:String>
+  <sys:String x:Key="Recorder.SystemSoundLost">Mất tiếng hệ thống trong lúc quay ({0}). Vẫn quay tiếp.</sys:String>
+  <sys:String x:Key="Recorder.WindowClosed">Cửa sổ đang quay đã bị đóng nên lượt quay dừng. Phần đã quay được lưu.</sys:String>
+  <sys:String x:Key="Recorder.DisplayChanged">Màn hình đổi trong lúc quay ({0}) nên lượt quay dừng. Phần đã quay được lưu.</sys:String>
+  <sys:String x:Key="Recorder.WriteFailed">Không ghi được video vào {0}: {1}. Lượt quay đã dừng và không để lại file ghi dở.</sys:String>
+  <sys:String x:Key="Recorder.CannotOpen">Không mở được {0}: {1}</sys:String>
+  <sys:String x:Key="Tray.Record">Quay màn hình…</sys:String>
+  <sys:String x:Key="Tray.RecordPause">Tạm dừng quay</sys:String>
+  <sys:String x:Key="Tray.RecordResume">Tiếp tục quay</sys:String>
+  <sys:String x:Key="Tray.RecordStop">Dừng quay</sys:String>
+  <sys:String x:Key="Tray.TooltipRecording">Đang quay {0}</sys:String>
+  <sys:String x:Key="Tray.TooltipPaused">Tạm dừng quay {0}</sys:String>
+  <sys:String x:Key="CaptureBar.Record">Quay</sys:String>
+  <sys:String x:Key="Settings.Group.Recording">Quay màn hình</sys:String>
+  <sys:String x:Key="Settings.VideoFolder">Thư mục video</sys:String>
+  <sys:String x:Key="Settings.FramesPerSecond">Khung hình mỗi giây</sys:String>
+  <sys:String x:Key="Settings.RecordCountdown">Đếm ngược trước khi quay</sys:String>
+  <sys:String x:Key="Settings.RecordHotkey.StartStop">Bắt đầu / dừng quay</sys:String>
+  <sys:String x:Key="Settings.RecordHotkey.Pause">Tạm dừng / tiếp tục</sys:String>
+  <sys:String x:Key="Settings.BrowseVideoFolder">Chọn thư mục video</sys:String>
 </ResourceDictionary>

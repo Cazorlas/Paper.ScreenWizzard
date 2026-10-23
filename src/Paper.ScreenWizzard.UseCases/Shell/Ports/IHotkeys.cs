@@ -16,6 +16,14 @@ public interface IHotkeys
 
     void Unregister(CaptureKind kind);
 
+    /// <summary>Registers a recording hotkey (SPEC recorder, Inputs); atomic as the capture ones.</summary>
+    PortResult Register(RecordHotkey key, HotkeyChord chord);
+
+    void Unregister(RecordHotkey key);
+
     /// <summary>Raised on the UI thread when a registered hotkey is pressed.</summary>
     event Action<CaptureKind>? Pressed;
+
+    /// <summary>Raised on the UI thread when a registered recording hotkey is pressed.</summary>
+    event Action<RecordHotkey>? RecordPressed;
 }

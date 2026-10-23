@@ -1,6 +1,6 @@
 # Paper.ScreenWizzard.UseCases
 
-Every decision of the three features, on `net10.0` with no Windows: each domain folder holds `Ports/` (one interface per file:
+Every decision of the four features, on `net10.0` with no Windows: each domain folder holds `Ports/` (one interface per file:
 `I<Feature>Interactor`, the session, and the ports it needs, named after what they provide, plain data only), `UseCases/` (the
 interactor and the session) and `Models/` (the records that cross them). `Shared/` holds what two or more domains call (ADR 0003). The Presentation flows call the
 interfaces; Infrastructure implements the ports.
@@ -12,7 +12,7 @@ interfaces; Infrastructure implements the ports.
 | `Shell/Ports/` | `IShellInteractor` and the ports of the shell: `ISettingsStore`, `IHotkeys`, `IAutostart`, `ISingleInstance`; `IUpdateInteractor` and its ports `IReleaseFeed`, `IBrowser` |
 | `Shell/UseCases/ShellInteractor.cs` | start-up (load or default settings, register the hotkeys, notices), hotkey change, apply, autostart, bar placement |
 | `Shell/UseCases/UpdateInteractor.cs` | whether a newer version is out (check on, running x.y.z, newest tag), said once per version; the check asked from the tray (`CheckNowAsync`), always answered; opens the release page |
-| `Capture/Ports/` | `ICaptureInteractor`, `ICaptureSession`, `IScreenSource`, `IWindowCatalog`, `IDelay` |
+| `Capture/Ports/` | `ICaptureInteractor`, `ICaptureSession`, `IScreenSource` (the window list `IWindowCatalog` and the wait `IDelay` are in `Shared/Ports`) |
 | `Capture/UseCases/CaptureInteractor.cs` | countdown, snapshot, one session at a time, where a captured image goes |
 | `Capture/UseCases/CaptureSession.cs` | choosing on the frozen snapshot: rectangle, freeform, window hit-test, full screen |
 | `Shared/Ports/` | `IMonitorCatalog` (capture and the editor's window placement), `IClock`, `ILog`, `INotifications`, `IClipboard`, `IFileStore`, `IImageCodec`, `IImageDelivery` |
@@ -21,6 +21,8 @@ interfaces; Infrastructure implements the ports.
 | `Editor/UseCases/EditorSession.cs` | the history: one step per change, redo branch, dirty tracking, crop, blur render |
 | `Editor/UseCases/EditorInteractor.cs` | open from file or clipboard, Shift constraint, text, `HitTest`, where Ctrl+S goes, close decision |
 | `*/Models/*.cs` | the plain records and issue enums each domain returns (`Capture/Models/ScreenCaptureModels.cs`, `Shared/Models/DeliveryModels.cs` too) |
+| `Recorder/Ports/` | `IRecorderInteractor` and the ports of recording: `IScreenFrames`, `ISoundSources`, `IVideoWriter`, `IMonotonicClock`, `IWindowPresence`, `IFileLauncher` |
+| `Recorder/UseCases/RecorderInteractor.cs` | countdown, one recording at a time, the loop that places pictures and sound on the video clock and writes them, why it stops (F1-F7) |
 
 ## Flow
 
@@ -29,3 +31,5 @@ Capture: `CaptureInteractor.BeginAsync` -> `IDelay` countdown -> `IScreenSource`
 Editor: `EditorInteractor.OpenFile` -> `EditorSession` -> `EditorInteractor.DecideSave` -> `EditorInteractor.Save` -> `ImageDelivery.SaveToPath`.
 Shell: `ShellInteractor.Start` -> `ISettingsStore.Load` -> `IHotkeys.Register` -> notices for what could not be registered.
 New version: `UpdateInteractor.CheckAsync` -> `IReleaseFeed.GetLatestAsync` -> `AppVersion` compare -> offer and notice; `OpenDownloadPage` -> `IBrowser.Open`.
+
+Recorder: `RecorderInteractor.StartAsync` -> `IDelay` countdown -> `IScreenFrames.Open`, `ISoundSources.Start`, `IVideoWriter.Open` -> loop on its own thread: `IScreenFrames.Next` -> `RecordingTimeline` -> `FrameClock` -> `IVideoWriter.WriteVideo`, `AudioMixer.Drain` -> `WriteSound` -> `StopAsync` -> `IVideoWriter.Finish` (or `Abandon`, F3).

@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using Paper.ScreenWizzard.Domain.Capture;
+using Paper.ScreenWizzard.Domain.Recorder;
 using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.UseCases.Capture.Models;
@@ -122,7 +123,9 @@ public static class CaptureData
             false,
             AppLanguage.System,
             AppTheme.System,
-            null);
+            null,
+            SettingsDefaults.RecordHotkeys,
+            RecorderRules.Defaults(@"C:\Users\An\Videos"));
 
     /// <summary>A plain image whose bytes are all different from each other (a ramp), so a copy that changes anything shows.</summary>
     public static PixelImage Ramp(int width, int height)

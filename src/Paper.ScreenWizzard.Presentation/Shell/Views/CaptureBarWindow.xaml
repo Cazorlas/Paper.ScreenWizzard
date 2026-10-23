@@ -88,6 +88,18 @@
         </StackPanel>
       </Button>
 
+      <!-- Record: opens the recording bar (SPEC recorder). -->
+      <Button AutomationProperties.AutomationId="RecordButton"
+              AutomationProperties.Name="{DynamicResource Recorder.Title}"
+              ToolTip="{DynamicResource Recorder.Title}"
+              Command="{Binding RecordCommand}"
+              Style="{StaticResource Style.Button.Icon}" Padding="10,6">
+        <StackPanel Orientation="Horizontal">
+          <Path Fill="{DynamicResource Brush.Recording}" Width="16" Height="16" Stretch="None" Data="{StaticResource Icon.Record}" />
+          <TextBlock Margin="6,0,0,0" VerticalAlignment="Center" Text="{DynamicResource CaptureBar.Record}" />
+        </StackPanel>
+      </Button>
+
       <!-- A thin divider between the capture buttons and the two icon-only ones. -->
       <Border Width="1" Margin="6,6" Background="{DynamicResource Brush.Border}" />
 

@@ -1,4 +1,5 @@
 using Paper.ScreenWizzard.Domain.Capture;
+using Paper.ScreenWizzard.Domain.Recorder;
 using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.UseCases.Shell.UseCases;
@@ -61,7 +62,9 @@ public static class ShellData
         false,
         AppLanguage.System,
         AppTheme.System,
-        null);
+        null,
+        new RecordingHotkeys(Chord(HotkeyModifiers.Control | HotkeyModifiers.Alt, "R"), Chord(HotkeyModifiers.Control | HotkeyModifiers.Alt, "P")),
+        new RecorderSettings(RecordTargetKind.Monitor, null, true, false, true, 3, 30, @"C:\Users\Hung\Videos\Paper.ScreenWizzard"));
 
     /// <summary>The defaults registered on a fake port, as a running app would have them.</summary>
     public static void RegisterAll(FakeHotkeys port, AppSettings settings)

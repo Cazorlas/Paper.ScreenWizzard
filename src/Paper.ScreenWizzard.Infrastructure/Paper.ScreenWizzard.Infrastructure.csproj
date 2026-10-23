@@ -15,6 +15,13 @@
     <InternalsVisibleTo Include="Paper.ScreenWizzard.E2eTests" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Screen recording (ADR 0004): Desktop Duplication, Media Foundation and WASAPI through these, and only in this project. -->
+    <PackageReference Include="Vortice.Direct3D11" Version="3.8.3" />
+    <PackageReference Include="Vortice.DXGI" Version="3.8.3" />
+    <PackageReference Include="Vortice.MediaFoundation" Version="3.8.3" />
+    <PackageReference Include="NAudio.Wasapi" Version="2.2.1" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Paper.ScreenWizzard.UseCases\Paper.ScreenWizzard.UseCases.csproj" />
     <ProjectReference Include="..\Paper.ScreenWizzard.Domain\Paper.ScreenWizzard.Domain.csproj" />
   </ItemGroup>

@@ -35,4 +35,6 @@
 
   <!-- Selection overlay: the dim laid over the frozen screenshot (drawn at 40% opacity by the overlay). -->
   <SolidColorBrush x:Key="Brush.OverlayDim" Color="#000000" />
+  <!-- The outline of the recorded area and the record dot: red, as a recording light. -->
+  <SolidColorBrush x:Key="Brush.Recording" Color="#C42B1C" />
 </ResourceDictionary>

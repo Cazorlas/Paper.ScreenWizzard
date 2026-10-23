@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Paper.ScreenWizzard.Domain.Capture;
+using Paper.ScreenWizzard.Domain.Recorder;
 using Paper.ScreenWizzard.Domain.Shared;
 using Paper.ScreenWizzard.Domain.Shell;
 using Paper.ScreenWizzard.UseCases.Shared.Models;
@@ -152,6 +153,10 @@ public sealed class SettingsStore : ISettingsStore
 
         public bool? CheckForUpdates { get; init; }
 
+        public Dictionary<string, HotkeyDocument?>? RecordHotkeys { get; init; }
+
+        public RecorderDocument? Recorder { get; init; }
+
         public static SettingsDocument From(AppSettings settings) => new()
         {
             Hotkeys = settings.Hotkeys.ToDictionary(pair => pair.Key.ToString(), pair => (HotkeyDocument?)new HotkeyDocument(pair.Value.Modifiers, pair.Value.Key)),
@@ -167,6 +172,20 @@ public sealed class SettingsStore : ISettingsStore
             Theme = settings.Theme,
             CaptureBarPosition = settings.CaptureBarPosition is { } place ? new PositionDocument(place.X, place.Y) : null,
             CheckForUpdates = settings.CheckForUpdates,
+            RecordHotkeys = new Dictionary<string, HotkeyDocument?>
+            {
+                [nameof(RecordHotkey.StartStop)] = new HotkeyDocument(settings.RecordHotkeys.StartStop.Modifiers, settings.RecordHotkeys.StartStop.Key),
+                [nameof(RecordHotkey.Pause)] = new HotkeyDocument(settings.RecordHotkeys.Pause.Modifiers, settings.RecordHotkeys.Pause.Key),
+            },
+            Recorder = new RecorderDocument(
+                settings.Recorder.Target,
+                settings.Recorder.MonitorIndex,
+                settings.Recorder.SystemSound,
+                settings.Recorder.Microphone,
+                settings.Recorder.Pointer,
+                settings.Recorder.CountdownSeconds,
+                settings.Recorder.FramesPerSecond,
+                settings.Recorder.VideoFolder),
         };
 
         public StoredSettings ToStored() => new(
@@ -182,10 +201,24 @@ public sealed class SettingsStore : ISettingsStore
             Language,
             Theme,
             CaptureBarPosition is { } place ? new PixelPoint(place.X, place.Y) : null,
-            CheckForUpdates);
+            CheckForUpdates,
+            RecordHotkeys?.ToDictionary(pair => pair.Key, pair => pair.Value is { } chord ? new StoredHotkey(chord.Modifiers, chord.Key) : (StoredHotkey?)null),
+            Recorder is { } recorder
+                ? new StoredRecorder(recorder.Target, recorder.MonitorIndex, recorder.SystemSound, recorder.Microphone, recorder.Pointer, recorder.CountdownSeconds, recorder.FramesPerSecond, recorder.VideoFolder)
+                : null);
     }
 
     private sealed record HotkeyDocument(HotkeyModifiers? Modifiers, string? Key);
+
+    private sealed record RecorderDocument(
+        RecordTargetKind? Target,
+        int? MonitorIndex,
+        bool? SystemSound,
+        bool? Microphone,
+        bool? Pointer,
+        int? CountdownSeconds,
+        int? FramesPerSecond,
+        string? VideoFolder);
 
     private sealed record PositionDocument(int X, int Y);
 }

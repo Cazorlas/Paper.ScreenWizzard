@@ -1,8 +1,7 @@
-using Paper.ScreenWizzard.Domain.Capture;
 using Paper.ScreenWizzard.Domain.Shared;
-using Paper.ScreenWizzard.UseCases.Capture.Ports;
+using Paper.ScreenWizzard.UseCases.Shared.Ports;
 
-namespace Paper.ScreenWizzard.Infrastructure.Capture;
+namespace Paper.ScreenWizzard.Infrastructure.Shared;
 
 /// <summary>
 /// Lists the top-level windows in the order <c>EnumWindows</c> gives them, which is top to bottom in z-order (the Learn page does not say

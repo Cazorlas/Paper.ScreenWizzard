@@ -14,6 +14,7 @@ public sealed class CaptureBarViewModel : BindableBase
     {
         CaptureCommand = new RequestCaptureCommand(this);
         OpenSettingsCommand = new RequestSettingsFromBarCommand(this);
+        RecordCommand = new RequestRecordingFromBarCommand(this);
         CloseCommand = new RequestCloseBarCommand(this);
     }
 
@@ -21,6 +22,9 @@ public sealed class CaptureBarViewModel : BindableBase
     public event Action<CaptureKind>? CaptureRequested;
 
     public event EventHandler? SettingsRequested;
+
+    /// <summary>The Record button: the owner opens the recording bar (SPEC recorder, "What the user does" 1).</summary>
+    public event EventHandler? RecordRequested;
 
     /// <summary>The X of the bar: closes this window only, the app keeps running in the tray (SPEC shell).</summary>
     public event EventHandler? CloseRequested;
@@ -30,11 +34,15 @@ public sealed class CaptureBarViewModel : BindableBase
 
     public RequestSettingsFromBarCommand OpenSettingsCommand { get; }
 
+    public RequestRecordingFromBarCommand RecordCommand { get; }
+
     public RequestCloseBarCommand CloseCommand { get; }
 
     internal void RaiseCaptureRequested(CaptureKind kind) => CaptureRequested?.Invoke(kind);
 
     internal void RaiseSettingsRequested() => SettingsRequested?.Invoke(this, EventArgs.Empty);
+
+    internal void RaiseRecordRequested() => RecordRequested?.Invoke(this, EventArgs.Empty);
 
     internal void RaiseCloseRequested() => CloseRequested?.Invoke(this, EventArgs.Empty);
 }

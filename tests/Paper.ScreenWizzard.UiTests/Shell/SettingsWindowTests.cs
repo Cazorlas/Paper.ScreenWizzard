@@ -38,6 +38,12 @@ public sealed class SettingsWindowTests : UiTestBase
         "Scope.MonitorUnderCursor",
         "Language.System",
         "Theme.System",
+        "RecordHotkeyBox.StartStop",
+        "RecordHotkeyBox.Pause",
+        "VideoFolderBox",
+        "BrowseVideoFolderButton",
+        "Fps.30",
+        "RecordCountdown.3",
         "SaveButton",
         "CancelButton",
     ];

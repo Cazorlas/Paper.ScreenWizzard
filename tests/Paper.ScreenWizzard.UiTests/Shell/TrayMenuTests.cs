@@ -15,7 +15,7 @@ public sealed class TrayMenuTests : UiTestBase
         new(ShellTestData.DefaultHotkeys, captureBarVisible);
 
     [Test]
-    public void Menu_HoldsTheNineLinesOfTheSpecInOrder()
+    public void Menu_HoldsTheTenLinesOfTheSpecInOrder()
     {
         var menu = Create();
 
@@ -28,6 +28,7 @@ public sealed class TrayMenuTests : UiTestBase
                 "Tray.CaptureWindow",
                 "Tray.CaptureFullScreen",
                 "Tray.OpenImage",
+                "Tray.Record",
                 "Tray.CaptureBar",
                 "Tray.Settings",
                 "Tray.CheckForUpdates",
@@ -47,6 +48,37 @@ public sealed class TrayMenuTests : UiTestBase
         Assert.That(menu.Items.Select(item => item.TextKey).TakeLast(3), Is.EqualTo(new[] { "Tray.CheckForUpdates", "Tray.Update", "Tray.Exit" }));
         menu.Items.Single(item => item.TextKey == "Tray.Update").Command.Execute(null);
         Assert.That(raised, Is.EqualTo(1), "the line asks the shell to open the download page");
+    }
+
+    [Test]
+    public void Menu_WhileRecording_HasPauseAndStop_InsteadOfRecord()
+    {
+        var menu = Create();
+        menu.SetRecordHotkeys(new RecordingHotkeys(
+            new HotkeyChord(HotkeyModifiers.Control | HotkeyModifiers.Alt, "R"),
+            new HotkeyChord(HotkeyModifiers.Control | HotkeyModifiers.Alt, "P")));
+        var stops = 0;
+        var pauses = 0;
+        menu.RecordStopRequested += (_, _) => stops++;
+        menu.RecordPauseRequested += (_, _) => pauses++;
+
+        menu.SetRecording(recording: true, paused: false);
+
+        var keys = menu.Items.Select(item => item.TextKey).ToList();
+        Assert.That(keys, Does.Not.Contain("Tray.Record"));
+        Assert.That(keys.IndexOf("Tray.RecordPause"), Is.EqualTo(keys.IndexOf("Tray.OpenImage") + 1));
+        Assert.That(keys.IndexOf("Tray.RecordStop"), Is.EqualTo(keys.IndexOf("Tray.RecordPause") + 1));
+        Assert.That(menu.Items.Single(i => i.TextKey == "Tray.RecordStop").ShortcutText, Is.EqualTo("Ctrl+Alt+R"));
+        Assert.That(menu.Items.Single(i => i.TextKey == "Tray.RecordPause").ShortcutText, Is.EqualTo("Ctrl+Alt+P"));
+        menu.Items.Single(i => i.TextKey == "Tray.RecordStop").Command.Execute(null);
+        menu.Items.Single(i => i.TextKey == "Tray.RecordPause").Command.Execute(null);
+        Assert.That((stops, pauses), Is.EqualTo((1, 1)));
+
+        menu.SetRecording(recording: true, paused: true);
+        Assert.That(menu.Items.Select(item => item.TextKey), Does.Contain("Tray.RecordResume"));
+
+        menu.SetRecording(recording: false, paused: false);
+        Assert.That(menu.Items.Select(item => item.TextKey), Does.Contain("Tray.Record").And.Not.Contain("Tray.RecordStop"));
     }
 
     [Test]
