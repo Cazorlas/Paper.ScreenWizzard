@@ -41,7 +41,7 @@ $script:PaperReviewProjectExt = @('.csproj', '.vbproj', '.fsproj', '.sln', '.pro
 function Format-PaperReviewNumber([double] $Value) { return $Value.ToString('N0', [Globalization.CultureInfo]::InvariantCulture) }
 
 # F302: instruction paths relative to .claude, chosen from this batch only; no disk access.
-function Get-PaperReviewUiInstructions([string[]] $Files) {
+function Get-PaperReviewUiInstructions([string[]] $Files, [bool] $HasScreens = $false) {
     $web = $false
     $desktop = $false
     $native = $false
@@ -60,6 +60,8 @@ function Get-PaperReviewUiInstructions([string[]] $Files) {
         'skills\impeccable\reference\critique.md'
         'skills\impeccable\reference\audit.md'
         'skills\impeccable\reference\craft-floor.md'
+        'skills\taste-skill\references\tells.md'
+        if ($HasScreens) { 'skills\taste-skill\references\critique.md' }
     }
     if ($native) {
         'paperflow\review\ui-native.md'

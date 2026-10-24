@@ -1,6 +1,6 @@
 # Web UI in a read-only review lane
 
-These rules take precedence over the impeccable references pasted after them. Review read only: inspect the batch's
+These rules take precedence over the impeccable and taste-skill references pasted after them. Review read only: inspect the batch's
 files and supplied screenshots, tracing other repository files when needed; never edit or fix them. Apply impeccable only to web files; desktop files use
 design-critique and accessibility-review when those instructions are also present.
 
@@ -13,6 +13,13 @@ design-critique and accessibility-review when those instructions are also presen
   assessment; no DEGRADED banner is needed.
 - Follow critique.md for usability and hierarchy, audit.md for accessibility, and craft-floor.md for web quality.
   Report only findings supported by repository evidence or supplied screenshots; label anything requiring runtime validation accordingly.
+- Taste-skill's tells.md is a dated registry of generated-page tells. Its banned/warned statuses come from scripts
+  that are not run here; report a tell only with file:line evidence. Run no taste-skill script.
+  For app screens (dashboards, admin, settings, tool panels - most Paper UIs), hairlines, quiet borders, small labels
+  and repeated panels are normal under taste-skill's own app-screen rules, never findings.
+- Taste-skill's critique.md judges renders: apply it only to the supplied screenshots in this run's screens/,
+  never to code, desktop-fold.jpg or inspect.mjs sheets. Its score and caps may be quoted in WHY of the `overall`
+  finding, with no separate scorecard. Keep this command's finding format.
 - Read-only commands that write nothing may prove a finding; ui-ux-pro-max's search script may support FIX.
   For each supplied screen, include an info finding with RULE `overall`, first impression and repair priorities.
   Without captured screens, the main session records `visual pass: not run - <reason>`; source inspection alone

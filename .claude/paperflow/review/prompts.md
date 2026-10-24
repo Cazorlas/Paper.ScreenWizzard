@@ -10,7 +10,8 @@ the first fenced block under each heading is the template, nothing else in this 
 
 For `/review-ui`, `review.ps1 prompt` selects instruction sections from the batch's files (case-insensitive):
 web (`.html .htm .css .scss .less .vue .svelte .tsx .jsx .cshtml .razor`) receives [ui-web.md](ui-web.md), then
-impeccable's `reference/critique.md`, `reference/audit.md` and `reference/craft-floor.md`; desktop (`.xaml .axaml .dcl`)
+impeccable's `reference/critique.md`, `reference/audit.md` and `reference/craft-floor.md`, then taste-skill's
+`skills/taste-skill/references/tells.md` and, only with files in the run's screens/, `skills/taste-skill/references/critique.md`; desktop (`.xaml .axaml .dcl`)
 or no web receives `design-critique/SKILL.md`, then `accessibility-review/SKILL.md`. Mixed batches receive web first,
 then desktop. Skill paths are under `.claude/skills`. The two-section UI example in the template below describes
 the desktop case; the supplied instruction list determines the actual sections, without changing the template.

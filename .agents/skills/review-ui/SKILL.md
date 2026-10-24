@@ -45,7 +45,7 @@ the screenshot is named in WHY. Save captures in `<run>/screens/`: `review.ps1 p
 
 ## Newest sources before the lane
 
-- **Skills.** `plan` compares each vendored skill the lane reads with its upstream release (`upstreams.json`) and prints
+- **Skills (five upstreams).** `plan` compares each vendored skill the lane reads with its upstream release (`upstreams.json`) and prints
   one `update:` line per skill: `current`, `fetched` (the newer upstream text is pasted from the machine cache),
   `check-only` (a Paper-adapted skill: tell the owner a newer upstream exists), or `skipped - <reason>` (offline: the
   review goes on with the vendored copy). `review.upstreamRefresh: false` turns it off.
@@ -62,7 +62,9 @@ the screenshot is named in WHY. Save captures in `<run>/screens/`: `review.ps1 p
 
 - Web (`.html .htm .css .scss .less .vue .svelte .tsx .jsx .cshtml .razor`):
   [.claude/paperflow/review/ui-web.md](../../paperflow/review/ui-web.md), then impeccable's
-  `reference/critique.md`, `reference/audit.md` and `reference/craft-floor.md` under `.claude/skills/impeccable`.
+  `reference/critique.md`, `reference/audit.md` and `reference/craft-floor.md` under `.claude/skills/impeccable`,
+  then taste-skill's [references/tells.md](../taste-skill/references/tells.md) and, only when the run's screens/ has files,
+  [references/critique.md](../taste-skill/references/critique.md).
 - Desktop (XAML `.xaml .axaml`, DCL `.dcl`), or no web file (including screenshots only):
   `.claude/skills/design-critique/SKILL.md`, then `.claude/skills/accessibility-review/SKILL.md`.
 - Native (`.qml`, Android layouts, SwiftUI/Compose/Flutter sources): [.claude/paperflow/review/ui-native.md](../../paperflow/review/ui-native.md),
