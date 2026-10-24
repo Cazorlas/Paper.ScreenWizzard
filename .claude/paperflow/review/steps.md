@@ -65,7 +65,8 @@ The user's words map to its parameters:
    For every supplied screen, request an info finding with RULE `overall`, first impression and repair priorities.
    The lane may use ui-ux-pro-max's search script to support FIX without writing anything.
    For `/review-ui`, each batch's files select the instructions: web reads [ui-web.md](ui-web.md), then
-   `skills/impeccable/reference/critique.md`, `skills/impeccable/reference/audit.md` and `skills/impeccable/reference/craft-floor.md`;
+   `skills/impeccable/reference/critique.md`, `skills/impeccable/reference/audit.md` and `skills/impeccable/reference/craft-floor.md`,
+   then taste-skill's `skills/taste-skill/references/tells.md` and, only with files in the run's screens/, `skills/taste-skill/references/critique.md`;
    native reads [ui-native.md](ui-native.md) and impeccable's native references; desktop (`.xaml .axaml .dcl`) or
    neither reads `design-critique` then `accessibility-review`; web or native also read [ui-libraries.md](ui-libraries.md).
    Mixed batches read web, native, then desktop. Exact extensions and paths: [lanes](lanes.md). The web preface requires read-only assessments in the same turn, no launcher, browser,

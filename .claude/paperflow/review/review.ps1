@@ -653,7 +653,7 @@ function Invoke-ReviewUpstreamGit([string[]] $Arguments, [string] $Directory) {
 function Initialize-ReviewUpstreams($Plan, [string] $Directory) {
     $records = [ordered]@{}
     if (-not $config.UpstreamRefresh) { Say 'update: off (profile)' }
-    # The UI lane reads all four skills (including the supporting search skill); other lanes read none.
+    # The UI lane reads these skills (including the supporting search skill); other lanes read none.
     if (@($Plan.Lanes | Where-Object { $_.Name -eq 'ui' -and $_.State -eq 'run' }).Count -eq 0) { return }
     $manifest = Read-Json (Join-Path $PSScriptRoot 'upstreams.json')
     foreach ($property in $manifest.skills.PSObject.Properties) {
@@ -919,14 +919,14 @@ function Invoke-ReviewFiles {
 # ------------------------------------------------------------------ prompt (ADR-0043, F213)
 
 # The instruction files of a lane, pasted word for word into its prompt: paths from the engine folder, the checklists in the skills that own them (ADR-0044).
-function Get-ReviewInstructionPaths([string] $LaneName, [string[]] $Files) {
+function Get-ReviewInstructionPaths([string] $LaneName, [string[]] $Files, [bool] $HasScreens = $false) {
     $skill = $PSScriptRoot
     $rel = @()
     switch ($LaneName) {
         'security' { $rel = @('..\..\skills\review-security\references\checklist.md') }
         'bug' { $rel = @('..\..\skills\find-bug\SKILL.md') }
         'smell' { $rel = @('..\..\skills\review-architecture\references\smell.md') }
-        'ui' { $rel = @(Get-PaperReviewUiInstructions -Files $Files | ForEach-Object { Join-Path '..\..' $_ }) }
+        'ui' { $rel = @(Get-PaperReviewUiInstructions -Files $Files -HasScreens $HasScreens | ForEach-Object { Join-Path '..\..' $_ }) }
     }
     if ($LaneName -eq 'architecture') {
         $cands = @('..\..\agents\architecture-reviewer.md', '..\..\..\.claude\agents\architecture-reviewer.md') | ForEach-Object { [IO.Path]::GetFullPath((Join-Path $skill $_)) }
@@ -998,7 +998,7 @@ function Invoke-ReviewPrompt {
     }
     $upstreamsFile = Join-Path $dir 'upstreams.json'
     $upstreams = if (Test-Path -LiteralPath $upstreamsFile) { Read-Json $upstreamsFile } else { $null }
-    $instructions = @(Get-ReviewInstructionPaths -LaneName $Lane -Files $paths | ForEach-Object { Get-ReviewInstruction $_ $upstreams })
+    $instructions = @(Get-ReviewInstructionPaths -LaneName $Lane -Files $paths -HasScreens ($shots.Count -gt 0) | ForEach-Object { Get-ReviewInstruction $_ $upstreams })
     $findingsFile = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'findings.md'))
     $text = New-PaperReviewLanePrompt -Template (Get-ReviewPromptTemplate 'Lane prompt') -Lane $Lane -Batch $Batch -BatchCount $all.Count -Run $Run -Prefix $prefix -FilesLines $fileLines `
         -External $external -Repo $repoText -Retry $Retry.IsPresent -RetryErrors $errors -FindingsPath $findingsFile -FindingsText ([IO.File]::ReadAllText($findingsFile, [Text.Encoding]::UTF8)) -Instructions $instructions

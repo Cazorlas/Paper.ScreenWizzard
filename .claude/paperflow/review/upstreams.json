@@ -1,5 +1,13 @@
 {
   "skills": {
+    "taste-skill": {
+      "repo": "leonxlnx/taste-skill",
+      "path": "skills/taste-skill",
+      "commit": "6010f91a9935f1c167dfc500fb1a475681892e6b",
+      "tag": "v2.1.4",
+      "tagPattern": "v*",
+      "replace": ["references/tells.md", "references/critique.md"]
+    },
     "impeccable": {
       "repo": "pbakaus/impeccable",
       "path": ".claude/skills/impeccable",

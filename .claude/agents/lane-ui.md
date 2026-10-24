@@ -44,6 +44,7 @@ driver; if you find one running, stop and report instead of starting yours.
 Read `.claude/skills/impeccable/reference/craft-floor.md` before the first UI edit. Before handing back,
 check the change against `polish.md`, `harden.md` and `clarify.md` in that reference folder. Never run the
 impeccable launcher. This is not for XAML; WPF follows the project's UI style skill.
+For `/review-ui` web batches, the prompt also supplies taste-skill's references/tells.md and, only with files in the run's screens/, references/critique.md. These are review instructions, not another build workflow; run no taste-skill script.
 
 ## Each task, in order
 
