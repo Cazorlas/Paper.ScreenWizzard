@@ -79,7 +79,7 @@ The user's words map to its parameters:
      in state `run` whose batch executor is `collab`, and every batch of it: `review.ps1 prompt -Run <run> -Lane <lane> -Batch <b>` writes the prompt and
      prints `prompt:` and `answer:`; then `<collab> ask -Session <id> -Task <lane>-<b> -Prompt <prompt> -Answer <answer>
      -WaitSec 0`. Exit 11: it runs. Exit 13 (the machine's turns are all taken): `<collab> wait -Session <id>`, then ask
-     again. Exit 6 (Codex out of usage): ask that batch again with `-As takeover` (the Claude Sonnet worker), and the next
+     again. Exit 6 (Codex out of usage): ask that batch again with `-As takeover` (the Claude worker), and the next
      batches too, with `<collab> probe -Session <id>` between asks - back to Codex once the probe says ok. Exit 7: the
      checkout changed during the turn - the answer is kept; name the printed paths to the user. Exit 1, 4 or 9: ask that
      batch once more; failing again, it has no answer. When every batch was asked, `wait` until no turn runs.

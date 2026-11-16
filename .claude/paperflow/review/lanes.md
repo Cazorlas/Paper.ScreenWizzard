@@ -69,7 +69,7 @@ The files the reading lanes read, each once, are counted in content tokens (a sc
    (the `collab-start: ... (only if check queues a finding)` line), else by a fresh subagent. `-Executor solo` over the
    limit is refused (exit 2) with the tokens and how to narrow the scope.
 2. Over the limit, with collab and codex on this machine, security and smell batches are questions to Codex in a read-only collab
-   session on the real checkout (uncommitted work included; the Claude Sonnet worker answers when Codex is out of
+   session on the real checkout (uncommitted work included; the Claude worker answers when Codex is out of
    usage). Bug, architecture and UI use Claude subagents; the estimate names the reader per lane.
 3. Otherwise, and when Codex or a collab turn runs the review, it is a read-only subagent of the session.
 

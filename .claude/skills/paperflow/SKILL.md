@@ -122,7 +122,7 @@ người dùng bảo, khi phiên khác đang làm ở cây chính, hay khi build
 
 ## 4. Làm — `/task-do <plan>`
 
-Planner viết hợp đồng test; worker lượt đỏ viết mã test, planner duyệt và khoá; worker lượt xanh không sửa, không nới, không xoá test đã khoá. Việc nhỏ (cấu hình, câu chữ, một chỗ) session chính làm thẳng, không planner, không worker. Mọi lane giao worker theo chuỗi Codex → Antigravity → DeepSeek → Claude Sonnet, bỏ qua worker không chạy được phép kiểm của task (`task-do/references/planner-worker.md`). Planner có thể viết thêm test đỏ khi duyệt và trả task về worker.
+Planner viết hợp đồng test; worker lượt đỏ viết mã test, planner duyệt và khoá; worker lượt xanh không sửa, không nới, không xoá test đã khoá. Việc nhỏ (cấu hình, câu chữ, một chỗ) session chính làm thẳng, không planner, không worker. Mọi lane giao worker theo chuỗi Codex → Antigravity → DeepSeek → Claude worker, bỏ qua worker không chạy được phép kiểm của task (`task-do/references/planner-worker.md`). Planner có thể viết thêm test đỏ khi duyệt và trả task về worker.
 
 `/task-do` giữ luật; tóm tắt để biết chờ gì:
 

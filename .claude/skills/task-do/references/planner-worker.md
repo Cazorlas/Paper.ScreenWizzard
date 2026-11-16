@@ -1,6 +1,6 @@
 # Planner và worker
 
-Planner là phiên chính: session chính lập plan, viết hợp đồng test, duyệt từng task và rà cuối; không giao planner cho subagent. Việc chỉ có hai vai - planner (phiên chính) và worker (Codex, Antigravity, DeepSeek hoặc Claude Sonnet, theo thứ tự ở mục Worker theo lane).
+Planner là phiên chính: session chính lập plan, viết hợp đồng test, duyệt từng task và rà cuối; không giao planner cho subagent. Việc chỉ có hai vai - planner (phiên chính) và worker (Codex, Antigravity, DeepSeek hoặc Claude worker, theo thứ tự ở mục Worker theo lane).
 
 ## Planner viết hợp đồng test
 
@@ -27,13 +27,13 @@ Profile khai `live.loop` mà chưa có dòng baseline thì chưa viết test: h�
 
 ## Worker theo lane
 
-Mọi lane - `unit`, `ui`, `e2e`, `live`, `model` - giao worker theo thứ tự: Codex qua collab, rồi Antigravity (model Claude, hết thì Gemini mới nhất), rồi DeepSeek (dsh), rồi Claude Sonnet (`lane-ui`, `lane-live`, `lane-model`, hay `lane-logic` khi máy không có Codex hoặc collab); bỏ qua worker không chạy được phép kiểm của task. Codex, Antigravity và DeepSeek không mở được chương trình hay xem màn hình; Codex và Antigravity không có internet nhưng gọi được localhost (MCP của host đang chạy): chỉ task cần những thứ chúng thiếu mới đi tới worker kế tiếp làm được. Session chính không tự làm task: nó phân tích, giao, kiểm và chịu trách nhiệm cuối.
+Mọi lane - `unit`, `ui`, `e2e`, `live`, `model` - giao worker theo thứ tự: Codex qua collab, rồi Antigravity (model Claude, hết thì Gemini mới nhất), rồi DeepSeek (dsh), rồi Claude worker (`lane-ui`, `lane-live`, `lane-model`, hay `lane-logic` khi máy không có Codex hoặc collab); bỏ qua worker không chạy được phép kiểm của task. Codex, Antigravity và DeepSeek không mở được chương trình hay xem màn hình; Codex và Antigravity không có internet nhưng gọi được localhost (MCP của host đang chạy): chỉ task cần những thứ chúng thiếu mới đi tới worker kế tiếp làm được. Session chính không tự làm task: nó phân tích, giao, kiểm và chịu trách nhiệm cuối.
 
-Planner gắn `{weight: light|heavy}` cho mỗi brief; weight chọn model và effort của worker theo `models.json` của collab (light: model rẻ, việc chữ/tài liệu/đổi tên/theo mẫu có sẵn; heavy: model chính, logic/ca biên/bảo mật/test khó); lane agent Claude giữ `sonnet`. Task heavy đã hỏng một lần trên sonnet thì planner có thể giao lại với `model: opus`. Codex pool usage chỉ giảm effort của lượt heavy mới, không đổi model hay weight.
+Planner gắn `{weight: light|heavy}` cho mỗi brief; weight chọn model và effort của worker theo `models.json` của collab (light: model rẻ, việc chữ/tài liệu/đổi tên/theo mẫu có sẵn; heavy: model chính, logic/ca biên/bảo mật/test khó). Frontmatter của lane agent giữ `sonnet`; với task `{weight: heavy}` planner mở lane agent bằng `model: opus`, với task `{weight: light}` giữ sonnet. Codex pool usage chỉ giảm effort của lượt heavy mới, không đổi model hay weight.
 
 Trước lượt Codex, session chính restore trước (.NET `dotnet restore`, Python `uv sync`) trong thư mục làm việc của lần cộng tác; lệnh test của brief chạy không mạng (.NET `--no-restore`).
 
-Đo cần mạng (Jev, OpenRouter, host `ai`) không giao Codex: DeepSeek hay Claude Sonnet.
+Đo cần mạng (Jev, OpenRouter, host `ai`) không giao Codex: DeepSeek hay Claude worker.
 
 ## Planner duyệt và câu hỏi
 

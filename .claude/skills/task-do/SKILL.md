@@ -127,7 +127,7 @@ chính biểu thức của code, hằng so với hằng, snapshot chưa ai đọ
 Đơn vị song song là **nhóm** `### n.` của plan: các lane trong một nhóm chạy cùng lúc;
 nhóm sau chỉ giao khi mọi task của nhóm trước đã tick (F35) — một task chưa đạt thì xử lý nó, hay dừng và nêu task chặn cùng verdict.
 
-1. Với nhóm đầu còn task mở, gom task theo lane. Trong **một** lượt, giao mỗi lane cho worker theo chuỗi ở references/planner-worker.md; tới Claude Sonnet thì gọi lane agent tên
+1. Với nhóm đầu còn task mở, gom task theo lane. Trong **một** lượt, giao mỗi lane cho worker theo chuỗi ở references/planner-worker.md; tới Claude worker thì gọi lane agent tên
    theo bảng trên, chạy nền. Prompt của nó là output của `.claude/paperflow/paperflow.ps1 brief -Path <plan> -Task <mã>`
    (dòng task, `{files:}`, dòng `F<n>` của `SPEC.md`, wireframe cho `ui`, dòng `baseline` cho `[red]`) cộng
    đúng các dòng `Cho … →` mà task phủ — **không** gửi đường dẫn để lane tự đọc cả plan hay cả `SPEC.md`

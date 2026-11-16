@@ -163,7 +163,7 @@ function Get-PaperReviewExecutorLines {
     if ($Executor -ne 'collab') { return @("lanes run: claude subagents - $Reason") }
     $script1 = "$($Collab.CollabScript)"
     $n = [int] $Collab.Parallel; $g = [int] $Collab.GapSec
-    $out = @("lanes run: codex via collab - $script1 - $n at once on this machine, Codex starts $g s apart; the Claude Sonnet worker takes a batch when Codex is out (up to $($script:PaperReviewClaudeTurnUsd) USD a batch)")
+    $out = @("lanes run: codex via collab - $script1 - $n at once on this machine, Codex starts $g s apart; the Claude worker takes a batch when Codex is out (up to $($script:PaperReviewClaudeTurnUsd) USD a batch)")
     if ($null -ne $Collab.PSObject.Properties['LaneExecutors']) {
         $out[0] += '; ' + (@($Collab.LaneExecutors | ForEach-Object { "$($_.Lane): $($_.Reader)" }) -join ', ')
     }
