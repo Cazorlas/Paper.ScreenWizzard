@@ -3,9 +3,9 @@
     "taste-skill": {
       "repo": "leonxlnx/taste-skill",
       "path": "skills/taste-skill",
-      "commit": "6010f91a9935f1c167dfc500fb1a475681892e6b",
-      "tag": "v2.1.4",
-      "tagPattern": "v*",
+      "commit": "12af471f627f866411b4bd785b19646d3672784c",
+      "tag": "v2.1.5",
+      "tagPattern": "v2.1.*",
       "replace": ["references/tells.md", "references/critique.md"]
     },
     "impeccable": {

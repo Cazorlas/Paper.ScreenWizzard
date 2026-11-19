@@ -4,7 +4,7 @@ description: Manual only - run when the user types /taste-skill or names it; nev
 disable-model-invocation: true
 ---
 
-> Adapted from leonxlnx/taste-skill, `skills/taste-skill`, commit 6010f91a9935f1c167dfc500fb1a475681892e6b (v2.1.4), MIT License - [LICENSE](LICENSE). Changed for paper-kit: the front matter (name and manual-only description rewritten, disable-model-invocation added); links and commands to omitted scripts/, library/, assets/ and references other than tells.md and critique.md made plain text marked "(not shipped in Paper)"; the upstream body from "The run" onward moved verbatim into references/run.md, and an "In a Paper project" section with links added. SKILL.md, LICENSE, references/tells.md, references/critique.md and the Paper split references/run.md ship. Everything else is upstream text.
+> Adapted from leonxlnx/taste-skill, `skills/taste-skill`, commit 12af471f627f866411b4bd785b19646d3672784c (v2.1.5), MIT License - [LICENSE](LICENSE). Changed for paper-kit: the front matter (name and manual-only description rewritten, disable-model-invocation added); links and commands to omitted scripts/, library/, assets/ and references other than tells.md and critique.md made plain text marked "(not shipped in Paper)"; the upstream body from "The run" onward moved verbatim into references/run.md, and an "In a Paper project" section with links added. SKILL.md, LICENSE, references/tells.md, references/critique.md and the Paper split references/run.md ship. Everything else is upstream text.
 
 # tasteskill v2
 
